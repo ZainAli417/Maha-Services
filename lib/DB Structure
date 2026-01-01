@@ -1,0 +1,43 @@
+DB STRUCTURE JS
+{
+  "personalProfile": {
+    "name": "Full Name",                     // string
+    "email": "auth_email@example.com",       // string (used for FirebaseAuth)
+    "secondary_email": "extracted@cv.com",   // string (email extracted from CV)
+    "contactNumber": "+92 300 1234567",      // string
+    "nationality": "Pakistani",              // string
+    "profilePicUrl": "https://.../profilePic.jpg", // string | null (Storage URL)
+    "skills": ["Dart","Flutter","Firebase"], // array<string>
+    "objectives": "Career objective text",   // string
+    "socialLinks": ["https://linkedin/..."], // array<string>
+    "summary": "Short professional summary", // string
+    "dob": "1995-05-20"                      // string (YYYY-MM-DD) or null
+  },
+
+  "educationalProfile": [
+    {
+      "institutionName": "University X",     // string
+      "duration": "2016 - 2020",             // string
+      "majorSubjects": "Computer Science",   // string
+      "marksOrCgpa": "3.6/4.0"               // string
+    }
+    // ...more entries
+  ],
+
+  "professionalProfile": {
+    "summary": "Longer professional summary or headline" // string
+  },
+
+  "professionalExperience": [
+    { "text": "Job title, Company, Duration, Responsibilities..." } // list of maps
+    // ...more
+  ],
+
+  "certifications": ["Cert A", "Cert B"],  // array<string>
+  "publications": ["Paper A - Journal"],   // array<string>
+  "awards": ["Award A"],                   // array<string>
+  "references": ["Referee Name — contact"],// array<string>
+
+  // metadata
+  "createdAt": "<Firestore server timestamp>" // FieldValue.serverTimestamp()
+}
