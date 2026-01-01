@@ -125,7 +125,7 @@ class RoleProvider extends ChangeNotifier {
 }
 
 class Env {
-  static String get geminiApiKey => '';
+  static String get geminiApiKey => ' ';
 
   // Optional helper to check presence
   static bool get hasGeminiKey => geminiApiKey.isNotEmpty;
