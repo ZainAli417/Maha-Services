@@ -47,6 +47,10 @@ dependencies:
 
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> fc0ec7d (new changes in CAPTCHA)
   archive: any
   xml: any
 dev_dependencies:
