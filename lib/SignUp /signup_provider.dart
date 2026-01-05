@@ -261,6 +261,17 @@ class SignupProvider extends ChangeNotifier {
         _isNotEmpty(e['marksOrCgpa']));
   }
 
+
+  bool isCaptchaVerified = false;
+  String? captchaToken;
+
+  void setCaptchaVerified(bool verified, {String? token}) {
+    isCaptchaVerified = verified;
+    captchaToken = token;
+    notifyListeners();
+  }
+
+
   // ========== FIREBASE OPERATIONS ==========
 
   /// 1. RECRUITER: Single-step registration (creates auth + saves full data)
@@ -316,9 +327,10 @@ class SignupProvider extends ChangeNotifier {
       }
 
       // Write to Firestore: /users/{uid}
-      await FirebaseFirestore.instance.collection('users').add({
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'role': role,  // 'job_seeker'
         'email': emailController.text.trim(),
+        'name': nameController.text.trim(),
         'uid': uid,  // Store the auth UID as a field
         'createdAt': FieldValue.serverTimestamp(),
       });
