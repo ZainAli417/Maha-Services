@@ -1,23 +1,12 @@
-<<<<<<< HEAD
 // lib/screens/signup_screen_auth.dart - SIMPLIFIED VERSION (ACCOUNT CREATION ONLY)
-=======
-// lib/screens/signup_screen_auth.dart - FIXED VERSION
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_portal/SignUp%20/signup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-<<<<<<< HEAD
 
 import '../Constant/Header_Nav.dart';
-=======
-import 'package:web/web.dart' as web;
-import 'dart:js_interop';
-import '../Constant/Header_Nav.dart';
-import '../Constant/captcha_webview.dart';
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 
 class SignUp_Screen extends StatefulWidget {
   const SignUp_Screen({super.key});
@@ -29,38 +18,15 @@ class SignUp_Screen extends StatefulWidget {
 class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateMixin {
   final _formKeyAccount = GlobalKey<FormState>();
 
-<<<<<<< HEAD
-=======
-  // Animation controllers
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late AnimationController _floatingController;
   late AnimationController _pulseController;
-<<<<<<< HEAD
   @override
   void initState() {
     super.initState();
-=======
-
-  @override
-  void initState() {
-    super.initState();
-    registerRecaptchaView('6LfUnUAsAAAAAE580fSsiwknCmKCYghhujXtycaQ');
-
-    _initializeAnimations();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<SignupProvider>(context, listen: false);
-      provider.clearAll();
-      _setupCaptchaListeners(provider);
-    });
-  }
-
-  void _initializeAnimations() {
->>>>>>> fc0ec7d (new changes in CAPTCHA)
     _floatingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -74,20 +40,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-<<<<<<< HEAD
     );
-=======
-    )..forward();
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
-<<<<<<< HEAD
     );
-=======
-    )..forward();
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
@@ -100,7 +58,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     ).animate(
       CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
     );
-<<<<<<< HEAD
 
     _fadeController.forward();
     _slideController.forward();
@@ -109,39 +66,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       final p = Provider.of<SignupProvider>(context, listen: false);
       p.clearAll();
     });
-=======
-  }
-
-  void _setupCaptchaListeners(SignupProvider provider) {
-    // Listen for captcha success
-    web.window.addEventListener('captcha-success', ((web.Event event) {
-      try {
-        if (event is web.CustomEvent) {
-          final detail = event.detail;
-          if (detail != null && detail.isDefinedAndNotNull) {
-            final token = (detail as JSString).toDart;
-            if (token.isNotEmpty) {
-              provider.setCaptchaVerified(true, token: token);
-              print('✓ Captcha verified successfully');
-            } else {
-              provider.setCaptchaVerified(false);
-            }
-          } else {
-            provider.setCaptchaVerified(false);
-          }
-        }
-      } catch (e) {
-        provider.setCaptchaVerified(false);
-        print('Captcha error: $e');
-      }
-    }).toJS);
-
-    // Listen for captcha expired
-    web.window.addEventListener('captcha-expired', ((web.Event event) {
-      provider.setCaptchaVerified(false);
-      print('⚠ Captcha expired - please verify again');
-    }).toJS);
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   }
 
   @override
@@ -154,11 +78,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   }
 
   void _showSnackBar(String message, {required bool isError}) {
-<<<<<<< HEAD
-=======
-    if (!mounted) return;
-
->>>>>>> fc0ec7d (new changes in CAPTCHA)
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -199,7 +118,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
   }
 
-<<<<<<< HEAD
 
 
   Widget leftPanel(BuildContext context) {
@@ -254,59 +172,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ),
         ],
       ),
-=======
-  // ========== LEFT PANEL ==========
-  Widget leftPanel(BuildContext context) {
-    return RepaintBoundary(
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F0F23),
-              Color(0xFF1a1a3e),
-              Color(0xFF2d1b4e),
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            _buildAnimatedOrbs(),
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.03,
-                child: Image.network(
-                  'https://grainy-gradients.vercel.app/noise.svg',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox(),
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCompactHeader(),
-                    const SizedBox(height: 15),
-                    _buildLiveMetrics(),
-                    const SizedBox(height: 15),
-                    _buildCompactStats(),
-                    const SizedBox(height: 15),
-                    _buildCompactFeatures(),
-                    const SizedBox(height: 15),
-                    _buildTrustBadges(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
     );
   }
 
@@ -455,10 +320,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
               color: Colors.white.withOpacity(0.1),
               width: 1.5,
             ),
-<<<<<<< HEAD
 
-=======
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           ),
           child: Row(
             children: [
@@ -532,54 +394,30 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
 
   Widget _buildCompactStats() {
     return Row(
-<<<<<<< HEAD
       children: [
-=======
-      children: const [
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         Expanded(
           child: _CompactMetric(
             value: '1.2K',
             label: 'Jobs',
-<<<<<<< HEAD
             color: const Color(0xFF667eea),
             icon: Icons.work_outline_rounded,
           ),
         ),
         const SizedBox(width: 12),
-=======
-            color: Color(0xFF667eea),
-            icon: Icons.work_outline_rounded,
-          ),
-        ),
-        SizedBox(width: 12),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         Expanded(
           child: _CompactMetric(
             value: '342',
             label: 'Online',
-<<<<<<< HEAD
             color: const Color(0xFF4ade80),
             icon: Icons.people_outline_rounded,
           ),
         ),
         const SizedBox(width: 12),
-=======
-            color: Color(0xFF4ade80),
-            icon: Icons.people_outline_rounded,
-          ),
-        ),
-        SizedBox(width: 12),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         Expanded(
           child: _CompactMetric(
             value: '5.4K',
             label: 'Hires',
-<<<<<<< HEAD
             color: const Color(0xFFf093fb),
-=======
-            color: Color(0xFFf093fb),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
             icon: Icons.trending_up_rounded,
           ),
         ),
@@ -601,29 +439,17 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ),
         ),
         const SizedBox(height: 14),
-<<<<<<< HEAD
         _CompactFeature(
-=======
-        const _CompactFeature(
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           icon: Icons.auto_awesome_rounded,
           title: 'AI-Powered Matching',
         ),
         const SizedBox(height: 10),
-<<<<<<< HEAD
         _CompactFeature(
-=======
-        const _CompactFeature(
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           icon: Icons.speed_rounded,
           title: 'Seek More Borderless Jobs',
         ),
         const SizedBox(height: 10),
-<<<<<<< HEAD
         _CompactFeature(
-=======
-        const _CompactFeature(
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           icon: Icons.verified_user_rounded,
           title: 'Verified Employers across Globe',
         ),
@@ -644,37 +470,24 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-<<<<<<< HEAD
           _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
-=======
-          const _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           Container(
             width: 1,
             height: 20,
             color: Colors.white.withOpacity(0.1),
           ),
-<<<<<<< HEAD
           _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
-=======
-          const _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           Container(
             width: 1,
             height: 20,
             color: Colors.white.withOpacity(0.1),
           ),
-<<<<<<< HEAD
           _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
-=======
-          const _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         ],
       ),
     );
   }
 
-<<<<<<< HEAD
 
 
 
@@ -712,16 +525,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   Widget accountPanel(BuildContext context, SignupProvider p) {
     final provider = context.watch<SignupProvider>();
 
-=======
-  // ========== ACCOUNT PANEL ==========
-  Widget accountPanel(BuildContext context, SignupProvider p) {
->>>>>>> fc0ec7d (new changes in CAPTCHA)
     return Form(
       key: _formKeyAccount,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-<<<<<<< HEAD
           // Header Section
           Container(
             padding: const EdgeInsets.all(24),
@@ -807,15 +615,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           if (provider.role == 'recruiter') ...[
             _buildEnhancedTextField(
               controller: provider.nameController,
-=======
-          _buildHeader(),
-          const SizedBox(height: 28),
-          _buildRoleSelector(p),
-          const SizedBox(height: 28),
-          if (p.role == 'recruiter' || p.role == 'job_seeker') ...[
-            _buildEnhancedTextField(
-              controller: p.nameController,
->>>>>>> fc0ec7d (new changes in CAPTCHA)
               label: 'Full Name',
               hint: 'Enter your full name',
               icon: Icons.person_outline_rounded,
@@ -824,7 +623,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
                 return null;
               },
             ),
-<<<<<<< HEAD
 
             const SizedBox(height: 18),
 
@@ -1132,297 +930,15 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
 
             const SizedBox(height: 28),
           ],
-=======
-            const SizedBox(height: 18),
-          ],
-          _buildEnhancedTextField(
-            controller: p.emailController,
-            label: 'Email Address',
-            hint: 'your.email@company.com',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            errorText: p.emailError,
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Email required';
-              final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
-              if (!emailRegex.hasMatch(v.trim())) return 'Enter valid email';
-              return null;
-            },
-          ),
-          const SizedBox(height: 18),
-          _buildEnhancedTextField(
-            controller: p.passwordController,
-            label: 'Password',
-            hint: 'Create a strong password (min. 8 characters)',
-            icon: Icons.lock_outline_rounded,
-            obscureText: true,
-            errorText: p.passwordError,
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Password required';
-              if (v.length < 8) return 'Minimum 8 characters';
-              return null;
-            },
-          ),
-          const SizedBox(height: 18),
-          _buildEnhancedTextField(
-            controller: p.confirmPasswordController,
-            label: 'Confirm Password',
-            hint: 'Re-enter your password',
-            icon: Icons.lock_outline_rounded,
-            obscureText: true,
-            errorText: p.passwordError,
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Confirm your password';
-              if (v != p.passwordController.text) {
-                return 'Passwords must match';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 32),
-          _buildReCaptcha(p),
-          const SizedBox(height: 20),
-          _buildSubmitButton(p),
-          const SizedBox(height: 20),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         ],
       ),
     );
   }
 
-<<<<<<< HEAD
-=======
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF6366F1).withOpacity(0.1),
-            const Color(0xFF8B5CF6).withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create Account',
-                  style: GoogleFonts.poppins(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1E293B),
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Start your journey to find the perfect opportunity',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReCaptcha(SignupProvider provider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(
-          width: 304,
-          height: 78,
-          child: HtmlElementView(viewType: 'recaptcha-view'),
-        ),
-        const SizedBox(height: 8),
-        if (!provider.isCaptchaVerified)
-          Text(
-            'Please verify that you are not a robot',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
-          )
-        else
-          Row(
-            children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                'Security verified',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.green,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSubmitButton(SignupProvider provider) {
-    return Center(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 280,
-        decoration: BoxDecoration(
-          gradient: provider.isCaptchaVerified
-              ? const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          )
-              : LinearGradient(
-            colors: [Colors.grey.shade100, Colors.grey.shade200],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: provider.isCaptchaVerified
-                ? Colors.transparent
-                : Colors.grey.shade300,
-            width: 1.5,
-          ),
-          boxShadow: provider.isCaptchaVerified
-              ? [
-            BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ]
-              : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ElevatedButton.icon(
-          onPressed: provider.isCaptchaVerified ? () => _handleSubmit(provider) : null,
-          icon: Icon(
-            provider.isCaptchaVerified
-                ? Icons.person_add_rounded
-                : Icons.lock_outline_rounded,
-            size: 20,
-            color: provider.isCaptchaVerified ? Colors.white : Colors.grey.shade500,
-          ),
-          label: Text(
-            provider.isCaptchaVerified
-                ? (provider.role == 'recruiter'
-                ? 'Create Recruiter Account'
-                : 'Create Job Seeker Account')
-                : 'Complete Captcha to Continue',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              color: provider.isCaptchaVerified ? Colors.white : Colors.grey.shade500,
-              fontSize: 15,
-              letterSpacing: 0.3,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            disabledBackgroundColor: Colors.transparent,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _handleSubmit(SignupProvider provider) async {
-    final okForm = _formKeyAccount.currentState?.validate() ?? false;
-    final okEmail = provider.validateEmail();
-    final okPass = provider.validatePasswords();
-
-    if (!okForm || !okEmail || !okPass) {
-      _showSnackBar('Please fix all errors before proceeding', isError: true);
-      return;
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) => _buildLoadingDialog(),
-    );
-
-    try {
-      bool success;
-      if (provider.role == 'recruiter') {
-        success = await provider.registerRecruiter();
-      } else {
-        success = await provider.createJobSeekerAccount();
-      }
-
-      if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-
-      if (success) {
-        _showSnackBar('✓ Account created successfully!', isError: false);
-      } else {
-        _showSnackBar(
-          provider.generalError ?? 'Failed to create account',
-          isError: true,
-        );
-      }
-    } catch (e) {
-      if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-      _showSnackBar('Error: ${e.toString()}', isError: true);
-    }
-  }
-
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   Widget _buildLoadingDialog() {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-<<<<<<< HEAD
         padding: EdgeInsets.all(30),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1432,39 +948,13 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             Text('Creating Your Account', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
             SizedBox(height: 8),
             Text('Please wait...', style: TextStyle(color: Colors.grey.shade600)),
-=======
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(color: Colors.indigo),
-            const SizedBox(height: 20),
-            Text(
-              'Creating Your Account',
-              style: GoogleFonts.poppins(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Please wait...',
-              style: GoogleFonts.poppins(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
-            ),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
           ],
         ),
       ),
     );
   }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   Widget _buildRoleSelector(SignupProvider p) {
     return Container(
       padding: const EdgeInsets.all(6),
@@ -1508,13 +998,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         gradient: isSelected
-<<<<<<< HEAD
             ? LinearGradient(
           colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-=======
-            ? const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
->>>>>>> fc0ec7d (new changes in CAPTCHA)
         )
             : null,
         borderRadius: BorderRadius.circular(12),
@@ -1645,19 +1130,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       ],
     );
   }
-<<<<<<< HEAD
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => SignupProvider(),
       child: const _SignUp_ScreenInner(),
     );
-=======
-
-  @override
-  Widget build(BuildContext context) {
-    return const _SignUp_ScreenInner();
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   }
 }
 
@@ -1667,11 +1145,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
     final p = Provider.of<SignupProvider>(context);
-=======
-    final p = context.watch<SignupProvider>();
->>>>>>> fc0ec7d (new changes in CAPTCHA)
     final state = context.findAncestorStateOfType<_SignUp_ScreenState>()!;
     final isWide = MediaQuery.of(context).size.width > 900;
 
@@ -1684,7 +1158,6 @@ class _SignUp_ScreenInner extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-<<<<<<< HEAD
                   if (isWide) Flexible(flex: 5, child: RepaintBoundary(child: state.leftPanel(context))),
                   Flexible(
                     flex: 5,
@@ -1744,88 +1217,6 @@ class _SignUp_ScreenInner extends StatelessWidget {
                           ),
                         );
                       },
-=======
-                  if (isWide)
-                    Flexible(
-                      flex: 5,
-                      child: state.leftPanel(context),
-                    ),
-                  Flexible(
-                    flex: 5,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(32),
-                      child: FadeTransition(
-                        opacity: state._fadeAnimation,
-                        child: SlideTransition(
-                          position: state._slideAnimation,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!isWide) ...[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.indigo,
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: const Icon(
-                                            Icons.work_outline_rounded,
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Maha Services',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.indigo,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                              state.accountPanel(context, p),
-                              const SizedBox(height: 10),
-                              Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Already have an account?',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => context.go('/login'),
-                                      child: Text(
-                                        'Login',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.indigo,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
->>>>>>> fc0ec7d (new changes in CAPTCHA)
                     ),
                   ),
                 ],
@@ -1838,13 +1229,9 @@ class _SignUp_ScreenInner extends StatelessWidget {
   }
 }
 
-<<<<<<< HEAD
 
 
 
-=======
-// ========== REUSABLE COMPONENTS ==========
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 class _CompactMetric extends StatelessWidget {
   final String value;
   final String label;

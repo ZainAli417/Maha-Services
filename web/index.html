@@ -20,15 +20,8 @@
 
   <title>job_portal</title>
   <link rel="manifest" href="manifest.json" />
-<<<<<<< HEAD
 
   <!-- Optional: short inline note for debugging -->
-=======
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-
-    <!-- Optional: short inline note for debugging -->
->>>>>>> fc0ec7d (new changes in CAPTCHA)
   <!-- NOTE: For WebAssembly + SharedArrayBuffer support you MUST set COOP & COEP response headers on your hosting (firebase.json). -->
 
   <!-- DO NOT hard-code engine initialization here.
@@ -37,24 +30,6 @@
 </head>
 
 <body>
-<<<<<<< HEAD
-=======
-
-<script>
-    function onCaptchaSuccess(token) {
-      window.dispatchEvent(
-        new CustomEvent('captcha-success', { detail: token })
-      );
-    }
-
-    function onCaptchaExpired() {
-      window.dispatchEvent(
-        new CustomEvent('captcha-expired')
-      );
-    }
-</script>
-
->>>>>>> fc0ec7d (new changes in CAPTCHA)
 <script>
   // Minimal no-op placeholder while flutter_bootstrap loads.
   // The real engine initialization is performed by flutter_bootstrap.js
