@@ -1,0 +1,85 @@
+{
+  "status": "success",
+  "result": {
+    "indexes": [
+      {
+        "collectionGroup": "applications",
+        "queryScope": "COLLECTION",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "order": "ASCENDING"
+          },
+          {
+            "fieldPath": "appliedAt",
+            "order": "DESCENDING"
+          }
+        ],
+        "density": "SPARSE_ALL"
+      },
+      {
+        "collectionGroup": "Posted_jobs_public",
+        "queryScope": "COLLECTION",
+        "fields": [
+          {
+            "fieldPath": "status",
+            "order": "ASCENDING"
+          },
+          {
+            "fieldPath": "timestamp",
+            "order": "DESCENDING"
+          }
+        ],
+        "density": "SPARSE_ALL"
+      }
+    ],
+    "fieldOverrides": [
+      {
+        "collectionGroup": "user_data",
+        "fieldPath": "email",
+        "ttl": false,
+        "indexes": [
+          {
+            "order": "ASCENDING",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "order": "DESCENDING",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "arrayConfig": "CONTAINS",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "order": "ASCENDING",
+            "queryScope": "COLLECTION_GROUP"
+          }
+        ]
+      },
+      {
+        "collectionGroup": "users",
+        "fieldPath": "email",
+        "ttl": false,
+        "indexes": [
+          {
+            "order": "ASCENDING",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "order": "DESCENDING",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "arrayConfig": "CONTAINS",
+            "queryScope": "COLLECTION"
+          },
+          {
+            "order": "ASCENDING",
+            "queryScope": "COLLECTION_GROUP"
+          }
+        ]
+      }
+    ]
+  }
+}

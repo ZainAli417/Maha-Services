@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "139692801098",
+    "firebase_url": "https://unisoft-tmp-default-rtdb.firebaseio.com",
+    "project_id": "unisoft-tmp",
+    "storage_bucket": "unisoft-tmp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139692801098:android:014a1048a54824f3fc3ab3",
+        "android_client_info": {
+          "package_name": "com.example.job_portal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "139692801098-mhsco1kc8341ntr2s3t1vuq7uut20sp6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmBQavT4adpoEvI3aEAVxDo5cQYbNLvn0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "139692801098-mhsco1kc8341ntr2s3t1vuq7uut20sp6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "139692801098-v6053jgsl2rp5qi0q7s86cm2hhpj39qk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.unisoft"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
