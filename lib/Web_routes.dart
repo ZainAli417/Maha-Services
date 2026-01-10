@@ -1,9 +1,11 @@
-// web_routes.dart - WITH isNew CHECK FOR /dashboard
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Your existing imports
 import 'Constant/Forget Password.dart';
 import 'Constant/cv_analysis.dart';
 import 'Constant/pricing.dart';
@@ -21,572 +23,215 @@ import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
 import 'SignUp /profile_builder.dart';
 import 'SignUp /signup_screen_auth.dart';
 
-// ========== OPTIMIZED ROLE SERVICE ==========
+// ========== 1. ROBUST DATA SERVICE (Logic from Code A) ==========
 class RoleService {
   static final _firestore = FirebaseFirestore.instance;
-  static final _roleCache = <String, _CachedRole>{};
-  static const _cacheExpiry = Duration(minutes: 10);
 
-  // Deduplicate concurrent requests
-  static final _pendingRequests = <String, Future<String?>>{};
-
-  static void clearCache() {
-    _roleCache.clear();
-    _pendingRequests.clear();
-  }
-
-  static Future<String?> getUserRole(String uid) async {
-    final cached = _roleCache[uid];
-    if (cached != null && !cached.isExpired) return cached.role;
-
-    if (_pendingRequests.containsKey(uid)) return _pendingRequests[uid];
-
-    final future = _fetchRole(uid);
-    _pendingRequests[uid] = future;
-
+  static Future<Map<String, dynamic>> fetchUserData(String uid) async {
     try {
-      final role = await future;
-      if (role != null) _roleCache[uid] = _CachedRole(role);
-      return role;
-    } finally {
-      _pendingRequests.remove(uid);
-    }
-  }
+      // 1. Run parallel checks
+      // We cast the Future.wait to List<dynamic> to handle different return types
+      final List<dynamic> results = await Future.wait([
+        _firestore.collection('job_seeker').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
+        _firestore.collection('recruiter').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
+        _firestore.collection('admin').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
+        _firestore.collection('users').where('uid', isEqualTo: uid).limit(1).get(),
+      ]);
 
-  static Future<String?> _fetchRole(String uid) async {
-    try {
-      final jsDoc = await _firestore.collection('job_seeker').doc(uid).get();
-      if (jsDoc.exists) return 'job_seeker';
+      // 2. Explicitly cast the snapshots so Dart recognizes '.exists'
+      final jsDoc = results[0] as DocumentSnapshot;
+      final recDoc = results[1] as DocumentSnapshot;
+      final adminDoc = results[2] as DocumentSnapshot;
+      final userQuery = results[3] as QuerySnapshot;
 
-      final recDoc = await _firestore.collection('recruiter').doc(uid).get();
-      if (recDoc.exists) return 'recruiter';
+      String? role;
+      bool isNew = false;
 
-      final adminDoc = await _firestore.collection('admin').doc(uid).get();
-      if (adminDoc.exists) return 'admin';
-
-      final userQuery = await _firestore
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .limit(1)
-          .get();
-
-      if (userQuery.docs.isNotEmpty) {
-        return _normalizeRole(userQuery.docs.first.data()['role']?.toString());
+      // 3. Resolve Role from specific collections
+      if (jsDoc.exists) {
+        role = 'job_seeker';
+      } else if (recDoc.exists) {
+        role = 'recruiter';
+      } else if (adminDoc.exists) {
+        role = 'admin';
       }
 
-      return null;
+      // 4. Resolve isNew and Backup Role from 'users' collection
+      if (userQuery.docs.isNotEmpty) {
+        final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+
+        // Resolve isNew status
+        final rawIsNew = userData['isNew'];
+        if (rawIsNew is String) {
+          isNew = rawIsNew.toLowerCase().trim() == 'yes';
+        } else if (rawIsNew is bool) {
+          isNew = rawIsNew;
+        } else {
+          isNew = true; // Default
+        }
+
+        // Backup role resolution if not found in specific collections
+        role ??= _normalizeRole(userData['role']?.toString());
+      }
+
+      return {'role': role, 'isNew': isNew};
     } catch (e) {
-      debugPrint('RoleService: error fetching role: $e');
-      return null;
+      debugPrint('❌ RoleService Error: $e');
+      return {'role': null, 'isNew': true};
     }
   }
 
   static String? _normalizeRole(String? role) {
-    if (role == null || role.isEmpty) return null;
-    switch (role.toLowerCase().trim()) {
-      case 'recruiter':
-      case 'employer':
-        return 'recruiter';
-      case 'job_seeker':
-      case 'jobseeker':
-      case 'job seeker':
-      case 'candidate':
-        return 'job_seeker';
-      case 'admin':
-      case 'administrator':
-      case 'superadmin':
-        return 'admin';
-      default:
-        return null;
-    }
+    if (role == null) return null;
+    final r = role.toLowerCase().trim();
+    if (['recruiter', 'employer'].contains(r)) return 'recruiter';
+    if (['job_seeker', 'jobseeker', 'candidate'].contains(r)) return 'job_seeker';
+    if (['admin', 'superadmin'].contains(r)) return 'admin';
+    return null;
   }
-
-  // ========== NEW: CHECK isNew FIELD ==========
-// ========== NEW: CHECK isNew FIELD ==========
-  static Future<bool> isNewUser(String uid) async {
-    try {
-      // ✅ FIXED: Query by uid field, not document ID
-      final userQuery = await _firestore
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .limit(1)
-          .get();
-
-      if (userQuery.docs.isEmpty) {
-        debugPrint('⚠️ isNewUser: User document not found for uid: $uid');
-        return true; // Assume new if doc doesn't exist
-      }
-
-      final data = userQuery.docs.first.data();
-      final isNew = data['isNew'];
-
-      debugPrint('🔍 isNewUser check for $uid: isNew = $isNew');
-
-      // Check if isNew is "yes" (case-insensitive)
-      if (isNew is String) {
-        return isNew.toLowerCase().trim() == 'yes';
-      }
-
-      // If it's a boolean
-      if (isNew is bool) {
-        return isNew;
-      }
-
-      // Default to true if field doesn't exist or is null
-      return true;
-    } catch (e) {
-      debugPrint('❌ isNewUser error: $e');
-      return true; // Safe default: treat as new user on error
-    }
-  }
-
 }
-
-class _CachedRole {
-  final String role;
-  final DateTime timestamp;
-
-  _CachedRole(this.role) : timestamp = DateTime.now();
-
-  bool get isExpired =>
-      DateTime.now().difference(timestamp) > RoleService._cacheExpiry;
-}
-
-// ========== OPTIMIZED AUTH NOTIFIER ==========
+// ========== 2. AUTH STATE PROVIDER (Architecture from Code B) ==========
 class AuthNotifier extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
-  StreamSubscription<User?>? _authSubscription;
 
-  String? userRole;
-  bool roleResolved = false;
-  User? _currentUser;
-
-  // NEW: Track if we should check isNew on next auth
-  bool _shouldCheckIsNew = false;
+  User? user;
+  String? role;
+  bool isNewUser = false;
+  bool isInitialized = false; // Prevents routing until data is ready
 
   AuthNotifier() {
-    _currentUser = _auth.currentUser;
-    _authSubscription = _auth.authStateChanges().listen(_onAuthStateChanged);
+    _auth.authStateChanges().listen(_handleAuthChange);
+  }
 
-    if (_currentUser != null) {
-      _resolveRole(_currentUser!.uid);
+  // Use this to wait for the user on App Start (fixes Refresh issue)
+  Future<void> initialize() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await _handleAuthChange(currentUser);
     } else {
-      roleResolved = true;
+      isInitialized = true;
+      notifyListeners();
     }
   }
 
-  Future<void> _onAuthStateChanged(User? user) async {
-    if (_currentUser?.uid == user?.uid && roleResolved) {
-      return;
-    }
-
-    _currentUser = user;
-    roleResolved = false;
-
-    if (user == null) {
-      userRole = null;
-      roleResolved = true;
-      RoleService.clearCache();
-      _shouldCheckIsNew = false;
+  Future<void> _handleAuthChange(User? newUser) async {
+    if (newUser == null) {
+      user = null;
+      role = null;
+      isNewUser = false;
+      isInitialized = true;
     } else {
-      await _resolveRole(user.uid);
+      user = newUser;
+      final data = await RoleService.fetchUserData(newUser.uid);
+      role = data['role'];
+      isNewUser = data['isNew'];
+      isInitialized = true;
     }
-
     notifyListeners();
   }
 
-  Future<void> _resolveRole(String uid) async {
-    try {
-      userRole = await RoleService.getUserRole(uid);
-
-      if (userRole == null) {
-        await Future.delayed(const Duration(milliseconds: 800));
-        userRole = await RoleService.getUserRole(uid);
-      }
-
-      if (userRole == null) {
-        debugPrint('AuthNotifier: role resolution failed → signing out');
-        await _auth.signOut();
-      }
-    } catch (e) {
-      debugPrint('AuthNotifier: error resolving role: $e');
-      userRole = null;
-    } finally {
-      roleResolved = true;
-    }
-  }
-
-  // NEW: Method to trigger isNew check after login/signup
-  void markForIsNewCheck() {
-    _shouldCheckIsNew = true;
-  }
-
-  bool get shouldCheckIsNew => _shouldCheckIsNew;
-
-  void clearIsNewCheck() {
-    _shouldCheckIsNew = false;
-  }
-
-  Future<void> refreshRole() async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
-    RoleService.clearCache();
-    roleResolved = false;
+  void markProfileComplete() {
+    isNewUser = false;
     notifyListeners();
-
-    await _resolveRole(user.uid);
-    notifyListeners();
-  }
-
-  bool get isLoggedIn => _currentUser != null;
-
-  @override
-  void dispose() {
-    _authSubscription?.cancel();
-    super.dispose();
   }
 }
 
-// ========== ROUTE CONFIGURATION ==========
+final authProvider = AuthNotifier();
+
+// ========== 3. CLEAN ROUTE CONFIG ==========
 class RouteConfig {
-  static const _publicPaths = {
-    '/',
-    '/login',
-    '/register',
-    '/recover-password',
-    '/pricing',
-    '/admin',
-  };
+  static const publicPaths = {'/', '/login', '/register', '/recover-password', '/pricing', '/admin'};
 
-  static const _roleRoutes = {
-    'admin': {'/admin_dashboard', '/admin_dashboard2'},
-    'recruiter': {
-      '/recruiter-dashboard',
-      '/job-posting',
-      '/view-applications',
-      '/shortlisting'
-    },
-    'job_seeker': {
-      '/dashboard',
-      '/profile',
-      '/download-cv',
-      '/ai-tools',
-      '/applied-jobs',
-      '/job-hub',
-      '/profile-builder'
-    },
-  };
-
-  static const _roleDashboards = {
-    'admin': '/admin_dashboard',
-    'recruiter': '/recruiter-dashboard',
-    'job_seeker': '/dashboard',
-  };
-
-  static bool isPublicPath(String? location) {
-    if (location == null) return false;
-    final path = _extractPath(location);
-    return _publicPaths.contains(path);
-  }
-
-  static bool isAllowedForRole(String? location, String role) {
-    if (location == null) return false;
-    final path = _extractPath(location);
-    final allowedPaths = _roleRoutes[role];
-    if (allowedPaths == null) return false;
-
-    if (allowedPaths.contains(path)) return true;
-    return allowedPaths.any((allowed) => path.startsWith(allowed));
-  }
-
-  static String getDashboard(String role) => _roleDashboards[role] ?? '/';
-
-  static String _extractPath(String location) {
-    final uri = Uri.tryParse(location);
-    if (uri == null) return location;
-    final path = uri.path;
-    return (path.length > 1 && path.endsWith('/'))
-        ? path.substring(0, path.length - 1)
-        : path;
+  static String getHome(String? role) {
+    if (role == 'admin') return '/admin_dashboard';
+    if (role == 'recruiter') return '/recruiter-dashboard';
+    return '/dashboard';
   }
 }
 
-// ========== ROUTER WITH isNew CHECK ==========
+// ========== 4. THE ULTIMATE ROUTER ==========
 final GoRouter router = GoRouter(
   initialLocation: '/',
-  refreshListenable: _authNotifier,
-  redirect: (context, state) async {
-    final user = FirebaseAuth.instance.currentUser;
-    final isLoggedIn = user != null;
-    final role = _authNotifier.userRole;
-    final roleResolved = _authNotifier.roleResolved;
+  refreshListenable: authProvider,
+  redirect: (context, state) {
     final location = state.uri.path;
 
-    debugPrint('🔀 Redirect: $location | User: ${user?.uid} | Role: $role | Resolved: $roleResolved');
+    // 1. Wait for initialization (Prevents redirecting to Login before data is fetched)
+    if (!authProvider.isInitialized) return null;
 
-    // ========== NEW: CHECK isNew IMMEDIATELY AFTER LOGIN/SIGNUP ==========
-    if (isLoggedIn && roleResolved && role == 'job_seeker' && _authNotifier.shouldCheckIsNew) {
-      debugPrint('🎯 Post-auth isNew check triggered...');
+    final isLoggedIn = authProvider.user != null;
+    final isPublic = RouteConfig.publicPaths.contains(location);
 
-      final isNew = await RoleService.isNewUser(user.uid);
-      _authNotifier.clearIsNewCheck(); // Clear the flag
-
-      if (isNew) {
-        debugPrint('   ✅ NEW user detected → routing to /profile-builder');
-        return '/profile-builder';
-      } else {
-        debugPrint('   ✅ EXISTING user detected → routing to /dashboard');
-        return '/dashboard';
-      }
-    }
-
-    // ========== SPECIAL CHECK FOR /dashboard ==========
-    if (location == '/dashboard' && isLoggedIn && roleResolved && role == 'job_seeker') {
-      debugPrint('🎯 /dashboard accessed - checking isNew field...');
-
-      final isNew = await RoleService.isNewUser(user.uid);
-
-      if (isNew) {
-        debugPrint('   ✅ User is NEW (isNew=yes) → redirecting to /profile-builder');
-        return '/profile-builder';
-      } else {
-        debugPrint('   ✅ User is EXISTING (isNew=no) → allowing /dashboard access');
-        return null; // Allow access to dashboard
-      }
-    }
-
-    // SPECIAL CASE: /admin route
-    if (location == '/admin') {
-      if (!isLoggedIn) {
-        debugPrint('   ✓ /admin - showing login (not authenticated)');
-        return null;
-      }
-
-      if (!roleResolved) {
-        debugPrint('   ⏳ /admin - waiting for role resolution');
-        return null;
-      }
-
-      if (role == 'admin') {
-        debugPrint('   ↪ /admin - redirecting admin to dashboard');
-        return '/admin_dashboard';
-      }
-
-      debugPrint('   ↪ /admin - non-admin user, redirecting to their dashboard');
-      return RouteConfig.getDashboard(role ?? 'job_seeker');
-    }
-
-    // Handle other public paths
-// Handle other public paths
-    if (RouteConfig.isPublicPath(location)) {
-      if (isLoggedIn && roleResolved && role != null) {
-        debugPrint(
-            '   ↪ Public path but authenticated - checking isNew before redirect');
-
-        // ✅ Check isNew for job_seekers before redirecting
-        if (role == 'job_seeker') {
-          final isNew = await RoleService.isNewUser(user.uid);
-
-          if (isNew) {
-            debugPrint('   ✅ NEW user → redirecting to /profile-builder');
-            return '/profile-builder';
-          } else {
-            debugPrint('   ✅ EXISTING user → redirecting to /dashboard');
-            return '/dashboard';
-          }
-        }
-
-        // For other roles (recruiter, admin), use default dashboard
-        return RouteConfig.getDashboard(role);
-      }
-      return null;
-    }
-    // Require authentication for protected routes
+    // 2. Unauthenticated Flow
     if (!isLoggedIn) {
-      debugPrint('   ↪ Protected route, not authenticated - redirecting to /');
-      return '/';
+      if (location == '/admin') return null; // Allow admin login page
+      return isPublic ? null : '/login';
     }
 
-    // Wait for role resolution
-    if (!roleResolved) {
-      debugPrint('   ⏳ Waiting for role resolution');
+    // 3. Authenticated Flow
+    final role = authProvider.role;
+
+    // Safety: If logged in but no role found (Firebase error or doc missing)
+    if (role == null && !isPublic) {
+      FirebaseAuth.instance.signOut();
+      return '/login';
+    }
+
+    // A. New User Logic (Job Seeker ONLY)
+    if (role == 'job_seeker' && authProvider.isNewUser) {
+      if (location != '/profile-builder') return '/profile-builder';
       return null;
     }
 
-    // Handle null role
-    if (role == null) {
-      debugPrint('   ⚠ Null role detected - forcing logout');
-      FirebaseAuth.instance.signOut();
-      return '/';
+    // B. Prevent New Users going to Dashboard
+    if (role == 'job_seeker' && !authProvider.isNewUser && location == '/profile-builder') {
+      return '/dashboard';
     }
 
-    // Enforce role-based access
-    if (!RouteConfig.isAllowedForRole(location, role)) {
-      debugPrint('   ↪ Unauthorized access - redirecting to dashboard');
-      return RouteConfig.getDashboard(role);
+    // C. Logged in users trying to hit Login/Register
+    if (isPublic && location != '/pricing' && location != '/') {
+      return RouteConfig.getHome(role);
     }
 
-    return null;
+    // D. Admin Guard
+    if (location.startsWith('/admin_') && role != 'admin') {
+      return RouteConfig.getHome(role);
+    }
+
+    return null; // Stay where you are
   },
   routes: [
-    // PUBLIC
-    GoRoute(
-      path: '/',
-      pageBuilder: (c, s) => _buildPage(
-        child: const SplashScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/login',
-      pageBuilder: (c, s) => _buildPage(
-        child: const JobSeekerLoginScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/register',
-      pageBuilder: (c, s) => _buildPage(
-        child: const SignUp_Screen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/recover-password',
-      pageBuilder: (c, s) => _buildPage(
-        child: const ForgotPasswordScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/pricing',
-      pageBuilder: (c, s) => _buildPage(
-        child: const PremiumPricingPage(),
-        context: c,
-        state: s,
-      ),
-    ),
+    GoRoute(path: '/', builder: (c, s) => const SplashScreen()),
+    GoRoute(path: '/login', pageBuilder: (c, s) => _fadePage(const JobSeekerLoginScreen(), s)),
+    GoRoute(path: '/register', pageBuilder: (c, s) => _fadePage(const SignUp_Screen(), s)),
+    GoRoute(path: '/recover-password', pageBuilder: (c, s) => _fadePage(const ForgotPasswordScreen(), s)),
+    GoRoute(path: '/pricing', pageBuilder: (c, s) => _fadePage(const PremiumPricingPage(), s)),
 
-    // ADMIN
-    GoRoute(
-      path: '/admin',
-      pageBuilder: (c, s) => _buildPage(
-        child: const AdminLoginScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/admin_dashboard',
-      pageBuilder: (c, s) => _buildPage(
-        child: const AdminDashboardScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/admin_dashboard2',
-      pageBuilder: (c, s) => _buildPage(
-        child: const AdminDashboardScreen2(),
-        context: c,
-        state: s,
-      ),
-    ),
+    // Admin
+    GoRoute(path: '/admin', pageBuilder: (c, s) => _fadePage(const AdminLoginScreen(), s)),
+    GoRoute(path: '/admin_dashboard', pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen(), s)),
+    GoRoute(path: '/admin_dashboard2', pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen2(), s)),
 
-    // JOB SEEKER ROUTES (removed ShellRoute for simpler flow)
-    GoRoute(
-      path: '/dashboard',
-      pageBuilder: (c, s) => _buildPage(
-        child: const job_seeker_dashboard(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/profile-builder',
-      pageBuilder: (c, s) => _buildPage(
-        child: const ProfileBuilderScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/profile',
-      pageBuilder: (c, s) => _buildPage(
-        child: const ProfileScreen_NEW(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/ai-tools',
-      pageBuilder: (c, s) => _buildPage(
-        child: CVAnalysisScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/job-hub',
-      pageBuilder: (c, s) => _buildPage(
-        child: job_hub(),
-        context: c,
-        state: s,
-      ),
-    ),
+    // Job Seeker
+    GoRoute(path: '/dashboard', pageBuilder: (c, s) => _fadePage(const job_seeker_dashboard(), s)),
+    GoRoute(path: '/profile-builder', pageBuilder: (c, s) => _fadePage(const ProfileBuilderScreen(), s)),
+    GoRoute(path: '/profile', pageBuilder: (c, s) => _fadePage(const ProfileScreen_NEW(), s)),
+    GoRoute(path: '/ai-tools', pageBuilder: (c, s) => _fadePage(CVAnalysisScreen(), s)),
+    GoRoute(path: '/job-hub', pageBuilder: (c, s) => _fadePage(job_hub(), s)),
 
-    // RECRUITER
-    GoRoute(
-      path: '/recruiter-dashboard',
-      pageBuilder: (c, s) => _buildPage(
-        child: const Dashboard_Recruiter(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/shortlisting',
-      pageBuilder: (c, s) => _buildPage(
-        child: const Shortlisting(),
-        context: c,
-        state: s,
-      ),
-    ),
-    GoRoute(
-      path: '/view-applications',
-      pageBuilder: (c, s) => _buildPage(
-        child: const ApplicantsScreen(),
-        context: c,
-        state: s,
-      ),
-    ),
+    // Recruiter
+    GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),
+    GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
+    GoRoute(path: '/view-applications', pageBuilder: (c, s) => _fadePage(const ApplicantsScreen(), s)),
   ],
 );
 
-// ========== PAGE TRANSITIONS ==========
-CustomTransitionPage<T> _buildPage<T>({
-  required BuildContext context,
-  required GoRouterState state,
-  required Widget child,
-}) {
-  return CustomTransitionPage<T>(
+CustomTransitionPage _fadePage(Widget child, GoRouterState state) {
+  return CustomTransitionPage(
     key: state.pageKey,
     child: child,
     transitionDuration: const Duration(milliseconds: 250),
-    reverseTransitionDuration: const Duration(milliseconds: 200),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: child,
-      );
-    },
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(opacity: animation, child: child),
   );
 }
-
-// ========== AUTH NOTIFIER INSTANCE ==========
-final _authNotifier = AuthNotifier();

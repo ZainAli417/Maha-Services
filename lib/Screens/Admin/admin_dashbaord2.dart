@@ -167,7 +167,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                 onPressed: () async {
                   try {
                     // Clear role cache only (profile is stream-based now)
-                    RoleService.clearCache();
+                    //RoleService.clear();
 
                     // Sign out (this triggers AuthNotifier + GoRouter automatically)
                     await FirebaseAuth.instance.signOut();

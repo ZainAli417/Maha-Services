@@ -116,6 +116,12 @@ class RecruiterProvider2 extends ChangeNotifier {
   String? selectedNationality;
   String sortOption = 'None'; // 'None','Name A→Z','Name Z→A'
 
+  // -- NEW: Job Filtering --
+  String? selectedJobId;
+  Set<String> availableJobIds = {};
+  // Map to track which jobs a candidate is shortlisted for: UID -> Set<JobId>
+  final Map<String, Set<String>> _candidateJobsMap = {};
+
   // Selections
   final Set<String> selectedUids = {};
 
@@ -141,57 +147,117 @@ class RecruiterProvider2 extends ChangeNotifier {
     await subscribeCandidates();
   }
 
-  /// Loads candidates from /job_seeker collection.
+  // ---------------------------------------------------------------------------
+  // ✅ OPTIMIZED: Loads ONLY "Shortlist" Candidates via Collection Group Query
+  // ---------------------------------------------------------------------------
   Future<void> subscribeCandidates() async {
     if (_isDisposed) return;
     loading = true;
     _safeNotify();
 
+    // Cancel existing subscription if any
+    _subscription?.cancel();
+
     try {
-      debugPrint('📥 Loading candidates from job_seeker collection...');
-      final snap = await _firestore.collection('job_seeker').get(const GetOptions(source: Source.serverAndCache));
-      final List<Candidate> list = [];
-      int valid = 0;
-      int skipped = 0;
+      debugPrint('📥 Listening for Shortlisted candidates...');
 
-      for (final doc in snap.docs) {
-        try {
+      // ⚡ FAST: Query specifically for 'Shortlist' status across all users
+      // This avoids loading all job_seekers and filtering manually.
+      final query = _firestore.collectionGroup('applied_jobs')
+          .where('status', isEqualTo: 'Shortlist');
+
+      _subscription = query.snapshots().listen((snapshot) async {
+        if (_isDisposed) return;
+
+        final Set<String> uidsToFetch = {};
+        _candidateJobsMap.clear();
+        availableJobIds.clear();
+
+        // 1. Collect UIDs and JobIDs from the applications
+        for (final doc in snapshot.docs) {
+          // Parent structure: applications/{userId}/applied_jobs/{docId}
+          // doc.reference.parent.parent!.id gives us {userId}
+          final parentDoc = doc.reference.parent.parent;
+          if (parentDoc == null) continue;
+
+          final uid = parentDoc.id;
           final data = doc.data();
-          final uid = doc.id;
+          final jobId = (data['jobId'] ?? '').toString();
 
-          if (data.containsKey('user_data') && data['user_data'] is Map<String, dynamic>) {
-            final userData = Map<String, dynamic>.from(data['user_data'] as Map);
-            if (_hasMinimumCandidateInfo(userData)) {
-              list.add(Candidate.fromUserData(uid, userData, hideContact: hideContactForViewer));
-              valid++;
-              continue;
+          if (uid.isNotEmpty) {
+            uidsToFetch.add(uid);
+
+            // Map Candidate -> Jobs
+            if (!_candidateJobsMap.containsKey(uid)) {
+              _candidateJobsMap[uid] = {};
+            }
+            if (jobId.isNotEmpty) {
+              _candidateJobsMap[uid]!.add(jobId);
+              availableJobIds.add(jobId);
             }
           }
-
-          if (_hasMinimumCandidateInfo(data)) {
-            list.add(Candidate.fromMapFlat(uid, data, hideContact: hideContactForViewer));
-            valid++;
-            continue;
-          }
-
-          skipped++;
-        } catch (e) {
-          debugPrint('⚠️ Error parsing doc ${doc.id}: $e');
-          skipped++;
         }
-      }
 
-      _candidates = list;
-      debugPrint('✅ Candidates loaded: $valid (skipped $skipped)');
+        // 2. Fetch Profiles for these UIDs (Chunked for performance)
+        final List<Candidate> list = await _fetchProfilesInChunks(uidsToFetch.toList());
+
+        _candidates = list;
+        _populateOptions();
+        _applyFilter();
+
+        loading = false;
+        debugPrint('✅ Loaded ${_candidates.length} shortlisted candidates.');
+        _safeNotify();
+      });
+
     } catch (e) {
       debugPrint('❌ subscribeCandidates error: $e');
       _candidates = [];
+      loading = false;
+      _safeNotify();
     }
+  }
 
-    _populateOptions();
-    _applyFilter();
-    loading = false;
-    _safeNotify();
+  // ⚡ Helper: Fetches profiles in batches of 10 (Firestore 'whereIn' limit)
+  Future<List<Candidate>> _fetchProfilesInChunks(List<String> uids) async {
+    final List<Candidate> results = [];
+    // Deduplicate UIDs
+    final uniqueUids = uids.toSet().toList();
+
+    // Process in chunks of 10
+    for (var i = 0; i < uniqueUids.length; i += 10) {
+      final end = (i + 10 < uniqueUids.length) ? i + 10 : uniqueUids.length;
+      final batch = uniqueUids.sublist(i, end);
+
+      if (batch.isEmpty) continue;
+
+      try {
+        // Fetch users where FieldPath.documentId is in the batch
+        final q = await _firestore.collection('job_seeker')
+            .where(FieldPath.documentId, whereIn: batch)
+            .get(const GetOptions(source: Source.serverAndCache));
+
+        for (final doc in q.docs) {
+          final data = doc.data();
+          final uid = doc.id;
+
+          // Re-use existing parsing logic
+          if (data.containsKey('user_data') && data['user_data'] is Map<String, dynamic>) {
+            final userData = Map<String, dynamic>.from(data['user_data'] as Map);
+            if (_hasMinimumCandidateInfo(userData)) {
+              results.add(Candidate.fromUserData(uid, userData, hideContact: hideContactForViewer));
+              continue;
+            }
+          }
+          if (_hasMinimumCandidateInfo(data)) {
+            results.add(Candidate.fromMapFlat(uid, data, hideContact: hideContactForViewer));
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error fetching batch profiles: $e');
+      }
+    }
+    return results;
   }
 
   bool _hasMinimumCandidateInfo(Map<String, dynamic> m) {
@@ -204,9 +270,11 @@ class RecruiterProvider2 extends ChangeNotifier {
 
   void _populateOptions() {
     nationalityOptions = _candidates.map((c) => c.nationality.trim()).where((s) => s.isNotEmpty).toSet();
-    debugPrint('📊 nationality options: ${nationalityOptions.length}');
   }
 
+  // ---------------------------------------------------------------------------
+  // Filter Logic Updated for Job ID
+  // ---------------------------------------------------------------------------
   void setSearch(String q) {
     searchQuery = q.trim();
     _applyFilter();
@@ -215,6 +283,13 @@ class RecruiterProvider2 extends ChangeNotifier {
 
   void setNationalityFilter(String? nat) {
     selectedNationality = (nat == null || nat.isEmpty) ? null : nat;
+    _applyFilter();
+    _safeNotify();
+  }
+
+  // NEW: Filter by Job ID
+  void setJobFilter(String? jobId) {
+    selectedJobId = (jobId == null || jobId.isEmpty || jobId == 'All') ? null : jobId;
     _applyFilter();
     _safeNotify();
   }
@@ -228,6 +303,15 @@ class RecruiterProvider2 extends ChangeNotifier {
   void _applyFilter() {
     List<Candidate> tmp = List.from(_candidates);
 
+    // 1. Filter by Job ID (Shortlisted for this specific job)
+    if (selectedJobId != null) {
+      tmp = tmp.where((c) {
+        final candidateJobs = _candidateJobsMap[c.uid];
+        return candidateJobs != null && candidateJobs.contains(selectedJobId);
+      }).toList();
+    }
+
+    // 2. Search Query
     if (searchQuery.isNotEmpty) {
       final q = searchQuery.toLowerCase();
       tmp = tmp.where((c) {
@@ -236,10 +320,12 @@ class RecruiterProvider2 extends ChangeNotifier {
       }).toList();
     }
 
+    // 3. Nationality
     if (selectedNationality != null && selectedNationality!.isNotEmpty) {
       tmp = tmp.where((c) => c.nationality.trim().toLowerCase() == selectedNationality!.trim().toLowerCase()).toList();
     }
 
+    // 4. Sort
     if (sortOption == 'Name A→Z') {
       tmp.sort((a, b) => a.nameLower.compareTo(b.nameLower));
     } else if (sortOption == 'Name Z→A') {

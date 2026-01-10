@@ -505,7 +505,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
             onPressed: () async {
               try {
                 // Clear in-memory role cache
-                RoleService.clearCache();
+                //RoleService.clear();
 
                 // Firebase sign out (router will redirect)
                 await FirebaseAuth.instance.signOut();
