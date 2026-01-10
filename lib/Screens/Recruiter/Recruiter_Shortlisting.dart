@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'R_Top_Bar.dart';
-import 'Recruiter_provider.dart';
+import 'shortlisting_provider.dart';
 
 class Shortlisting extends StatefulWidget {
   const Shortlisting({super.key});

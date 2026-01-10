@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../Job_Seeker/job_seeker_provider.dart';
-import 'Recruiter_Available_jobs_NEW.dart';
+import 'Recruiter_Dashboard_Job_List.dart';
 
 /// Professional Job Posting Screen with responsive design and smooth animations
 class Dashboard_Recruiter extends StatefulWidget {
