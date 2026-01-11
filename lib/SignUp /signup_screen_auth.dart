@@ -91,7 +91,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     // Listen for captcha success
     web.window.addEventListener('captcha-success', ((web.Event event) {
       try {
-        if (event is web.CustomEvent) {
+        if (event.isA<web.CustomEvent>()) {
+          final customEvent = event as web.CustomEvent;
           final detail = event.detail;
           if (detail != null && detail.isDefinedAndNotNull) {
             final token = (detail as JSString).toDart;

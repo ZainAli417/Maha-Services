@@ -30,7 +30,6 @@ class RoleService {
   static Future<Map<String, dynamic>> fetchUserData(String uid) async {
     try {
       // 1. Run parallel checks
-      // We cast the Future.wait to List<dynamic> to handle different return types
       final List<dynamic> results = await Future.wait([
         _firestore.collection('job_seeker').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
         _firestore.collection('recruiter').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
@@ -38,7 +37,6 @@ class RoleService {
         _firestore.collection('users').where('uid', isEqualTo: uid).limit(1).get(),
       ]);
 
-      // 2. Explicitly cast the snapshots so Dart recognizes '.exists'
       final jsDoc = results[0] as DocumentSnapshot;
       final recDoc = results[1] as DocumentSnapshot;
       final adminDoc = results[2] as DocumentSnapshot;
@@ -74,6 +72,7 @@ class RoleService {
         role ??= _normalizeRole(userData['role']?.toString());
       }
 
+      debugPrint('✅ RoleService: UID=$uid, Role=$role, isNew=$isNew');
       return {'role': role, 'isNew': isNew};
     } catch (e) {
       debugPrint('❌ RoleService Error: $e');
@@ -90,6 +89,7 @@ class RoleService {
     return null;
   }
 }
+
 // ========== 2. AUTH STATE PROVIDER (Architecture from Code B) ==========
 class AuthNotifier extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
@@ -97,13 +97,13 @@ class AuthNotifier extends ChangeNotifier {
   User? user;
   String? role;
   bool isNewUser = false;
-  bool isInitialized = false; // Prevents routing until data is ready
+  bool isInitialized = false;
+  bool _isFetching = false; // ✅ NEW: Track if we're currently fetching data
 
   AuthNotifier() {
     _auth.authStateChanges().listen(_handleAuthChange);
   }
 
-  // Use this to wait for the user on App Start (fixes Refresh issue)
   Future<void> initialize() async {
     final currentUser = _auth.currentUser;
     if (currentUser != null) {
@@ -115,17 +115,26 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> _handleAuthChange(User? newUser) async {
+    // ✅ CRITICAL FIX: Don't reset isInitialized during fetch
+    _isFetching = true;
+
     if (newUser == null) {
       user = null;
       role = null;
       isNewUser = false;
       isInitialized = true;
+      _isFetching = false;
     } else {
       user = newUser;
+      debugPrint('🔄 Fetching role data for: ${newUser.uid}');
+
       final data = await RoleService.fetchUserData(newUser.uid);
       role = data['role'];
       isNewUser = data['isNew'];
       isInitialized = true;
+      _isFetching = false;
+
+      debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
     }
     notifyListeners();
   }
@@ -134,6 +143,9 @@ class AuthNotifier extends ChangeNotifier {
     isNewUser = false;
     notifyListeners();
   }
+
+  // ✅ NEW: Helper to check if we should wait
+  bool get shouldWait => _isFetching || !isInitialized;
 }
 
 final authProvider = AuthNotifier();
@@ -156,14 +168,20 @@ final GoRouter router = GoRouter(
   redirect: (context, state) {
     final location = state.uri.path;
 
-    // 1. Wait for initialization (Prevents redirecting to Login before data is fetched)
-    if (!authProvider.isInitialized) return null;
+    debugPrint('🔀 Router Check: $location | Init: ${authProvider.isInitialized} | User: ${authProvider.user?.uid} | Role: ${authProvider.role}');
+
+    // ✅ CRITICAL FIX: Wait for BOTH initialization AND data fetching
+    if (authProvider.shouldWait) {
+      debugPrint('⏳ Waiting for auth state to settle...');
+      return null; // Don't redirect while fetching
+    }
 
     final isLoggedIn = authProvider.user != null;
     final isPublic = RouteConfig.publicPaths.contains(location);
 
     // 2. Unauthenticated Flow
     if (!isLoggedIn) {
+      debugPrint('🚫 Not logged in, location: $location');
       if (location == '/admin') return null; // Allow admin login page
       return isPublic ? null : '/login';
     }
@@ -171,33 +189,48 @@ final GoRouter router = GoRouter(
     // 3. Authenticated Flow
     final role = authProvider.role;
 
-    // Safety: If logged in but no role found (Firebase error or doc missing)
-    if (role == null && !isPublic) {
-      FirebaseAuth.instance.signOut();
-      return '/login';
+    debugPrint('✅ Logged in: role=$role, location=$location');
+
+    // ✅ IMPORTANT: Give role data a moment to settle after login
+    if (role == null) {
+      debugPrint('⚠️ No role found yet, staying put...');
+      return null; // Wait for role to be fetched
     }
 
     // A. New User Logic (Job Seeker ONLY)
     if (role == 'job_seeker' && authProvider.isNewUser) {
-      if (location != '/profile-builder') return '/profile-builder';
+      if (location != '/profile-builder') {
+        debugPrint('➡️ Redirecting new job seeker to profile builder');
+        return '/profile-builder';
+      }
       return null;
     }
 
     // B. Prevent New Users going to Dashboard
     if (role == 'job_seeker' && !authProvider.isNewUser && location == '/profile-builder') {
+      debugPrint('➡️ Completed profile, going to dashboard');
       return '/dashboard';
     }
 
     // C. Logged in users trying to hit Login/Register
     if (isPublic && location != '/pricing' && location != '/') {
+      debugPrint('➡️ Already logged in, redirecting to home');
       return RouteConfig.getHome(role);
     }
 
     // D. Admin Guard
     if (location.startsWith('/admin_') && role != 'admin') {
+      debugPrint('🚫 Non-admin trying to access admin route');
       return RouteConfig.getHome(role);
     }
 
+    // E. ✅ NEW: Redirect admin from /admin (login page) to dashboard if already logged in
+    if (location == '/admin' && role == 'admin') {
+      debugPrint('➡️ Admin already logged in, going to dashboard');
+      return '/admin_dashboard';
+    }
+
+    debugPrint('✅ Staying at: $location');
     return null; // Stay where you are
   },
   routes: [

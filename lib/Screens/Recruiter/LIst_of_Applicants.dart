@@ -187,7 +187,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
                   const SizedBox(height: 16),
                   Text('Error: ${provider.error}',
-                      style: GoogleFonts.inter(color: Colors.red[700])),
+                      style: GoogleFonts.poppins(color: Colors.red[700])),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.refresh(jobId: widget.jobId),
@@ -232,7 +232,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   children: [
                     Text(
                       'Candidate Shortlisting',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF0F172A),
@@ -248,7 +248,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       ),
                       child: Text(
                         'AI Active',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF8B5CF6),
@@ -260,7 +260,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 SizedBox(height: 4),
                 Text(
                   'Manage applicants for Senior Aviation Safety Specialist',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w400,
@@ -279,7 +279,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               _selectedApplicants.isEmpty
                   ? 'Select To Mark as Shortlist'
                   : 'Shortlist Selected',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -328,7 +328,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     size: 18),
                 label: Text(
                   aiProvider.isAnalyzing ? 'Analyzing...' : 'Run AI Analysis',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -442,7 +442,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             children: [
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF64748B),
@@ -452,7 +452,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               SizedBox(height: 4),
               Text(
                 value,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF0F172A),
@@ -503,7 +503,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 children: [
                   Text(
                     'Match Distribution Analysis',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF0F172A),
@@ -527,19 +527,19 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     child: Row(
                       children: [
                         Text('0-40%',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 11, color: Color(0xFF64748B))),
                         Spacer(),
                         Text('41-70%',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 11, color: Color(0xFF64748B))),
                         Spacer(),
                         Text('71-85%',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 11, color: Color(0xFF64748B))),
                         Spacer(),
                         Text('86-100%',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                                 fontSize: 11, color: Color(0xFF64748B))),
                       ],
                     ),
@@ -613,7 +613,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 12,
             color: Color(0xFF64748B),
             fontWeight: FontWeight.w500,
@@ -676,7 +676,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search by name or keywords...',
-                hintStyle: GoogleFonts.inter(
+                hintStyle: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Color(0xFF94A3B8),
                 ),
@@ -697,14 +697,14 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 fillColor: Color(0xFFF8FAFC),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              style: GoogleFonts.inter(fontSize: 14),
+              style: GoogleFonts.poppins(fontSize: 14),
             ),
           ),
           // SizedBox(width: 12),
           // OutlinedButton.icon(
           //   onPressed: () {},
           //   icon: Icon(Icons.tune, size: 18),
-          //   label: Text('Filter', style: GoogleFonts.inter(fontSize: 14)),
+          //   label: Text('Filter', style: GoogleFonts.poppins(fontSize: 14)),
           //   style: OutlinedButton.styleFrom(
           //     foregroundColor: Color(0xFF475569),
           //     side: BorderSide(color: Color(0xFFE2E8F0)),
@@ -718,7 +718,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           // OutlinedButton.icon(
           //   onPressed: () {},
           //   icon: Icon(Icons.swap_vert, size: 18),
-          //   label: Text('Sort', style: GoogleFonts.inter(fontSize: 14)),
+          //   label: Text('Sort', style: GoogleFonts.poppins(fontSize: 14)),
           //   style: OutlinedButton.styleFrom(
           //     foregroundColor: Color(0xFF475569),
           //     side: BorderSide(color: Color(0xFFE2E8F0)),
@@ -761,7 +761,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 3,
             child: Text('CANDIDATE',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -770,7 +770,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 3,
             child: Text('EXPERIENCE',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -779,7 +779,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 2,
             child: Text('APPLIED ON',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -788,7 +788,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 2,
             child: Text('AI MATCH SCORE',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -797,7 +797,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 1,
             child: Text('STATUS',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -807,7 +807,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           SizedBox(
             width: 80,
             child: Text('ACTIONS',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF64748B),
@@ -871,7 +871,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       applicant.name.isNotEmpty
                           ? applicant.name.substring(0, 2).toUpperCase()
                           : 'NA',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: avatarColor,
@@ -886,7 +886,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     children: [
                       Text(
                         applicant.name,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF0F172A),
@@ -896,7 +896,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       SizedBox(height: 2),
                       Text(
                         _maskEmail(applicant.email),
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: Color(0xFF64748B),
                         ),
@@ -912,7 +912,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             flex: 3,
             child: Text(
               '${applicant.experienceYears} years\n${applicant.jobData?.title ?? 'N/A'}',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Color(0xFF475569),
                 height: 1.4,
@@ -923,7 +923,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             flex: 2,
             child: Text(
               DateFormat('MMM dd, yyyy').format(applicant.appliedAt),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Color(0xFF475569),
               ),
@@ -958,7 +958,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       SizedBox(width: 8),
                       Text(
                         'Analyzing...',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Color(0xFF64748B),
                         ),
@@ -999,7 +999,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                             SizedBox(width: 4),
                             Text(
                               '$score%',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: color,
@@ -1008,7 +1008,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                             SizedBox(width: 8),
                             Text(
                               label,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: color,
@@ -1034,7 +1034,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 // Not analyzed yet
                 return Text(
                   'Not analyzed',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Color(0xFF94A3B8),
                   ),
@@ -1173,7 +1173,7 @@ SizedBox(width: 20,),
               ),
               SizedBox(width: 8),
               Text('Pending',
-                  style: GoogleFonts.inter(fontSize: 13)),
+                  style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1191,7 +1191,7 @@ SizedBox(width: 20,),
               ),
               SizedBox(width: 8),
               Text('Interview',
-                  style: GoogleFonts.inter(fontSize: 13)),
+                  style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1209,7 +1209,7 @@ SizedBox(width: 20,),
               ),
               SizedBox(width: 8),
               Text('Shortlist',
-                  style: GoogleFonts.inter(fontSize: 13)),
+                  style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1227,7 +1227,7 @@ SizedBox(width: 20,),
               ),
               SizedBox(width: 8),
               Text('Rejected',
-                  style: GoogleFonts.inter(fontSize: 13)),
+                  style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1243,7 +1243,7 @@ SizedBox(width: 20,),
           children: [
             Text(
               config['label'] as String,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: config['color'] as Color,
@@ -1276,7 +1276,7 @@ SizedBox(width: 20,),
           SizedBox(height: 16),
           Text(
             'No Candidates Found',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: Color(0xFF475569),
@@ -1285,7 +1285,7 @@ SizedBox(width: 20,),
           SizedBox(height: 8),
           Text(
             'There are no applicants for this position yet',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: Color(0xFF64748B),
             ),
@@ -1328,7 +1328,7 @@ SizedBox(width: 20,),
                         children: [
                           Text(
                             result.applicantName,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
@@ -1336,7 +1336,7 @@ SizedBox(width: 20,),
                           ),
                           Text(
                             'AI Match Analysis',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.white.withOpacity(0.9),
                             ),
@@ -1352,7 +1352,7 @@ SizedBox(width: 20,),
                       ),
                       child: Text(
                         '${result.overallScore}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -1384,7 +1384,7 @@ SizedBox(width: 20,),
                           ),
                           child: Text(
                             result.recommendation,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: result.getRecommendationColor(),
@@ -1395,7 +1395,7 @@ SizedBox(width: 20,),
                       const SizedBox(height: 24),
                       Text(
                         'Score Breakdown',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1415,7 +1415,7 @@ SizedBox(width: 20,),
                             const SizedBox(width: 8),
                             Text(
                               'Key Strengths',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1441,7 +1441,7 @@ SizedBox(width: 20,),
                               Expanded(
                                 child: Text(
                                   s,
-                                  style: GoogleFonts.inter(fontSize: 13),
+                                  style: GoogleFonts.poppins(fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1457,7 +1457,7 @@ SizedBox(width: 20,),
                             const SizedBox(width: 8),
                             Text(
                               'Areas for Improvement',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -1483,7 +1483,7 @@ SizedBox(width: 20,),
                               Expanded(
                                 child: Text(
                                   w,
-                                  style: GoogleFonts.inter(fontSize: 13),
+                                  style: GoogleFonts.poppins(fontSize: 13),
                                 ),
                               ),
                             ],
@@ -1493,7 +1493,7 @@ SizedBox(width: 20,),
                       ],
                       Text(
                         'Detailed Analysis',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -1507,7 +1507,7 @@ SizedBox(width: 20,),
                         ),
                         child: Text(
                           result.detailedAnalysis,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             height: 1.6,
                             color: const Color(0xFF475569),
@@ -1534,7 +1534,7 @@ SizedBox(width: 20,),
                     ),
                     child: Text(
                       'Close',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1564,7 +1564,7 @@ SizedBox(width: 20,),
           flex: 2,
           child: Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -1596,7 +1596,7 @@ SizedBox(width: 20,),
               const SizedBox(width: 12),
               Text(
                 '$score%',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: color,

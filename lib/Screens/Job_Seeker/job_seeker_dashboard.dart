@@ -164,7 +164,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 children: [
                   Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
                   const SizedBox(height: 16),
-                  Text(prov.error!, style: GoogleFonts.inter(color: Color(0xFF64748B))),
+                  Text(prov.error!, style: GoogleFonts.poppins(color: Color(0xFF64748B))),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => prov.refresh(),
@@ -258,7 +258,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   children: [
                     Text(
                       'Applied Jobs',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -268,7 +268,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     const SizedBox(height: 4),
                     Text(
                       '$count ${count == 1 ? 'application' : 'applications'} found',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: const Color(0xFF64748B),
                         fontWeight: FontWeight.w500,
@@ -316,7 +316,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                         const SizedBox(width: 6),
                         Text(
                           _showFilters ? 'Hide Filters' : 'Show Filters',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: _showFilters ? const Color(0xFF6366F1) : const Color(0xFF64748B),
@@ -347,7 +347,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
         children: [
           Text(
             count.toString(),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: color,
@@ -357,7 +357,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: color,
@@ -399,7 +399,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search by job title, company, or ID...',
-                      hintStyle: GoogleFonts.inter(
+                      hintStyle: GoogleFonts.poppins(
                         color: const Color(0xFF94A3B8),
                         fontSize: 13,
                       ),
@@ -433,7 +433,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                         borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
                       ),
                     ),
-                    style: GoogleFonts.inter(fontSize: 13),
+                    style: GoogleFonts.poppins(fontSize: 13),
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
@@ -499,7 +499,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           children: [
                             Text(
                               'Applied Date',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF94A3B8),
@@ -509,7 +509,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                               _appliedRange == null
                                   ? 'Any time'
                                   : '${DateFormat.MMMd().format(_appliedRange!.start)} - ${DateFormat.MMMd().format(_appliedRange!.end)}',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF0F172A),
@@ -588,7 +588,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           const SizedBox(width: 6),
                           Text(
                             'Clear Filters',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFFEF4444),
@@ -624,7 +624,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           value: option,
           child: Text(
             option,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -648,7 +648,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF94A3B8),
@@ -656,7 +656,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 ),
                 Text(
                   value,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF0F172A),
@@ -708,7 +708,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                       children: [
                         Text(
                           'Select Date Range',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F172A),
@@ -790,7 +790,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           onPressed: () => Navigator.of(context).pop(),
                           child: Text(
                             'Cancel',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF64748B),
@@ -830,7 +830,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           ),
                           child: Text(
                             'Apply Filter',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -872,7 +872,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF94A3B8),
@@ -883,7 +883,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   date != null
                       ? DateFormat('MMM dd, yyyy').format(date)
                       : 'Select date',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: date != null
@@ -926,7 +926,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               const SizedBox(height: 16),
               Text(
                 'No Applications Found',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -935,7 +935,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               const SizedBox(height: 4),
               Text(
                 'Try adjusting your filters or start applying to jobs',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   color: const Color(0xFF64748B),
                 ),
@@ -981,7 +981,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   flex: 3,
                   child: Text(
                     'JOB TITLE',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF64748B),
@@ -993,7 +993,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   flex: 2,
                   child: Text(
                     'COMPANY',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF64748B),
@@ -1005,7 +1005,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   flex: 2,
                   child: Text(
                     'APPLIED DATE',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF64748B),
@@ -1018,7 +1018,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   child: Center(
                     child: Text(
                       'STATUS',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF64748B),
@@ -1062,7 +1062,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
             flex: 3,
             child: Text(
               app.title,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -1086,7 +1086,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 Expanded(
                   child: Text(
                     app.company,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF475569),
@@ -1112,7 +1112,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 const SizedBox(width: 6),
                 Text(
                   DateFormat.MMMd().format(app.appliedAt),
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF475569),
@@ -1170,7 +1170,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           const SizedBox(width: 4),
           Text(
             status.toUpperCase(),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: color,
@@ -1224,7 +1224,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 const SizedBox(width: 12),
                 Text(
                   'Overview',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
@@ -1289,7 +1289,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               const SizedBox(height: 8),
               Text(
                 'No Statistics Yet',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF64748B),
@@ -1315,7 +1315,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           padding: const EdgeInsets.only(left: 2, bottom: 12),
           child: Text(
             'APPLICATION STATS',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF94A3B8),
@@ -1338,7 +1338,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               isVisible: true,
               position: LegendPosition.bottom,
               overflowMode: LegendItemOverflowMode.wrap,
-              textStyle: GoogleFonts.inter(
+              textStyle: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF64748B),
@@ -1352,7 +1352,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   children: [
                     Text(
                       '$total',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -1360,7 +1360,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     ),
                     Text(
                       'Total',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF64748B),
@@ -1383,7 +1383,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 dataLabelSettings: DataLabelSettings(
                   isVisible: true,
                   labelPosition: ChartDataLabelPosition.outside,
-                  textStyle: GoogleFonts.inter(
+                  textStyle: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF0F172A),
@@ -1408,7 +1408,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           padding: const EdgeInsets.only(left: 2, bottom: 12),
           child: Text(
             'RECENT ACTIVITY',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF94A3B8),
@@ -1436,7 +1436,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   const SizedBox(height: 8),
                   Text(
                     'No Recent Activity',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF64748B),
@@ -1483,7 +1483,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           children: [
                             Text(
                               app.title,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF0F172A),
@@ -1494,7 +1494,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                             const SizedBox(height: 2),
                             Text(
                               app.company,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: const Color(0xFF64748B),
@@ -1529,7 +1529,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       ),
       child: Text(
         status.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 9,
           fontWeight: FontWeight.w700,
           color: color,

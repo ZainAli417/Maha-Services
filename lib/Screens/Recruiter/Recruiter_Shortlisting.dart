@@ -177,7 +177,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       const SizedBox(width: 6),
                       Text(
                         '${prov.selectedUids.length}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
@@ -189,7 +189,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                 const SizedBox(width: 12),
                 Text(
                   'Selected',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: Colors.white70,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -208,7 +208,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                 ElevatedButton.icon(
                   onPressed: () => _handleSend(prov),
                   icon: const Icon(Icons.send_rounded, size: 16),
-                  label: Text('Send to Admin', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                  label: Text('Send to Admin', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primary,
                     foregroundColor: Colors.white,
@@ -248,7 +248,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             children: [
               Text(
                 'Candidate Dashboard',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: _textPrimary,
@@ -257,7 +257,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
               ),
               Text(
                 'Manage and review shortlisted candidates',
-                style: GoogleFonts.inter(fontSize: 12, color: _textSecondary),
+                style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
               ),
             ],
           ),
@@ -318,16 +318,16 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                     children: [
                       Icon(trendUp ? Icons.arrow_upward : Icons.arrow_downward, size: 10, color: trendUp ? _accent : _error),
                       const SizedBox(width: 3),
-                      Text(trend, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
+                      Text(trend, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
                     ],
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(value, style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
+          Text(value, style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
           const SizedBox(height: 3),
-          Text(label, style: GoogleFonts.inter(fontSize: 11, color: _textSecondary)),
+          Text(label, style: GoogleFonts.poppins(fontSize: 11, color: _textSecondary)),
         ],
       ),
     );
@@ -348,10 +348,10 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             child: TextField(
               controller: _searchCtrl,
               onChanged: prov.setSearch,
-              style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+              style: GoogleFonts.poppins(fontSize: 13, color: _textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search candidates...',
-                hintStyle: GoogleFonts.inter(color: _textSecondary, fontSize: 13),
+                hintStyle: GoogleFonts.poppins(color: _textSecondary, fontSize: 13),
                 prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -391,7 +391,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(text, style: GoogleFonts.inter(fontSize: 12, color: _textPrimary, fontWeight: FontWeight.w500)),
+            Text(text, style: GoogleFonts.poppins(fontSize: 12, color: _textPrimary, fontWeight: FontWeight.w500)),
             const SizedBox(width: 6),
             Icon(Icons.unfold_more, size: 14, color: _textSecondary),
           ],
@@ -442,7 +442,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             children: [
               Icon(Icons.bar_chart_rounded, color: _primary, size: 16),
               const SizedBox(width: 6),
-              Text('Score Distribution', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Score Distribution', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -459,11 +459,11 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) => value.toInt() >= 0 && value.toInt() < ranges.length
-                          ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(ranges[value.toInt()].$1, style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))
+                          ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(ranges[value.toInt()].$1, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
                           : const SizedBox(),
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
@@ -495,7 +495,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             children: [
               Icon(Icons.show_chart_rounded, color: _accent, size: 16),
               const SizedBox(width: 6),
-              Text('Match Score Trend', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Match Score Trend', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -510,11 +510,11 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-                        return value.toInt() >= 0 && value.toInt() < days.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.inter(fontSize: 10, color: _textSecondary))) : const SizedBox();
+                        return value.toInt() >= 0 && value.toInt() < days.length ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary))) : const SizedBox();
                       },
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}%', style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}%', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
@@ -584,7 +584,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                   const SizedBox(width: 8),
                   Text(
                     'Nationality Distribution',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary
@@ -602,7 +602,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                 ),
                 child: Text(
                   'Top ${top5.length}',
-                  style: GoogleFonts.inter(fontSize: 10, color: _textSecondary),
+                  style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary),
                 ),
               ),
             ],
@@ -616,7 +616,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                 padding: const EdgeInsets.symmetric(vertical: 40),
                 child: Text(
                   'No nationality data available',
-                  style: GoogleFonts.inter(fontSize: 12, color: _textSecondary),
+                  style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
                 ),
               ),
             )
@@ -640,7 +640,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
                           '${top5[groupIndex].key}\n',
-                          GoogleFonts.inter(
+                          GoogleFonts.poppins(
                             color: _surface,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -648,7 +648,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                           children: [
                             TextSpan(
                               text: '${rod.toY.toInt()} Candidates',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: _surface.withOpacity(0.8),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
@@ -678,7 +678,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               label,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                   color: _textSecondary,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600
@@ -747,12 +747,12 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             children: [
               Icon(Icons.emoji_events_rounded, color: _warning, size: 16),
               const SizedBox(width: 6),
-              Text('Top 3', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Top 3', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
           if (top3.isEmpty)
-            Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 30), child: Text('No data', style: GoogleFonts.inter(fontSize: 12, color: _textSecondary))))
+            Center(child: Padding(padding: const EdgeInsets.symmetric(vertical: 30), child: Text('No data', style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary))))
           else
             ...top3.asMap().entries.map((entry) {
               final index = entry.key;
@@ -767,15 +767,15 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       height: 24,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(color: index == 0 ? _warning.withOpacity(0.15) : _border, shape: BoxShape.circle),
-                      child: Text('${index + 1}', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
+                      child: Text('${index + 1}', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(candidate.name, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text('${score.toInt()}% match', style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)),
+                          Text(candidate.name, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text('${score.toInt()}% match', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)),
                         ],
                       ),
                     ),
@@ -813,7 +813,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
               children: [
                 Text(
                   'All Candidates',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: _textPrimary,
@@ -828,7 +828,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                   ),
                   child: Text(
                     '${list.length}',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: _primary,
@@ -878,7 +878,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                   const SizedBox(height: 12),
                   Text(
                     'No candidates found',
-                    style: GoogleFonts.inter(color: _textSecondary, fontSize: 14),
+                    style: GoogleFonts.poppins(color: _textSecondary, fontSize: 14),
                   ),
                 ],
               ),
@@ -895,7 +895,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
       flex: flex,
       child: Text(
         text,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: _textSecondary,
@@ -914,7 +914,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
           const SizedBox(height: 16),
           Text(
             'Loading candidates...',
-            style: GoogleFonts.inter(color: _textSecondary, fontSize: 14),
+            style: GoogleFonts.poppins(color: _textSecondary, fontSize: 14),
           ),
         ],
       ),
@@ -961,7 +961,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                     child: c.pictureUrl.isEmpty
                         ? Text(
                       c.name[0].toUpperCase(),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _textSecondary,
@@ -973,7 +973,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                   Expanded(
                     child: Text(
                       c.name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _textPrimary,
@@ -999,7 +999,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       Expanded(
                         child: Text(
                           _maskEmail(c.email),
-                          style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                          style: GoogleFonts.poppins(fontSize: 13, color: _textPrimary),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1012,7 +1012,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       const SizedBox(width: 6),
                       Text(
                         _maskPhone(c.phone),
-                        style: GoogleFonts.inter(fontSize: 12, color: _textSecondary),
+                        style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
                       ),
                     ],
                   ),
@@ -1034,7 +1034,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                   ),
                   child: Text(
                     '${score.toInt()}%',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: scoreColor,
@@ -1078,7 +1078,7 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
                       ),
                       child: Text(
                         'View Details',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 12
                         ),
@@ -1106,13 +1106,13 @@ class _ShortlistingState extends State<Shortlisting> with TickerProviderStateMix
             const SizedBox(width: 12),
             Text(
               'Success',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
           ],
         ),
         content: Text(
           'Request $id submitted successfully.',
-          style: GoogleFonts.inter(fontSize: 14),
+          style: GoogleFonts.poppins(fontSize: 14),
         ),
         actions: [
           TextButton(

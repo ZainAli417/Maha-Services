@@ -126,7 +126,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
             children: [
               Text(
                 'Admin Dashboard',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -134,7 +134,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
               ),
               Text(
                 'Manage & Monitor Requests',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF64748B),
@@ -226,7 +226,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
               const SizedBox(width: 12),
               Text(
                 'All Requests',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -253,7 +253,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                       const SizedBox(width: 8),
                       Text(
                         'Syncing',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFF6366F1),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -296,7 +296,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   const SizedBox(height: 16),
                   Text(
                     'No requests found',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: const Color(0xFF64748B),
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -305,7 +305,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   const SizedBox(height: 8),
                   Text(
                     'Requests will appear here',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: const Color(0xFF94A3B8),
                       fontSize: 13,
                     ),
@@ -381,7 +381,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
             const SizedBox(height: 20),
             Text(
               'Select a request',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: const Color(0xFF0F172A),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -390,7 +390,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
             const SizedBox(height: 8),
             Text(
               'Click on any request to view details',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: const Color(0xFF64748B),
                 fontSize: 14,
               ),
@@ -515,7 +515,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   children: [
                     Text(
                       'Request Details',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: const Color(0xFF64748B),
                         fontWeight: FontWeight.w500,
@@ -523,7 +523,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                     ),
                     Text(
                       '#$reqId',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF0F172A),
@@ -592,7 +592,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
               const SizedBox(width: 12),
               Text(
                 'Recruiter Information',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -615,7 +615,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                 child: Center(
                   child: Text(
                     recruiterName.isNotEmpty ? recruiterName.substring(0, 1).toUpperCase() : 'R',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -630,7 +630,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   children: [
                     Text(
                       recruiterName,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                         color: const Color(0xFF0F172A),
@@ -644,7 +644,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                         Expanded(
                           child: Text(
                             recruiterEmail,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: const Color(0xFF64748B),
                               fontSize: 13,
                             ),
@@ -662,7 +662,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                             const SizedBox(width: 6),
                             Text(
                               recruiterCompany,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFF64748B),
                                 fontSize: 13,
                               ),
@@ -685,7 +685,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                 const SizedBox(width: 8),
                 Text(
                   'Notes',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: const Color(0xFF0F172A),
@@ -696,7 +696,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
             const SizedBox(height: 12),
             Text(
               notes,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 color: const Color(0xFF475569),
                 fontSize: 13,
                 height: 1.5,
@@ -719,7 +719,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
               const SizedBox(width: 12),
               Text(
                 'Candidates (${candidates.length})',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -782,16 +782,16 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                     context: context,
                     builder: (_) => AlertDialog(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      title: Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                      title: Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       content: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Email: $email', style: GoogleFonts.inter(fontSize: 13)),
+                            Text('Email: $email', style: GoogleFonts.poppins(fontSize: 13)),
                             const SizedBox(height: 16),
                             Text(
                               'Profile snapshot:',
-                              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
                             ),
                             const SizedBox(height: 8),
                             ..._profileMapToWidgets(profile),
@@ -801,7 +801,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text('Close', style: GoogleFonts.inter(color: const Color(0xFF6366F1))),
+                          child: Text('Close', style: GoogleFonts.poppins(color: const Color(0xFF6366F1))),
                         ),
                       ],
                     ),
@@ -891,12 +891,12 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                           const SizedBox(width: 12),
                           Text(
                             'Request Details',
-                            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                           const Spacer(),
                           Text(
                             'ID: ${requestDoc['id']?.toString() ?? '-'}',
-                            style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 13),
+                            style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13),
                           ),
                         ],
                       ),
@@ -919,7 +919,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                       const SizedBox(height: 20),
                       Text(
                         'Candidates',
-                        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 12),
                       ...candidates.map((c) {
@@ -950,7 +950,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                                 child: Center(
                                   child: Text(
                                     name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'C',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       color: const Color(0xFF6366F1),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16,
@@ -963,8 +963,8 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                                    Text(email, style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 12)),
+                                    Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
+                                    Text(email, style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 12)),
                                   ],
                                 ),
                               ),
@@ -1019,7 +1019,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
   }
 
   List<Widget> _profileMapToWidgets(Map<String, dynamic> profile) {
-    if (profile.isEmpty) return [Text('- no profile data -', style: GoogleFonts.inter(fontSize: 13))];
+    if (profile.isEmpty) return [Text('- no profile data -', style: GoogleFonts.poppins(fontSize: 13))];
     final entries = profile.entries.toList();
     return entries.map((e) {
       final v = e.value;
@@ -1033,11 +1033,11 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
               width: 120,
               child: Text(
                 '${e.key}:',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13),
               ),
             ),
             const SizedBox(width: 8),
-            Expanded(child: Text(display, style: GoogleFonts.inter(fontSize: 13))),
+            Expanded(child: Text(display, style: GoogleFonts.poppins(fontSize: 13))),
           ],
         ),
       );
@@ -1111,7 +1111,7 @@ class _MetadataChip extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 11,
                     color: const Color(0xFF64748B),
                     fontWeight: FontWeight.w500,
@@ -1120,7 +1120,7 @@ class _MetadataChip extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: color,
                     fontWeight: FontWeight.w600,
@@ -1203,7 +1203,7 @@ class _RequestCard extends StatelessWidget {
                 child: Center(
                   child: Text(
                     totalCandidates.toString(),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: _getStatusColor(),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -1218,7 +1218,7 @@ class _RequestCard extends StatelessWidget {
                   children: [
                     Text(
                       'Request #$id',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                         color: const Color(0xFF0F172A),
@@ -1228,7 +1228,7 @@ class _RequestCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       recruiterEmail.isNotEmpty ? recruiterEmail : recruiterId,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF64748B),
                         fontSize: 12,
                       ),
@@ -1242,7 +1242,7 @@ class _RequestCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             createdStr,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: const Color(0xFF94A3B8),
                               fontSize: 11,
                             ),
@@ -1264,7 +1264,7 @@ class _RequestCard extends StatelessWidget {
                 ),
                 child: Text(
                   status,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: _getStatusColor(),
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -1333,7 +1333,7 @@ class _CandidateCard extends StatelessWidget {
                 child: Center(
                   child: Text(
                     name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'C',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       color: _getStatusColor(),
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -1348,7 +1348,7 @@ class _CandidateCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                         color: const Color(0xFF0F172A),
@@ -1357,7 +1357,7 @@ class _CandidateCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       email,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         color: const Color(0xFF64748B),
                         fontSize: 12,
                       ),
@@ -1374,7 +1374,7 @@ class _CandidateCard extends StatelessWidget {
                           ),
                           child: Text(
                             status,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               color: _getStatusColor(),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -1403,7 +1403,7 @@ class _CandidateCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.description_outlined, size: 18, color: Color(0xFF8B5CF6)),
                         const SizedBox(width: 10),
-                        Text('Open CV', style: GoogleFonts.inter(fontSize: 13)),
+                        Text('Open CV', style: GoogleFonts.poppins(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1413,7 +1413,7 @@ class _CandidateCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.event_outlined, size: 18, color: Color(0xFF3B82F6)),
                         const SizedBox(width: 10),
-                        Text('Mark Interview', style: GoogleFonts.inter(fontSize: 13)),
+                        Text('Mark Interview', style: GoogleFonts.poppins(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1423,7 +1423,7 @@ class _CandidateCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.check_circle_outline, size: 18, color: Color(0xFF10B981)),
                         const SizedBox(width: 10),
-                        Text('Accept', style: GoogleFonts.inter(fontSize: 13)),
+                        Text('Accept', style: GoogleFonts.poppins(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1433,7 +1433,7 @@ class _CandidateCard extends StatelessWidget {
                       children: [
                         const Icon(Icons.cancel_outlined, size: 18, color: Color(0xFFEF4444)),
                         const SizedBox(width: 10),
-                        Text('Reject', style: GoogleFonts.inter(fontSize: 13)),
+                        Text('Reject', style: GoogleFonts.poppins(fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1491,7 +1491,7 @@ class _ModernStatusDropdown extends StatelessWidget {
         underline: const SizedBox(),
         dropdownColor: Colors.white,
         icon: Icon(Icons.arrow_drop_down, color: statusColor),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           color: statusColor,
           fontWeight: FontWeight.w600,
           fontSize: 12,
@@ -1511,7 +1511,7 @@ class _ModernStatusDropdown extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(s, style: GoogleFonts.inter(color: color, fontSize: 12)),
+                Text(s, style: GoogleFonts.poppins(color: color, fontSize: 12)),
               ],
             ),
           );
@@ -1565,7 +1565,7 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: const Color(0xFF64748B),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -1574,7 +1574,7 @@ class _InfoCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     color: const Color(0xFF0F172A),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -1586,7 +1586,7 @@ class _InfoCard extends StatelessWidget {
           ),
           Text(
             trailing,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               color: const Color(0xFF64748B),
               fontSize: 12,
             ),

@@ -396,7 +396,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                       const SizedBox(width: 4),
                       Text(
                         trend,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: trendUp ? _accent : _error,
@@ -410,7 +410,7 @@ class _JobListView_NewState extends State<JobListView_New> {
           const SizedBox(height: 16),
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.w700,
               color: _textPrimary,
@@ -420,7 +420,7 @@ class _JobListView_NewState extends State<JobListView_New> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 13,
               color: _textSecondary,
               fontWeight: FontWeight.w500,
@@ -474,7 +474,7 @@ class _JobListView_NewState extends State<JobListView_New> {
               const SizedBox(width: 8),
               Text(
                 'Applications Trend',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: _textPrimary,
@@ -489,7 +489,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                 ),
                 child: Text(
                   '7 Days',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: _accent,
@@ -522,7 +522,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               days[value.toInt()],
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 color: _textSecondary,
                               ),
@@ -540,7 +540,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           '${value.toInt()}',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
                             color: _textSecondary,
                           ),
@@ -614,7 +614,7 @@ class _JobListView_NewState extends State<JobListView_New> {
               const SizedBox(width: 8),
               Text(
                 'Job Status',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: _textPrimary,
@@ -641,7 +641,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               statusData[value.toInt()].$1,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 color: _textSecondary,
                                 fontWeight: FontWeight.w500,
@@ -660,7 +660,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toInt().toString(),
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
                             color: _textSecondary,
                           ),
@@ -725,7 +725,7 @@ class _JobListView_NewState extends State<JobListView_New> {
               const SizedBox(width: 8),
               Text(
                 'Top Jobs',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: _textPrimary,
@@ -751,7 +751,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                     ),
                     child: Text(
                       '${index + 1}',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: index == 0 ? _warning : _textSecondary,
@@ -765,7 +765,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                       children: [
                         Text(
                           job.$1,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: _textPrimary,
@@ -776,7 +776,7 @@ class _JobListView_NewState extends State<JobListView_New> {
                         const SizedBox(height: 2),
                         Text(
                           '${job.$2} applications',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
                             color: _textSecondary,
                           ),

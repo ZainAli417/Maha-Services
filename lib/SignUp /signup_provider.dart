@@ -657,13 +657,13 @@ class SignupProvider extends ChangeNotifier {
 
       final dataUrlCompleter = Completer<String?>();
       final readerDataUrl = FileReader();
-
       readerDataUrl.addEventListener(
-          'load',
-              (Event e) {
-            dataUrlCompleter.complete(readerDataUrl.result as String?);
-          }.toJS);
-
+        'load',
+            (Event e) {
+          final jsResult = readerDataUrl.result as JSString?;
+          dataUrlCompleter.complete(jsResult?.toDart);
+        }.toJS,
+      );
       readerDataUrl.addEventListener(
           'error',
               (Event e) {

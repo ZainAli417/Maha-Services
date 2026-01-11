@@ -94,7 +94,7 @@ class ViewApplicantDetails extends StatelessWidget {
                             const SizedBox(height: 16),
                             Text(
                               applicant.summary.isNotEmpty ? applicant.summary : applicant.objectives,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 height: 1.6,
                                 color: _textPrimary,
@@ -170,7 +170,7 @@ class ViewApplicantDetails extends StatelessWidget {
                   child: applicant.pictureUrl.isEmpty
                       ? Text(
                     applicant.name.isNotEmpty ? applicant.name[0] : '?',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
                         color: _primaryColor),
@@ -201,7 +201,7 @@ class ViewApplicantDetails extends StatelessWidget {
               children: [
                 Text(
                   applicant.name,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: _primaryColor,
@@ -211,7 +211,7 @@ class ViewApplicantDetails extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   applicant.jobData?.title ?? 'Applicant Role',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: _textSecondary,
                     fontWeight: FontWeight.w500,
@@ -260,7 +260,7 @@ class ViewApplicantDetails extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: applicant.skills.map((skill) => Chip(
-            label: Text(skill, style: GoogleFonts.inter(fontSize: 12, color: _primaryColor)),
+            label: Text(skill, style: GoogleFonts.poppins(fontSize: 12, color: _primaryColor)),
             backgroundColor: Colors.white,
             side: const BorderSide(color: Color(0xFFE2E8F0)),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -292,7 +292,7 @@ class ViewApplicantDetails extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Link Hidden',
-                    style: GoogleFonts.inter(fontSize: 13, color: _accentColor, decoration: TextDecoration.underline),
+                    style: GoogleFonts.poppins(fontSize: 13, color: _accentColor, decoration: TextDecoration.underline),
                   ),
                 )
               ],
@@ -347,7 +347,7 @@ class ViewApplicantDetails extends StatelessWidget {
                   children: [
                     Text(
                       role,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: _primaryColor,
@@ -362,7 +362,7 @@ class ViewApplicantDetails extends StatelessWidget {
                         ),
                         child: Text(
                           duration,
-                          style: GoogleFonts.inter(fontSize: 12, color: _textSecondary),
+                          style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
                         ),
                       ),
                   ],
@@ -370,7 +370,7 @@ class ViewApplicantDetails extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   company,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: _accentColor,
                     fontWeight: FontWeight.w500,
@@ -379,7 +379,7 @@ class ViewApplicantDetails extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   desc,
-                  style: GoogleFonts.inter(fontSize: 14, color: _textSecondary, height: 1.5),
+                  style: GoogleFonts.poppins(fontSize: 14, color: _textSecondary, height: 1.5),
                 ),
               ],
             ),
@@ -419,12 +419,12 @@ class ViewApplicantDetails extends StatelessWidget {
               children: [
                 Text(
                   institution,
-                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: _primaryColor),
+                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: _primaryColor),
                 ),
                 if(major.isNotEmpty)
                   Text(
                     major,
-                    style: GoogleFonts.inter(fontSize: 13, color: _textSecondary),
+                    style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
                   ),
               ],
             ),
@@ -432,7 +432,7 @@ class ViewApplicantDetails extends StatelessWidget {
           if(duration.isNotEmpty)
             Text(
               duration,
-              style: GoogleFonts.inter(fontSize: 12, color: _textSecondary, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary, fontWeight: FontWeight.w500),
             ),
         ],
       ),
@@ -457,7 +457,7 @@ class ViewApplicantDetails extends StatelessWidget {
             cert['name'] ?? 'Certification',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: _primaryColor,
@@ -468,7 +468,7 @@ class ViewApplicantDetails extends StatelessWidget {
             cert['organization'] ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(fontSize: 12, color: _textSecondary),
+            style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
           ),
         ],
       ),
@@ -484,7 +484,7 @@ class ViewApplicantDetails extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           title.toUpperCase(),
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: _textSecondary,
@@ -498,7 +498,7 @@ class ViewApplicantDetails extends StatelessWidget {
   Widget _buildSidebarSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF94A3B8), // Slate 400
@@ -522,7 +522,7 @@ class ViewApplicantDetails extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: _textPrimary,
@@ -543,11 +543,11 @@ class ViewApplicantDetails extends StatelessWidget {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF94A3B8)),
+              style: GoogleFonts.poppins(fontSize: 10, color: const Color(0xFF94A3B8)),
             ),
             Text(
               value,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: _primaryColor,
@@ -572,7 +572,7 @@ class ViewApplicantDetails extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: _accentColor,
@@ -580,7 +580,7 @@ class ViewApplicantDetails extends StatelessWidget {
           ),
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 11, color: _textSecondary),
+            style: GoogleFonts.poppins(fontSize: 11, color: _textSecondary),
           ),
         ],
       ),
@@ -599,7 +599,7 @@ class ViewApplicantDetails extends StatelessWidget {
       child: Center(
         child: Text(
           message,
-          style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, fontStyle: FontStyle.italic),
+          style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary, fontStyle: FontStyle.italic),
         ),
       ),
     );
@@ -623,7 +623,7 @@ class ViewApplicantDetails extends StatelessWidget {
             ),
             child: Text(
               'Close',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
             ),
           ),
           const SizedBox(width: 16),
@@ -637,7 +637,7 @@ class ViewApplicantDetails extends StatelessWidget {
             icon: const Icon(Icons.download, size: 18),
             label: Text(
               'Download Resume',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: _primaryColor,

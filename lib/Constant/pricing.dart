@@ -148,7 +148,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               const SizedBox(width: 8),
               Text(
                 'PRICING PLANS',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF6366F1),
@@ -161,7 +161,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         const SizedBox(height: 24),
         Text(
           'Choose Your Perfect Plan',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 48,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
@@ -175,7 +175,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           width: 600,
           child: Text(
             'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF64748B),
@@ -243,7 +243,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     const SizedBox(width: 8),
                     Text(
                       type['label'] as String,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: isSelected ? Colors.white : const Color(
@@ -308,7 +308,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: isActive ? Colors.white : const Color(0xFF64748B),
@@ -325,7 +325,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 ),
                 child: Text(
                   'Save 20%',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -619,7 +619,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                         ),
                         child: Text(
                           'MOST POPULAR',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -630,7 +630,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     if (isPopular) const SizedBox(height: 20),
                     Text(
                       plan['title'],
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -640,7 +640,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     const SizedBox(height: 4),
                     Text(
                       plan['subtitle'],
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF64748B),
@@ -653,7 +653,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       children: [
                         Text(
                           '\$',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -675,7 +675,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                           child: Text(
                             plan['price'],
                             key: ValueKey(plan['price']),
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 56,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF0F172A),
@@ -689,7 +689,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     const SizedBox(height: 8),
                     Text(
                       plan['period'],
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF64748B),
@@ -775,7 +775,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w600,
           color: isPrimary ? Colors.white : const Color(0xFF0F172A),
@@ -810,7 +810,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: included ? const Color(0xFF334155) : const Color(
@@ -1020,7 +1020,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             'Frequently asked questions',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -1068,7 +1068,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             question,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A),
@@ -1078,7 +1078,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           const SizedBox(height: 8),
           Text(
             answer,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF64748B),

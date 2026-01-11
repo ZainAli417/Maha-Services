@@ -87,7 +87,7 @@ class _Home_adminState extends State<Home_admin>
           children: [
             Text(
               'Dashboard',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF111827),
@@ -98,7 +98,7 @@ class _Home_adminState extends State<Home_admin>
             const SizedBox(height: 4),
             Text(
               'Platform analytics & insights',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
                 color: const Color(0xFF6B7280),
@@ -135,7 +135,7 @@ class _Home_adminState extends State<Home_admin>
                     const SizedBox(width: 6),
                     Text(
                       'Refresh',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF374151),
@@ -235,7 +235,7 @@ class _Home_adminState extends State<Home_admin>
                     const SizedBox(width: 3),
                     Text(
                       '${stat['growth']}%',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: (stat['isPositive'] as bool)
@@ -251,7 +251,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 16),
           Text(
             '${stat['value']}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF111827),
@@ -262,7 +262,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 4),
           Text(
             stat['title'] as String,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF6B7280),
@@ -321,7 +321,7 @@ class _Home_adminState extends State<Home_admin>
             children: [
               Text(
                 'User Growth Trend',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
@@ -346,7 +346,7 @@ class _Home_adminState extends State<Home_admin>
               primaryXAxis: CategoryAxis(
                 majorGridLines: const MajorGridLines(width: 0),
                 axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.inter(
+                labelStyle: GoogleFonts.poppins(
                   fontSize: 11,
                   color: const Color(0xFF9CA3AF),
                   fontWeight: FontWeight.w500,
@@ -358,7 +358,7 @@ class _Home_adminState extends State<Home_admin>
                   color: const Color(0xFFF3F4F6),
                 ),
                 axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.inter(
+                labelStyle: GoogleFonts.poppins(
                   fontSize: 11,
                   color: const Color(0xFF9CA3AF),
                   fontWeight: FontWeight.w500,
@@ -370,7 +370,7 @@ class _Home_adminState extends State<Home_admin>
                 canShowMarker: false,
                 header: '',
                 format: 'point.x: point.y',
-                textStyle: GoogleFonts.inter(fontSize: 11, color: Colors.white),
+                textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
               ),
               series: <CartesianSeries<ChartData, String>>[
                 SplineAreaSeries<ChartData, String>(
@@ -440,7 +440,7 @@ class _Home_adminState extends State<Home_admin>
         children: [
           Text(
             'User Distribution',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF111827),
@@ -456,7 +456,7 @@ class _Home_adminState extends State<Home_admin>
                 isVisible: true,
                 position: LegendPosition.bottom,
                 overflowMode: LegendItemOverflowMode.wrap,
-                textStyle: GoogleFonts.inter(
+                textStyle: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF6B7280),
@@ -467,7 +467,7 @@ class _Home_adminState extends State<Home_admin>
               tooltipBehavior: TooltipBehavior(
                 enable: true,
                 format: 'point.x: point.y',
-                textStyle: GoogleFonts.inter(fontSize: 11, color: Colors.white),
+                textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
               ),
               series: <CircularSeries>[
                 DoughnutSeries<PieData, String>(
@@ -478,7 +478,7 @@ class _Home_adminState extends State<Home_admin>
                   dataLabelSettings: DataLabelSettings(
                     isVisible: true,
                     labelPosition: ChartDataLabelPosition.outside,
-                    textStyle: GoogleFonts.inter(
+                    textStyle: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF111827),
@@ -489,7 +489,7 @@ class _Home_adminState extends State<Home_admin>
                       final percentage = total > 0 ? ((pieData.value / total) * 100).toStringAsFixed(1) : '0';
                       return Text(
                         '$percentage%',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF111827),
@@ -560,7 +560,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 14),
           Text(
             '${provider.totalJobsPosted}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -571,7 +571,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 4),
           Text(
             'Jobs Posted',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: Colors.white.withOpacity(0.9),
@@ -617,7 +617,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 14),
           Text(
             '${provider.totalRecruiterRequests}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF111827),
@@ -628,7 +628,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 4),
           Text(
             'Pending Requests',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF6B7280),
@@ -648,7 +648,7 @@ class _Home_adminState extends State<Home_admin>
                 const SizedBox(width: 4),
                 Text(
                   'Needs review',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFFFBBF24),
@@ -696,7 +696,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 14),
           Text(
             '${summary['total_registrations']}',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF111827),
@@ -707,7 +707,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 4),
           Text(
             'Total Users',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF6B7280),
@@ -749,7 +749,7 @@ class _Home_adminState extends State<Home_admin>
         children: [
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: color,
@@ -759,7 +759,7 @@ class _Home_adminState extends State<Home_admin>
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 9,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF6B7280),
@@ -817,7 +817,7 @@ class _Home_adminState extends State<Home_admin>
         const SizedBox(width: 5),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF6B7280),
@@ -845,7 +845,7 @@ class _Home_adminState extends State<Home_admin>
             const SizedBox(height: 16),
             Text(
               'Loading...',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF6B7280),
@@ -879,7 +879,7 @@ class _Home_adminState extends State<Home_admin>
             const SizedBox(height: 16),
             Text(
               'Error Loading Dashboard',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF111827),
@@ -888,7 +888,7 @@ class _Home_adminState extends State<Home_admin>
             const SizedBox(height: 6),
             Text(
               provider.errorMessage ?? 'Unknown error',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: const Color(0xFF6B7280),
               ),
@@ -900,7 +900,7 @@ class _Home_adminState extends State<Home_admin>
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: Text(
                 'Retry',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),

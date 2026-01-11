@@ -527,16 +527,16 @@ class _JobListView_NewState extends State<JobListView_New> {
                     children: [
                       Icon(trendUp ? Icons.arrow_upward : Icons.arrow_downward, size: 10, color: trendUp ? _accent : _error),
                       const SizedBox(width: 3),
-                      Text(trend, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
+                      Text(trend, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
                     ],
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(value, style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
+          Text(value, style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
           const SizedBox(height: 3),
-          Text(label, style: GoogleFonts.inter(fontSize: 11, color: _textSecondary)),
+          Text(label, style: GoogleFonts.poppins(fontSize: 11, color: _textSecondary)),
         ],
       ),
     );
@@ -573,7 +573,7 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.show_chart_rounded, color: _accent, size: 16),
               const SizedBox(width: 6),
-              Text('Applications Trend', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Applications Trend', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -589,12 +589,12 @@ class _JobListView_NewState extends State<JobListView_New> {
                       getTitlesWidget: (value, meta) {
                         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                         return value.toInt() >= 0 && value.toInt() < days.length
-                            ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))
+                            ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
                             : const SizedBox();
                       },
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}', style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
@@ -635,7 +635,7 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.bar_chart_rounded, color: _primary, size: 16),
               const SizedBox(width: 6),
-              Text('Job Status', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Job Status', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -652,11 +652,11 @@ class _JobListView_NewState extends State<JobListView_New> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) => value.toInt() >= 0 && value.toInt() < statusData.length
-                          ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(statusData[value.toInt()].$1, style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))
+                          ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(statusData[value.toInt()].$1, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
                           : const SizedBox(),
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)))),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
@@ -682,7 +682,7 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.pie_chart_rounded, color: _secondary, size: 16),
               const SizedBox(width: 6),
-              Text('Job Distribution', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Job Distribution', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -691,10 +691,10 @@ class _JobListView_NewState extends State<JobListView_New> {
             child: PieChart(
               PieChartData(
                 sections: [
-                  PieChartSectionData(value: 35, color: _primary, title: '35%', radius: 40, titleStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 25, color: _accent, title: '25%', radius: 40, titleStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 20, color: _secondary, title: '20%', radius: 40, titleStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 20, color: _warning, title: '20%', radius: 40, titleStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  PieChartSectionData(value: 35, color: _primary, title: '35%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  PieChartSectionData(value: 25, color: _accent, title: '25%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  PieChartSectionData(value: 20, color: _secondary, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  PieChartSectionData(value: 20, color: _warning, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
                 ],
                 sectionsSpace: 2,
                 centerSpaceRadius: 30,
@@ -723,7 +723,7 @@ class _JobListView_NewState extends State<JobListView_New> {
       children: [
         Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 4),
-        Text(label, style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)),
+        Text(label, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)),
       ],
     );
   }
@@ -741,7 +741,7 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.emoji_events_rounded, color: _warning, size: 16),
               const SizedBox(width: 6),
-              Text('Top Jobs', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text('Top Jobs', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
             ],
           ),
           const SizedBox(height: 16),
@@ -757,15 +757,15 @@ class _JobListView_NewState extends State<JobListView_New> {
                     height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(color: index == 0 ? _warning.withOpacity(0.1) : _border, shape: BoxShape.circle),
-                    child: Text('${index + 1}', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
+                    child: Text('${index + 1}', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(job.$1, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        Text('${job.$2} applications', style: GoogleFonts.inter(fontSize: 10, color: _textSecondary)),
+                        Text(job.$1, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text('${job.$2} applications', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)),
                       ],
                     ),
                   ),

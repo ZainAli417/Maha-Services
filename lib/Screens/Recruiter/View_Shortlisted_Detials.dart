@@ -265,7 +265,7 @@ class CandidateDetailsDialog extends StatelessWidget {
             child: candidate.pictureUrl.isEmpty
                 ? Text(
               fullName.substring(0, 1).toUpperCase(),
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: _brandPrimary, fontSize: 20),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: _brandPrimary, fontSize: 20),
             )
                 : null,
           ),
@@ -276,11 +276,11 @@ class CandidateDetailsDialog extends StatelessWidget {
               children: [
                 Text(
                   fullName,
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: _textMain),
+                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: _textMain),
                 ),
                 Text(
                   "Candidate ID: ${candidate.uid.toUpperCase().substring(0, 8)}",
-                  style: GoogleFonts.inter(fontSize: 12, color: _textMuted, letterSpacing: 0.5),
+                  style: GoogleFonts.poppins(fontSize: 12, color: _textMuted, letterSpacing: 0.5),
                 ),
               ],
             ),
@@ -349,16 +349,16 @@ class CandidateDetailsDialog extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (role.isNotEmpty)
-                      Text(role, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 15, color: _textMain)),
+                      Text(role, style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 15, color: _textMain)),
                     if (organization.isNotEmpty)
-                      Text(organization, style: GoogleFonts.inter(color: _brandPrimary, fontWeight: FontWeight.w500, fontSize: 13)),
+                      Text(organization, style: GoogleFonts.poppins(color: _brandPrimary, fontWeight: FontWeight.w500, fontSize: 13)),
                     if (duration.isNotEmpty) ...[
                       const SizedBox(height: 4),
-                      Text(duration, style: GoogleFonts.inter(color: _textMuted, fontSize: 12)),
+                      Text(duration, style: GoogleFonts.poppins(color: _textMuted, fontSize: 12)),
                     ],
                     if (duties.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text(duties, style: GoogleFonts.inter(height: 1.5, fontSize: 14, color: _textMain.withOpacity(0.8))),
+                      Text(duties, style: GoogleFonts.poppins(height: 1.5, fontSize: 14, color: _textMain.withOpacity(0.8))),
                     ],
                   ],
                 ),
@@ -442,7 +442,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                       institutionName.isNotEmpty
                           ? institutionName
                           : 'Unknown Institution',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                         color: institutionName.isNotEmpty
@@ -456,7 +456,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         major,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: _brandPrimary,
                           fontWeight: FontWeight.w500,
@@ -476,7 +476,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               duration,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: _textMuted,
                               ),
@@ -495,7 +495,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               marksOrCgpa,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: _textMuted,
                               ),
@@ -538,7 +538,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                   children: [
                     const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
                     const SizedBox(width: 12),
-                    Expanded(child: Text(name, style: GoogleFonts.inter(fontWeight: FontWeight.w500))),
+                    Expanded(child: Text(name, style: GoogleFonts.poppins(fontWeight: FontWeight.w500))),
                     if (url.isNotEmpty) const Icon(Icons.file_download_outlined, color: _textMuted),
                   ],
                 ),
@@ -559,7 +559,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                 children: [
                   const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
                   const SizedBox(width: 12),
-                  Expanded(child: Text("Curriculum_Vitae_${candidate.name}.pdf", style: GoogleFonts.inter(fontWeight: FontWeight.w500))),
+                  Expanded(child: Text("Curriculum_Vitae_${candidate.name}.pdf", style: GoogleFonts.poppins(fontWeight: FontWeight.w500))),
                   const Icon(Icons.file_download_outlined, color: _textMuted),
                 ],
               ),
@@ -598,7 +598,7 @@ class CandidateDetailsDialog extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 skill.toString(),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: _brandPrimary,
@@ -671,7 +671,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _textMain,
@@ -686,7 +686,7 @@ class CandidateDetailsDialog extends StatelessWidget {
                           Flexible(
                             child: Text(
                               organization,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: _textMuted,
                               ),
@@ -733,7 +733,7 @@ class CandidateDetailsDialog extends StatelessWidget {
       //         side: const BorderSide(color: _borderColor),
       //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       //       ),
-      //       child: Text("Close", style: GoogleFonts.inter(color: _textMain, fontWeight: FontWeight.w600)),
+      //       child: Text("Close", style: GoogleFonts.poppins(color: _textMain, fontWeight: FontWeight.w600)),
       //     ),
       //     // const SizedBox(width: 12),
       //     // ElevatedButton(
@@ -745,7 +745,7 @@ class CandidateDetailsDialog extends StatelessWidget {
       //     //     elevation: 0,
       //     //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       //     //   ),
-      //     //   child: Text("Move to Interview", style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+      //     //   child: Text("Move to Interview", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
       //     // ),
       //   ],
       // ),
@@ -761,7 +761,7 @@ class CandidateDetailsDialog extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           title.toUpperCase(),
-          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w800, color: _textMuted, letterSpacing: 1.2),
+          style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w800, color: _textMuted, letterSpacing: 1.2),
         ),
       ],
     );
@@ -775,11 +775,11 @@ class CandidateDetailsDialog extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: _textMuted),
             const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _textMuted)),
+            Text(label, style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: _textMuted)),
           ],
         ),
         const SizedBox(height: 6),
-        Text(value, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: _textMain)),
+        Text(value, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500, color: _textMain)),
       ],
     );
   }
@@ -794,7 +794,7 @@ class CandidateDetailsDialog extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0369A1)),
+        style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF0369A1)),
       ),
     );
   }
@@ -802,9 +802,9 @@ class CandidateDetailsDialog extends StatelessWidget {
   Widget _buildSummaryText(String summary) {
     return Text(
       summary,
-      style: GoogleFonts.inter(fontSize: 15, height: 1.6, color: _textMain.withOpacity(0.8)),
+      style: GoogleFonts.poppins(fontSize: 15, height: 1.6, color: _textMain.withOpacity(0.8)),
     );
   }
 
-  Widget _emptyState(String msg) => Text(msg, style: GoogleFonts.inter(fontStyle: FontStyle.italic, color: _textMuted, fontSize: 13));
+  Widget _emptyState(String msg) => Text(msg, style: GoogleFonts.poppins(fontStyle: FontStyle.italic, color: _textMuted, fontSize: 13));
 }

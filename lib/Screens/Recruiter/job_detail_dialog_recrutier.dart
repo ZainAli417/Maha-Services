@@ -156,7 +156,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
               children: [
                 Text(
                   jobData['title'] ?? 'Untitled Position',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: _textPrimary,
@@ -166,7 +166,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   jobData['company'] ?? 'Unknown Company',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: _textSecondary,
                     fontWeight: FontWeight.w500,
@@ -222,7 +222,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
               Icon(icon, size: 16, color: _textSecondary),
               const SizedBox(width: 8),
               Text(label,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 12, fontWeight: FontWeight.w500, color: _textSecondary)),
             ],
           ),
@@ -231,7 +231,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
                 fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary),
           ),
         ],
@@ -279,7 +279,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                 children: [
                   const Icon(Icons.check, size: 16, color: _successColor),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(e.toString(), style: GoogleFonts.inter(fontSize: 13, color: _textPrimary))),
+                  Expanded(child: Text(e.toString(), style: GoogleFonts.poppins(fontSize: 13, color: _textPrimary))),
                 ],
               ),
             ))
@@ -317,7 +317,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
         children: [
           Text(
             title.toUpperCase(),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: _textSecondary,
@@ -359,7 +359,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
               children: [
                 Text(
                   'Job Status:',
-                  style: GoogleFonts.inter(fontSize: 13, color: _textSecondary),
+                  style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
                 ),
                 const SizedBox(width: 12),
                 Switch.adaptive(
@@ -378,7 +378,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   status == 'active' ? 'Active' : 'Paused',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: status == 'active' ? _successColor : _textSecondary,
@@ -410,7 +410,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
               }
             },
             icon: const Icon(Icons.dark_mode_outlined, size: 20, color: _dangerColor),
-            label: Text('Archive Job', style: GoogleFonts.inter(color: _dangerColor, fontWeight: FontWeight.w600)),
+            label: Text('Archive Job', style: GoogleFonts.poppins(color: _dangerColor, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -424,7 +424,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w700,
           color: _textPrimary,
@@ -436,7 +436,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
   Widget _buildRichText(String text) {
     return Text(
       text,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontSize: 15,
         height: 1.6,
         color: const Color(0xFF334155), // Slate 700
@@ -454,7 +454,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: color,
@@ -470,12 +470,12 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.inter(fontSize: 13, color: _textSecondary)),
+          Text(label, style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: _textPrimary),
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: _textPrimary),
             ),
           ),
         ],
