@@ -12,6 +12,7 @@ class Candidate {
   final String phone;
   final String nationality;
   final String pictureUrl;
+  Map<String, dynamic>? matchScore; // ✅ ADD THIS LINE
   Map<String, dynamic>? profile;
 
   /// When true, contact info should be hidden (recruiter view)
@@ -24,12 +25,13 @@ class Candidate {
     required this.phone,
     required this.nationality,
     required this.pictureUrl,
+    this.matchScore, // ✅ ADD THIS LINE
     this.profile,
     this.hideContact = true,
   });
 
   /// Build from the canonical `user_data` map (preferred)
-  factory Candidate.fromUserData(String uid, Map<String, dynamic> userData, {bool hideContact = true}) {
+  factory Candidate.fromUserData(String uid, Map<String, dynamic> userData, {bool hideContact = true, Map<String, dynamic>? matchScore}) {
     final personal = (userData['personalProfile'] is Map) ? Map<String, dynamic>.from(userData['personalProfile'] as Map) : userData;
     final name = (personal['name'] ?? personal['fullName'] ?? '') as String;
     final email = (personal['email'] ?? personal['secondary_email'] ?? '') as String;
@@ -45,12 +47,13 @@ class Candidate {
       nationality: nationality,
       pictureUrl: pictureUrl,
       profile: userData,
+      matchScore: matchScore, // ✅ ADD THIS LINE
       hideContact: hideContact,
     );
   }
 
   /// Legacy / fallback builder: data may be flat at doc root
-  factory Candidate.fromMapFlat(String uid, Map<String, dynamic> data, {bool hideContact = true}) {
+  factory Candidate.fromMapFlat(String uid, Map<String, dynamic> data, {bool hideContact = true, Map<String, dynamic>? matchScore}) {
     final name = (data['name'] ?? data['fullName'] ?? '') as String;
     final email = (data['email'] ?? '') as String;
     final phone = (data['phone'] ?? data['phone number'] ?? data['contactNumber'] ?? '') as String;
@@ -65,6 +68,7 @@ class Candidate {
       nationality: nationality,
       pictureUrl: pictureUrl,
       profile: data,
+      matchScore: matchScore, // ✅ ADD THIS LINE
       hideContact: hideContact,
     );
   }
@@ -94,7 +98,7 @@ class Candidate {
 }
 
 /// Provider used in recruiter dashboard
-class RecruiterProvider2 extends ChangeNotifier {
+class Shortlisting_provider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -116,12 +120,13 @@ class RecruiterProvider2 extends ChangeNotifier {
   String? selectedNationality;
   String sortOption = 'None'; // 'None','Name A→Z','Name Z→A'
 
-  // -- NEW: Job Filtering --
+  // -- Job Filtering --
   String? selectedJobId;
   Set<String> availableJobIds = {};
   // Map to track which jobs a candidate is shortlisted for: UID -> Set<JobId>
   final Map<String, Set<String>> _candidateJobsMap = {};
-
+// Map to store match scores: UID -> JobId -> MatchScore
+  final Map<String, Map<String, Map<String, dynamic>>> _candidateMatchScores = {}; // ✅ ADD THIS LINE
   // Selections
   final Set<String> selectedUids = {};
 
@@ -134,7 +139,7 @@ class RecruiterProvider2 extends ChangeNotifier {
   /// Default true (we hide email/phone and show masked versions)
   bool hideContactForViewer = true;
 
-  RecruiterProvider2() {
+  Shortlisting_provider() {
     _init();
   }
 
@@ -161,41 +166,73 @@ class RecruiterProvider2 extends ChangeNotifier {
     try {
       debugPrint('📥 Listening for Shortlisted candidates...');
 
-      // ⚡ FAST: Query specifically for 'Shortlist' status across all users
-      // This avoids loading all job_seekers and filtering manually.
-      final query = _firestore.collectionGroup('applied_jobs')
+      // ⚡ Query for 'Shortlist' status across all applications
+      // Path: applications/{userId}/applied_jobs/{docId}
+      final query = _firestore
+          .collectionGroup('applied_jobs')
           .where('status', isEqualTo: 'Shortlist');
 
       _subscription = query.snapshots().listen((snapshot) async {
         if (_isDisposed) return;
+
+        debugPrint('📊 Received ${snapshot.docs.length} shortlist applications');
 
         final Set<String> uidsToFetch = {};
         _candidateJobsMap.clear();
         availableJobIds.clear();
 
         // 1. Collect UIDs and JobIDs from the applications
+// 1. Collect UIDs, JobIDs, and Match Scores from the applications
         for (final doc in snapshot.docs) {
-          // Parent structure: applications/{userId}/applied_jobs/{docId}
-          // doc.reference.parent.parent!.id gives us {userId}
-          final parentDoc = doc.reference.parent.parent;
-          if (parentDoc == null) continue;
-
-          final uid = parentDoc.id;
-          final data = doc.data();
-          final jobId = (data['jobId'] ?? '').toString();
-
-          if (uid.isNotEmpty) {
-            uidsToFetch.add(uid);
-
-            // Map Candidate -> Jobs
-            if (!_candidateJobsMap.containsKey(uid)) {
-              _candidateJobsMap[uid] = {};
+          try {
+            // Get parent document reference (userId)
+            final parentDoc = doc.reference.parent.parent;
+            if (parentDoc == null) {
+              debugPrint('⚠️ No parent for doc ${doc.id}');
+              continue;
             }
-            if (jobId.isNotEmpty) {
-              _candidateJobsMap[uid]!.add(jobId);
-              availableJobIds.add(jobId);
+
+            final uid = parentDoc.id;
+            final data = doc.data();
+            final jobId = (data['jobId'] ?? '').toString();
+
+            debugPrint('✅ Found shortlist: UID=$uid, JobID=$jobId');
+
+            if (uid.isNotEmpty) {
+              uidsToFetch.add(uid);
+
+              // Map Candidate -> Jobs
+              if (!_candidateJobsMap.containsKey(uid)) {
+                _candidateJobsMap[uid] = {};
+              }
+              if (jobId.isNotEmpty) {
+                _candidateJobsMap[uid]!.add(jobId);
+                availableJobIds.add(jobId);
+              }
+
+              // ✅ EXTRACT MATCH SCORE - ADD THIS BLOCK
+              if (data['match_score'] is Map) {
+                if (!_candidateMatchScores.containsKey(uid)) {
+                  _candidateMatchScores[uid] = {};
+                }
+                _candidateMatchScores[uid]![jobId] = Map<String, dynamic>.from(data['match_score']);
+                debugPrint('📊 Match score for $uid in job $jobId: ${data['match_score']}');
+              }
             }
+          } catch (e) {
+            debugPrint('⚠️ Error processing application doc: $e');
           }
+        }
+        debugPrint('📌 Total unique UIDs to fetch: ${uidsToFetch.length}');
+
+        if (uidsToFetch.isEmpty) {
+          _candidates = [];
+          _populateOptions();
+          _applyFilter();
+          loading = false;
+          debugPrint('⚠️ No shortlisted candidates found');
+          _safeNotify();
+          return;
         }
 
         // 2. Fetch Profiles for these UIDs (Chunked for performance)
@@ -207,6 +244,11 @@ class RecruiterProvider2 extends ChangeNotifier {
 
         loading = false;
         debugPrint('✅ Loaded ${_candidates.length} shortlisted candidates.');
+        _safeNotify();
+      }, onError: (error) {
+        debugPrint('❌ Stream error: $error');
+        _candidates = [];
+        loading = false;
         _safeNotify();
       });
 
@@ -224,6 +266,8 @@ class RecruiterProvider2 extends ChangeNotifier {
     // Deduplicate UIDs
     final uniqueUids = uids.toSet().toList();
 
+    debugPrint('🔄 Fetching profiles for ${uniqueUids.length} candidates...');
+
     // Process in chunks of 10
     for (var i = 0; i < uniqueUids.length; i += 10) {
       final end = (i + 10 < uniqueUids.length) ? i + 10 : uniqueUids.length;
@@ -232,31 +276,49 @@ class RecruiterProvider2 extends ChangeNotifier {
       if (batch.isEmpty) continue;
 
       try {
+        debugPrint('🔍 Fetching batch ${i ~/ 10 + 1}: ${batch.length} profiles');
+
         // Fetch users where FieldPath.documentId is in the batch
-        final q = await _firestore.collection('job_seeker')
+        final q = await _firestore
+            .collection('job_seeker')
             .where(FieldPath.documentId, whereIn: batch)
             .get(const GetOptions(source: Source.serverAndCache));
+
+        debugPrint('📥 Got ${q.docs.length} documents from job_seeker collection');
 
         for (final doc in q.docs) {
           final data = doc.data();
           final uid = doc.id;
 
+          // ✅ Get match score for this candidate (use first job's score if multiple)
+          Map<String, dynamic>? matchScore;
+          if (_candidateMatchScores.containsKey(uid)) {
+            final scores = _candidateMatchScores[uid]!;
+            if (scores.isNotEmpty) {
+              matchScore = scores.values.first; // Use first job's score
+            }
+          }
+
           // Re-use existing parsing logic
           if (data.containsKey('user_data') && data['user_data'] is Map<String, dynamic>) {
             final userData = Map<String, dynamic>.from(data['user_data'] as Map);
             if (_hasMinimumCandidateInfo(userData)) {
-              results.add(Candidate.fromUserData(uid, userData, hideContact: hideContactForViewer));
+              results.add(Candidate.fromUserData(uid, userData, hideContact: hideContactForViewer, matchScore: matchScore)); // ✅ PASS matchScore
+              debugPrint('✅ Added candidate: ${userData['personalProfile']?['name'] ?? 'Unknown'} with score: $matchScore');
               continue;
             }
           }
           if (_hasMinimumCandidateInfo(data)) {
-            results.add(Candidate.fromMapFlat(uid, data, hideContact: hideContactForViewer));
+            results.add(Candidate.fromMapFlat(uid, data, hideContact: hideContactForViewer, matchScore: matchScore)); // ✅ PASS matchScore
+            debugPrint('✅ Added candidate (flat): ${data['name'] ?? 'Unknown'} with score: $matchScore');
           }
         }
       } catch (e) {
         debugPrint('⚠️ Error fetching batch profiles: $e');
       }
     }
+
+    debugPrint('✅ Successfully fetched ${results.length} candidate profiles');
     return results;
   }
 
@@ -287,7 +349,6 @@ class RecruiterProvider2 extends ChangeNotifier {
     _safeNotify();
   }
 
-  // NEW: Filter by Job ID
   void setJobFilter(String? jobId) {
     selectedJobId = (jobId == null || jobId.isEmpty || jobId == 'All') ? null : jobId;
     _applyFilter();
@@ -345,7 +406,6 @@ class RecruiterProvider2 extends ChangeNotifier {
       if (!docSnap.exists) return null;
       final raw = docSnap.data() ?? {};
 
-      // pick canonical user_data if present
       Map<String, dynamic> userData = {};
       if (raw.containsKey('user_data') && raw['user_data'] is Map<String, dynamic>) {
         userData = Map<String, dynamic>.from(raw['user_data'] as Map<String, dynamic>);
@@ -353,11 +413,11 @@ class RecruiterProvider2 extends ChangeNotifier {
         userData = Map<String, dynamic>.from(raw);
       }
 
-      // Normalize documents -> include possible misspelling 'docuemnts' and many aliases
+      // Normalize documents
       final docsObj = userData['documents']
           ?? userData['documentsList']
           ?? userData['documentsArray']
-          ?? userData['docuemnts'] // handle backend typo
+          ?? userData['docuemnts']
           ?? userData['docs']
           ?? userData['files'];
       List<Map<String, dynamic>> docsNormalized = [];
@@ -380,10 +440,10 @@ class RecruiterProvider2 extends ChangeNotifier {
       }
       userData['documents'] = docsNormalized;
 
-      // Normalize experience, education arrays
+      // Normalize arrays
       userData['professionalExperience'] = _ensureListOfMaps(userData['professionalExperience'] ?? userData['experiences'] ?? userData['experience'] ?? userData['work_experience']);
       userData['educationalProfile'] = _ensureListOfMaps(userData['educationalProfile'] ?? userData['education'] ?? userData['educations'] ?? userData['qualifications']);
-      userData['certifications'] = _ensureListOfStrings(userData['certifications'] ?? userData['certs'] ?? userData['training']);
+      userData['certifications'] = _ensureCertifications(userData['certifications'] ?? userData['certs'] ?? userData['training']);
       userData['publications'] = _ensureListOfStrings(userData['publications'] ?? userData['papers']);
       userData['awards'] = _ensureListOfStrings(userData['awards'] ?? userData['honors']);
       userData['references'] = _ensureListOfStrings(userData['references'] ?? userData['refs']);
@@ -396,8 +456,42 @@ class RecruiterProvider2 extends ChangeNotifier {
       _safeNotify();
       return userData;
     } catch (e) {
+      debugPrint('❌ Error fetching profile for $uid: $e');
       return null;
     }
+  }
+
+  List<Map<String, String>> _ensureCertifications(dynamic v) {
+    final out = <Map<String, String>>[];
+
+    if (v is List) {
+      for (final e in v) {
+        if (e is Map) {
+          out.add({
+            'organization': (e['organization'] ?? '').toString(),
+            'name': (e['name'] ?? e['certName'] ?? '').toString(),
+          });
+        } else if (e is String && e.isNotEmpty) {
+          out.add({
+            'organization': '',
+            'name': e,
+          });
+        }
+      }
+    } else if (v is String && v.isNotEmpty) {
+      out.add({
+        'organization': '',
+        'name': v,
+      });
+    }
+
+    return out.where((cert) => cert['name']!.isNotEmpty).toList();
+  }
+
+  List<String> _ensureListOfStrings(dynamic v) {
+    if (v is List) return v.map((e) => e.toString()).toList();
+    if (v is String && v.isNotEmpty) return [v];
+    return [];
   }
 
   List<Map<String, dynamic>> _ensureListOfMaps(dynamic v) {
@@ -405,7 +499,15 @@ class RecruiterProvider2 extends ChangeNotifier {
     if (v is List) {
       for (final e in v) {
         if (e is Map) {
-          out.add(Map<String, dynamic>.from(e));
+          final mapped = Map<String, dynamic>.from(e);
+          final result = {
+            'organization': mapped['organization'] ?? mapped['company'] ?? '',
+            'duration': mapped['duration'] ?? '',
+            'role': mapped['role'] ?? mapped['title'] ?? mapped['position'] ?? '',
+            'duties': mapped['duties'] ?? mapped['description'] ?? mapped['text'] ?? '',
+            'text': mapped['text'] ?? mapped['duties'] ?? '',
+          };
+          out.add(result);
         } else {
           out.add({'text': e?.toString() ?? ''});
         }
@@ -413,7 +515,14 @@ class RecruiterProvider2 extends ChangeNotifier {
     } else if (v is Map) {
       for (final val in v.values) {
         if (val is Map) {
-          out.add(Map<String, dynamic>.from(val));
+          final mapped = Map<String, dynamic>.from(val);
+          out.add({
+            'organization': mapped['organization'] ?? mapped['company'] ?? '',
+            'duration': mapped['duration'] ?? '',
+            'role': mapped['role'] ?? '',
+            'duties': mapped['duties'] ?? mapped['text'] ?? '',
+            'text': mapped['text'] ?? mapped['duties'] ?? '',
+          });
         } else {
           out.add({'text': val?.toString() ?? ''});
         }
@@ -424,13 +533,6 @@ class RecruiterProvider2 extends ChangeNotifier {
     return out;
   }
 
-  List<String> _ensureListOfStrings(dynamic v) {
-    if (v is List) return v.map((e) => e.toString()).toList();
-    if (v is String && v.isNotEmpty) return [v];
-    return [];
-  }
-
-  /// Extract a CV/Resume URL from normalized profile -> looks in documents[] for url-like fields
   String? getCvUrlFromProfile(Map<String, dynamic>? profile) {
     if (profile == null) return null;
     if (profile['documents'] is List) {
@@ -457,8 +559,9 @@ class RecruiterProvider2 extends ChangeNotifier {
   void toggleSelection(String uid, {bool? value}) {
     if (value == true) {
       selectedUids.add(uid);
-    } else if (value == false) selectedUids.remove(uid);
-    else {
+    } else if (value == false) {
+      selectedUids.remove(uid);
+    } else {
       if (selectedUids.contains(uid)) {
         selectedUids.remove(uid);
       } else {
@@ -471,6 +574,11 @@ class RecruiterProvider2 extends ChangeNotifier {
 
   void clearSelection() {
     selectedUids.clear();
+    searchQuery = '';
+    selectedNationality = null;
+    sortOption = 'None';
+    selectedJobId = null;
+    _applyFilter();
     _safeNotify();
   }
 
