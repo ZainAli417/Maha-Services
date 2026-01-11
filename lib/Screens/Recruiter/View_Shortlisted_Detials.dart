@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -312,24 +314,8 @@ class CandidateDetailsDialog extends StatelessWidget {
             _sidebarInfoBlock("Phone Number", phoneDisplay, Icons.phone_android_outlined),
             const SizedBox(height: 24),
             _sidebarInfoBlock("Location", nationality, Icons.location_on_outlined),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor),
-              ),
-              child: Column(
-                children: [
-                  Text("Matching Score", style: GoogleFonts.inter(fontSize: 12, color: _textMuted)),
-                  const SizedBox(height: 8),
-                  const LinearProgressIndicator(value: 0.85, backgroundColor: _bgSubtle, color: Colors.green),
-                  const SizedBox(height: 8),
-                  Text("85% System Match", style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.green)),
-                ],
-              ),
-            )
+            const Spacer()
+
           ],
         ),
       ),
@@ -385,12 +371,49 @@ class CandidateDetailsDialog extends StatelessWidget {
   }
 
   Widget _buildEducationList(List<Map<String, dynamic>> educationList) {
+    // --- CONSOLE LOGGING ---
+    debugPrint('═══ EDUCATION LIST DEBUG ═══');
+    debugPrint('Count: ${educationList.length}');
+    for (var i = 0; i < educationList.length; i++) {
+      debugPrint('Index [$i]: ${jsonEncode(educationList[i])}');
+    }
+    debugPrint('═══════════════════════════');
+
     if (educationList.isEmpty) return _emptyState("Academic data unavailable.");
 
     return Column(
       children: educationList.map((e) {
-        final institutionName = (e['institute'] ?? e['institutionName'] ?? e['company'] ?? e['organization'] ?? '').toString();
-        final major = (e['degree'] ?? e['title'] ?? e['name'] ?? e['majorSubjects'] ?? '').toString();
+        // ✅ FIXED: Use correct field names from your data structure
+        final institutionName = (
+            e['institutionName'] ??      // ✅ Primary field
+                e['institute'] ??
+                e['company'] ??
+                e['organization'] ??
+                ''
+        ).toString();
+
+        final major = (
+            e['majorSubjects'] ??        // ✅ Primary field for degree/major
+                e['degree'] ??
+                e['title'] ??
+                e['name'] ??
+                ''
+        ).toString();
+
+        final duration = (
+            e['duration'] ??             // ✅ Duration field
+                e['from'] ??
+                e['start'] ??
+                ''
+        ).toString();
+
+        final marksOrCgpa = (
+            e['marksOrCgpa'] ??          // ✅ Marks/CGPA field
+                e['marks'] ??
+                e['cgpa'] ??
+                e['grade'] ??
+                ''
+        ).toString();
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -398,30 +421,98 @@ class CandidateDetailsDialog extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: _borderColor),
+            color: institutionName.isEmpty && major.isEmpty
+                ? Colors.red.withOpacity(0.05)
+                : null,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.school_outlined, color: _textMuted),
+              Icon(
+                Icons.school_outlined,
+                color: institutionName.isEmpty ? Colors.orange : _textMuted,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (institutionName.isNotEmpty)
-                      Text(institutionName, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _textMain)),
-                    if (major.isNotEmpty)
-                      Text(major, style: GoogleFonts.inter(fontSize: 13, color: _textMuted)),
+                    // Institution Name
+                    Text(
+                      institutionName.isNotEmpty
+                          ? institutionName
+                          : 'Unknown Institution',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: institutionName.isNotEmpty
+                            ? _textMain
+                            : Colors.orange,
+                      ),
+                    ),
+
+                    // Major/Degree
+                    if (major.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        major,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: _brandPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+
+                    // Duration and Marks in a row
+                    if (duration.isNotEmpty || marksOrCgpa.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (duration.isNotEmpty) ...[
+                            Icon(Icons.calendar_today_outlined,
+                                size: 12,
+                                color: _textMuted),
+                            const SizedBox(width: 4),
+                            Text(
+                              duration,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: _textMuted,
+                              ),
+                            ),
+                          ],
+                          if (duration.isNotEmpty && marksOrCgpa.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('•',
+                                  style: TextStyle(color: _textMuted)),
+                            ),
+                          if (marksOrCgpa.isNotEmpty) ...[
+                            Icon(Icons.grade_outlined,
+                                size: 12,
+                                color: _textMuted),
+                            const SizedBox(width: 4),
+                            Text(
+                              marksOrCgpa,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: _textMuted,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
       }).toList(),
     );
-  }
-
-  Widget _buildAttachmentsSection(List<Map<String, dynamic>> documentsList, String cvUrlToShow) {
+  }  Widget _buildAttachmentsSection(List<Map<String, dynamic>> documentsList, String cvUrlToShow) {
     if (documentsList.isEmpty && cvUrlToShow.isEmpty) {
       return _emptyState("No digital copies attached.");
     }

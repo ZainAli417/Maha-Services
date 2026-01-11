@@ -442,7 +442,7 @@ class Shortlisting_provider extends ChangeNotifier {
 
       // Normalize arrays
       userData['professionalExperience'] = _ensureListOfMaps(userData['professionalExperience'] ?? userData['experiences'] ?? userData['experience'] ?? userData['work_experience']);
-      userData['educationalProfile'] = _ensureListOfMaps(userData['educationalProfile'] ?? userData['education'] ?? userData['educations'] ?? userData['qualifications']);
+      userData['educationalProfile'] = _ensureEducationList(userData['educationalProfile'] ?? userData['education'] ?? userData['educations'] ?? userData['qualifications']);
       userData['certifications'] = _ensureCertifications(userData['certifications'] ?? userData['certs'] ?? userData['training']);
       userData['publications'] = _ensureListOfStrings(userData['publications'] ?? userData['papers']);
       userData['awards'] = _ensureListOfStrings(userData['awards'] ?? userData['honors']);
@@ -493,7 +493,60 @@ class Shortlisting_provider extends ChangeNotifier {
     if (v is String && v.isNotEmpty) return [v];
     return [];
   }
+  List<Map<String, dynamic>> _ensureEducationList(dynamic v) {
+    final out = <Map<String, dynamic>>[];
 
+    if (v is List) {
+      for (final e in v) {
+        if (e is Map) {
+          final mapped = Map<String, dynamic>.from(e);
+          // ✅ Map EDUCATION-specific fields
+          final result = {
+            'institutionName': mapped['institutionName'] ??
+                mapped['institute'] ??
+                mapped['organization'] ??
+                mapped['company'] ?? '',
+            'duration': mapped['duration'] ??
+                mapped['from'] ??
+                mapped['start'] ?? '',
+            'majorSubjects': mapped['majorSubjects'] ??
+                mapped['degree'] ??
+                mapped['major'] ??
+                mapped['title'] ?? '',
+            'marksOrCgpa': mapped['marksOrCgpa'] ??
+                mapped['marks'] ??
+                mapped['cgpa'] ??
+                mapped['grade'] ?? '',
+          };
+          out.add(result);
+        } else {
+          out.add({'institutionName': e?.toString() ?? ''});
+        }
+      }
+    } else if (v is Map) {
+      for (final val in v.values) {
+        if (val is Map) {
+          final mapped = Map<String, dynamic>.from(val);
+          out.add({
+            'institutionName': mapped['institutionName'] ??
+                mapped['institute'] ?? '',
+            'duration': mapped['duration'] ?? '',
+            'majorSubjects': mapped['majorSubjects'] ??
+                mapped['degree'] ?? '',
+            'marksOrCgpa': mapped['marksOrCgpa'] ?? '',
+          });
+        } else {
+          out.add({'institutionName': val?.toString() ?? ''});
+        }
+      }
+    } else if (v != null) {
+      out.add({'institutionName': v.toString()});
+    }
+
+    return out;
+  }
+
+// Keep your existing _ensureListOfMaps for EXPERIENCE
   List<Map<String, dynamic>> _ensureListOfMaps(dynamic v) {
     final out = <Map<String, dynamic>>[];
     if (v is List) {
@@ -533,6 +586,7 @@ class Shortlisting_provider extends ChangeNotifier {
     return out;
   }
 
+
   String? getCvUrlFromProfile(Map<String, dynamic>? profile) {
     if (profile == null) return null;
     if (profile['documents'] is List) {
@@ -555,7 +609,15 @@ class Shortlisting_provider extends ChangeNotifier {
     }
     return null;
   }
-
+// Inside Shortlisting_provider
+  void toggleAll(bool? value, List<Candidate> currentList) {
+    if (value == true) {
+      selectedUids.addAll(currentList.map((c) => c.uid));
+    } else {
+      selectedUids.clear();
+    }
+    notifyListeners();
+  }
   void toggleSelection(String uid, {bool? value}) {
     if (value == true) {
       selectedUids.add(uid);

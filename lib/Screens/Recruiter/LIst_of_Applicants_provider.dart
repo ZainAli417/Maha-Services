@@ -473,8 +473,9 @@ class ApplicantsProvider with ChangeNotifier {
 
       // Determine exp bucket
       final y = applicant.experienceYears;
-      if (y == 0) availableExperiences.add('Entry Level');
-      else if (y <= 2) availableExperiences.add('1-2 years');
+      if (y == 0) {
+        availableExperiences.add('Entry Level');
+      } else if (y <= 2) availableExperiences.add('1-2 years');
       else if (y <= 5) availableExperiences.add('3-5 years');
       else if (y <= 10) availableExperiences.add('6-10 years');
       else availableExperiences.add('10+ years');
