@@ -293,33 +293,67 @@ class _job_hubState extends State<job_hub>
       }),
     );
   }
-
   Widget _buildWelcomeSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Welcome to Job Hub !',
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1A1A1A),
-            letterSpacing: -0.5,
+    const Color kPrimaryBlue = Color(0xFF1E40AF);
+    const Color kTextPrimary = Color(0xFF0F172A);
+    const Color kTextSecondary = Color(0xFF475569);
+    const Color kBorderLight = Color(0xFFE2E8F0);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
+      ),
+      child: Row(
+        children: [
+          // Left Icon
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: kPrimaryBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.screen_search_desktop_outlined,
+              size: 24,
+              color: kPrimaryBlue,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Explore Jobs and Be a part of your Dream Company',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF6B7280),
-            letterSpacing: -0.2,
+
+          const SizedBox(width: 14),
+
+          // Title & Subtitle
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Job Hub',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: kTextPrimary,
+                  height: 1.2,
+                ),
+              ),
+              Text(
+                'Explore Jobs and Be a part of your Dream Company',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: kTextSecondary,
+                  height: 1.2,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+
+          const Spacer(),
+        ],
+      ),
     );
   }
+
 
 }
 

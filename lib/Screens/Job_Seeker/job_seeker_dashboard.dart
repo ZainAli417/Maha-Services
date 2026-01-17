@@ -238,96 +238,116 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     final accepted = prov.applications.where((a) => a.status == 'accepted').length;
     final rejected = prov.applications.where((a) => a.status == 'rejected').length;
 
+    const Color kPrimaryBlue = Color(0xFF1E40AF);
+    const Color kTextPrimary = Color(0xFF0F172A);
+    const Color kTextSecondary = Color(0xFF475569);
+    const Color kBorderLight = Color(0xFFE2E8F0);
+
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Left Icon
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: kPrimaryBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.work_outline, size: 24, color: kPrimaryBlue),
+          ),
+
+          const SizedBox(width: 14),
+
+          // Title + Subtitle
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Dashboard',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: kTextPrimary,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '$count ${count == 1 ? 'application' : 'applications'} found',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: kTextSecondary,
+                  height: 1.2,
+                ),
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          // Quick Stats
           Row(
             children: [
-              // Title Section
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              _buildQuickStatCard('Pending', pending, const Color(0xFFF59E0B)),
+              const SizedBox(width: 10),
+              _buildQuickStatCard('Accepted', accepted, const Color(0xFF10B981)),
+              const SizedBox(width: 10),
+              _buildQuickStatCard('Rejected', rejected, const Color(0xFFEF4444)),
+            ],
+          ),
+
+          const SizedBox(width: 16),
+
+          // Filter Toggle Button
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => setState(() => _showFilters = !_showFilters),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _showFilters
+                      ? const Color(0xFF6366F1).withOpacity(0.08)
+                      : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: _showFilters
+                        ? const Color(0xFF6366F1).withOpacity(0.3)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
                   children: [
-                    Text(
-                      'Applied Jobs',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
-                        letterSpacing: -0.5,
-                      ),
+                    Icon(
+                      _showFilters ? Icons.filter_list : Icons.filter_list_off,
+                      size: 16,
+                      color: _showFilters
+                          ? const Color(0xFF6366F1)
+                          : const Color(0xFF64748B),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(width: 6),
                     Text(
-                      '$count ${count == 1 ? 'application' : 'applications'} found',
+                      _showFilters ? 'Hide Filters' : 'Show Filters',
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: const Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _showFilters
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF64748B),
                       ),
                     ),
                   ],
                 ),
               ),
-
-              // Quick Stats
-              Row(
-                children: [
-                  _buildQuickStatCard('Pending', pending, const Color(0xFFF59E0B)),
-                  const SizedBox(width: 12),
-                  _buildQuickStatCard('Accepted', accepted, const Color(0xFF10B981)),
-                  const SizedBox(width: 12),
-                  _buildQuickStatCard('Rejected', rejected, const Color(0xFFEF4444)),
-                ],
-              ),
-
-              const SizedBox(width: 16),
-
-              // Filter Toggle Button
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => setState(() => _showFilters = !_showFilters),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: _showFilters ? const Color(0xFF6366F1).withOpacity(0.08) : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _showFilters ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.grey.shade300,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _showFilters ? Icons.filter_list : Icons.filter_list_off,
-                          size: 16,
-                          color: _showFilters ? const Color(0xFF6366F1) : const Color(0xFF64748B),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          _showFilters ? 'Hide Filters' : 'Show Filters',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: _showFilters ? const Color(0xFF6366F1) : const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -380,10 +400,12 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Bar
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // 🔍 Search Bar
               Expanded(
+                flex: 3,
                 child: Container(
                   height: 40,
                   decoration: BoxDecoration(
@@ -419,7 +441,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           : null,
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade200),
@@ -430,7 +453,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                        borderSide:
+                        const BorderSide(color: Color(0xFF6366F1), width: 2),
                       ),
                     ),
                     style: GoogleFonts.poppins(fontSize: 13),
@@ -438,20 +462,16 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   ),
                 ),
               ),
-            ],
-          ),
 
-          const SizedBox(height: 16),
+              const SizedBox(width: 12),
 
-          // Filter Chips Row
-          Row(
-            children: [
-              // Status Filter
+              // 🏷 Status Filter
               _buildFilterChip(
                 label: 'Status',
                 icon: Icons.pending_actions_outlined,
                 value: _selectedStatus == 'All' ? 'All Status' : _selectedStatus,
-                options: _statusOptions.map((s) => s == 'All' ? 'All Status' : s).toList(),
+                options:
+                _statusOptions.map((s) => s == 'All' ? 'All Status' : s).toList(),
                 onSelect: (val) {
                   setState(() {
                     _selectedStatus = val == 'All Status' ? 'All' : val;
@@ -461,12 +481,15 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
 
               const SizedBox(width: 12),
 
-              // Company Filter
+              // 🏢 Company Filter
               _buildFilterChip(
                 label: 'Company',
                 icon: Icons.business_outlined,
-                value: _selectedCompany == 'All' ? 'All Companies' : _selectedCompany,
-                options: _companyOptions.map((c) => c == 'All' ? 'All Companies' : c).toList(),
+                value:
+                _selectedCompany == 'All' ? 'All Companies' : _selectedCompany,
+                options: _companyOptions
+                    .map((c) => c == 'All' ? 'All Companies' : c)
+                    .toList(),
                 onSelect: (val) {
                   setState(() {
                     _selectedCompany = val == 'All Companies' ? 'All' : val;
@@ -476,14 +499,15 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
 
               const SizedBox(width: 12),
 
-              // Applied Date Filter
+              // 📅 Date Filter
               Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => _showDatePicker(true),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(8),
@@ -492,7 +516,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.date_range_outlined, size: 16, color: Color(0xFF64748B)),
+                        const Icon(Icons.date_range_outlined,
+                            size: 16, color: Color(0xFF64748B)),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +543,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                           ],
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.calendar_today, size: 16, color: Color(0xFF64748B)),
+                        const Icon(Icons.calendar_today,
+                            size: 16, color: Color(0xFF64748B)),
                       ],
                     ),
                   ),
@@ -527,7 +553,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
 
               const SizedBox(width: 12),
 
-              // Sort Filter
+              // 🔃 Sort Filter
               _buildFilterChip(
                 label: 'Sort',
                 icon: Icons.sort_outlined,
@@ -561,10 +587,11 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   });
                 },
               ),
+              const SizedBox(width: 12),
 
-              const Spacer(),
 
-              // Clear Filters Button
+
+              // ❌ Clear Filters
               if (_hasActiveFilters())
                 Material(
                   color: Colors.transparent,
@@ -572,19 +599,18 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     onTap: _clearFilters,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+                        border: Border.all(
+                            color: const Color(0xFFEF4444).withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.clear_all,
-                            size: 16,
-                            color: Color(0xFFEF4444),
-                          ),
+                          const Icon(Icons.clear_all,
+                              size: 16, color: Color(0xFFEF4444)),
                           const SizedBox(width: 6),
                           Text(
                             'Clear Filters',

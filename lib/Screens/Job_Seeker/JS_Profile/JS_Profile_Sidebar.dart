@@ -1,7 +1,7 @@
-// js_profile_sidebar.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../Constant/CV_Generator.dart';
 import 'JS_Profile_Provider.dart';
 
@@ -14,6 +14,7 @@ class JSProfileSidebar extends StatefulWidget {
 }
 
 class _JSProfileSidebarState extends State<JSProfileSidebar> {
+  // ---------------- Configuration ----------------
   // Section weights (must sum to 100)
   static const int _wPersonal = 25;
   static const int _wEducation = 15;
@@ -25,8 +26,9 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   static const int _wReferences = 4;
   static const int _wDocuments = 4;
 
-  bool _isExpanded = false; // now part of State
+  bool _isExpanded = false;
 
+  // ---------------- Logic ----------------
   int _scorePersonal() {
     final provider = widget.provider;
     var s = 0;
@@ -84,255 +86,141 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Color _getScoreColor(int score) {
-    if (score >= 80) return const Color(0xFF10B981);
-    if (score >= 60) return const Color(0xFF3B82F6);
-    if (score >= 40) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
+    if (score >= 80) return const Color(0xFF10B981); // Emerald
+    if (score >= 60) return const Color(0xFF3B82F6); // Blue
+    if (score >= 40) return const Color(0xFFF59E0B); // Amber
+    return const Color(0xFFEF4444); // Red
   }
 
   String _getScoreLabel(int score) {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Fair';
-    return 'Needs Work';
+    if (score >= 80) return 'Excellent Profile';
+    if (score >= 60) return 'Good Profile';
+    if (score >= 40) return 'Fair Profile';
+    return 'Incomplete Profile';
   }
 
+  // ---------------- UI Build ----------------
   @override
   Widget build(BuildContext context) {
     final totalScore = computeTotalScore();
     final scoreColor = _getScoreColor(totalScore);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildProfileHeader(),
-          const SizedBox(height: 24),
-          _buildScoreCard(totalScore, scoreColor),
-          const SizedBox(height: 20),
-          _buildQuickStats(),
-          const SizedBox(height: 20),
-          _buildSectionBreakdown(),
-          const SizedBox(height: 20),
-          CVGeneratorButton(),
-          const SizedBox(height: 20),
-          _buildSkillsOverview(),
-          const SizedBox(height: 20),
-          _buildDetailsCard(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader() {
-    final provider = widget.provider;
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E3A8A).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Avatar
-          Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 35,
-                  backgroundColor: Colors.white,
-                  backgroundImage: provider.profilePicUrl.isNotEmpty
-                      ? NetworkImage(provider.profilePicUrl)
-                      : null,
-                  child: provider.profilePicUrl.isEmpty
-                      ? Text(
-                    _initials(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1E3A8A),
-                    ),
-                  )
-                      : null,
-                ),
-              ),
-              Positioned(
-                bottom: 2,
-                right: 2,
-                child: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 14),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16),
+      color: const Color(0xFFF9FAFB), // Very light grey background for sidebar
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            //_buildModernHeader(),
+            const SizedBox(height: 24),
 
-          // Name + subtitles
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _displayName(),
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.email_outlined, color: Colors.white70, size: 14),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        provider.email.isNotEmpty ? provider.email : 'No email provided',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.white70,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                if (provider.contactNumber.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.phone, color: Colors.white70, size: 14),
-                      const SizedBox(width: 6),
-                      Text(
-                        provider.contactNumber,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+            _buildCompletionCard(totalScore, scoreColor),
+            const SizedBox(height: 24),
+
+            _buildGridStats(),
+            const SizedBox(height: 24),
+
+            _buildSectionBreakdown(),
+            const SizedBox(height: 24),
+
+            // Just add this widget wrapped in your existing Container:
+            Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
                 ],
-              ],
+              ),
+              child: const CVGeneratorButton(), // ← Changed from CVGeneratorButton(context)
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+
+            _buildSkillsOverview(),
+            const SizedBox(height: 24),
+
+            _buildPersonalDetailsCard(),
+            const SizedBox(height: 40), // Bottom padding
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildScoreCard(int totalScore, Color scoreColor) {
-    final provider = widget.provider;
+
+  Widget _buildCompletionCard(int totalScore, Color scoreColor) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withOpacity(0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile Strength',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _getScoreLabel(totalScore),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: scoreColor,
+                    ),
+                  ),
+                ],
+              ),
+              // Circular percentage badge
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: scoreColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: FaIcon(FontAwesomeIcons.barChart, color: scoreColor, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Profile Completeness',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _getScoreLabel(totalScore),
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: const Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: scoreColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: scoreColor.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  border: Border.all(color: scoreColor.withOpacity(0.2), width: 2),
                 ),
                 child: Text(
                   '$totalScore%',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: scoreColor,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
+          // Progress Bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: totalScore / 100,
-              minHeight: 12,
+              minHeight: 10,
               backgroundColor: const Color(0xFFF3F4F6),
               valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
             ),
@@ -342,106 +230,95 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     );
   }
 
-  Widget _buildQuickStats() {
+  Widget _buildGridStats() {
     final provider = widget.provider;
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+
+    // Helper to create grid items data
+    final stats = [
+      {'icon': Icons.school_rounded, 'val': provider.educationalProfile.length.toString(), 'label': 'Education', 'col': const Color(0xFF3B82F6)},
+      {'icon': Icons.work_rounded, 'val': provider.professionalExperience.length.toString(), 'label': 'Experience', 'col': const Color(0xFF8B5CF6)},
+      {'icon': Icons.verified_rounded, 'val': provider.certifications.length.toString(), 'label': 'Certificates', 'col': const Color(0xFF10B981)},
+      {'icon': Icons.star_rounded, 'val': provider.awards.length.toString(), 'label': 'Awards', 'col': const Color(0xFFF59E0B)},
+      {'icon': Icons.article_rounded, 'val': provider.publications.length.toString(), 'label': 'Publications', 'col': const Color(0xFFEC4899)},
+      {'icon': Icons.folder_copy_rounded, 'val': provider.documents.length.toString(), 'label': 'Documents', 'col': const Color(0xFFEF4444)},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildStatChip(
-          icon: Icons.book_rounded,
-          label: 'Education',
-          value: provider.educationalProfile.length.toString(),
-          color: const Color(0xFF3B82F6),
+        Text(
+          'Quick Stats',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF111827),
+          ),
         ),
-        _buildStatChip(
-          icon: Icons.cases_rounded,
-          label: 'Experience',
-          value: provider.professionalExperience.length.toString(),
-          color: const Color(0xFF8B5CF6),
-        ),
-        _buildStatChip(
-          icon: Icons.checklist_rounded,
-          label: 'Certifications',
-          value: provider.certifications.length.toString(),
-          color: const Color(0xFF10B981),
-        ),
-        _buildStatChip(
-          icon: Icons.star_rounded,
-          label: 'Awards',
-          value: provider.awards.length.toString(),
-          color: const Color(0xFFF59E0B),
-        ),
-        _buildStatChip(
-          icon: Icons.document_scanner_rounded,
-          label: 'Publications',
-          value: provider.publications.length.toString(),
-          color: const Color(0xFFEC4899),
-        ),
-        _buildStatChip(
-          icon: Icons.folder_rounded,
-          label: 'Documents',
-          value: provider.documents.length.toString(),
-          color: const Color(0xFFEF4444),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 2.2, // Wider cards
+          ),
+          itemCount: stats.length,
+          itemBuilder: (ctx, i) {
+            final s = stats[i];
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: (s['col'] as Color).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(s['icon'] as IconData, color: s['col'] as Color, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        s['val'] as String,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF111827),
+                        ),
+                      ),
+                      Text(
+                        s['label'] as String,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
-    );
-  }
-
-  Widget _buildStatChip({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: const Color(0xFF6B7280),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -450,11 +327,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -464,10 +341,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.list, color: Color(0xFF1E3A8A), size: 18),
-              const SizedBox(width: 8),
+              const FaIcon(FontAwesomeIcons.listCheck, color: Color(0xFF1E3A8A), size: 16),
+              const SizedBox(width: 10),
               Text(
-                'Section Breakdown',
+                'Completeness Breakdown',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -476,64 +353,90 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, Icons.person_rounded, const Color(0xFF3B82F6)),
-          _buildProgressRow('Education', _scoreEducation(), _wEducation, Icons.book_rounded, const Color(0xFF8B5CF6)),
-          _buildProgressRow('Prof. Profile', _scoreProfessionalProfile(), _wProfessionalProfile, Icons.cases_rounded, const Color(0xFF10B981)),
-          _buildProgressRow('Experience', _scoreExperience(), _wExperience, Icons.timer, const Color(0xFFF59E0B)),
-          _buildProgressRow('Certifications', _scoreCertifications(), _wCertifications, Icons.checklist_rounded, const Color(0xFFEC4899)),
+          const SizedBox(height: 20),
+          _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, const Color(0xFF3B82F6)),
+          _buildProgressRow('Education', _scoreEducation(), _wEducation, const Color(0xFF8B5CF6)),
+          _buildProgressRow('Prof. Profile', _scoreProfessionalProfile(), _wProfessionalProfile, const Color(0xFF10B981)),
+          _buildProgressRow('Experience', _scoreExperience(), _wExperience, const Color(0xFFF59E0B)),
+          _buildProgressRow('Certifications', _scoreCertifications(), _wCertifications, const Color(0xFFEC4899)),
         ],
       ),
     );
   }
 
-  Widget _buildProgressRow(String label, int got, int max, IconData icon, Color color) {
+  Widget _buildProgressRow(String label, int got, int max, Color color) {
     final percent = max == 0 ? 0.0 : (got / max);
+    final isComplete = got == max && max > 0;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 14),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF374151),
-                  ),
-                ),
-              ),
-              Text(
-                '$got/$max',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: color,
-                ),
-              ),
-            ],
+          // Circular status indicator
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: isComplete ? color : Colors.grey.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
           ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 6,
-              backgroundColor: const Color(0xFFF3F4F6),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF374151),
+                      ),
+                    ),
+                    Text(
+                      '${(percent * 100).toInt()}%',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isComplete ? color : const Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Stack(
+                  children: [
+                    Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    FractionallySizedBox(
+                      widthFactor: percent.clamp(0.0, 1.0),
+                      child: Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-
-
 
   Widget _buildSkillsOverview() {
     final provider = widget.provider;
@@ -543,11 +446,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -557,10 +460,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.layerGroup, color: Color(0xFF1E3A8A), size: 18),
-              const SizedBox(width: 8),
+              const FaIcon(FontAwesomeIcons.diamond, color: Color(0xFF1E3A8A), size: 16),
+              const SizedBox(width: 10),
               Text(
-                'Your Skills',
+                'Top Skills',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -569,61 +472,58 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: widget.provider.skillsList.take(10).map((skill) {
+            children: widget.provider.skillsList.take(8).map((skill) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF3B82F6).withOpacity(0.1),
-                      const Color(0xFF1E3A8A).withOpacity(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3)),
+                  color: const Color(0xFFEFF6FF), // Light Blue bg
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
                 ),
                 child: Text(
                   skill,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1E3A8A),
+                    color: const Color(0xFF1E40AF),
                   ),
                 ),
               );
             }).toList(),
           ),
-          if (widget.provider.skillsList.length > 10) ...[
-            const SizedBox(height: 8),
-            Text(
-              '+${widget.provider.skillsList.length - 10} more skills',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                color: const Color(0xFF6B7280),
-                fontStyle: FontStyle.italic,
+          if (widget.provider.skillsList.length > 8)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                '+ ${widget.provider.skillsList.length - 8} more skills hidden',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: const Color(0xFF6B7280),
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildDetailsCard() {
+  Widget _buildPersonalDetailsCard() {
     final provider = widget.provider;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -631,14 +531,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.personCirclePlus,
-                  color: Color(0xFF1E3A8A), size: 18),
-              const SizedBox(width: 8),
+              const FaIcon(FontAwesomeIcons.idCard, color: Color(0xFF1E3A8A), size: 16),
+              const SizedBox(width: 10),
               Text(
-                'Personal Details',
+                'Contact Info',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -647,66 +545,61 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
 
-          // Details
-          _buildDetailRow(FontAwesomeIcons.person, 'Name', _displayName()),
-          _buildDetailRow(FontAwesomeIcons.envelopeCircleCheck, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
-          _buildDetailRow(FontAwesomeIcons.phone, 'Contact', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
-          _buildDetailRow(FontAwesomeIcons.passport, 'Nationality', provider.nationality.isNotEmpty ? provider.nationality : '—'),
-          _buildDetailRow(FontAwesomeIcons.calendarDays, 'DOB', provider.dob.isNotEmpty ? provider.dob : '—'),
+          _buildInfoRow(FontAwesomeIcons.envelope, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
+          _buildInfoRow(FontAwesomeIcons.phoneFlip, 'Phone', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
+          _buildInfoRow(FontAwesomeIcons.globe, 'Nationality', provider.nationality.isNotEmpty ? provider.nationality : '—'),
+          _buildInfoRow(FontAwesomeIcons.cakeCandles, 'DOB', provider.dob.isNotEmpty ? provider.dob : '—'),
 
-          // Summary section
+          // Summary Accordion
           if (provider.personalSummary.isNotEmpty) ...[
-            const Divider(height: 24),
+            const Divider(height: 30),
             Text(
-              'Summary',
+              'About Me',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
+                color: const Color(0xFF374151),
               ),
             ),
             const SizedBox(height: 8),
-
-            // Animated summary expansion
             AnimatedCrossFade(
               duration: const Duration(milliseconds: 300),
               firstChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: const Color(0xFF6B7280),
-                  height: 1.5,
-                ),
-                maxLines: 4,
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.6),
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               secondChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: const Color(0xFF6B7280),
-                  height: 1.5,
-                ),
+                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.6),
               ),
               crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             ),
-
             const SizedBox(height: 8),
-
-            // Read More / Less Button
-            GestureDetector(
-              onTap: () {
-                setState(() => _isExpanded = !_isExpanded);
-              },
-              child: Text(
-                _isExpanded ? 'Read less' : 'Read more',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF3B82F6),
-                  decoration: TextDecoration.underline,
+            InkWell(
+              onTap: () => setState(() => _isExpanded = !_isExpanded),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      _isExpanded ? 'Show Less' : 'Read Full Bio',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                      size: 16,
+                      color: const Color(0xFF3B82F6),
+                    )
+                  ],
                 ),
               ),
             ),
@@ -716,37 +609,51 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          FaIcon(icon, color: const Color(0xFF6B7280), size: 16),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: const Color(0xFF6B7280),
-              ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: FaIcon(icon, color: const Color(0xFF6B7280), size: 12),
           ),
-          Flexible(
-            flex: 2,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
-              ),
-              overflow: TextOverflow.ellipsis,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    color: const Color(0xFF9CA3AF),
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
 }
+
