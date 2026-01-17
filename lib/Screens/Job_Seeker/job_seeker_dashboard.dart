@@ -34,8 +34,16 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late AnimationController _slideController;
-
-  final TextEditingController _searchController = TextEditingController();
+ static const Color kPrimaryBlue = Color(0xFF1E40AF);
+  static const Color kAccentBlue = Color(0xFF3B82F6);
+  static const Color kTextPrimary = Color(0xFF0F172A);
+  static const Color kTextSecondary = Color(0xFF475569);
+  static  const Color kBorderLight = Color(0xFFE2E8F0);
+  static const Color kBackgroundGray = Color(0xFFF8FAFC);
+  static const Color kSuccessGreen = Color(0xFF059669);
+  static const Color kWarningOrange = Color(0xFFEA580C);
+  static const Color kErrorRed = Color(0xFFDC2626);
+  static final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _selectedCompany = 'All';
   DateTimeRange? _appliedRange;
@@ -238,114 +246,82 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     final accepted = prov.applications.where((a) => a.status == 'accepted').length;
     final rejected = prov.applications.where((a) => a.status == 'rejected').length;
 
-    const Color kPrimaryBlue = Color(0xFF1E40AF);
-    const Color kTextPrimary = Color(0xFF0F172A);
-    const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left Icon
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.work_outline, size: 24, color: kPrimaryBlue),
+            child: Icon(Icons.dashboard_outlined, size: 22, color: kPrimaryBlue),
           ),
-
           const SizedBox(width: 14),
-
-          // Title + Subtitle
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Dashboard',
+                'Applications Dashboard',
                 style: GoogleFonts.inter(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: kTextPrimary,
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 2),
               Text(
-                '$count ${count == 1 ? 'application' : 'applications'} found',
+                '$count ${count == 1 ? 'application' : 'applications'}',
                 style: GoogleFonts.inter(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: kTextSecondary,
                   height: 1.2,
                 ),
               ),
             ],
           ),
-
           const Spacer(),
-
-          // Quick Stats
-          Row(
-            children: [
-              _buildQuickStatCard('Pending', pending, const Color(0xFFF59E0B)),
-              const SizedBox(width: 10),
-              _buildQuickStatCard('Accepted', accepted, const Color(0xFF10B981)),
-              const SizedBox(width: 10),
-              _buildQuickStatCard('Rejected', rejected, const Color(0xFFEF4444)),
-            ],
-          ),
-
+          _buildInlineStatBadge('Pending', pending, kWarningOrange),
+          const SizedBox(width: 10),
+          _buildInlineStatBadge('Accepted', accepted, kSuccessGreen),
+          const SizedBox(width: 10),
+          _buildInlineStatBadge('Rejected', rejected, kErrorRed),
           const SizedBox(width: 16),
-
-          // Filter Toggle Button
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => setState(() => _showFilters = !_showFilters),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: _showFilters
-                      ? const Color(0xFF6366F1).withOpacity(0.08)
-                      : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: _showFilters
-                        ? const Color(0xFF6366F1).withOpacity(0.3)
-                        : Colors.grey.shade300,
+          InkWell(
+            onTap: () => setState(() => _showFilters = !_showFilters),
+            borderRadius: BorderRadius.circular(6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: _showFilters ? kPrimaryBlue.withOpacity(0.08) : kBackgroundGray,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: _showFilters ? kPrimaryBlue.withOpacity(0.3) : kBorderLight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _showFilters ? Icons.filter_list : Icons.filter_list_off,
+                    size: 16,
+                    color: _showFilters ? kPrimaryBlue : kTextSecondary,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _showFilters ? Icons.filter_list : Icons.filter_list_off,
-                      size: 16,
-                      color: _showFilters
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFF64748B),
+                  const SizedBox(width: 6),
+                  Text(
+                    _showFilters ? 'Filters' : 'Filters',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _showFilters ? kPrimaryBlue : kTextSecondary,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _showFilters ? 'Hide Filters' : 'Show Filters',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _showFilters
-                            ? const Color(0xFF6366F1)
-                            : const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -354,30 +330,30 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     );
   }
 
-  Widget _buildQuickStatCard(String label, int count, Color color) {
+  Widget _buildInlineStatBadge(String label, int count, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             count.toString(),
-            style: GoogleFonts.poppins(
-              fontSize: 20,
+            style: GoogleFonts.inter(
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: color,
               height: 1,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.inter(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: color,
@@ -587,8 +563,6 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   });
                 },
               ),
-              const SizedBox(width: 12),
-
 
 
               // ❌ Clear Filters
