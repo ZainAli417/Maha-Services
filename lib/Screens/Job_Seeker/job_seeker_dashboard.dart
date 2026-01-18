@@ -43,7 +43,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   static const Color kSuccessGreen = Color(0xFF059669);
   static const Color kWarningOrange = Color(0xFFEA580C);
   static const Color kErrorRed = Color(0xFFDC2626);
-  static final TextEditingController _searchController = TextEditingController();
+   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _selectedCompany = 'All';
   DateTimeRange? _appliedRange;
@@ -54,7 +54,6 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   late Animation<Offset> _slideAnimation;
   bool _showFilters = true;
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -269,7 +268,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
             children: [
               Text(
                 'Applications Dashboard',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                   color: kTextPrimary,
@@ -278,7 +277,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               ),
               Text(
                 '$count ${count == 1 ? 'application' : 'applications'}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: kTextSecondary,
                   height: 1.2,
@@ -315,7 +314,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   const SizedBox(width: 6),
                   Text(
                     _showFilters ? 'Filters' : 'Filters',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: _showFilters ? kPrimaryBlue : kTextSecondary,
@@ -343,7 +342,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
         children: [
           Text(
             count.toString(),
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: color,
@@ -353,7 +352,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: color,

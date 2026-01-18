@@ -43,13 +43,97 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     'pdf', 'doc', 'docx', 'txt', 'rtf'
   ];
 
+// Replace the constructor parameters and initialization
   CVAnalyzerBackendProvider({
     this.useDirectGemini = true,
-    String? geminiApiKey, // accept nullable
-    this.geminiModel = 'gemini-2.5-flash-lite',
- // }) : geminiApiKey = geminiApiKey ?? ''; // init list sets final field
-  }) : geminiApiKey = geminiApiKey ?? Env.geminiApiKey; // init list sets final field
+    String? geminiApiKey,
+    this.geminiModel = 'llama-3.3-70b-versatile', // Changed model
+  }) : geminiApiKey = geminiApiKey ?? Env.groqApiKey; // Changed to groqApiKey
 
+// Replace the _callGeminiAPI method
+  Future<String> _callGeminiAPI({
+    required String prompt,
+    required String fileData,
+    required String mimeType,
+  }) async {
+    final uri = Uri.parse(
+      'https://api.groq.com/openai/v1/chat/completions', // Changed endpoint
+    );
+
+    // Build payload for Groq API (OpenAI-compatible format)
+    final payload = {
+      'model': geminiModel,
+      'messages': [
+        {
+          'role': 'system',
+          'content': '''You are a professional CV analysis assistant and ATC System. 
+Analyze CV against the parameters sent to you thoroughly and provide structured feedback.
+Always return valid JSON matching the exact schema specified in the prompt.
+Be objective, constructive, and specific in your analysis.'''
+        },
+        {
+          'role': 'user',
+          'content': prompt,
+        }
+      ],
+      'temperature': 0.6,
+      'top_p': 0.95,
+      'response_format': {'type': 'json_object'}, // JSON mode for Groq
+    };
+
+    final response = await http
+        .post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${Env.groqApiKey}', // Groq uses Bearer auth
+      },
+      body: json.encode(payload),
+    )
+        .timeout(requestTimeout);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final jsonResponse = json.decode(response.body);
+      return _extractTextFromGroqResponse(jsonResponse); // Changed method name
+    } else {
+      final errorBody = response.body;
+      String errorMsg = 'Groq API error (${response.statusCode})'; // Changed message
+
+      try {
+        final errorJson = json.decode(errorBody);
+        if (errorJson['error']?['message'] != null) {
+          errorMsg += ': ${errorJson['error']['message']}';
+        }
+      } catch (_) {
+        if (errorBody.length < 200) {
+          errorMsg += ': $errorBody';
+        }
+      }
+
+      throw Exception(errorMsg);
+    }
+  }
+
+// Replace the _extractTextFromGeminiResponse method
+  String _extractTextFromGroqResponse(Map<String, dynamic> response) {
+    try {
+      final choices = response['choices'] as List?;
+      if (choices == null || choices.isEmpty) {
+        throw Exception('No choices in response');
+      }
+
+      final message = choices[0]['message'];
+      final content = message?['content']?.toString() ?? '';
+
+      if (content.isEmpty) {
+        throw Exception('Empty response from Groq');
+      }
+
+      return content;
+    } catch (e) {
+      throw Exception('Failed to parse Groq response: ${e.toString()}');
+    }
+  }
   // State setters
   void _setLoading(bool v) {
     _isLoading = v;
@@ -285,108 +369,108 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   }
 
   /// Make actual Gemini API call
-  Future<String> _callGeminiAPI({
-    required String prompt,
-    required String fileData,
-    required String mimeType,
-  }) async {
-    final uri = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent',
-    );
-
-    // Build payload with inline file data
-    final payload = {
-      'contents': [
-        {
-          'parts': [
-            {
-              'text': prompt,
-            },
-            {
-              'inline_data': {
-                'mime_type': mimeType,
-                'data': fileData,
-              }
-            }
-          ]
-        }
-      ],
-      'generationConfig': {
-        'temperature': 0.6,
-        'topK': 40,
-        'topP': 0.95,
-        'responseMimeType': 'application/json',
-      },
-      'systemInstruction': {
-        'parts': [
-          {
-            'text': '''You are a professional CV analysis assistant and ATC System. 
-Analyze CV against the parameters sent to you thoroughly and provide structured feedback.
-Always return valid JSON matching the exact schema specified in the prompt.
-Be objective, constructive, and specific in your analysis.'''
-          }
-        ]
-      },
-    };
-
-    final response = await http
-        .post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': geminiApiKey,
-      },
-      body: json.encode(payload),
-    )
-        .timeout(requestTimeout);
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final jsonResponse = json.decode(response.body);
-      return _extractTextFromGeminiResponse(jsonResponse);
-    } else {
-      final errorBody = response.body;
-      String errorMsg = 'Gemini API error (${response.statusCode})';
-
-      try {
-        final errorJson = json.decode(errorBody);
-        if (errorJson['error']?['message'] != null) {
-          errorMsg += ': ${errorJson['error']['message']}';
-        }
-      } catch (_) {
-        if (errorBody.length < 200) {
-          errorMsg += ': $errorBody';
-        }
-      }
-
-      throw Exception(errorMsg);
-    }
-  }
+//   Future<String> _callGeminiAPI({
+//     required String prompt,
+//     required String fileData,
+//     required String mimeType,
+//   }) async {
+//     final uri = Uri.parse(
+//       'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent',
+//     );
+//
+//     // Build payload with inline file data
+//     final payload = {
+//       'contents': [
+//         {
+//           'parts': [
+//             {
+//               'text': prompt,
+//             },
+//             {
+//               'inline_data': {
+//                 'mime_type': mimeType,
+//                 'data': fileData,
+//               }
+//             }
+//           ]
+//         }
+//       ],
+//       'generationConfig': {
+//         'temperature': 0.6,
+//         'topK': 40,
+//         'topP': 0.95,
+//         'responseMimeType': 'application/json',
+//       },
+//       'systemInstruction': {
+//         'parts': [
+//           {
+//             'text': '''You are a professional CV analysis assistant and ATC System.
+// Analyze CV against the parameters sent to you thoroughly and provide structured feedback.
+// Always return valid JSON matching the exact schema specified in the prompt.
+// Be objective, constructive, and specific in your analysis.'''
+//           }
+//         ]
+//       },
+//     };
+//
+//     final response = await http
+//         .post(
+//       uri,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'x-goog-api-key': geminiApiKey,
+//       },
+//       body: json.encode(payload),
+//     )
+//         .timeout(requestTimeout);
+//
+//     if (response.statusCode >= 200 && response.statusCode < 300) {
+//       final jsonResponse = json.decode(response.body);
+//       return _extractTextFromGeminiResponse(jsonResponse);
+//     } else {
+//       final errorBody = response.body;
+//       String errorMsg = 'Gemini API error (${response.statusCode})';
+//
+//       try {
+//         final errorJson = json.decode(errorBody);
+//         if (errorJson['error']?['message'] != null) {
+//           errorMsg += ': ${errorJson['error']['message']}';
+//         }
+//       } catch (_) {
+//         if (errorBody.length < 200) {
+//           errorMsg += ': $errorBody';
+//         }
+//       }
+//
+//       throw Exception(errorMsg);
+//     }
+//   }
 
   /// Extract text response from Gemini API response
-  String _extractTextFromGeminiResponse(Map<String, dynamic> response) {
-    try {
-      final candidates = response['candidates'] as List?;
-      if (candidates == null || candidates.isEmpty) {
-        throw Exception('No candidates in response');
-      }
-
-      final content = candidates[0]['content'];
-      final parts = content?['parts'] as List?;
-
-      if (parts == null || parts.isEmpty) {
-        throw Exception('No parts in response');
-      }
-
-      final text = parts[0]['text']?.toString() ?? '';
-      if (text.isEmpty) {
-        throw Exception('Empty response from Gemini');
-      }
-
-      return text;
-    } catch (e) {
-      throw Exception('Failed to parse Gemini response: ${e.toString()}');
-    }
-  }
+  // String _extractTextFromGeminiResponse(Map<String, dynamic> response) {
+  //   try {
+  //     final candidates = response['candidates'] as List?;
+  //     if (candidates == null || candidates.isEmpty) {
+  //       throw Exception('No candidates in response');
+  //     }
+  //
+  //     final content = candidates[0]['content'];
+  //     final parts = content?['parts'] as List?;
+  //
+  //     if (parts == null || parts.isEmpty) {
+  //       throw Exception('No parts in response');
+  //     }
+  //
+  //     final text = parts[0]['text']?.toString() ?? '';
+  //     if (text.isEmpty) {
+  //       throw Exception('Empty response from Gemini');
+  //     }
+  //
+  //     return text;
+  //   } catch (e) {
+  //     throw Exception('Failed to parse Gemini response: ${e.toString()}');
+  //   }
+  // }
 
 
   /// Build analysis prompt

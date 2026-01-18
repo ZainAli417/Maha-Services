@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:job_portal/Constant/recruiter_AI.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:job_portal/Screens/Recruiter/post_a_job_form.dart';
@@ -67,7 +68,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter> with SingleTi
                 children: [
                   Consumer<JobSeekerProvider>(
                     builder: (context, provider, _) => StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: provider.allJobsStream(),
+                      stream: provider.allJobsStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator(color: _primary));
@@ -316,52 +317,121 @@ class _JobListView_NewState extends State<JobListView_New> {
       ),
     );
   }
-
   Widget _buildHeader() {
+    const Color kPrimaryBlue = Color(0xFF1E40AF);
+    const Color kTextPrimary = Color(0xFF0F172A);
+    const Color kTextSecondary = Color(0xFF475569);
+    const Color kBorderLight = Color(0xFFE2E8F0);
+
     return Container(
-      decoration: BoxDecoration(color: _surface, border: Border(bottom: BorderSide(color: _border))),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
+      ),
       child: Row(
         children: [
+          // Left Icon
           Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(gradient: LinearGradient(colors: [_primary, _secondary]), borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.work_outline, color: Colors.white, size: 24),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: kPrimaryBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.recent_actors_outlined,
+              size: 24,
+              color: kPrimaryBlue,
+            ),
           ),
-          const SizedBox(width: 16),
+
+          const SizedBox(width: 14),
+
+          // Title & Subtitle
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Recruiter Dashboard', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w700, color: _textPrimary)),
-              Text('Discover and manage candidates', style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary)),
+              Text(
+                'Recruiter Dashboard',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: kTextPrimary,
+                  height: 1.2,
+                ),
+              ),
+              Text(
+                'Discover and Manage Jobs & Candidates Trends',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: kTextSecondary,
+                  height: 1.2,
+                ),
+              ),
             ],
           ),
+
+
           const Spacer(),
+
+          // Stats
           _buildStatPill('${_filteredJobs.length}', 'Jobs', Icons.rocket_launch, _primary),
           const SizedBox(width: 12),
           _buildStatPill('${_getUnique('company').length}', 'Companies', Icons.apartment, _secondary),
+
           const SizedBox(width: 16),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: () => showDialog(context: context, barrierDismissible: false, builder: (_) => PostJobDialog()),
-              child: Ink(
-                decoration: BoxDecoration(color: _primary, borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.add_circle_outline, size: 16, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text('Post A Job', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                  ],
+
+          // Enhanced Post Job Button
+          _buildPostJobButtonEnhanced(),        ],
+      ),
+    );
+  }
+
+
+  Widget _buildPostJobButtonEnhanced() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => PostJobDialog(),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [_primary, _secondary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: _primary.withOpacity(0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add_circle_outline, size: 18, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Post A Job',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -479,27 +549,224 @@ class _JobListView_NewState extends State<JobListView_New> {
     );
   }
 
+
+  Future<Map<String, dynamic>> _fetchAllApplicantsData() async {
+    try {
+      final applicantsSnapshot = await FirebaseFirestore.instance
+          .collectionGroup('applied_jobs')
+          .get();
+
+      int totalApplicants = applicantsSnapshot.docs.length;
+      int pending = 0;
+      int accepted = 0;
+      int rejected = 0;
+      int shortlisted = 0;
+
+      Map<String, int> skillsCount = {};
+      Map<String, int> locationCount = {};
+      Map<String, int> nationalityCount = {};
+      Map<String, int> jobApplicationCount = {};
+
+      Map<DateTime, int> dailyApplications = {};
+
+      for (var doc in applicantsSnapshot.docs) {
+        final data = doc.data();
+        final status = data['status']?.toString().toLowerCase() ?? 'pending';
+
+        // Count by status
+        switch (status) {
+          case 'accepted':
+            accepted++;
+            break;
+          case 'rejected':
+            rejected++;
+            break;
+          case 'shortlist':
+            shortlisted++;
+            break;
+          default:
+            pending++;
+        }
+
+        // Count by job
+        final jobId = data['jobId']?.toString() ?? '';
+        if (jobId.isNotEmpty) {
+          jobApplicationCount[jobId] = (jobApplicationCount[jobId] ?? 0) + 1;
+        }
+
+        // Parse profile data
+        final profileSnapshot = data['profileSnapshot'] as Map<String, dynamic>?;
+        if (profileSnapshot != null) {
+          final accountData = profileSnapshot['user_Account_Data'] as Map<String, dynamic>?;
+          if (accountData != null) {
+            final personalProfile = accountData['personalProfile'] as Map<String, dynamic>?;
+
+            // Count skills
+            final skills = personalProfile?['skills'] as List?;
+            if (skills != null) {
+              for (var skill in skills) {
+                final skillStr = skill.toString();
+                skillsCount[skillStr] = (skillsCount[skillStr] ?? 0) + 1;
+              }
+            }
+
+            // Count locations
+            final location = personalProfile?['location']?.toString() ?? '';
+            if (location.isNotEmpty) {
+              locationCount[location] = (locationCount[location] ?? 0) + 1;
+            }
+
+            // Count nationalities
+            final nationality = personalProfile?['nationality']?.toString() ?? '';
+            if (nationality.isNotEmpty) {
+              nationalityCount[nationality] = (nationalityCount[nationality] ?? 0) + 1;
+            }
+          }
+        }
+
+        // Track daily applications for trends
+        final appliedAt = data['appliedAt'];
+        if (appliedAt is Timestamp) {
+          final date = DateTime(
+            appliedAt.toDate().year,
+            appliedAt.toDate().month,
+            appliedAt.toDate().day,
+          );
+          dailyApplications[date] = (dailyApplications[date] ?? 0) + 1;
+        }
+      }
+
+      // Sort to get top items
+      final topSkills = (skillsCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(10)
+          .toList();
+
+      final topLocations = (locationCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(5)
+          .toList();
+
+      final topNationalities = (nationalityCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(5)
+          .toList();
+
+      // Get top jobs by application count
+      final topJobs = (jobApplicationCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(5)
+          .toList();
+
+      // Calculate trend data
+      final sortedDates = dailyApplications.keys.toList()..sort();
+      List<FlSpot> trendData = [];
+      int cumulative = 0;
+
+      for (int i = 0; i < sortedDates.length; i++) {
+        cumulative += dailyApplications[sortedDates[i]] ?? 0;
+        trendData.add(FlSpot(i.toDouble(), cumulative.toDouble()));
+      }
+
+      return {
+        'totalApplicants': totalApplicants,
+        'pending': pending,
+        'accepted': accepted,
+        'rejected': rejected,
+        'shortlisted': shortlisted,
+        'topSkills': topSkills,
+        'topLocations': topLocations,
+        'topNationalities': topNationalities,
+        'topJobs': topJobs,
+        'trendData': trendData,
+        'dates': sortedDates,
+        'dailyApplications': dailyApplications,
+      };
+    } catch (e) {
+      debugPrint('Error fetching applicants data: $e');
+      return {};
+    }
+  }
+
+
   Widget _buildStatsGrid() {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Consumer<JobSeekerProvider>(
         builder: (context, provider, _) => StreamBuilder<List<Map<String, dynamic>>>(
-          stream: provider.allJobsStream(),
-          builder: (context, snapshot) {
-            final jobs = snapshot.data ?? [];
+          stream: provider.allJobsStream,
+          builder: (context, jobSnapshot) {
+            final jobs = jobSnapshot.data ?? [];
             final activeJobs = jobs.where((j) => j['status'] == 'active').length;
-            final totalApplications = jobs.fold<int>(0, (sum, job) => sum + ((job['applications'] as int?) ?? 0));
 
-            return Row(
-              children: [
-                Expanded(child: _buildStatCard(icon: Icons.work_rounded, label: 'Active Jobs', value: '$activeJobs', trend: '+3', trendUp: true)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildStatCard(icon: Icons.people_rounded, label: 'Total Applications', value: '$totalApplications', trend: '+12%', trendUp: true)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildStatCard(icon: Icons.trending_up_rounded, label: 'Response Rate', value: '68%', trend: '+5%', trendUp: true)),
-                const SizedBox(width: 12),
-                Expanded(child: _buildStatCard(icon: Icons.timer_rounded, label: 'Avg Fill Time', value: '18d', trend: '-2d', trendUp: true)),
-              ],
+            return FutureBuilder<Map<String, dynamic>>(
+              future: _fetchAllApplicantsData(),
+              builder: (context, applicantSnapshot) {
+                if (!applicantSnapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(color: _primary),
+                  );
+                }
+
+                final applicantData = applicantSnapshot.data!;
+                final totalApplications = applicantData['totalApplicants'] ?? 0;
+                final pending = applicantData['pending'] ?? 0;
+                final accepted = applicantData['accepted'] ?? 0;
+                final responseRate = totalApplications > 0
+                    ? ((accepted / totalApplications) * 100).toInt()
+                    : 0;
+
+                // Calculate average fill time (mock data - you can enhance this)
+                final avgFillTime = totalApplications > 0 ? '${(totalApplications / activeJobs).toInt()}d' : '0d';
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.work_rounded,
+                        label: 'Active Jobs',
+                        value: '$activeJobs',
+                        trend: jobs.length > activeJobs ? '+${jobs.length - activeJobs}' : '+0',
+                        trendUp: true,
+                        hoverDetails: 'Total Jobs: ${jobs.length}\nInActive: ${jobs.length - activeJobs}',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.people_rounded,
+                        label: 'Total Applications',
+                        value: '$totalApplications',
+                        trend: pending > 0 ? '+$pending pending' : '0',
+                        trendUp: true,
+                        hoverDetails: 'Pending: $pending\nAccepted: $accepted\nRejected: ${applicantData['rejected']}\nShortlisted: ${applicantData['shortlisted']}',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.trending_up_rounded,
+                        label: 'Response Rate',
+                        value: '$responseRate%',
+                        trend: responseRate > 50 ? '+${responseRate - 50}%' : '${responseRate - 50}%',
+                        trendUp: responseRate > 50,
+                        hoverDetails: 'Accepted: $accepted\nTotal Applications: $totalApplications',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.timer_rounded,
+                        label: 'Avg Applications/Job',
+                        value: avgFillTime,
+                        trend: activeJobs > 0 ? 'Active' : 'None',
+                        trendUp: activeJobs > 0,
+                        hoverDetails: 'Total: $totalApplications apps\nPer Job: ${totalApplications ~/ (activeJobs > 0 ? activeJobs : 1)}',
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
         ),
@@ -507,37 +774,105 @@ class _JobListView_NewState extends State<JobListView_New> {
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required String label, required String value, String? trend, bool? trendUp}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: _primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Icon(icon, color: _primary, size: 16)),
-              const Spacer(),
-              if (trend != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(color: (trendUp! ? _accent : _error).withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(trendUp ? Icons.arrow_upward : Icons.arrow_downward, size: 10, color: trendUp ? _accent : _error),
-                      const SizedBox(width: 3),
-                      Text(trend, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
-                    ],
-                  ),
-                ),
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    String? trend,
+    bool? trendUp,
+    String? hoverDetails,
+  }) {
+    return MouseRegion(
+      child: Tooltip(
+        message: hoverDetails ?? '',
+        preferBelow: false,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: _textPrimary.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        textStyle: GoogleFonts.poppins(
+          fontSize: 12,
+          color: Colors.white,
+          height: 1.4,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(value, style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
-          const SizedBox(height: 3),
-          Text(label, style: GoogleFonts.poppins(fontSize: 11, color: _textSecondary)),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: _primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(icon, color: _primary, size: 16),
+                  ),
+                  const Spacer(),
+                  if (trend != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: (trendUp! ? _accent : _error).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            trendUp ? Icons.arrow_upward : Icons.arrow_downward,
+                            size: 10,
+                            color: trendUp ? _accent : _error,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            trend,
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: trendUp ? _accent : _error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: _textPrimary,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: _textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -545,27 +880,62 @@ class _JobListView_NewState extends State<JobListView_New> {
   Widget _buildChartsSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(flex: 2, child: _buildApplicationsChart()),
-          const SizedBox(width: 12),
-          Expanded(flex: 2, child: _buildJobStatusChart()),
-          const SizedBox(width: 12),
-          Expanded(flex: 2, child: _buildDepartmentChart()),
-          const SizedBox(width: 12),
-          Expanded(child: _buildTopPerformingJobs()),
-        ],
+      child: FutureBuilder<Map<String, dynamic>>(
+        future: _fetchAllApplicantsData(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator(color: _primary));
+          }
+
+          final data = snapshot.data!;
+
+          return Column(
+            children: [
+              // Top Row: Application Trends + Status Distribution
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: _buildApplicationsTrendChart(data)),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildApplicationStatusChart(data)),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Second Row: Top Skills + Top Locations
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 2, child: _buildTopSkillsChart(data)),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: _buildLocationDistributionChart(data)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildTopPerformingJobsReal(data)),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildApplicationsChart() {
-    final weeklyData = [FlSpot(0, 12), FlSpot(1, 18), FlSpot(2, 15), FlSpot(3, 22), FlSpot(4, 28), FlSpot(5, 25), FlSpot(6, 32)];
+  // Application Trends Line Chart
+  Widget _buildApplicationsTrendChart(Map<String, dynamic> data) {
+    final trendData = data['trendData'] as List<FlSpot>? ?? [];
+    final dates = data['dates'] as List<DateTime>? ?? [];
+
+    if (trendData.isEmpty) {
+      return _buildEmptyChart('Application Trends', 'No application data yet');
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -573,96 +943,142 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.show_chart_rounded, color: _accent, size: 16),
               const SizedBox(width: 6),
-              Text('Applications Trend', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text(
+                'Application Trends',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Last ${dates.length} days',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: _accent,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 150,
+            height: 200,
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 10, getDrawingHorizontalLine: (value) => FlLine(color: _border, strokeWidth: 1)),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: trendData.last.y / 5,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: _border,
+                    strokeWidth: 1,
+                  ),
+                ),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
+                      interval: (trendData.length / 6).ceil().toDouble(),
                       getTitlesWidget: (value, meta) {
-                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                        return value.toInt() >= 0 && value.toInt() < days.length
-                            ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
-                            : const SizedBox();
+                        final index = value.toInt();
+                        if (index >= 0 && index < dates.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              DateFormat('MMM d').format(dates[index]),
+                              style: GoogleFonts.poppins(
+                                fontSize: 9,
+                                color: _textSecondary,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox();
                       },
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 35,
+                      getTitlesWidget: (value, meta) => Text(
+                        '${value.toInt()}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: _textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
                   topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: 6,
+                maxX: (trendData.length - 1).toDouble(),
                 minY: 0,
-                maxY: 40,
+                maxY: trendData.last.y * 1.2,
                 lineBarsData: [
                   LineChartBarData(
-                    spots: weeklyData,
+                    spots: trendData,
                     isCurved: true,
                     color: _accent,
-                    barWidth: 2,
-                    dotData: FlDotData(show: true, getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(radius: 3, color: _accent, strokeWidth: 2, strokeColor: _surface)),
-                    belowBarData: BarAreaData(show: true, color: _accent.withOpacity(0.1)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJobStatusChart() {
-    final statusData = [('Active', 12, _accent), ('Pending', 5, _warning), ('Closed', 8, _textSecondary), ('Draft', 3, _primary)];
-    final maxY = statusData.map((e) => e.$2.toDouble()).reduce(max);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.bar_chart_rounded, color: _primary, size: 16),
-              const SizedBox(width: 6),
-              Text('Job Status', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 150,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxY > 0 ? maxY * 1.2 : 10,
-                barTouchData: BarTouchData(enabled: false),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) => value.toInt() >= 0 && value.toInt() < statusData.length
-                          ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(statusData[value.toInt()].$1, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
-                          : const SizedBox(),
+                    barWidth: 3,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) =>
+                          FlDotCirclePainter(
+                            radius: 4,
+                            color: _accent,
+                            strokeWidth: 2,
+                            strokeColor: _surface,
+                          ),
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          _accent.withOpacity(0.3),
+                          _accent.withOpacity(0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ],
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (spot) => _textPrimary.withOpacity(0.8),
+
+                    getTooltipItems: (spots) {
+                      return spots.map((spot) {
+                        final index = spot.x.toInt();
+                        final date = index < dates.length
+                            ? DateFormat('MMM d').format(dates[index])
+                            : '';
+                        return LineTooltipItem(
+                          '$date\n${spot.y.toInt()} applications',
+                          GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
                 ),
-                gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 2, getDrawingHorizontalLine: (value) => FlLine(color: _border, strokeWidth: 1)),
-                borderData: FlBorderData(show: false),
-                barGroups: List.generate(statusData.length, (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: statusData[i].$2.toDouble(), color: statusData[i].$3, width: 24, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))])),
               ),
             ),
           ),
@@ -671,10 +1087,24 @@ class _JobListView_NewState extends State<JobListView_New> {
     );
   }
 
-  Widget _buildDepartmentChart() {
+// Application Status Doughnut Chart
+  Widget _buildApplicationStatusChart(Map<String, dynamic> data) {
+    final pending = data['pending'] ?? 0;
+    final rejected = data['rejected'] ?? 0;
+    final shortlisted = data['shortlisted'] ?? 0;
+    final total = pending + rejected + shortlisted;
+
+    if (total == 0) {
+      return _buildEmptyChart('Application Status', 'No applications yet');
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -682,40 +1112,704 @@ class _JobListView_NewState extends State<JobListView_New> {
             children: [
               Icon(Icons.pie_chart_rounded, color: _secondary, size: 16),
               const SizedBox(width: 6),
-              Text('Job Distribution', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+              Text(
+                'Application Status',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 150,
+            height: 200,
             child: PieChart(
               PieChartData(
                 sections: [
-                  PieChartSectionData(value: 35, color: _primary, title: '35%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 25, color: _accent, title: '25%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 20, color: _secondary, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                  PieChartSectionData(value: 20, color: _warning, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  PieChartSectionData(
+                    value: pending.toDouble(),
+                    color: _warning,
+                    title: '${((pending / total) * 100).toInt()}%',
+                    radius: 60,
+                    titleStyle: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: rejected.toDouble(),
+                    color: _error,
+                    title: '${((rejected / total) * 100).toInt()}%',
+                    radius: 60,
+                    titleStyle: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: shortlisted.toDouble(),
+                    color: _primary,
+                    title: '${((shortlisted / total) * 100).toInt()}%',
+                    radius: 60,
+                    titleStyle: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
                 sectionsSpace: 2,
-                centerSpaceRadius: 30,
+                centerSpaceRadius: 50,
+                pieTouchData: PieTouchData(
+                  touchCallback: (event, response) {},
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Wrap(
             spacing: 12,
-            runSpacing: 6,
+            runSpacing: 8,
             children: [
-              _buildLegendItem('Engineering', _primary),
-              _buildLegendItem('Design', _accent),
-              _buildLegendItem('Marketing', _secondary),
-              _buildLegendItem('Sales', _warning),
+              _buildLegendItem('Pending ($pending)', _warning),
+              _buildLegendItem('Rejected ($rejected)', _error),
+              _buildLegendItem('Shortlisted ($shortlisted)', _primary),
             ],
           ),
         ],
       ),
     );
   }
+
+// Top Skills Bar Chart
+  Widget _buildTopSkillsChart(Map<String, dynamic> data) {
+    final topSkills = data['topSkills'] as List<MapEntry<String, int>>? ?? [];
+
+    if (topSkills.isEmpty) {
+      return _buildEmptyChart('Top Skills', 'No skills data available');
+    }
+
+    final maxValue = topSkills.first.value.toDouble();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.extension_rounded, color: _primary, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Top Skills in Applicants',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 200,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxValue * 1.2,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (spot) => _textPrimary.withOpacity(0.8),
+
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${topSkills[groupIndex].key}\n${topSkills[groupIndex].value} applicants',
+                        GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= 0 && index < topSkills.length) {
+                          final skill = topSkills[index].key;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              skill.length > 8 ? '${skill.substring(0, 8)}...' : skill,
+                              style: GoogleFonts.poppins(
+                                fontSize: 9,
+                                color: _textSecondary,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 35,
+                      getTitlesWidget: (value, meta) => Text(
+                        value.toInt().toString(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: _textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxValue / 5,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: _border,
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(
+                  topSkills.length > 10 ? 10 : topSkills.length,
+                      (i) => BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: topSkills[i].value.toDouble(),
+                        gradient: LinearGradient(
+                          colors: [_primary, _accent],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                        width: 20,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Location Distribution Pie Chart
+  Widget _buildLocationDistributionChart(Map<String, dynamic> data) {
+    final topLocations = data['topLocations'] as List<MapEntry<String, int>>? ?? [];
+
+    if (topLocations.isEmpty) {
+      return _buildEmptyChart('Location Distribution', 'No location data');
+    }
+
+    final colors = [_primary, _accent, _secondary, _warning, _success];
+    final total = topLocations.fold<int>(0, (sum, item) => sum + item.value);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on_rounded, color: _accent, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Location Distribution',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 200,
+            child: PieChart(
+              PieChartData(
+                sections: List.generate(
+                  topLocations.length > 5 ? 5 : topLocations.length,
+                      (i) => PieChartSectionData(
+                    value: topLocations[i].value.toDouble(),
+                    color: colors[i % colors.length],
+                    title: '${((topLocations[i].value / total) * 100).toInt()}%',
+                    radius: 50,
+                    titleStyle: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                sectionsSpace: 2,
+                centerSpaceRadius: 40,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 6,
+            children: List.generate(
+              topLocations.length > 5 ? 5 : topLocations.length,
+                  (i) => _buildLegendItem(
+                '${topLocations[i].key} (${topLocations[i].value})',
+                colors[i % colors.length],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+// Top Performing Jobs with Real Data
+  Widget _buildTopPerformingJobsReal(Map<String, dynamic> data) {
+    final topJobIds = data['topJobs'] as List<MapEntry<String, int>>? ?? [];
+
+    if (topJobIds.isEmpty) {
+      return _buildEmptyChart('Top Jobs', 'No job data');
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.emoji_events_rounded, color: _warning, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Top Jobs',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...topJobIds.take(5).toList().asMap().entries.map((entry) {
+            final index = entry.key;
+            final jobEntry = entry.value;
+
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('Posted_jobs_public')
+                  .doc(jobEntry.key)
+                  .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text('Loading...'),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.data() == null) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Text('Unknown Job'),
+                    );
+                  }
+
+                  final data = snapshot.data!.data() as Map<String, dynamic>;
+                  final jobTitle = data['title']?.toString() ?? 'Unknown Job';
+
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: index < 4 ? 12 : 0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: index == 0
+                                ? _warning.withOpacity(0.1)
+                                : _border,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: index == 0 ? _warning : _textSecondary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                jobTitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${jobEntry.value} applications',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  color: _textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }// Empty Chart Placeholder
+  Widget _buildEmptyChart(String title, String message) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Center(
+            child: Column(
+              children: [
+                Icon(Icons.info_outline, size: 40, color: _textSecondary.withOpacity(0.3)),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: _textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //
+  //
+  // Widget _buildStatsGrid() {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(16),
+  //     child: Consumer<JobSeekerProvider>(
+  //       builder: (context, provider, _) => StreamBuilder<List<Map<String, dynamic>>>(
+  //         stream: provider.allJobsStream(),
+  //         builder: (context, snapshot) {
+  //           final jobs = snapshot.data ?? [];
+  //           final activeJobs = jobs.where((j) => j['status'] == 'active').length;
+  //           final totalApplications = jobs.fold<int>(0, (sum, job) => sum + ((job['applications'] as int?) ?? 0));
+  //
+  //           return Row(
+  //             children: [
+  //               Expanded(child: _buildStatCard(icon: Icons.work_rounded, label: 'Active Jobs', value: '$activeJobs', trend: '+3', trendUp: true)),
+  //               const SizedBox(width: 12),
+  //               Expanded(child: _buildStatCard(icon: Icons.people_rounded, label: 'Total Applications', value: '$totalApplications', trend: '+12%', trendUp: true)),
+  //               const SizedBox(width: 12),
+  //               Expanded(child: _buildStatCard(icon: Icons.trending_up_rounded, label: 'Response Rate', value: '68%', trend: '+5%', trendUp: true)),
+  //               const SizedBox(width: 12),
+  //               Expanded(child: _buildStatCard(icon: Icons.timer_rounded, label: 'Avg Fill Time', value: '18d', trend: '-2d', trendUp: true)),
+  //             ],
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildStatCard({required IconData icon, required String label, required String value, String? trend, bool? trendUp}) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: _primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Icon(icon, color: _primary, size: 16)),
+  //             const Spacer(),
+  //             if (trend != null)
+  //               Container(
+  //                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+  //                 decoration: BoxDecoration(color: (trendUp! ? _accent : _error).withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+  //                 child: Row(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: [
+  //                     Icon(trendUp ? Icons.arrow_upward : Icons.arrow_downward, size: 10, color: trendUp ? _accent : _error),
+  //                     const SizedBox(width: 3),
+  //                     Text(trend, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? _accent : _error)),
+  //                   ],
+  //                 ),
+  //               ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 12),
+  //         Text(value, style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary)),
+  //         const SizedBox(height: 3),
+  //         Text(label, style: GoogleFonts.poppins(fontSize: 11, color: _textSecondary)),
+  //       ],
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildChartsSection() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16),
+  //     child: Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Expanded(flex: 2, child: _buildApplicationsChart()),
+  //         const SizedBox(width: 12),
+  //         Expanded(flex: 2, child: _buildJobStatusChart()),
+  //         const SizedBox(width: 12),
+  //         Expanded(flex: 2, child: _buildDepartmentChart()),
+  //         const SizedBox(width: 12),
+  //         Expanded(child: _buildTopPerformingJobs()),
+  //       ],
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildApplicationsChart() {
+  //   final weeklyData = [FlSpot(0, 12), FlSpot(1, 18), FlSpot(2, 15), FlSpot(3, 22), FlSpot(4, 28), FlSpot(5, 25), FlSpot(6, 32)];
+  //
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.show_chart_rounded, color: _accent, size: 16),
+  //             const SizedBox(width: 6),
+  //             Text('Applications Trend', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         SizedBox(
+  //           height: 150,
+  //           child: LineChart(
+  //             LineChartData(
+  //               gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 10, getDrawingHorizontalLine: (value) => FlLine(color: _border, strokeWidth: 1)),
+  //               titlesData: FlTitlesData(
+  //                 bottomTitles: AxisTitles(
+  //                   sideTitles: SideTitles(
+  //                     showTitles: true,
+  //                     getTitlesWidget: (value, meta) {
+  //                       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  //                       return value.toInt() >= 0 && value.toInt() < days.length
+  //                           ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(days[value.toInt()], style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
+  //                           : const SizedBox();
+  //                     },
+  //                   ),
+  //                 ),
+  //                 leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text('${value.toInt()}', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
+  //                 topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //                 rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //               ),
+  //               borderData: FlBorderData(show: false),
+  //               minX: 0,
+  //               maxX: 6,
+  //               minY: 0,
+  //               maxY: 40,
+  //               lineBarsData: [
+  //                 LineChartBarData(
+  //                   spots: weeklyData,
+  //                   isCurved: true,
+  //                   color: _accent,
+  //                   barWidth: 2,
+  //                   dotData: FlDotData(show: true, getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(radius: 3, color: _accent, strokeWidth: 2, strokeColor: _surface)),
+  //                   belowBarData: BarAreaData(show: true, color: _accent.withOpacity(0.1)),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildJobStatusChart() {
+  //   final statusData = [('Active', 12, _accent), ('Pending', 5, _warning), ('Closed', 8, _textSecondary), ('Draft', 3, _primary)];
+  //   final maxY = statusData.map((e) => e.$2.toDouble()).reduce(max);
+  //
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.bar_chart_rounded, color: _primary, size: 16),
+  //             const SizedBox(width: 6),
+  //             Text('Job Status', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         SizedBox(
+  //           height: 150,
+  //           child: BarChart(
+  //             BarChartData(
+  //               alignment: BarChartAlignment.spaceAround,
+  //               maxY: maxY > 0 ? maxY * 1.2 : 10,
+  //               barTouchData: BarTouchData(enabled: false),
+  //               titlesData: FlTitlesData(
+  //                 show: true,
+  //                 bottomTitles: AxisTitles(
+  //                   sideTitles: SideTitles(
+  //                     showTitles: true,
+  //                     getTitlesWidget: (value, meta) => value.toInt() >= 0 && value.toInt() < statusData.length
+  //                         ? Padding(padding: const EdgeInsets.only(top: 6), child: Text(statusData[value.toInt()].$1, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))
+  //                         : const SizedBox(),
+  //                   ),
+  //                 ),
+  //                 leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 28, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)))),
+  //                 topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //                 rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //               ),
+  //               gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 2, getDrawingHorizontalLine: (value) => FlLine(color: _border, strokeWidth: 1)),
+  //               borderData: FlBorderData(show: false),
+  //               barGroups: List.generate(statusData.length, (i) => BarChartGroupData(x: i, barRods: [BarChartRodData(toY: statusData[i].$2.toDouble(), color: statusData[i].$3, width: 24, borderRadius: const BorderRadius.vertical(top: Radius.circular(4)))])),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildDepartmentChart() {
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.pie_chart_rounded, color: _secondary, size: 16),
+  //             const SizedBox(width: 6),
+  //             Text('Job Distribution', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         SizedBox(
+  //           height: 150,
+  //           child: PieChart(
+  //             PieChartData(
+  //               sections: [
+  //                 PieChartSectionData(value: 35, color: _primary, title: '35%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+  //                 PieChartSectionData(value: 25, color: _accent, title: '25%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+  //                 PieChartSectionData(value: 20, color: _secondary, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+  //                 PieChartSectionData(value: 20, color: _warning, title: '20%', radius: 40, titleStyle: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+  //               ],
+  //               sectionsSpace: 2,
+  //               centerSpaceRadius: 30,
+  //             ),
+  //           ),
+  //         ),
+  //         const SizedBox(height: 12),
+  //         Wrap(
+  //           spacing: 12,
+  //           runSpacing: 6,
+  //           children: [
+  //             _buildLegendItem('Engineering', _primary),
+  //             _buildLegendItem('Design', _accent),
+  //             _buildLegendItem('Marketing', _secondary),
+  //             _buildLegendItem('Sales', _warning),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildLegendItem(String label, Color color) {
     return Row(
@@ -728,55 +1822,55 @@ class _JobListView_NewState extends State<JobListView_New> {
     );
   }
 
-  Widget _buildTopPerformingJobs() {
-    final topJobs = [('Senior Flutter Dev', 45), ('Backend Engineer', 38), ('UI/UX Designer', 32)];
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.emoji_events_rounded, color: _warning, size: 16),
-              const SizedBox(width: 6),
-              Text('Top Jobs', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...topJobs.asMap().entries.map((entry) {
-            final index = entry.key;
-            final job = entry.value;
-            return Padding(
-              padding: EdgeInsets.only(bottom: index < 2 ? 12 : 0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: index == 0 ? _warning.withOpacity(0.1) : _border, shape: BoxShape.circle),
-                    child: Text('${index + 1}', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(job.$1, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        Text('${job.$2} applications', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
+  // Widget _buildTopPerformingJobs() {
+  //   final topJobs = [('Senior Flutter Dev', 45), ('Backend Engineer', 38), ('UI/UX Designer', 32)];
+  //
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: _border)),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.emoji_events_rounded, color: _warning, size: 16),
+  //             const SizedBox(width: 6),
+  //             Text('Top Jobs', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary)),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 16),
+  //         ...topJobs.asMap().entries.map((entry) {
+  //           final index = entry.key;
+  //           final job = entry.value;
+  //           return Padding(
+  //             padding: EdgeInsets.only(bottom: index < 2 ? 12 : 0),
+  //             child: Row(
+  //               children: [
+  //                 Container(
+  //                   width: 24,
+  //                   height: 24,
+  //                   alignment: Alignment.center,
+  //                   decoration: BoxDecoration(color: index == 0 ? _warning.withOpacity(0.1) : _border, shape: BoxShape.circle),
+  //                   child: Text('${index + 1}', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w700, color: index == 0 ? _warning : _textSecondary)),
+  //                 ),
+  //                 const SizedBox(width: 10),
+  //                 Expanded(
+  //                   child: Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       Text(job.$1, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+  //                       Text('${job.$2} applications', style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary)),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         }).toList(),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildJobGrid() {
     if (_filteredJobs.isEmpty) {
@@ -817,6 +1911,17 @@ class _JobListView_NewState extends State<JobListView_New> {
       ),
     );
   }
+
+
+
+
+
+
+
+
+
+
+
 }
 
 // JOB CARD

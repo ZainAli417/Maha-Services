@@ -1,101 +1,125 @@
-DB STRUCTURE JS
 {
-  "user_data": {
-    "personalProfile": {
-      "name": "",
-      "fullName": "",
-      "email": "",
-      "secondary_email": "",
-      "contactNumber": "",
-      "nationality": "",
-      "profilePicUrl": "",
-      "pic_url": "",
-      "skills": [],
-      "skillset": [],
-      "objectives": "",
-      "socialLinks": [],
-      "social_links": [],
-      "summary": "",
-      "dob": "",
-      "createdAt": "TIMESTAMP"
+  "certifications": [
+    {
+      "organization": "AASS",
+      "name": "Introduction to Cybersecurity"
     },
-    "educationalProfile": [
-      {
-        "institutionName": "",
-        "duration": "",
-        "majorSubjects": "",
-        "marksOrCgpa": "",
-        "eduStart": "",
-        "eduEnd": ""
-      }
-    ],
-    "educational_profile": [],
-    "professionalProfile": {
-      "summary": "",
-      "status": "",
-      "professionalStatus": "",
-      "expectedRetirement": "",
-      "expectedRetirementDate": "",
-      "retirement": "",
-      "retirementDate": ""
+    {
+      "organization": "EC-Council",
+      "name": "Cybersecurity for Business- The fundamental edition"
     },
-    "professional_profile": {},
-    "professionalExperience": [
-      {
-        "organization": "",
-        "role": "",
-        "duration": "",
-        "duties": "",
-        "startDate": "",
-        "endDate": "",
-        "rank": "",
-        "unit": "",
-        "location": "",
-        "command": "",
-        "aircraftType": "",
-        "flightHours": ""
-      }
+    {
+      "organization": "EC-Council",
+      "name": "Ethical Hacking Essentials"
+    },
+    {
+      "name": "Introduction to Cybersecurity Essentials",
+      "organization": "IBM"
+    },
+    {
+      "name": "Introduction to Android App Dev.",
+      "organization": "Meta"
+    },
+    {
+      "name": "Introduction to Flutter App Dev.",
+      "organization": "AASS"
+    },
+    {
+      "name": "Technical Support Fundamentals",
+      "organization": "Google"
+    },
+    {
+      "name": "Introduction to Flutter Course",
+      "organization": "SkillUp"
+    },
+    {
+      "organization": "Daydream Inc.",
+      "name": "Introduction to Augmented reality & AR-Core"
+    },
+    {
+      "name": "Introduction to Cloud",
+      "organization": "Congnitive.ai"
+    },
+    {
+      "organization": "IT Support Assistnat Mgt",
+      "name": "Google"
+    }
+  ],
+  "publications": [
+  AD PUBLICATION HERE
+  ],
+  "educationalProfile": [
+    {
+      "duration": "2020-2024",
+      "majorSubjects": "BS (Hons.) Computer Science",
+      "institutionName": "PMAS Arid Agriculture University Rawalpindi",
+      "marksOrCgpa": "3.72/4"
+    },
+    {
+      "majorSubjects": "ICs.",
+      "duration": "2018-2020",
+      "institutionName": "Pak Turk Maarif Intl. Schools & Colleges, Chak Shahzad Campus, Tarlai Kalan, Islamabad",
+      "marksOrCgpa": "924/1100"
+    },
+    {
+      "duration": "2016-2018",
+      "majorSubjects": "Matric",
+      "marksOrCgpa": "875/1100",
+      "institutionName": "Islamabad Model College for Boys (IMCB), Chak Shahzad, Islamabad"
+    }
+  ],
+  "professionalExperience": [
+    {
+      "location": "Pakistan",
+      "aircraftType": "C-130",
+      "organization": "PAF Base",
+      "flightHours": "1300",
+      "startDate": "Jan 2026",
+      "rank": "Squardon Leader",
+      "duration": "Jan 2026 - Jun 2026",
+      "duties": "Operational Duties",
+      "unit": "NUR BASE",
+      "command": "Central Air command",
+      "endDate": "Jun 2026",
+      "role": "Fighter Pilot"
+    }
+  ],
+  "experienceDocuments": [
+  https://dummy docuemnt links.com
+  ],
+  "professionalProfile": {
+    "status": "retired",
+    "retirementDate": "2026-01-17",
+    "summary": "Results-driven professional with over AIRFORCE RELATED EXPEREINCE",
+    "expectedRetirementDate": "2026-01-21"
+  },
+  "awards": [
+  ADD AWARDS HERE
+  ],
+  "personalProfile": {
+    "profilePicUrl": "https://firebasestorage.googleapis.com/v0/b/unisoft-tmp.appspot.com/o/users%2F9l8zQfeD8EOKBaQSesl1M2x4WTD2%2Fprofile%2Fbot.png?alt=media&token=bbb58a91-4aba-4ebb-9bd5-9842cbebdcd6",
+    "nationality": "Pakistani",
+    "contactNumber": "+92-3205099020",
+    "name": "Zain Ali",
+    "createdAt": "2026-01-08T12:21:13.339",
+    "socialLinks": [
+    add links linkedin fb insta
     ],
-    "professional_experience": [],
-    "experiences": [],
-    "experienceDocuments": [
-      {
-        "name": "",
-        "url": "",
-        "contentType": "",
-        "uploadedAt": "TIMESTAMP"
-      }
+    "secondary_email": "asifwali2012@gmail.com",
+    "skills": [
+      "Android Development",
+      "Flutter App Development",
+      "RAG Based Agent Building",
+      "Network Security and Configuring",
+
     ],
-    "experience_documents": [],
-    "certifications": [
-      {
-        "organization": "",
-        "name": "",
-        "certName": ""
-      }
-    ],
-    "certificationDocuments": [
-      {
-        "name": "",
-        "url": "",
-        "contentType": "",
-        "uploadedAt": "TIMESTAMP"
-      }
-    ],
-    "certification_documents": [],
-    "publications": [],
-    "awards": [],
-    "references": [],
-    "documents": [
-      {
-        "name": "",
-        "url": "",
-        "contentType": "",
-        "uploadedAt": "TIMESTAMP"
-      }
-    ],
-    "uid": "",
-    "role": "",
-    "createdAt": "TIMESTAMP"
-  }
+    "email": "zainnew@mail.com",
+    "summary": "Results-driven professional with.",
+    "dob": "2026-01-19",
+    "objectives": "Tatleast 2 objectives"
+  },
+  "createdAt": "2026-01-08T17:49:48.707",
+  "references": [
+    "References will be furnished upon request."
+  ]
 }

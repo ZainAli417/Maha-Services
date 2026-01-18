@@ -103,10 +103,10 @@ class ViewApplicantDetails extends StatelessWidget {
                             ),
                             const SizedBox(height: 40),
 
-                            // Experience Section
+                            // Experience Section - ENHANCED
                             _buildSectionTitle('Professional Experience', Icons.work_history_outlined),
                             const SizedBox(height: 20),
-                            ...applicant.experiences.map(_buildExperienceTile),
+                            ...applicant.experiences.map(_buildEnhancedExperienceTile),
                             if(applicant.experiences.isEmpty) _buildEmptyState('No experience listed'),
 
                             const SizedBox(height: 40),
@@ -119,14 +119,21 @@ class ViewApplicantDetails extends StatelessWidget {
 
                             const SizedBox(height: 40),
 
-                            // Certifications Grid
+                            // Certifications Section - ENHANCED
                             _buildSectionTitle('Certifications & Licenses', Icons.verified_user_outlined),
                             const SizedBox(height: 20),
-                            Wrap(
-                              spacing: 16,
-                              runSpacing: 16,
-                              children: applicant.certifications.map(_buildCertificationCard).toList(),
-                            ),
+                            if (applicant.certifications.isNotEmpty)
+                              _buildCertificationsGrid()
+                            else
+                              _buildEmptyState('No certifications listed'),
+
+                            // Certification Documents (if available)
+                            if (applicant.certifications.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              _buildSectionTitle('Certification Documents', Icons.attach_file_outlined),
+                              const SizedBox(height: 16),
+                              ...applicant.certifications.map(_buildDocumentTile),
+                            ],
                           ],
                         ),
                       ),
@@ -134,7 +141,7 @@ class ViewApplicantDetails extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildFooter(context),
+              //_buildFooter(context),
             ],
           ),
         ),
@@ -303,47 +310,67 @@ class ViewApplicantDetails extends StatelessWidget {
     );
   }
 
-  // --- Main Content Components ---
-
-  Widget _buildExperienceTile(Map<String, dynamic> exp) {
-    // Extract safely
+  // --- ENHANCED EXPERIENCE TILE WITH ALL FIELDS ---
+  Widget _buildEnhancedExperienceTile(Map<String, dynamic> exp) {
+    // Extract all fields from updated structure
     final role = exp['role']?.toString() ?? 'Role Not Specified';
-    final company = exp['organization']?.toString() ?? exp['company']?.toString() ?? 'Unknown Company';
+    final organization = exp['organization']?.toString() ?? 'Unknown Organization';
     final duration = exp['duration']?.toString() ?? '';
-    final desc = exp['duties']?.toString() ?? exp['text']?.toString() ?? '';
+    final startDate = exp['startDate']?.toString() ?? '';
+    final endDate = exp['endDate']?.toString() ?? '';
+    final duties = exp['duties']?.toString() ?? exp['text']?.toString() ?? '';
+
+    // Military-specific fields
+    final rank = exp['rank']?.toString() ?? '';
+    final unit = exp['unit']?.toString() ?? '';
+    final location = exp['location']?.toString() ?? '';
+    final command = exp['command']?.toString() ?? '';
+    final aircraftType = exp['aircraftType']?.toString() ?? '';
+    final flightHours = exp['flightHours']?.toString() ?? '';
+
+    // Determine if this is military experience
+    final isMilitaryExp = rank.isNotEmpty || unit.isNotEmpty || command.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      child: Row(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timeline Node
-          Column(
+          // Header Row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icon Container
               Container(
-                width: 12,
-                height: 12,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: _accentColor, width: 2),
-                  shape: BoxShape.circle,
+                  color: _bgSecondary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  isMilitaryExp ? Icons.military_tech : Icons.business_center,
+                  color: _accentColor,
+                  size: 20,
                 ),
               ),
-              Container(
-                width: 2,
-                height: 60, // approximate height line
-                color: const Color(0xFFE2E8F0),
-              ),
-            ],
-          ),
-          const SizedBox(width: 24),
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              const SizedBox(width: 16),
+              // Title & Organization
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       role,
@@ -353,37 +380,299 @@ class ViewApplicantDetails extends StatelessWidget {
                         color: _primaryColor,
                       ),
                     ),
-                    if (duration.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _bgSecondary,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          duration,
-                          style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      organization,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: _accentColor,
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  company,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: _accentColor,
-                    fontWeight: FontWeight.w500,
+              ),
+              // Duration Badge
+              if (duration.isNotEmpty || startDate.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _bgSecondary,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.calendar_today, size: 12, color: _textSecondary),
+                      const SizedBox(width: 6),
+                      Text(
+                        duration.isNotEmpty
+                            ? duration
+                            : '${startDate}${endDate.isNotEmpty ? ' - $endDate' : ' - Present'}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: _textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
+            ],
+          ),
+
+          // Military-specific details (if applicable)
+          if (isMilitaryExp) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Wrap(
+                spacing: 20,
+                runSpacing: 12,
+                children: [
+                  if (rank.isNotEmpty) _buildInfoChip(Icons.stars, 'Rank', rank),
+                  if (unit.isNotEmpty) _buildInfoChip(Icons.group, 'Unit', unit),
+                  if (command.isNotEmpty) _buildInfoChip(Icons.flag, 'Command', command),
+                  if (location.isNotEmpty) _buildInfoChip(Icons.location_on, 'Location', location),
+                  if (aircraftType.isNotEmpty) _buildInfoChip(Icons.flight, 'Aircraft', aircraftType),
+                  if (flightHours.isNotEmpty) _buildInfoChip(Icons.schedule, 'Flight Hours', flightHours),
+                ],
+              ),
+            ),
+          ],
+
+          // Duties/Description
+          if (duties.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            const SizedBox(height: 16),
+            Text(
+              'Key Responsibilities',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              duties,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: _textPrimary,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Helper widget for military/additional info chips
+  Widget _buildInfoChip(IconData icon, String label, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: _textSecondary),
+        const SizedBox(width: 6),
+        Text(
+          '$label: ',
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: _textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: _primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- ENHANCED CERTIFICATIONS GRID ---
+  Widget _buildCertificationsGrid() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive grid columns
+        int crossAxisCount = 3;
+        if (constraints.maxWidth < 600) {
+          crossAxisCount = 1;
+        } else if (constraints.maxWidth < 900) {
+          crossAxisCount = 2;
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 3.8,
+          ),
+          itemCount: applicant.certifications.length,
+          itemBuilder: (context, index) {
+            return _buildEnhancedCertificationCard(applicant.certifications[index]);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEnhancedCertificationCard(Map<String, String> cert) {
+    final certName = cert['name'] ?? 'Certification';
+    final organization = cert['organization'] ?? 'Organization Not Specified';
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _bgSecondary,
+            Colors.white,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: _accentColor.withOpacity(0.2)),
+            ),
+            child: Icon(
+              Icons.verified,
+              color: _accentColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Text(
-                  desc,
-                  style: GoogleFonts.poppins(fontSize: 14, color: _textSecondary, height: 1.5),
+                  certName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _primaryColor,
+                    height: 1.3,
+                  ),
                 ),
+                if (organization.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.business, size: 11, color: _textSecondary),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          organization,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: _textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // --- DOCUMENT TILE (for certification/experience documents) ---
+  Widget _buildDocumentTile(Map<String, dynamic> doc) {
+    final name = doc['name']?.toString() ?? 'Document';
+    final url = doc['url']?.toString() ?? '';
+    final contentType = doc['contentType']?.toString() ?? '';
+
+    IconData docIcon = Icons.insert_drive_file;
+    if (contentType.contains('pdf')) {
+      docIcon = Icons.picture_as_pdf;
+    } else if (contentType.contains('image')) {
+      docIcon = Icons.image;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _bgSecondary,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(docIcon, size: 18, color: _accentColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: _primaryColor,
+                  ),
+                ),
+                if (contentType.isNotEmpty)
+                  Text(
+                    contentType.toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      color: _textSecondary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (url.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.download, size: 18),
+              color: _accentColor,
+              onPressed: () {
+                // Download logic here
+              },
+            ),
         ],
       ),
     );
@@ -393,6 +682,7 @@ class ViewApplicantDetails extends StatelessWidget {
     final institution = edu['institutionName']?.toString() ?? 'Institution';
     final major = edu['majorSubjects']?.toString() ?? '';
     final duration = edu['duration']?.toString() ?? '';
+    final cgpa = edu['marksOrCgpa']?.toString() ?? '';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -426,6 +716,11 @@ class ViewApplicantDetails extends StatelessWidget {
                     major,
                     style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
                   ),
+                if(cgpa.isNotEmpty)
+                  Text(
+                    'CGPA: $cgpa',
+                    style: GoogleFonts.poppins(fontSize: 12, color: _accentColor, fontWeight: FontWeight.w500),
+                  ),
               ],
             ),
           ),
@@ -434,42 +729,6 @@ class ViewApplicantDetails extends StatelessWidget {
               duration,
               style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary, fontWeight: FontWeight.w500),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCertificationCard(Map<String, String> cert) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.verified, color: _accentColor, size: 20),
-          const SizedBox(height: 12),
-          Text(
-            cert['name'] ?? 'Certification',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _primaryColor,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            cert['organization'] ?? '',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
-          ),
         ],
       ),
     );
@@ -604,7 +863,6 @@ class ViewApplicantDetails extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildFooter(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -612,45 +870,45 @@ class ViewApplicantDetails extends StatelessWidget {
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: _textSecondary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            ),
-            child: Text(
-              'Close',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-            ),
-          ),
-          const SizedBox(width: 16),
-          ElevatedButton.icon(
-            onPressed: () {
-              // Your download logic here
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Downloading CV...')),
-              );
-            },
-            icon: const Icon(Icons.download, size: 18),
-            label: Text(
-              'Download Resume',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
+      // child: Row(
+      //   mainAxisAlignment: MainAxisAlignment.end,
+      //   children: [
+      //     TextButton(
+      //       onPressed: () => Navigator.pop(context),
+      //       style: TextButton.styleFrom(
+      //         foregroundColor: _textSecondary,
+      //         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      //       ),
+      //       child: Text(
+      //         'Close',
+      //         style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+      //       ),
+      //     ),
+      //     const SizedBox(width: 16),
+      //     ElevatedButton.icon(
+      //       onPressed: () {
+      //         // Your download logic here
+      //         ScaffoldMessenger.of(context).showSnackBar(
+      //           const SnackBar(content: Text('Downloading CV...')),
+      //         );
+      //       },
+      //       icon: const Icon(Icons.download, size: 18),
+      //       label: Text(
+      //         'Download Resume',
+      //         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      //       ),
+      //       style: ElevatedButton.styleFrom(
+      //         backgroundColor: _primaryColor,
+      //         foregroundColor: Colors.white,
+      //         elevation: 0,
+      //         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      //         shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(8),
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

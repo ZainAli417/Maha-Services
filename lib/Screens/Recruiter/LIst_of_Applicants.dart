@@ -36,6 +36,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   bool _selectAll = false;
   final TextEditingController _searchController = TextEditingController();
 
+  bool _isRankingByScore = false;
   @override
   void initState() {
     super.initState();
@@ -53,7 +54,76 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     _searchController.dispose();
     super.dispose();
   }
+  void showTopNotification(
+      BuildContext context,
+      String message, {
+        required Color backgroundColor,
+        required IconData icon,
+      }) {
+    final overlay = Overlay.of(context);
 
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 30,
+        left: 400,
+        right: 380,
+        child: Material(
+          color: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(const Duration(seconds: 5), () {
+      overlayEntry.remove();
+    });
+  }
+
+  void showSuccessLight(BuildContext context, String message) {
+    showTopNotification(
+      context,
+      message,
+      backgroundColor: const Color(0xFF10B981),
+      icon: Icons.check_circle_outline,
+    );
+  }
+
+  void showErrorTop(BuildContext context, String message) {
+    showTopNotification(
+      context,
+      message,
+      backgroundColor: const Color(0xFF7F1D1D),
+      icon: Icons.error,
+    );
+  }
   String _maskEmail(String email) {
     final parts = email.split('@');
     if (parts.length != 2) return '****@****.com';
@@ -95,53 +165,171 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       }
     });
   }
+  void _rankCandidatesByScore(ApplicantsProvider provider) {
+    setState(() {
+      // This will trigger a rebuild with sorted applicants
+    });
+    showSuccessLight(context, "Candidates ranked by AI match score");
 
-  Future<void> _shortlistSelected(ApplicantsProvider provider) async {
-    if (_selectedApplicants.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Please select at least one candidate'),
-            ],
-          ),
-          backgroundColor: Color(0xFFF59E0B),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
+  }
+  Future<void> _autoShortlistHighScorers(ApplicantsProvider provider) async {
+    final aiProvider = context.read<AIMatchProvider>();
+    final eligibleCandidates = <String>[];
+
+    for (var applicant in provider.applicants) {
+      // Skip if already shortlisted
+      if (applicant.status.toLowerCase() == 'shortlist') {
+        continue;
+      }
+
+      // Check score from database
+      final matchScoreData = applicant.profileSnapshot['match_score'];
+      if (matchScoreData != null && matchScoreData is Map) {
+        final score = matchScoreData['overallScore'] as int? ?? 0;
+        if (score > 65) {
+          eligibleCandidates.add(applicant.userId);
+        }
+      }
+    }
+
+    if (eligibleCandidates.isEmpty) {
+      showErrorTop(context, "No eligible candidates found (score > 65 and not already shortlisted");
+
       return;
     }
 
-    for (String userId in _selectedApplicants) {
-      final applicant =
-      provider.applicants.firstWhere((a) => a.userId == userId);
-      await provider.updateApplicationStatus(
-          userId, applicant.docId, 'Shortlist');
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.auto_awesome, color: Color(0xFF8B5CF6)),
+            SizedBox(width: 12),
+            Text(
+              'Auto Shortlist',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Text(
+          'This will shortlist ${eligibleCandidates.length} candidate${eligibleCandidates.length > 1 ? 's' : ''} with AI match score > 65%.\n\nAlready shortlisted candidates will be skipped.',
+          style: GoogleFonts.poppins(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.poppins()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF8B5CF6),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Confirm', style: GoogleFonts.poppins(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Perform shortlisting
+    int successCount = 0;
+    for (String userId in eligibleCandidates) {
+      try {
+        final applicant = provider.applicants.firstWhere((a) => a.userId == userId);
+        await provider.updateApplicationStatus(userId, applicant.docId, 'shortlist');
+        successCount++;
+      } catch (e) {
+        debugPrint('Failed to shortlist $userId: $e');
+      }
+    }
+    showSuccessLight(context, "$successCount candidate${successCount > 1 ? 's' : ''} auto-shortlisted successfully");
+
+  }
+  Future<void> _shortlistSelected(ApplicantsProvider provider) async {
+    if (_selectedApplicants.isEmpty) {
+      showSuccessLight(context, "Please select at least one candidate");
+
+      return;
     }
 
-    final count = _selectedApplicants.length;
+    int alreadyShortlisted = 0;
+    int successCount = 0;
+
+    for (String userId in _selectedApplicants) {
+      final applicant = provider.applicants.firstWhere((a) => a.userId == userId);
+
+      // Validation: Skip if already shortlisted
+      if (applicant.status.toLowerCase() == 'shortlist') {
+        alreadyShortlisted++;
+        continue;
+      }
+
+      await provider.updateApplicationStatus(userId, applicant.docId, 'Shortlist');
+      successCount++;
+    }
+
     setState(() {
       _selectedApplicants.clear();
       _selectAll = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.white),
-            SizedBox(width: 12),
-            Text('$count candidates Shortlist successfully'),
-          ],
+    // Show appropriate message
+    if (alreadyShortlisted > 0 && successCount == 0) {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Text('All selected candidates are already shortlisted'),
+            ],
+          ),
+          backgroundColor: Color(0xFF64748B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        backgroundColor: Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+      );
+    } else if (alreadyShortlisted > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$successCount shortlisted, $alreadyShortlisted already shortlisted',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white),
+              SizedBox(width: 12),
+              Text('$successCount candidates shortlisted successfully'),
+            ],
+          ),
+          backgroundColor: Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   Color _getScoreColor(int score) {
@@ -158,17 +346,39 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     return 'Low Match';
   }
   List<ApplicantRecord> _getFilteredApplicants(ApplicantsProvider provider) {
-    if (_searchController.text.isEmpty) {
-      return provider.applicants;
+    var applicants = provider.applicants;
+
+    if (_searchController.text.isNotEmpty) {
+      final query = _searchController.text.toLowerCase();
+      applicants = applicants.where((applicant) {
+        return applicant.name.toLowerCase().contains(query) ||
+            applicant.email.toLowerCase().contains(query) ||
+            (applicant.jobData?.title ?? '').toLowerCase().contains(query);
+      }).toList();
     }
 
-    final query = _searchController.text.toLowerCase();
-    return provider.applicants.where((applicant) {
-      return applicant.name.toLowerCase().contains(query) ||
-          applicant.email.toLowerCase().contains(query) ||
-          (applicant.jobData?.title ?? '').toLowerCase().contains(query);
-    }).toList();
+    // Sort by AI match score if ranking is active
+    if (_isRankingByScore) {
+      applicants.sort((a, b) {
+        final scoreA = _getApplicantScore(a);
+        final scoreB = _getApplicantScore(b);
+        return scoreB.compareTo(scoreA); // Descending order
+      });
+    }
+
+    return applicants;
   }
+
+// Helper to get applicant score
+  int _getApplicantScore(ApplicantRecord applicant) {
+    final matchScoreData = applicant.profileSnapshot['match_score'];
+    if (matchScoreData != null && matchScoreData is Map) {
+      return matchScoreData['overallScore'] as int? ?? 0;
+    }
+    return 0;
+  }
+  
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -345,17 +555,60 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               );
             },
           ),
+
+
+
           SizedBox(width: 12),
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: Icon(Icons.close, size: 20),
-          //   color: Color(0xFF64748B),
-          //   style: IconButton.styleFrom(
-          //     shape: RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.circular(8),
-          //     ),
-          //   ),
-          // ),
+          OutlinedButton.icon(
+            onPressed: () {
+              setState(() {
+                _isRankingByScore = !_isRankingByScore;
+              });
+              _rankCandidatesByScore(provider);
+            },
+            icon: Icon(_isRankingByScore ? Icons.filter_list : Icons.sort, size: 18),
+            label: Text(
+              _isRankingByScore ? 'Ranked' : 'Rank Now',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: _isRankingByScore ? Color(0xFF8B5CF6) : Color(0xFF475569),
+              backgroundColor: _isRankingByScore ? Color(0xFF8B5CF6).withOpacity(0.1) : Colors.white,
+              side: BorderSide(
+                color: _isRankingByScore ? Color(0xFF8B5CF6) : Color(0xFFE2E8F0),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+// Auto Shortlist Button
+          ElevatedButton.icon(
+            onPressed: () => _autoShortlistHighScorers(provider),
+            icon: Icon(Icons.auto_awesome, size: 18),
+            label: Text(
+              'Auto Shortlist (>65%)',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
         ],
       ),
     );
@@ -911,7 +1164,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              '${applicant.experienceYears} years\n${applicant.jobData?.title ?? 'N/A'}',
+              '${applicant.experienceYears} years\n${applicant.professionalStatus }',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Color(0xFF475569),
@@ -1128,11 +1381,7 @@ SizedBox(width: 20,),
         'color': Color(0xFFF59E0B),
         'bgColor': Color(0xFFFEF3C7),
       },
-      'interview': {
-        'label': 'Interview',
-        'color': Color(0xFF3B82F6),
-        'bgColor': Color(0xFFDEEAFF),
-      },
+
       'rejected': {
         'label': 'Rejected',
         'color': Color(0xFF64748B),
@@ -1178,25 +1427,7 @@ SizedBox(width: 20,),
           ),
         ),
         PopupMenuItem(
-          value: 'interview',
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Color(0xFF3B82F6),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: 8),
-              Text('Interview',
-                  style: GoogleFonts.poppins(fontSize: 13)),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'Shortlist',
+          value: 'shortlist',
           child: Row(
             children: [
               Container(
@@ -1608,4 +1839,5 @@ SizedBox(width: 20,),
       ],
     );
   }
+
 }
