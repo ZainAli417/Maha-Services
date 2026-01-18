@@ -1239,13 +1239,6 @@ class RoleProvider extends ChangeNotifier {
   }
 }
 
-class Env {
-  static String get geminiApiKey => 'AIzaSyCnZ3sgEFNzceihhfhh-ojo2aFyJUtBDXU';
-  static String get groqApiKey =>
-      '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'; // Optional helper to check presence
-  static bool get hasGeminiKey => geminiApiKey.isNotEmpty;
-}
-
 /// NOTE:
 /// - The trigger function writes into job_seeker/{uid}.user_data exactly the structure you requested.
 /// - To re-run injection for another UID, call:
