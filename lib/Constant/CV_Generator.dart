@@ -119,7 +119,7 @@ class _CVGeneratorButtonState extends State<CVGeneratorButton> {
                       ),
                 const SizedBox(width: 12),
                 Text(
-                  _isGenerating ? 'PREPARING...' : 'GENERATE PROFESSIONAL CV',
+                  _isGenerating ? 'Preparing...' : 'Download CV',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 13,
