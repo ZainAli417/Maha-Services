@@ -256,6 +256,7 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),
     GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
     GoRoute(path: '/view-applications', pageBuilder: (c, s) => _fadePage(const ApplicantsScreen(), s)),
+
   ],
 );
 

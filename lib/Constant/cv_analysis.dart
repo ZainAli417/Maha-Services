@@ -1069,7 +1069,7 @@ class _AIProcessingDialog extends StatelessWidget {
 //
 // import '../Screens/Job_Seeker/job_hub.dart';
 // import '../Screens/Job_Seeker/JS_Top_Bar.dart';
-// import '../main.dart';
+// import '../main2.dart';
 // import 'cv_analysis_provider.dart';
 //
 // // Main Screen

@@ -97,15 +97,15 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                     const SizedBox(height: 20),
                     _buildSectionLabel('ACCOUNT'),
                     const SizedBox(height: 8),
-                    // _buildMenuItem(
-                    //   icon: Icons.work_outline,
-                    //   activeIcon: Icons.work,
-                    //   label: 'Settings',
-                    //   index: 3,
-                    //   isActive: widget.activeIndex == 3,
-                    //   onTap: () => context.go('/Settings'),
-                    // ),
-                    //
+                    _buildMenuItem(
+                       icon: Icons.work_outline,
+                       activeIcon: Icons.work,
+                       label: 'Settings',
+                       index: 3,
+                       isActive: widget.activeIndex == 3,
+                       onTap: () => context.go('/Settings'),
+                     ),
+
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       activeIcon: Icons.help,

@@ -845,7 +845,7 @@ class _CompactJobCardState extends State<CompactJobCard>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => JobDetailModal(jobData: widget.jobData),
+      builder: (_) => JobDetailModal(jobId: widget.jobData['id']),
     );
   }
 

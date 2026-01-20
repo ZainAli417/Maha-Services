@@ -1946,7 +1946,7 @@ class _JobCardState extends State<JobCard> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: JobDetailModal_recruiter(jobData: widget.jobData)),
+      builder: (context) => BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: JobDetailModal_recruiter(jobId: widget.jobData['id'])),
     );
   }
 

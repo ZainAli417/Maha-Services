@@ -433,7 +433,7 @@ class AIMatchResult {
 // import 'package:flutter/foundation.dart';
 // import 'package:http/http.dart' as http;
 //
-// import '../../main.dart';
+// import '../../main2.dart';
 // import 'LIst_of_Applicants_provider.dart';
 //
 //
