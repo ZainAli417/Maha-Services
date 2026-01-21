@@ -108,7 +108,28 @@ class ViewApplicantDetails extends StatelessWidget {
                             const SizedBox(height: 20),
                             ...applicant.experiences.map(_buildEnhancedExperienceTile),
                             if(applicant.experiences.isEmpty) _buildEmptyState('No experience listed'),
+                            const SizedBox(height: 24),
 
+                            _buildSectionTitle('Experience Documents', Icons.work_history_outlined),
+                            const SizedBox(height: 16),
+                            if (applicant.experienceDocuments.isNotEmpty)
+                              ...applicant.experienceDocuments.map((doc) => _buildDocumentTile(
+                                doc['name'] ?? 'Document',
+                                doc['url'] ?? '',
+                                doc['type'] ?? 'file',
+                              ))
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(
+                                  'No experience documents have been provided',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF64748B),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
                             const SizedBox(height: 40),
 
                             // Education Section
@@ -119,21 +140,156 @@ class ViewApplicantDetails extends StatelessWidget {
 
                             const SizedBox(height: 40),
 
-                            // Certifications Section - ENHANCED
+                            // Replace the entire certifications section with:
                             _buildSectionTitle('Certifications & Licenses', Icons.verified_user_outlined),
                             const SizedBox(height: 20),
                             if (applicant.certifications.isNotEmpty)
                               _buildCertificationsGrid()
                             else
-                              _buildEmptyState('No certifications listed'),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(
+                                  'No certifications have been provided',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF64748B),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
 
-                            // Certification Documents (if available)
-                            if (applicant.certifications.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              _buildSectionTitle('Certification Documents', Icons.attach_file_outlined),
-                              const SizedBox(height: 16),
-                              ...applicant.certifications.map(_buildDocumentTile),
-                            ],
+// Certification Documents (SEPARATE SECTION)
+                            const SizedBox(height: 24),
+                            _buildSectionTitle('Certification Documents', Icons.attach_file_outlined),
+                            const SizedBox(height: 16),
+                            if (applicant.certificationDocuments.isNotEmpty)
+                              ...applicant.certificationDocuments.map((doc) => _buildDocumentTile(
+                                doc['name'] ?? 'Document',
+                                doc['url'] ?? '',
+                                doc['type'] ?? 'file',
+                              ))
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(
+                                  'No certification documents have been provided',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF64748B),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            // Add this section after Awards:
+                            const SizedBox(height: 32),
+                            _buildSectionTitle('Publications', Icons.article_outlined),
+                            const SizedBox(height: 20),
+                            if (applicant.publications.isNotEmpty)
+                              ...applicant.publications.asMap().entries.map((entry) =>
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            '${entry.key + 1}',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF8B5CF6),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            entry.value,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              color: const Color(0xFF334155),
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(
+                                  'No publications have been provided',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF64748B),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+
+
+                            const SizedBox(height: 32),
+                            _buildSectionTitle('Awards', Icons.stars_sharp),
+                            const SizedBox(height: 20),
+                            if (applicant.awards.isNotEmpty)
+                              ...applicant.awards.asMap().entries.map((entry) =>
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            '${entry.key + 1}',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF8B5CF6),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            entry.value,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              color: const Color(0xFF334155),
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Text(
+                                  'No Awards have been provided',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: const Color(0xFF64748B),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+
+
+
                           ],
                         ),
                       ),
@@ -611,35 +767,28 @@ class ViewApplicantDetails extends StatelessWidget {
   }
 
   // --- DOCUMENT TILE (for certification/experience documents) ---
-  Widget _buildDocumentTile(Map<String, dynamic> doc) {
-    final name = doc['name']?.toString() ?? 'Document';
-    final url = doc['url']?.toString() ?? '';
-    final contentType = doc['contentType']?.toString() ?? '';
-
-    IconData docIcon = Icons.insert_drive_file;
-    if (contentType.contains('pdf')) {
-      docIcon = Icons.picture_as_pdf;
-    } else if (contentType.contains('image')) {
-      docIcon = Icons.image;
-    }
-
+  Widget _buildDocumentTile(String name, String url, String type) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _bgSecondary,
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(6),
+              color: const Color(0xFF3B82F6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(docIcon, size: 18, color: _accentColor),
+            child: Icon(
+              type.contains('pdf') ? Icons.picture_as_pdf : Icons.insert_drive_file,
+              color: const Color(0xFF3B82F6),
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -649,35 +798,40 @@ class ViewApplicantDetails extends StatelessWidget {
                 Text(
                   name,
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: _primaryColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  type.toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: const Color(0xFF64748B),
                   ),
                 ),
-                if (contentType.isNotEmpty)
-                  Text(
-                    contentType.toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      color: _textSecondary,
-                    ),
-                  ),
               ],
             ),
           ),
           if (url.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.download, size: 18),
-              color: _accentColor,
-              onPressed: () {
-                // Download logic here
+              icon: const Icon(Icons.download_outlined, size: 20),
+              onPressed: () async {
+    SnackBar(
+    content: Text('Contact Admin to view Confidential attachments'),
+    );
+    // Download logic here
               },
+              tooltip: 'Download',
+              color: const Color(0xFF3B82F6),
             ),
         ],
       ),
     );
   }
-
   Widget _buildEducationTile(Map<String, dynamic> edu) {
     final institution = edu['institutionName']?.toString() ?? 'Institution';
     final major = edu['majorSubjects']?.toString() ?? '';

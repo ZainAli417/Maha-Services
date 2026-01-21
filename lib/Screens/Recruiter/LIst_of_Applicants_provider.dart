@@ -48,7 +48,9 @@ class ApplicantRecord {
   final List<String> publications;
   final List<String> awards;
   final List<dynamic> documents;
-
+// Add these fields after line 33 (after documents field):
+  final List<Map<String, dynamic>> experienceDocuments;
+  final List<Map<String, dynamic>> certificationDocuments;
   // Raw Data (Kept for edge cases/updates)
   final Map<String, dynamic> profileSnapshot;
   final JobData? jobData;
@@ -96,6 +98,11 @@ class ApplicantRecord {
     required this.documents,
     required this.matchScore,
     required this.searchIndex,
+
+    // Add after documents parameter:
+    required this.experienceDocuments,
+    required this.certificationDocuments,
+
   });
 
   // Getter alias for professional summary if used interchangeably
@@ -168,7 +175,7 @@ class ApplicantRecord {
       educations = rawEdu.map((item) => item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{}).toList();
     }
 
-    // Certifications
+    // Replace the certifications parsing section with this enhanced version:
     final rawCerts = userData['certifications'];
     List<Map<String, String>> certifications = [];
     if (rawCerts is List) {
@@ -179,14 +186,46 @@ class ApplicantRecord {
             certifications.add({
               'organization': (item['organization'] ?? '').toString(),
               'name': n,
+              'issueDate': (item['issueDate'] ?? '').toString(),
+              'expiryDate': (item['expiryDate'] ?? '').toString(),
             });
           }
         } else if (item is String && item.isNotEmpty) {
-          certifications.add({'organization': '', 'name': item});
+          certifications.add({'organization': '', 'name': item, 'issueDate': '', 'expiryDate': ''});
         }
       }
     }
 
+// Add this AFTER certifications parsing (around line 195):
+// Experience Documents
+    final rawExpDocs = userData['experienceDocuments'];
+    List<Map<String, dynamic>> experienceDocuments = [];
+    if (rawExpDocs is List) {
+      experienceDocuments = rawExpDocs.map((item) {
+        if (item is! Map) return <String, dynamic>{};
+        return {
+          'name': (item['name'] ?? '').toString(),
+          'url': (item['url'] ?? '').toString(),
+          'type': (item['type'] ?? item['contentType'] ?? '').toString(),
+          'uploadedAt': (item['uploadedAt'] ?? '').toString(),
+        };
+      }).toList();
+    }
+
+// Certification Documents
+    final rawCertDocs = userData['certificationDocuments'];
+    List<Map<String, dynamic>> certificationDocuments = [];
+    if (rawCertDocs is List) {
+      certificationDocuments = rawCertDocs.map((item) {
+        if (item is! Map) return <String, dynamic>{};
+        return {
+          'name': (item['name'] ?? '').toString(),
+          'url': (item['url'] ?? '').toString(),
+          'type': (item['type'] ?? item['contentType'] ?? '').toString(),
+          'uploadedAt': (item['uploadedAt'] ?? '').toString(),
+        };
+      }).toList();
+    }
     // -- Derived Fields --
     final firstEdu = educations.isNotEmpty ? educations.first : <String, dynamic>{};
     final firstExp = experiences.isNotEmpty ? experiences.first : <String, dynamic>{};
@@ -235,6 +274,9 @@ class ApplicantRecord {
       awards: (userData['awards'] is List) ? (userData['awards'] as List).map((e) => e.toString()).toList() : [],
       documents: (userData['documents'] is List) ? userData['documents'] : [],
       searchIndex: searchStr,
+      // Add these two lines before the closing parenthesis:
+      experienceDocuments: experienceDocuments,
+      certificationDocuments: certificationDocuments,
     );
   }
 
@@ -280,6 +322,9 @@ class ApplicantRecord {
       documents: documents,
       matchScore: matchScore,
       searchIndex: searchIndex,
+      // Add these two lines before the closing parenthesis:
+      experienceDocuments: experienceDocuments,
+      certificationDocuments: certificationDocuments,
     );
   }
 }

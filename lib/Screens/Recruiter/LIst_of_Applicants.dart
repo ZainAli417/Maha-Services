@@ -469,7 +469,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Manage applicants for Senior Aviation Safety Specialist',
+                  'Manage applicants Efficiently Using AI, Unlike TTraditional Methods',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Color(0xFF64748B),
