@@ -1,7 +1,6 @@
 // lib/providers/list_applied_jobs_provider.dart
 
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -11,12 +10,11 @@ class ListAppliedJobsProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Real‑time subscription to the user’s applied_jobs collection
+  /// Real‑time subscription to the user's applied_jobs collection
   StreamSubscription<QuerySnapshot>? _appsSub;
 
   /// One subscription per jobId to its Posted_jobs_public/{jobId} doc
-  final Map<String, StreamSubscription<DocumentSnapshot>>
-  _jobDocSubs = {};
+  final Map<String, StreamSubscription<DocumentSnapshot>> _jobDocSubs = {};
 
   /// Raw snapshots of applied_docs
   List<QueryDocumentSnapshot> _appliedDocs = [];
@@ -87,14 +85,12 @@ class ListAppliedJobsProvider with ChangeNotifier {
           .snapshots()
           .listen((docSnap) {
         if (docSnap.exists) {
-          _jobDataMap[id] =
-          docSnap.data() as Map<String, dynamic>;
+          _jobDataMap[id] = docSnap.data() as Map<String, dynamic>;
         } else {
           _jobDataMap.remove(id);
         }
         _rebuildRecords();
       }, onError: (e) {
-        // ignore single‑doc errors
         debugPrint('Job doc listener error for $id: $e');
       });
       _jobDocSubs[id] = sub;
@@ -121,7 +117,11 @@ class ListAppliedJobsProvider with ChangeNotifier {
         try {
           return DateFormat('MM/dd/yy').parse(s);
         } catch (_) {}
-        return DateFormat('MM/dd/yyyy').parse(s);
+        try {
+          return DateFormat('MM/dd/yyyy').parse(s);
+        } catch (_) {
+          return DateTime.now();
+        }
       }
 
       DateTime parseAppliedAt(dynamic v) {
@@ -130,15 +130,29 @@ class ListAppliedJobsProvider with ChangeNotifier {
         throw Exception('Invalid appliedAt type');
       }
 
+      // Parse responseDate if available
+      DateTime? responseDate;
+      if (data['responseDate'] != null) {
+        if (data['responseDate'] is Timestamp) {
+          responseDate = (data['responseDate'] as Timestamp).toDate();
+        } else if (data['responseDate'] is String) {
+          try {
+            responseDate = DateTime.parse(data['responseDate']);
+          } catch (_) {}
+        }
+      }
+
       recs.add(_AppRecord(
-        jobId:        jid,
-        title:        jobData['title'] ?? '—',
-        company:      jobData['company'] ?? '—',
+        jobId: jid,
+        title: jobData['title'] ?? '—',
+        company: jobData['company'] ?? '—',
         contactEmail: jobData['contactEmail'] ?? '—',
-        createdAt:    parseDate(jobData['createdAt'] ?? ''),
-        deadline:     parseDate(jobData['deadline'] ?? ''),
-        appliedAt:    parseAppliedAt(data['appliedAt']),
-        status:       data['status'] ?? 'pending',
+        department: jobData['department'] ?? 'General',
+        createdAt: parseDate(jobData['createdAt'] ?? ''),
+        deadline: parseDate(jobData['deadline'] ?? ''),
+        appliedAt: parseAppliedAt(data['appliedAt']),
+        status: data['status'] ?? 'pending',
+        responseDate: responseDate,
       ));
     }
 
@@ -150,6 +164,169 @@ class ListAppliedJobsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Analytics computation based on filtered applications
+  Map<String, dynamic> getAnalytics(List<dynamic> filteredApps) {
+    // Cast to _AppRecord
+    final apps = filteredApps.cast<_AppRecord>();
+
+    if (apps.isEmpty) {
+      return {
+        'totalApplications': 0,
+        'statusBreakdown': {'pending': 0, 'shortlist': 0, 'accepted': 0, 'rejected': 0},
+        'responseRate': 0.0,
+        'averageResponseTime': 0,
+        'topCompanies': <Map<String, dynamic>>[],
+        'applicationTrend': <Map<String, dynamic>>[],
+        'departmentDistribution': <Map<String, dynamic>>[],
+        'successRateByDepartment': <Map<String, dynamic>>[],
+        'weeklyActivity': <Map<String, dynamic>>[],
+        'monthlyTrend': <Map<String, dynamic>>[],
+      };
+    }
+
+    final total = apps.length;
+    final pending = apps.where((a) => a.status == 'pending').length;
+    final shortlisted = apps.where((a) => a.status == 'shortlist').length;
+    final accepted = apps.where((a) => a.status == 'accepted').length;
+    final rejected = apps.where((a) => a.status == 'rejected').length;
+    final responded = shortlisted + accepted + rejected;
+
+    // Response Rate
+    final responseRate = total > 0 ? (responded / total * 100) : 0.0;
+
+    // Average Response Time (days)
+    int totalResponseDays = 0;
+    int respondedCount = 0;
+    for (var app in apps) {
+      if (app.status != 'pending' && app.responseDate != null) {
+        totalResponseDays += app.responseDate!.difference(app.appliedAt).inDays;
+        respondedCount++;
+      }
+    }
+    final avgResponseTime = respondedCount > 0 ? (totalResponseDays / respondedCount).round() : 0;
+
+    // Top Companies by Application Count
+    final companyCount = <String, int>{};
+    for (var app in apps) {
+      if (app.company != '—') {
+        companyCount[app.company] = (companyCount[app.company] ?? 0) + 1;
+      }
+    }
+    final topCompanies = companyCount.entries
+        .map((e) => {'company': e.key, 'count': e.value})
+        .toList()
+      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+    // Application Trend (Last 30 days)
+    final now = DateTime.now();
+    final last30Days = List.generate(30, (i) => now.subtract(Duration(days: 29 - i)));
+    final trendData = last30Days.map((date) {
+      final count = apps.where((app) {
+        return app.appliedAt.year == date.year &&
+            app.appliedAt.month == date.month &&
+            app.appliedAt.day == date.day;
+      }).length;
+      return {
+        'date': date,
+        'count': count,
+      };
+    }).toList();
+
+    // Department Distribution
+    final deptCount = <String, int>{};
+    for (var app in apps) {
+      if (app.department != '—') {
+        deptCount[app.department] = (deptCount[app.department] ?? 0) + 1;
+      }
+    }
+    final deptDistribution = deptCount.entries
+        .map((e) => {'department': e.key, 'count': e.value})
+        .toList()
+      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+    // Success Rate by Department
+    final deptSuccess = <String, Map<String, int>>{};
+    for (var app in apps) {
+      if (app.department == '—') continue;
+      if (!deptSuccess.containsKey(app.department)) {
+        deptSuccess[app.department] = {'total': 0, 'accepted': 0};
+      }
+      deptSuccess[app.department]!['total'] = deptSuccess[app.department]!['total']! + 1;
+      if (app.status == 'accepted') {
+        deptSuccess[app.department]!['accepted'] = deptSuccess[app.department]!['accepted']! + 1;
+      }
+    }
+    final successByDept = deptSuccess.entries
+        .map((e) {
+      final total = e.value['total']!;
+      final accepted = e.value['accepted']!;
+      final rate = total > 0 ? (accepted / total * 100) : 0.0;
+      return {
+        'department': e.key,
+        'rate': rate,
+        'accepted': accepted,
+        'total': total,
+      };
+    })
+        .toList()
+      ..sort((a, b) => (b['rate'] as double).compareTo(a['rate'] as double));
+
+    // Weekly Activity (Last 12 weeks)
+    final last12Weeks = List.generate(12, (i) {
+      final weekStart = now.subtract(Duration(days: (11 - i) * 7));
+      return weekStart.subtract(Duration(days: weekStart.weekday - 1));
+    });
+    final weeklyActivity = last12Weeks.map((weekStart) {
+      final weekEnd = weekStart.add(const Duration(days: 6));
+      final count = apps.where((app) {
+        return app.appliedAt.isAfter(weekStart.subtract(const Duration(days: 1))) &&
+            app.appliedAt.isBefore(weekEnd.add(const Duration(days: 1)));
+      }).length;
+      return {
+        'week': 'W${weekStart.day}/${weekStart.month}',
+        'count': count,
+      };
+    }).toList();
+
+    // Monthly Trend (Last 6 months)
+    final last6Months = List.generate(6, (i) {
+      final date = DateTime(now.year, now.month - (5 - i), 1);
+      return date;
+    });
+    final monthlyTrend = last6Months.map((month) {
+      final count = apps.where((app) {
+        return app.appliedAt.year == month.year && app.appliedAt.month == month.month;
+      }).length;
+      return {
+        'month': '${_getMonthName(month.month)} ${month.year}',
+        'count': count,
+      };
+    }).toList();
+
+    return {
+      'totalApplications': total,
+      'statusBreakdown': {
+        'pending': pending,
+        'shortlist': shortlisted,
+        'accepted': accepted,
+        'rejected': rejected,
+      },
+      'responseRate': responseRate,
+      'averageResponseTime': avgResponseTime,
+      'topCompanies': topCompanies.take(5).toList(),
+      'applicationTrend': trendData,
+      'departmentDistribution': deptDistribution,
+      'successRateByDepartment': successByDept,
+      'weeklyActivity': weeklyActivity,
+      'monthlyTrend': monthlyTrend,
+    };
+  }
+
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
+  }
+
   @override
   void dispose() {
     _appsSub?.cancel();
@@ -158,13 +335,14 @@ class ListAppliedJobsProvider with ChangeNotifier {
     }
     super.dispose();
   }
+
   /// Cancel all existing listeners and restart them from scratch.
   Future<void> refresh() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    // 1) cancel the user’s applied‐jobs listener
+    // 1) cancel the user's applied‐jobs listener
     await _appsSub?.cancel();
 
     // 2) cancel all per‐job listeners
@@ -178,9 +356,7 @@ class ListAppliedJobsProvider with ChangeNotifier {
     // 3) restart
     _startListeners();
   }
-
 }
-
 
 /// Internal model for displaying in the UI
 class _AppRecord {
@@ -188,19 +364,23 @@ class _AppRecord {
   final String title;
   final String company;
   final String contactEmail;
+  final String department;
   final DateTime createdAt;
   final DateTime deadline;
   final DateTime appliedAt;
   final String status;
+  final DateTime? responseDate;
 
   _AppRecord({
     required this.jobId,
     required this.title,
     required this.company,
     required this.contactEmail,
+    required this.department,
     required this.createdAt,
     required this.deadline,
     required this.appliedAt,
     required this.status,
+    this.responseDate,
   });
 }
