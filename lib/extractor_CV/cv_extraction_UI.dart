@@ -1,9 +1,92 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../SignUp /signup_provider.dart';
 import '../extractor_CV/cv_extractor.dart';
+
+// ----------------------------------------------------------------------
+// REFINED DESIGN SYSTEM
+// ----------------------------------------------------------------------
+
+class AppColors {
+  // Neutral palette - professional & timeless
+  static const primary = Color(0xFF0F172A);        // Deep slate
+  static const primaryLight = Color(0xFF334155);   // Medium slate
+  static const accent = Color(0xFF3B82F6);         // Clean blue
+  static const accentHover = Color(0xFF2563EB);
+
+  static const background = Color(0xFFFAFAFA);     // Soft white
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceElevated = Color(0xFFF8F9FA);
+
+  static const textPrimary = Color(0xFF0F172A);
+  static const textSecondary = Color(0xFF64748B);
+  static const textTertiary = Color(0xFF94A3B8);
+
+  static const border = Color(0xFFE2E8F0);
+  static const borderLight = Color(0xFFF1F5F9);
+  static const divider = Color(0xFFEFF2F5);
+
+  static const success = Color(0xFF10B981);
+  static const error = Color(0xFFEF4444);
+  static const warning = Color(0xFFF59E0B);
+}
+
+class AppTypography {
+  static TextStyle heading1 = GoogleFonts.inter(
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.5,
+    color: AppColors.textPrimary,
+    height: 1.2,
+  );
+
+  static TextStyle heading2 = GoogleFonts.inter(
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
+    color: AppColors.textPrimary,
+  );
+
+  static TextStyle heading3 = GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+  );
+
+  static TextStyle body = GoogleFonts.inter(
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.6,
+  );
+
+  static TextStyle bodySecondary = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+    height: 1.5,
+  );
+
+  static TextStyle caption = GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textTertiary,
+  );
+
+  static TextStyle button = GoogleFonts.inter(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.2,
+  );
+}
+
+// ----------------------------------------------------------------------
+// MAIN COMPONENT
+// ----------------------------------------------------------------------
 
 class CvUploadSection extends StatefulWidget {
   final CvExtractor extractor;
@@ -23,67 +106,54 @@ class CvUploadSection extends StatefulWidget {
   State<CvUploadSection> createState() => _CvUploadSectionState();
 }
 
-class _CvUploadSectionState extends State<CvUploadSection> with SingleTickerProviderStateMixin {
+class _CvUploadSectionState extends State<CvUploadSection> {
+  // State Variables
   Uint8List? _fileBytes;
   String? _fileName;
   bool _isProcessing = false;
   String? _errorMsg;
   CvExtractionResult? _result;
-  final _controllers = <String, TextEditingController>{};
+  final Map<String, TextEditingController> _controllers = {};
+  final Map<int, GlobalKey<FormState>> _formKeys = {};
+
   bool _showEditForm = false;
-  late AnimationController _animController;
   int _currentStep = 0;
+  bool _isHoveringUpload = false;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
+    for (var i = 0; i < 4; i++) {
+      _formKeys[i] = GlobalKey<FormState>();
+    }
   }
 
   @override
   void dispose() {
-    _animController.dispose();
-    for (var c in _controllers.values) {
-      c.dispose();
-    }
+    _controllers.forEach((_, c) => c.dispose());
     super.dispose();
   }
 
-  void _nextStep() {
-    if (_currentStep < 2) {
-      setState(() => _currentStep++);
-    }
-  }
+  // ----------------------------------------------------------------------
+  // LOGIC METHODS
+  // ----------------------------------------------------------------------
 
-  void _prevStep() {
-    if (_currentStep > 0) {
-      setState(() => _currentStep--);
-    }
-  }
-
-  // ========== FILE OPERATIONS ==========
-  Future<void> _pickAndExtract() async {
-    setState(() {
-      _errorMsg = null;
-      _showEditForm = false;
-      _currentStep = 0;
-    });
+  Future<void> _handleFileSelection() async {
+    HapticFeedback.lightImpact();
+    setState(() => _errorMsg = null);
 
     try {
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'txt', 'doc', 'docx'],
+        allowedExtensions: ['pdf', 'docx', 'txt'],
         withData: true,
       );
 
       if (res == null || res.files.isEmpty) return;
 
       final file = res.files.first;
-      if (file.size > 10 * 1024 * 1024) {
-        _showError('File too large. Maximum size is 10MB');
+      if (file.size > 15 * 1024 * 1024) {
+        _showNotification('File size exceeds 15MB limit', isError: true);
         return;
       }
 
@@ -93,14 +163,14 @@ class _CvUploadSectionState extends State<CvUploadSection> with SingleTickerProv
         _isProcessing = true;
       });
 
-      await _extractData();
+      await _runExtraction();
     } catch (e) {
-      _showError('Failed to pick file: $e');
+      _showNotification('Unable to process file', isError: true);
     }
   }
 
-  Future<void> _extractData() async {
-    if (_fileBytes == null || _fileName == null) return;
+  Future<void> _runExtraction() async {
+    if (_fileBytes == null) return;
 
     try {
       final result = await widget.extractor.extractFromFileBytes(
@@ -108,240 +178,126 @@ class _CvUploadSectionState extends State<CvUploadSection> with SingleTickerProv
         filename: _fileName!,
       );
 
+      _populateData(result);
+
       setState(() {
         _result = result;
-        _populateControllers(result);
-        _showEditForm = true;
         _isProcessing = false;
+        _showEditForm = true;
       });
 
-      _animController.forward();
-      _showSuccess('Data extracted successfully!');
+      _showNotification('Resume parsed successfully');
     } catch (e) {
       setState(() {
         _isProcessing = false;
-        _errorMsg = 'Extraction failed: $e';
+        _errorMsg = 'Unable to extract data. Please review and enter manually.';
       });
+      _showNotification('Extraction failed', isError: true);
     }
   }
 
-  void _populateControllers(CvExtractionResult r) {
+  void _populateData(CvExtractionResult r) {
     _controllers.clear();
 
-    void set(String key, dynamic value) {
-      _controllers[key] = TextEditingController(text: value?.toString() ?? '');
+    void bind(String k, dynamic v) {
+      _controllers[k] = TextEditingController(text: v?.toString() ?? '');
     }
 
-    // Personal info
     final p = r.personalProfile;
-    set('name', p['name']);
-    set('email', p['email']);
-    set('contact', p['contactNumber']);
-    set('nationality', p['nationality']);
-    set('summary', p['summary'] ?? r.professionalSummary);
-    set('skills', (p['skills'] is List) ? (p['skills'] as List).join(', ') : p['skills']);
-    set('social', (p['socialLinks'] is List) ? (p['socialLinks'] as List).join('\n') : p['socialLinks']);
+    bind('name', p['name']);
+    bind('email', p['email']);
+    bind('phone', p['contactNumber']);
+    bind('location', p['nationality']);
+    bind('bio', p['summary'] ?? r.professionalSummary);
+    bind('skills', (p['skills'] is List) ? (p['skills'] as List).join(', ') : p['skills']);
 
-    // Education
     for (var i = 0; i < r.educationalProfile.length; i++) {
-      final e = r.educationalProfile[i];
-      set('edu_inst_$i', e['institutionName']);
-      set('edu_dur_$i', e['duration']);
-      set('edu_major_$i', e['majorSubjects']);
-      set('edu_marks_$i', e['marksOrCgpa']);
+      final edu = r.educationalProfile[i];
+      bind('edu_inst_$i', edu['institutionName']);
+      bind('edu_deg_$i', edu['majorSubjects']);
+      bind('edu_date_$i', edu['duration']);
+      bind('edu_grade_$i', edu['marksOrCgpa']);
     }
 
-    // ✅ NEW: Work Experience
     for (var i = 0; i < r.experiences.length; i++) {
       final exp = r.experiences[i];
-      set('exp_org_$i', exp['organization']);
-      set('exp_dur_$i', exp['duration']);
-      set('exp_role_$i', exp['role']);
-      set('exp_duties_$i', exp['duties']);
-    }
-
-    // ✅ NEW: Certifications
-    for (var i = 0; i < r.certifications.length; i++) {
-      final cert = r.certifications[i];
-      set('cert_org_$i', cert['organization']);
-      set('cert_name_$i', cert['name']);
-    }
-
-    // Other fields
-    set('pub', r.publications.join('\n'));
-    set('award', r.awards.join('\n'));
-    set('ref', r.references.join('\n'));
-  }
-  Future<void> _submitAccount() async {
-    if (_result == null) return;
-
-    setState(() => _isProcessing = true);
-
-    final finalResult = CvExtractionResult(
-      rawText: _result!.rawText,
-      personalProfile: _buildPersonalData(),
-      educationalProfile: _buildEducationData(),
-      professionalSummary: _controllers['summary']!.text,
-      experiences: _buildExperienceData(), // ✅ NEW
-      certifications: _buildCertificationData(), // ✅ NEW
-      publications: _buildSimpleList('pub'),
-      awards: _buildSimpleList('award'),
-      references: _buildSimpleList('ref'),
-    );
-
-    final success = await widget.provider.submitExtractedCvAndCreateAccount(finalResult);
-
-    setState(() => _isProcessing = false);
-
-    if (success) {
-      _showSuccess('Profile created successfully!');
-      widget.onSuccess();
-    } else {
-      _showError(widget.provider.generalError ?? 'Failed to create profile');
+      bind('exp_org_$i', exp['organization']);
+      bind('exp_role_$i', exp['role']);
+      bind('exp_date_$i', exp['duration']);
+      bind('exp_desc_$i', exp['duties']);
     }
   }
 
-  Map<String, dynamic> _buildPersonalData() => {
-    'name': _controllers['name']?.text ?? '',
-    'email': _controllers['email']?.text ?? '',
-    'contactNumber': _controllers['contact']?.text ?? '',
-    'nationality': _controllers['nationality']?.text ?? '',
-    'summary': _controllers['summary']?.text ?? '',
-    'skills': (_controllers['skills']?.text ?? '')
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList(),
-    'socialLinks': (_controllers['social']?.text ?? '')
-        .split('\n')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList(),
-  };
-
-  List<Map<String, String>> _buildEducationData() {
-    final list = <Map<String, String>>[];
-    for (var i = 0; i < (_result?.educationalProfile.length ?? 0); i++) {
-      list.add({
-        'institutionName': _controllers['edu_inst_$i']?.text ?? '',
-        'duration': _controllers['edu_dur_$i']?.text ?? '',
-        'majorSubjects': _controllers['edu_major_$i']?.text ?? '',
-        'marksOrCgpa': _controllers['edu_marks_$i']?.text ?? '',
-      });
-    }
-    return list;
-  }
-
-// ✅ NEW: Build work experience data
-  List<Map<String, dynamic>> _buildExperienceData() {
-    final list = <Map<String, dynamic>>[];
-    for (var i = 0; i < (_result?.experiences.length ?? 0); i++) {
-      list.add({
-        'organization': _controllers['exp_org_$i']?.text ?? '',
-        'duration': _controllers['exp_dur_$i']?.text ?? '',
-        'role': _controllers['exp_role_$i']?.text ?? '',
-        'duties': _controllers['exp_duties_$i']?.text ?? '',
-      });
-    }
-    return list;
-  }
-
-// ✅ NEW: Build certification data
-  List<Map<String, String>> _buildCertificationData() {
-    final list = <Map<String, String>>[];
-    for (var i = 0; i < (_result?.certifications.length ?? 0); i++) {
-      list.add({
-        'organization': _controllers['cert_org_$i']?.text ?? '',
-        'name': _controllers['cert_name_$i']?.text ?? '',
-      });
-    }
-    return list;
-  }
-
-  List<String> _buildSimpleList(String key) {
-    return (_controllers[key]?.text ?? '')
-        .split('\n')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-  }
-
-
-
-
-
-
-
-
-
-
-
-  void _reset() {
-    setState(() {
-      _fileBytes = null;
-      _fileName = null;
-      _result = null;
-      _showEditForm = false;
-      _errorMsg = null;
-      _currentStep = 0;
-      _controllers.clear();
-    });
-    _animController.reset();
-  }
-
-  void _showError(String msg) {
-    setState(() => _errorMsg = msg);
+  void _showNotification(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.white),
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 12),
-            Expanded(child: Text(msg, style: GoogleFonts.poppins(fontSize: 14))),
+            Text(message, style: AppTypography.button.copyWith(color: Colors.white)),
           ],
         ),
-        backgroundColor: Colors.red.shade600,
+        backgroundColor: isError ? AppColors.error : AppColors.success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  void _showSuccess(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(msg, style: GoogleFonts.poppins(fontSize: 14))),
-          ],
-        ),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
+  // ----------------------------------------------------------------------
+  // BUILD METHODS
+  // ----------------------------------------------------------------------
 
-  // ========== UI BUILDERS ==========
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: _isProcessing
+          ? _buildProcessingView()
+          : _showEditForm
+          ? _buildEditorView()
+          : _buildUploadView(),
+    );
+  }
+
+  // --- UPLOAD VIEW ---
+
+  Widget _buildUploadView() {
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 1000),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.all(32),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildUploadCard(),
-              if (_showEditForm) ...[
-                const SizedBox(height: 32),
-                _buildStepperHeader(),
-                const SizedBox(height: 24),
-                _buildEditCard(),
-              ],
+              const SizedBox(height: 60),
+              _buildBrandHeader(),
+              const SizedBox(height: 48),
+              Text(
+                'Upload your resume',
+                style: AppTypography.heading1,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'We will extract your information automatically',
+              style: AppTypography.bodySecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 48),
+              _buildDropZone(),
+              const SizedBox(height: 24),
+              _buildManualOption(),
+              const SizedBox(height: 60),
             ],
           ),
         ),
@@ -349,467 +305,715 @@ class _CvUploadSectionState extends State<CvUploadSection> with SingleTickerProv
     );
   }
 
-  Widget _buildStepperHeader() {
+  Widget _buildBrandHeader() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildStepIndicator(0, 'Personal', Icons.person),
-        _buildStepLine(0),
-        _buildStepIndicator(1, 'Education', Icons.school),
-        _buildStepLine(1),
-        _buildStepIndicator(2, 'Experience', Icons.work),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.description, color: Colors.white, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          'Resume Parser',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.2,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildStepIndicator(int index, String label, IconData icon) {
-    bool isActive = _currentStep == index;
-    bool isCompleted = _currentStep > index;
-    Color activeColor = const Color(0xFF6366F1);
-
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isActive || isCompleted ? activeColor : Colors.grey.shade100,
-              shape: BoxShape.circle,
-              boxShadow: isActive ? [BoxShadow(color: activeColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))] : null,
-            ),
-            child: Icon(
-              isCompleted ? Icons.check : icon,
-              color: isActive || isCompleted ? Colors.white : Colors.grey.shade500,
-              size: 20,
+  Widget _buildDropZone() {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHoveringUpload = true),
+      onExit: (_) => setState(() => _isHoveringUpload = false),
+      child: GestureDetector(
+        onTap: _handleFileSelection,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(48),
+          decoration: BoxDecoration(
+            color: _isHoveringUpload ? AppColors.surface : AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _isHoveringUpload ? AppColors.accent : AppColors.border,
+              width: 2,
+              strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-              color: isActive ? activeColor : Colors.grey.shade600,
-            ),
+          child: Column(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Icon(
+                  Icons.cloud_upload_outlined,
+                  size: 28,
+                  color: _isHoveringUpload ? AppColors.accent : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Drop your resume here',
+                style: AppTypography.heading3.copyWith(
+                  color: _isHoveringUpload ? AppColors.accent : AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'or click to browse',
+                style: AppTypography.caption,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Supports PDF, DOCX, TXT • Max 15MB',
+                style: AppTypography.caption.copyWith(fontSize: 12),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildStepLine(int index) {
-    bool isCompleted = _currentStep > index;
-    return Container(
-      width: 40,
-      height: 2,
-      margin: const EdgeInsets.only(bottom: 24),
-      color: isCompleted ? const Color(0xFF6366F1) : Colors.grey.shade200,
+  Widget _buildManualOption() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Prefer to enter manually?', style: AppTypography.bodySecondary),
+        TextButton(
+          onPressed: widget.onManualContinue,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          ),
+          child: Text(
+            'Click here',
+            style: AppTypography.button.copyWith(color: AppColors.accent),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildUploadCard() {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
-      ),
+  // --- PROCESSING VIEW ---
+
+  Widget _buildProcessingView() {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.08),
-              shape: BoxShape.circle,
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: const Icon(Icons.cloud_upload_rounded, color: Color(0xFF6366F1), size: 48),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Extract Profile from CV',
-            style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Upload your resume to automatically fill your professional profile',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600),
+            child: const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation(AppColors.accent),
+              ),
+            ),
           ),
           const SizedBox(height: 32),
-          if (_fileName != null) _buildFileChip() else _buildUploadButton(),
-          if (_isProcessing) ...[
-            const SizedBox(height: 24),
-            _buildLoadingIndicator(),
-          ],
-          if (_errorMsg != null) ...[
-            const SizedBox(height: 16),
-            _buildErrorBanner(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFileChip() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.5)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.description_rounded, color: Color(0xFF10B981), size: 28),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_fileName!, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: const Color(0xFF1E293B))),
-                Text('Ready to process', style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF10B981))),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
-            onPressed: _reset,
-            tooltip: 'Remove file',
+          Text('Processing resume', style: AppTypography.heading2),
+          const SizedBox(height: 8),
+          Text(
+            'Extracting your professional information',
+            style: AppTypography.bodySecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildUploadButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _pickAndExtract,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Choose File'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6366F1),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
-          textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
+  // --- EDITOR VIEW ---
 
-  Widget _buildLoadingIndicator() {
-    return Column(
+  Widget _buildEditorView() {
+    return Row(
       children: [
-        const LinearProgressIndicator(
-          backgroundColor: Color(0xFFF1F5F9),
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-          minHeight: 6,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Analyzing your career path...',
-          style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
+        _buildSidebar(),
+        Expanded(
+          child: Column(
+            children: [
+              _buildEditorHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(40),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: Form(
+                        key: _formKeys[_currentStep],
+                        child: _buildStepContent(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              _buildEditorFooter(),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildErrorBanner() {
+  Widget _buildSidebar() {
+    final steps = [
+      {'title': 'Personal', 'icon': Icons.person_outline},
+      {'title': 'Education', 'icon': Icons.school_outlined},
+      {'title': 'Experience', 'icon': Icons.work_outline},
+      {'title': 'Review', 'icon': Icons.check_circle_outline},
+    ];
+
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFEE2E2)),
-      ),
-      child: Row(
+      width: 260,
+      color: AppColors.surface,
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 20),
-          const SizedBox(width: 12),
-          Expanded(child: Text(_errorMsg!, style: GoogleFonts.poppins(color: const Color(0xFF991B1B), fontSize: 13))),
+          _buildBrandHeader(),
+          const SizedBox(height: 48),
+          ...List.generate(steps.length, (index) {
+            final isActive = _currentStep == index;
+            final isCompleted = _currentStep > index;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isActive || isCompleted
+                          ? AppColors.primary
+                          : AppColors.background,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isActive || isCompleted
+                            ? AppColors.primary
+                            : AppColors.border,
+                      ),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        isCompleted
+                            ? Icons.check
+                            : steps[index]['icon'] as IconData,
+                        size: 16,
+                        color: isActive || isCompleted
+                            ? Colors.white
+                            : AppColors.textTertiary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      steps[index]['title'] as String,
+                      style: AppTypography.button.copyWith(
+                        color: isActive
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildEditCard() {
-    return FadeTransition(
-      opacity: _animController,
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20, offset: const Offset(0, 10))],
-        ),
-        child: Column(
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              child: _buildCurrentStepContent(),
+  Widget _buildEditorHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.divider)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Review & Edit', style: AppTypography.heading2),
+          IconButton(
+            onPressed: () => setState(() => _showEditForm = false),
+            icon: const Icon(Icons.close, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.background,
+              foregroundColor: AppColors.textSecondary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            const SizedBox(height: 40),
-            _buildActionButtons(),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditorFooter() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (_currentStep > 0)
+                SecondaryButton(
+                  label: 'Back',
+                  onPressed: () => setState(() => _currentStep--),
+                )
+              else
+                const SizedBox(),
+              PrimaryButton(
+                label: _currentStep == 3 ? 'Create Account' : 'Continue',
+                onPressed: _currentStep == 3
+                    ? _submitAccount
+                    : () {
+                  if (_formKeys[_currentStep]!.currentState!.validate()) {
+                    setState(() => _currentStep++);
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCurrentStepContent() {
+  Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return Column(
-          key: const ValueKey(0),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Personal Details', 'Basic information for your profile'),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _field('Full Name', 'name', icon: Icons.person_outline)),
-                const SizedBox(width: 16),
-                Expanded(child: _field('Email Address', 'email', icon: Icons.alternate_email_rounded)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: _field('Contact Number', 'contact', icon: Icons.phone_android_rounded)),
-                const SizedBox(width: 16),
-                Expanded(child: _field('Nationality', 'nationality', icon: Icons.public_rounded)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _field('Professional Summary', 'summary', lines: 4, icon: Icons.description_outlined),
-          ],
-        );
+        return _buildPersonalInfoStep();
       case 1:
-        return Column(
-          key: const ValueKey(1),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Education', 'Your academic background'),
-            const SizedBox(height: 24),
-            ...List.generate(_result!.educationalProfile.length, (i) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(16)),
-                child: Column(
-                  children: [
-                    _field('Institution', 'edu_inst_$i', icon: Icons.school_outlined),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(child: _field('Duration', 'edu_dur_$i', icon: Icons.calendar_today_rounded)),
-                        const SizedBox(width: 16),
-                        Expanded(child: _field('Major/Field', 'edu_major_$i', icon: Icons.category_outlined)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _field('Marks/CGPA', 'edu_marks_$i', icon: Icons.grade_outlined),
-                  ],
-                ),
-              );
-            }),
-          ],
-        );
+        return _buildEducationStep();
       case 2:
-        return Column(
-          key: const ValueKey(2),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Professional Experience', 'Your career journey'),
-            const SizedBox(height: 24),
-
-            // ✅ Work Experience Section
-            Text(
-              'Work Experience',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF334155),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(_result!.experiences.length, (i) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.work_outline_rounded, color: Color(0xFF6366F1), size: 18),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Position ${i + 1}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF475569),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _field('Organization', 'exp_org_$i', icon: Icons.business_rounded),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: _field('Duration', 'exp_dur_$i', icon: Icons.calendar_today_rounded)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _field('Role/Title', 'exp_role_$i', icon: Icons.badge_outlined)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _field('Key Responsibilities & Achievements', 'exp_duties_$i', lines: 4, icon: Icons.checklist_rounded),
-                  ],
-                ),
-              );
-            }),
-
-            const SizedBox(height: 32),
-
-            // ✅ Certifications Section
-            Text(
-              'Certifications',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF334155),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(_result!.certifications.length, (i) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFBBF7D0)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.verified_outlined, color: Color(0xFF10B981), size: 20),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          _field('Issuing Organization', 'cert_org_$i', icon: Icons.corporate_fare_rounded),
-                          const SizedBox(height: 12),
-                          _field('Certification Name', 'cert_name_$i', icon: Icons.emoji_events_outlined),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-
-            const SizedBox(height: 16),
-            _field('Core Skills (comma separated)', 'skills', icon: Icons.auto_awesome_rounded),
-          ],
-        );
+        return _buildWorkStep();
+      case 3:
+        return _buildReviewStep();
       default:
         return const SizedBox();
     }
   }
 
-  Widget _sectionTitle(String title, String subtitle) {
+  Widget _buildPersonalInfoStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
-        Text(subtitle, style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade500)),
-      ],
-    );
-  }
-
-  Widget _field(String label, String key, {int lines = 1, IconData? icon}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _controllers[key],
-          maxLines: lines,
-          style: GoogleFonts.poppins(fontSize: 14),
-          decoration: InputDecoration(
-            prefixIcon: icon != null ? Icon(icon, size: 20, color: const Color(0xFF64748B)) : null,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
+        _buildStepHeader('Personal Information', 'Basic details about you'),
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            Expanded(
+              child: MinimalTextField(
+                label: 'Full Name',
+                controller: _controllers['name'],
+                required: true,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: MinimalTextField(
+                label: 'Email Address',
+                controller: _controllers['email'],
+                required: true,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: MinimalTextField(
+                label: 'Phone Number',
+                controller: _controllers['phone'],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: MinimalTextField(
+                label: 'Location',
+                controller: _controllers['location'],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        MinimalTextField(
+          label: 'Professional Summary',
+          controller: _controllers['bio'],
+          maxLines: 4,
+          hint: 'Brief overview of your professional background',
+        ),
+        const SizedBox(height: 16),
+        MinimalTextField(
+          label: 'Skills',
+          controller: _controllers['skills'],
+          hint: 'Separate skills with commas',
         ),
       ],
     );
   }
 
-  Widget _buildActionButtons() {
-    return Row(
+  Widget _buildEducationStep() {
+    final count = _result?.educationalProfile.length ?? 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_currentStep > 0)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _prevStep,
-              icon: const Icon(Icons.arrow_back_rounded),
-              label: const Text('Back'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                side: BorderSide(color: Colors.grey.shade200),
-                foregroundColor: const Color(0xFF64748B),
-                textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
+        _buildStepHeader('Education', 'Your academic background'),
+        const SizedBox(height: 32),
+        if (count == 0)
+          _buildEmptyState('No education data found')
+        else
+          ...List.generate(
+            count,
+                (i) => _buildEducationCard(i),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEducationCard(int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Education ${index + 1}',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        if (_currentStep > 0) const SizedBox(width: 16),
-        Expanded(
-          flex: 2,
-          child: ElevatedButton.icon(
-            onPressed: _currentStep < 2 ? _nextStep : _submitAccount,
-            icon: Icon(_currentStep < 2 ? Icons.arrow_forward_rounded : Icons.check_circle_rounded),
-            label: Text(_currentStep < 2 ? 'Continue' : 'Create Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-              textStyle: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold),
+          const SizedBox(height: 20),
+          MinimalTextField(
+            label: 'Institution',
+            controller: _controllers['edu_inst_$index'],
+          ),
+          const SizedBox(height: 16),
+          MinimalTextField(
+            label: 'Degree/Field of Study',
+            controller: _controllers['edu_deg_$index'],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: MinimalTextField(
+                  label: 'Duration',
+                  controller: _controllers['edu_date_$index'],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: MinimalTextField(
+                  label: 'Grade/CGPA',
+                  controller: _controllers['edu_grade_$index'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkStep() {
+    final count = _result?.experiences.length ?? 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildStepHeader('Work Experience', 'Your professional history'),
+        const SizedBox(height: 32),
+        if (count == 0)
+          _buildEmptyState('No work experience found')
+        else
+          ...List.generate(
+            count,
+                (i) => _buildExperienceCard(i),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildExperienceCard(int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Experience ${index + 1}',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+          MinimalTextField(
+            label: 'Company',
+            controller: _controllers['exp_org_$index'],
+          ),
+          const SizedBox(height: 16),
+          MinimalTextField(
+            label: 'Job Title',
+            controller: _controllers['exp_role_$index'],
+          ),
+          const SizedBox(height: 16),
+          MinimalTextField(
+            label: 'Duration',
+            controller: _controllers['exp_date_$index'],
+          ),
+          const SizedBox(height: 16),
+          MinimalTextField(
+            label: 'Description',
+            controller: _controllers['exp_desc_$index'],
+            maxLines: 3,
+            hint: 'Key responsibilities and achievements',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewStep() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 60),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.check_circle_outline,
+              size: 40,
+              color: AppColors.success,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text('Ready to Create Account', style: AppTypography.heading1),
+          const SizedBox(height: 12),
+          Text(
+            'Review your information in the previous steps.\nYou can go back to make any changes.',
+            style: AppTypography.bodySecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 60),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: AppTypography.heading2),
+        const SizedBox(height: 4),
+        Text(subtitle, style: AppTypography.bodySecondary),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Text(message, style: AppTypography.bodySecondary),
+      ),
+    );
+  }
+
+  Future<void> _submitAccount() async {
+    setState(() => _isProcessing = true);
+    final success = await widget.provider.submitExtractedCvAndCreateAccount(_result!);
+    setState(() => _isProcessing = false);
+    if (success) widget.onSuccess();
+  }
+}
+
+// ----------------------------------------------------------------------
+// UI COMPONENTS
+// ----------------------------------------------------------------------
+
+class PrimaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 0,
+      ),
+      child: Text(label, style: AppTypography.button),
+    );
+  }
+}
+
+class SecondaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const SecondaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.textSecondary,
+        side: const BorderSide(color: AppColors.border),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(label, style: AppTypography.button),
+    );
+  }
+}
+
+class MinimalTextField extends StatelessWidget {
+  final String label;
+  final String? hint;
+  final TextEditingController? controller;
+  final int maxLines;
+  final bool required;
+
+  const MinimalTextField({
+    super.key,
+    required this.label,
+    this.controller,
+    this.hint,
+    this.maxLines = 1,
+    this.required = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (required) ...[
+              const SizedBox(width: 4),
+              const Text('*', style: TextStyle(color: AppColors.error)),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          style: AppTypography.body,
+          validator: required
+              ? (value) => value?.isEmpty ?? true ? 'Required' : null
+              : null,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTypography.body.copyWith(
+              color: AppColors.textTertiary,
+            ),
+            filled: true,
+            fillColor: AppColors.surface,
+            contentPadding: const EdgeInsets.all(16),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.error),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
           ),
         ),

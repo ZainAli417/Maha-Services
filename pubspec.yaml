@@ -44,6 +44,9 @@ dependencies:
   syncfusion_flutter_charts: ^32.1.21
   tuple: any
   path_provider: any
+  dotted_border: ^3.0.1
+  flutter_animate: ^4.5.2
+  animate_do: ^4.2.0
 
 
 
