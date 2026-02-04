@@ -509,7 +509,8 @@ class view_shortlisted_state extends State<view_shortlisted> with SingleTickerPr
               ),
               SizedBox(height: 8),
               Text(
-                '${provider.selectedApplicantIds.length} candidate(s) sent to admin for review.',
+                'Request sent to admin for review.',
+                // '${provider.selectedApplicantIds.length} candidate(s) sent to admin for review.',
                 style: GoogleFonts.poppins(fontSize: 13),
               ),
             ],

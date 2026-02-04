@@ -9,7 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Constant/Forget Password.dart';
 import 'Constant/cv_analysis.dart';
 import 'Constant/pricing.dart';
-import 'Screens/Admin/admin_dashbaord.dart';
+import 'Screens/Admin/admin_wrapper.dart';
 import 'Screens/Admin/admin_dashbaord2.dart';
 import 'Screens/Admin/admin_login.dart';
 import 'Screens/Job_Seeker/JS_Profile/JS_Profile.dart';

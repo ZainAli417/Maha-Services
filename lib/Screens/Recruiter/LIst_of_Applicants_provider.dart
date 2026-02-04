@@ -774,34 +774,61 @@ class ApplicantsProvider with ChangeNotifier {
     final List<Map<String, dynamic>> candidateMaps = [];
 
     for (final app in selectedApplicants) {
-      // Safe URL extraction
-      String cvUrl = '';
-      if (app.documents.isNotEmpty && app.documents.first is Map) {
-        cvUrl = app.documents.first['url']?.toString() ?? '';
-      }
-
       candidateIds.add(app.userId);
+
+      // Build complete candidate data map
       candidateMaps.add({
+        // Basic Info
         'uid': app.userId,
         'name': app.name,
         'email': app.email,
         'phone': app.phone,
         'nationality': app.nationality,
         'picture_url': app.pictureUrl,
-        'cv_url': cvUrl,
+        'location': app.location,
+        'dob': app.dob,
+        'secondary_email': app.secondaryEmail,
+
+        // Job Application Info
         'job_id': app.jobId,
         'job_title': app.jobData?.title ?? '',
         'applied_at': app.appliedAt.toIso8601String(),
         'status': app.status,
-        'experience_years': app.experienceYears,
-        'professional_status': app.professionalStatus,
-        'location': app.location,
-        'education': app.education,
-        'skills': app.skills,
         'match_score': app.matchScore,
-        // 🆕 Add helpful extra context to request
-        'dob': app.dob,
+
+        // Professional Info
+        'professional_status': app.professionalStatus,
+        'retirement_date': app.retirementDate,
         'summary': app.summary,
+        'objectives': app.objectives,
+
+        // Experience & Education
+        'experience_years': app.experienceYears,
+        'current_role': app.currentRole,
+        'company': app.company,
+        'education': app.education,
+        'university': app.university,
+        'education_duration': app.educationDuration,
+        'cgpa': app.cgpa,
+
+        // Collections
+        'skills': app.skills,
+        'social_links': app.socialLinks,
+        'certifications': app.certifications,
+        'publications': app.publications,
+        'awards': app.awards,
+
+        // Detailed Profiles (Full Arrays)
+        'professionalExperience': app.experiences,
+        'educationalProfile': app.educations,
+
+        // Documents
+        'documents': app.documents,
+        'experienceDocuments': app.experienceDocuments,
+        'certificationDocuments': app.certificationDocuments,
+
+        // Full Profile Snapshot (for admin to access raw data)
+        'profileSnapshot': app.profileSnapshot,
       });
     }
 
@@ -829,7 +856,6 @@ class ApplicantsProvider with ChangeNotifier {
       return null;
     }
   }
-
   void refresh({String? jobId}) {
     if (_currentJobId != jobId) {
       _currentJobId = jobId;
