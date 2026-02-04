@@ -4,89 +4,77 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Assuming these paths remain the same as per your project structure
 import '../SignUp /signup_provider.dart';
 import '../extractor_CV/cv_extractor.dart';
 
-// ----------------------------------------------------------------------
-// REFINED DESIGN SYSTEM
-// ----------------------------------------------------------------------
+class BrandColors {
+  // Clean White Theme
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color slate950 = Color(0xFF020617);
+  static const Color slate900 = Color(0xFF0F172A);
+  static const Color slate800 = Color(0xFF1E293B);
+  static const Color slate600 = Color(0xFF475569);
+  static const Color slate400 = Color(0xFF94A3B8);
+  static const Color slate300 = Color(0xFFCBD5E1);
+  static const Color slate200 = Color(0xFFE2E8F0);
+  static const Color slate100 = Color(0xFFF1F5F9);
+  static const Color slate50 = Color(0xFFF8FAFC);
 
-class AppColors {
-  // Neutral palette - professional & timeless
-  static const primary = Color(0xFF0F172A);        // Deep slate
-  static const primaryLight = Color(0xFF334155);   // Medium slate
-  static const accent = Color(0xFF3B82F6);         // Clean blue
-  static const accentHover = Color(0xFF2563EB);
-
-  static const background = Color(0xFFFAFAFA);     // Soft white
-  static const surface = Color(0xFFFFFFFF);
-  static const surfaceElevated = Color(0xFFF8F9FA);
-
-  static const textPrimary = Color(0xFF0F172A);
-  static const textSecondary = Color(0xFF64748B);
-  static const textTertiary = Color(0xFF94A3B8);
-
-  static const border = Color(0xFFE2E8F0);
-  static const borderLight = Color(0xFFF1F5F9);
-  static const divider = Color(0xFFEFF2F5);
-
-  static const success = Color(0xFF10B981);
-  static const error = Color(0xFFEF4444);
-  static const warning = Color(0xFFF59E0B);
+  // Functional Accents
+  static const Color indigo = Color(0xFF6366F1);
+  static const Color indigoHover = Color(0xFF4F46E5);
+  static const Color emerald = Color(0xFF10B981);
+  static const Color rose = Color(0xFFF43F5E);
 }
 
-class AppTypography {
-  static TextStyle heading1 = GoogleFonts.inter(
-    fontSize: 32,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.5,
-    color: AppColors.textPrimary,
-    height: 1.2,
+class BrandTypography {
+  static TextStyle h1 = GoogleFonts.plusJakartaSans(
+    fontSize: 34,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1,
+    color: BrandColors.slate950,
   );
 
-  static TextStyle heading2 = GoogleFonts.inter(
+  static TextStyle h2 = GoogleFonts.plusJakartaSans(
     fontSize: 24,
-    fontWeight: FontWeight.w600,
-    letterSpacing: -0.3,
-    color: AppColors.textPrimary,
-  );
-
-  static TextStyle heading3 = GoogleFonts.inter(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
+    color: BrandColors.slate950,
   );
 
   static TextStyle body = GoogleFonts.inter(
     fontSize: 15,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
+    color: BrandColors.slate800,
     height: 1.6,
   );
 
-  static TextStyle bodySecondary = GoogleFonts.inter(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    height: 1.5,
+  static TextStyle label = GoogleFonts.inter(
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: BrandColors.slate600,
+    letterSpacing: 0.5,
   );
 
   static TextStyle caption = GoogleFonts.inter(
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: FontWeight.w500,
-    color: AppColors.textTertiary,
-  );
-
-  static TextStyle button = GoogleFonts.inter(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    letterSpacing: 0.2,
+    color: BrandColors.slate400,
+    letterSpacing: 0.3,
   );
 }
 
-// ----------------------------------------------------------------------
-// MAIN COMPONENT
-// ----------------------------------------------------------------------
+class AviationSkills {
+  static const List<String> commonSkills = [
+    'Tactical Operations', 'Flight Planning', 'Aircraft Systems',
+    'Navigation & Avionics', 'Air Defense', 'Combat Operations',
+    'Mission Planning', 'Weapon Systems', 'Emergency Procedures',
+    'Crew Resource Management', 'Meteorology', 'Formation Flying',
+    'Electronic Warfare', 'Search & Rescue', 'Leadership & Command',
+  ];
+}
 
 class CvUploadSection extends StatefulWidget {
   final CvExtractor extractor;
@@ -106,15 +94,18 @@ class CvUploadSection extends StatefulWidget {
   State<CvUploadSection> createState() => _CvUploadSectionState();
 }
 
-class _CvUploadSectionState extends State<CvUploadSection> {
+class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderStateMixin {
   // State Variables
   Uint8List? _fileBytes;
   String? _fileName;
   bool _isProcessing = false;
   String? _errorMsg;
   CvExtractionResult? _result;
+
   final Map<String, TextEditingController> _controllers = {};
   final Map<int, GlobalKey<FormState>> _formKeys = {};
+  final TextEditingController _skillInputController = TextEditingController();
+  final List<String> _selectedSkills = [];
 
   bool _showEditForm = false;
   int _currentStep = 0;
@@ -131,15 +122,15 @@ class _CvUploadSectionState extends State<CvUploadSection> {
   @override
   void dispose() {
     _controllers.forEach((_, c) => c.dispose());
+    _skillInputController.dispose();
     super.dispose();
   }
 
   // ----------------------------------------------------------------------
-  // LOGIC METHODS
+  // LOGIC & EXTRACTION
   // ----------------------------------------------------------------------
 
   Future<void> _handleFileSelection() async {
-    HapticFeedback.lightImpact();
     setState(() => _errorMsg = null);
 
     try {
@@ -198,6 +189,7 @@ class _CvUploadSectionState extends State<CvUploadSection> {
 
   void _populateData(CvExtractionResult r) {
     _controllers.clear();
+    _selectedSkills.clear();
 
     void bind(String k, dynamic v) {
       _controllers[k] = TextEditingController(text: v?.toString() ?? '');
@@ -209,7 +201,12 @@ class _CvUploadSectionState extends State<CvUploadSection> {
     bind('phone', p['contactNumber']);
     bind('location', p['nationality']);
     bind('bio', p['summary'] ?? r.professionalSummary);
-    bind('skills', (p['skills'] is List) ? (p['skills'] as List).join(', ') : p['skills']);
+
+    if (p['skills'] is List) {
+      _selectedSkills.addAll((p['skills'] as List).map((s) => s.toString()));
+    } else if (p['skills'] is String && (p['skills'] as String).isNotEmpty) {
+      _selectedSkills.addAll((p['skills'] as String).split(',').map((s) => s.trim()));
+    }
 
     for (var i = 0; i < r.educationalProfile.length; i++) {
       final edu = r.educationalProfile[i];
@@ -219,116 +216,117 @@ class _CvUploadSectionState extends State<CvUploadSection> {
       bind('edu_grade_$i', edu['marksOrCgpa']);
     }
 
-    for (var i = 0; i < r.experiences.length; i++) {
-      final exp = r.experiences[i];
+    for (var i = 0; i < r.professionalExperience.length; i++) {
+      final exp = r.professionalExperience[i];
       bind('exp_org_$i', exp['organization']);
       bind('exp_role_$i', exp['role']);
       bind('exp_date_$i', exp['duration']);
       bind('exp_desc_$i', exp['duties']);
+      bind('exp_rank_$i', exp['rank']);
+      bind('exp_unit_$i', exp['unit']);
+      bind('exp_command_$i', exp['command']);
+      bind('exp_location_$i', exp['location']);
+      bind('exp_aircraft_$i', exp['aircraftType']);
+      bind('exp_hours_$i', exp['flightHours']);
     }
   }
 
   void _showNotification(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isError ? Icons.error_outline : Icons.check_circle_outline,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Text(message, style: AppTypography.button.copyWith(color: Colors.white)),
-          ],
-        ),
-        backgroundColor: isError ? AppColors.error : AppColors.success,
+        content: Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        backgroundColor: isError ? BrandColors.rose : BrandColors.emerald,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        duration: const Duration(seconds: 3),
+        margin: const EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
   // ----------------------------------------------------------------------
-  // BUILD METHODS
+  // UI BUILDERS
   // ----------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: _isProcessing
-          ? _buildProcessingView()
-          : _showEditForm
-          ? _buildEditorView()
-          : _buildUploadView(),
-    );
-  }
-
-  // --- UPLOAD VIEW ---
-
-  Widget _buildUploadView() {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 60),
-              _buildBrandHeader(),
-              const SizedBox(height: 48),
-              Text(
-                'Upload your resume',
-                style: AppTypography.heading1,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'We will extract your information automatically',
-              style: AppTypography.bodySecondary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-              _buildDropZone(),
-              const SizedBox(height: 24),
-              _buildManualOption(),
-              const SizedBox(height: 60),
-            ],
+      backgroundColor: BrandColors.white,
+      body: Column(
+        children: [
+          _buildCleanHeader(),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              switchInCurve: Curves.easeOutQuart,
+              child: _isProcessing
+                  ? _buildProcessingView()
+                  : _showEditForm
+                  ? _buildEditorView()
+                  : _buildUploadView(),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildBrandHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(8),
+
+  // --- VIEW: UPLOAD ---
+  Widget _buildCleanHeader() {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: const BoxDecoration(
+        color: BrandColors.white,
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            'images/logo.png',
+            height: 80,
+            fit: BoxFit.fill
           ),
-          child: const Icon(Icons.description, color: Colors.white, size: 18),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          'Resume Parser',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-            letterSpacing: -0.2,
+          Spacer(),
+          Center(
+
+         child: _buildCenteredTimeline(),
+          ),
+          Spacer(),
+
+
+        ],
+      ),
+    );
+  }
+  Widget _buildUploadView() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 700),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text('Professional Data Extraction', style: BrandTypography.h1.copyWith(fontSize: 32)),
+              const SizedBox(height: 14),
+              Text(
+                'Upload your CV. Our AI will automatically categorize your aviation experience, flight hours, and technical certifications.',
+                textAlign: TextAlign.center,
+                style: BrandTypography.body.copyWith(color: BrandColors.slate400),
+              ),
+              const SizedBox(height: 50),
+              _buildDropZone(),
+              const SizedBox(height: 32),
+              TextButton(
+                onPressed: widget.onManualContinue,
+                child: Text(
+                  'Enter data manually instead →',
+                  style: BrandTypography.body.copyWith(color: BrandColors.indigo, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -336,53 +334,32 @@ class _CvUploadSectionState extends State<CvUploadSection> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHoveringUpload = true),
       onExit: (_) => setState(() => _isHoveringUpload = false),
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: _handleFileSelection,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(48),
+          duration: const Duration(milliseconds: 250),
+          width: double.infinity,
+          height: 280,
           decoration: BoxDecoration(
-            color: _isHoveringUpload ? AppColors.surface : AppColors.surfaceElevated,
-            borderRadius: BorderRadius.circular(12),
+            color: _isHoveringUpload ? BrandColors.slate50 : BrandColors.white,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: _isHoveringUpload ? AppColors.accent : AppColors.border,
+              color: _isHoveringUpload ? BrandColors.indigo : BrandColors.slate200,
               width: 2,
-              strokeAlign: BorderSide.strokeAlignInside,
             ),
+            boxShadow: _isHoveringUpload
+                ? [BoxShadow(color: BrandColors.indigo.withOpacity(0.08), blurRadius: 24, offset: const Offset(0, 8))]
+                : [BoxShadow(color: BrandColors.slate950.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))],
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Icon(
-                  Icons.cloud_upload_outlined,
-                  size: 28,
-                  color: _isHoveringUpload ? AppColors.accent : AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Drop your resume here',
-                style: AppTypography.heading3.copyWith(
-                  color: _isHoveringUpload ? AppColors.accent : AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'or click to browse',
-                style: AppTypography.caption,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Supports PDF, DOCX, TXT • Max 15MB',
-                style: AppTypography.caption.copyWith(fontSize: 12),
-              ),
+              Icon(Icons.cloud_upload_outlined, size: 52, color: _isHoveringUpload ? BrandColors.indigo : BrandColors.slate400),
+              const SizedBox(height: 18),
+              Text('Drag and drop resume here', style: BrandTypography.h2.copyWith(fontSize: 18)),
+              const SizedBox(height: 6),
+              Text('Supports PDF, DOCX up to 15MB', style: BrandTypography.caption.copyWith(color: BrandColors.slate400)),
             ],
           ),
         ),
@@ -390,229 +367,317 @@ class _CvUploadSectionState extends State<CvUploadSection> {
     );
   }
 
-  Widget _buildManualOption() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Prefer to enter manually?', style: AppTypography.bodySecondary),
-        TextButton(
-          onPressed: widget.onManualContinue,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          ),
-          child: Text(
-            'Click here',
-            style: AppTypography.button.copyWith(color: AppColors.accent),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // --- PROCESSING VIEW ---
+  // --- VIEW: PROCESSING ---
 
   Widget _buildProcessingView() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(AppColors.accent),
+          // Animated processing indicator with rings
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Outer pulsing ring
+              TweenAnimationBuilder(
+                key: const ValueKey('outer-ring'), // ✅ Add key
+                tween: Tween<double>(begin: 0, end: 1),
+                duration: const Duration(seconds: 2),
+                onEnd: () {
+                  // Do nothing - let it stop naturally
+                },
+                builder: (context, double value, child) {
+                  return Container(
+                    width: 120 + (value * 20),
+                    height: 120 + (value * 20),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: BrandColors.indigo.withOpacity(0.2 * (1 - value)),
+                        width: 2,
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
+              // Middle ring
+              TweenAnimationBuilder(
+                key: const ValueKey('middle-ring'), // ✅ Add key
+                tween: Tween<double>(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 1500),
+                onEnd: () {
+                  // Do nothing - let it stop naturally
+                },
+                builder: (context, double value, child) {
+                  return Container(
+                    width: 100 + (value * 15),
+                    height: 100 + (value * 15),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: BrandColors.indigo.withOpacity(0.3 * (1 - value)),
+                        width: 2,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Inner container with icon
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: BrandColors.white,
+                  border: Border.all(color: BrandColors.slate200, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BrandColors.indigo.withOpacity(0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: const [
+                    // Rotating progress indicator
+                    SizedBox(
+                      width: 90,
+                      height: 90,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: BrandColors.indigo,
+                        backgroundColor: Colors.transparent,
+                      ),
+                    ),
+                    // Document icon
+                    Icon(
+                      Icons.description_outlined,
+                      size: 36,
+                      color: BrandColors.indigo,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 32),
-          Text('Processing resume', style: AppTypography.heading2),
-          const SizedBox(height: 8),
+
+          const SizedBox(height: 40),
+
+          // Static title (no animation loop)
           Text(
-            'Extracting your professional information',
-            style: AppTypography.bodySecondary,
+            'Analyzing Document',
+            style: BrandTypography.h2.copyWith(fontSize: 26),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Animated subtitle with dots
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Extracting aviation data',
+                style: BrandTypography.body.copyWith(
+                  color: BrandColors.slate400,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(width: 4),
+              _buildLoadingDots(),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // --- EDITOR VIEW ---
+  Widget _buildLoadingDots() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+
+          builder: (context, double value, child) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Transform.translate(
+                offset: Offset(0, -4 * (value > 0.5 ? 1 - value : value) * 2),
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: BrandColors.slate400.withOpacity(
+                      0.4 + (0.6 * (value > 0.5 ? 1 - value : value) * 2),
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+
+
+  // --- VIEW: EDITOR ---
 
   Widget _buildEditorView() {
-    return Row(
+    return Column(
       children: [
-        _buildSidebar(),
+
         Expanded(
-          child: Column(
-            children: [
-              _buildEditorHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(40),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 800),
-                      child: Form(
-                        key: _formKeys[_currentStep],
-                        child: _buildStepContent(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  child: KeyedSubtree(
+                    key: ValueKey(_currentStep),
+                    child: Form(
+                      key: _formKeys[_currentStep],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildStepContent(),
+
+                          const SizedBox(height: 40),
+
+                          /// ✅ FOOTER NOW AT END OF FORM
+                          _buildStickyFooter(),
+
+                          const SizedBox(height: 40), // bottom breathing space
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
-              _buildEditorFooter(),
-            ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSidebar() {
+
+  Widget _buildCenteredTimeline() {
     final steps = [
-      {'title': 'Personal', 'icon': Icons.person_outline},
-      {'title': 'Education', 'icon': Icons.school_outlined},
-      {'title': 'Experience', 'icon': Icons.work_outline},
-      {'title': 'Review', 'icon': Icons.check_circle_outline},
+      {'label': 'Personal', 'icon': Icons.person_outline},
+      {'label': 'Education', 'icon': Icons.school_outlined},
+      {'label': 'Experience', 'icon': Icons.flight_outlined},
+      {'label': 'Review', 'icon': Icons.verified_outlined},
     ];
 
-    return Container(
-      width: 260,
-      color: AppColors.surface,
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildBrandHeader(),
-          const SizedBox(height: 48),
-          ...List.generate(steps.length, (index) {
-            final isActive = _currentStep == index;
-            final isCompleted = _currentStep > index;
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        decoration: BoxDecoration(
+          color: BrandColors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: BrandColors.slate200, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: BrandColors.slate950.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(steps.length, (index) {
+            final isDone = _currentStep > index;
+            final isCurrent = _currentStep == index;
+            final isUpcoming = _currentStep < index;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Row(
-                children: [
+            return Row(
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: isCurrent ? 42 : 36,
+                      height: isCurrent ? 42 : 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: isCurrent
+                            ? LinearGradient(
+                          colors: [BrandColors.indigo, BrandColors.indigo.withOpacity(0.85)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                            : null,
+                        color: isDone ? BrandColors.emerald : (isUpcoming ? BrandColors.white : null),
+                        border: Border.all(
+                          color: isCurrent
+                              ? BrandColors.indigo
+                              : isDone
+                              ? BrandColors.emerald
+                              : BrandColors.slate300,
+                          width: isCurrent ? 2.5 : 2,
+                        ),
+                        boxShadow: isCurrent
+                            ? [
+                          BoxShadow(
+                            color: BrandColors.indigo.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                            : null,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          isDone ? Icons.check_rounded : steps[index]['icon'] as IconData,
+                          size: isCurrent ? 20 : 18,
+                          color: isCurrent || isDone ? Colors.white : BrandColors.slate400,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      steps[index]['label'] as String,
+                      style: BrandTypography.caption.copyWith(
+                        fontSize: 11,
+                        fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                        color: isCurrent
+                            ? BrandColors.slate950
+                            : isDone
+                            ? BrandColors.emerald
+                            : BrandColors.slate400,
+                      ),
+                    ),
+                  ],
+                ),
+                if (index < steps.length - 1)
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 50,
+                    height: 2.5,
+                    margin: const EdgeInsets.only(bottom: 28, left: 10, right: 10),
                     decoration: BoxDecoration(
-                      color: isActive || isCompleted
-                          ? AppColors.primary
-                          : AppColors.background,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isActive || isCompleted
-                            ? AppColors.primary
-                            : AppColors.border,
-                      ),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        isCompleted
-                            ? Icons.check
-                            : steps[index]['icon'] as IconData,
-                        size: 16,
-                        color: isActive || isCompleted
-                            ? Colors.white
-                            : AppColors.textTertiary,
+                      borderRadius: BorderRadius.circular(2),
+                      gradient: LinearGradient(
+                        colors: isDone
+                            ? [BrandColors.emerald, BrandColors.emerald.withOpacity(0.6)]
+                            : isCurrent
+                            ? [BrandColors.indigo.withOpacity(0.4), BrandColors.slate300]
+                            : [BrandColors.slate300, BrandColors.slate300],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      steps[index]['title'] as String,
-                      style: AppTypography.button.copyWith(
-                        color: isActive
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             );
           }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditorHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.divider)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Review & Edit', style: AppTypography.heading2),
-          IconButton(
-            onPressed: () => setState(() => _showEditForm = false),
-            icon: const Icon(Icons.close, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.background,
-              foregroundColor: AppColors.textSecondary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditorFooter() {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (_currentStep > 0)
-                SecondaryButton(
-                  label: 'Back',
-                  onPressed: () => setState(() => _currentStep--),
-                )
-              else
-                const SizedBox(),
-              PrimaryButton(
-                label: _currentStep == 3 ? 'Create Account' : 'Continue',
-                onPressed: _currentStep == 3
-                    ? _submitAccount
-                    : () {
-                  if (_formKeys[_currentStep]!.currentState!.validate()) {
-                    setState(() => _currentStep++);
-                  }
-                },
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -621,403 +686,593 @@ class _CvUploadSectionState extends State<CvUploadSection> {
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
-        return _buildPersonalInfoStep();
+        return _buildPersonalStep();
       case 1:
         return _buildEducationStep();
       case 2:
-        return _buildWorkStep();
+        return _buildExperienceStep();
       case 3:
-        return _buildReviewStep();
+        return _buildFinalReviewStep();
       default:
         return const SizedBox();
     }
   }
 
-  Widget _buildPersonalInfoStep() {
+  Widget _buildPersonalStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildStepHeader('Personal Information', 'Basic details about you'),
+        _buildSectionHeader('Personal Profile', 'Essential identification and contact details'),
         const SizedBox(height: 32),
         Row(
           children: [
-            Expanded(
-              child: MinimalTextField(
-                label: 'Full Name',
-                controller: _controllers['name'],
-                required: true,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: MinimalTextField(
-                label: 'Email Address',
-                controller: _controllers['email'],
-                required: true,
-              ),
-            ),
+            Expanded(child: _buildTextField('Full Name', _controllers['name'], true)),
+            const SizedBox(width: 20),
+            Expanded(child: _buildTextField('Email Address', _controllers['email'], true)),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
-            Expanded(
-              child: MinimalTextField(
-                label: 'Phone Number',
-                controller: _controllers['phone'],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: MinimalTextField(
-                label: 'Location',
-                controller: _controllers['location'],
-              ),
-            ),
+            Expanded(child: _buildTextField('Phone Number', _controllers['phone'])),
+            const SizedBox(width: 20),
+            Expanded(child: _buildTextField('Location', _controllers['location'])),
           ],
         ),
-        const SizedBox(height: 16),
-        MinimalTextField(
-          label: 'Professional Summary',
-          controller: _controllers['bio'],
-          maxLines: 4,
-          hint: 'Brief overview of your professional background',
-        ),
-        const SizedBox(height: 16),
-        MinimalTextField(
-          label: 'Skills',
-          controller: _controllers['skills'],
-          hint: 'Separate skills with commas',
+        const SizedBox(height: 20),
+        _buildTextField('Professional Summary', _controllers['bio'], false, 4),
+        const SizedBox(height: 36),
+        _buildSkillSelector(),
+      ],
+    );
+  }
+
+  Widget _buildSkillSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('TECHNICAL COMPETENCIES', style: BrandTypography.label.copyWith(fontSize: 12)),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: BrandColors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: BrandColors.slate200, width: 1.5),
+          ),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: AviationSkills.commonSkills.map((s) {
+              bool selected = _selectedSkills.contains(s);
+              return InkWell(
+                onTap: () => setState(() => selected ? _selectedSkills.remove(s) : _selectedSkills.add(s)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: selected ? BrandColors.indigo.withOpacity(0.08) : BrandColors.slate50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: selected ? BrandColors.indigo : BrandColors.slate200, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        s,
+                        style: BrandTypography.caption.copyWith(
+                          color: selected ? BrandColors.indigo : BrandColors.slate600,
+                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      if (selected) ...[
+                        const SizedBox(width: 6),
+                        const Icon(Icons.check_circle, size: 15, color: BrandColors.indigo),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildEducationStep() {
-    final count = _result?.educationalProfile.length ?? 0;
+    int count = _result?.educationalProfile.length ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildStepHeader('Education', 'Your academic background'),
+        _buildSectionHeader('Educational Background', 'Academic qualifications and technical schooling'),
         const SizedBox(height: 32),
         if (count == 0)
-          _buildEmptyState('No education data found')
+          _buildEmptyState('No academic data found.')
         else
           ...List.generate(
             count,
-                (i) => _buildEducationCard(i),
+                (i) => _buildDataCard(
+              title: 'QUALIFICATION ${i + 1}',
+              children: [
+                _buildTextField('Institution', _controllers['edu_inst_$i']),
+                const SizedBox(height: 18),
+                _buildTextField('Major Subjects', _controllers['edu_deg_$i']),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField('Duration', _controllers['edu_date_$i'])),
+                    const SizedBox(width: 18),
+                    Expanded(child: _buildTextField('GPA / Marks', _controllers['edu_grade_$i'])),
+                  ],
+                ),
+              ],
+            ),
           ),
       ],
     );
   }
 
-  Widget _buildEducationCard(int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Education ${index + 1}',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
+  Widget _buildExperienceStep() {
+    int count = _result?.professionalExperience.length ?? 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Operational Experience', 'Detailed breakdown of flight commands and duties'),
+        const SizedBox(height: 32),
+        if (count == 0)
+          _buildEmptyState('No experience data found.')
+        else
+          ...List.generate(
+            count,
+                (i) => _buildDataCard(
+              title: 'OPERATIONAL ROLE ${i + 1}',
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField('Organization', _controllers['exp_org_$i'])),
+                    const SizedBox(width: 18),
+                    Expanded(child: _buildTextField('Role', _controllers['exp_role_$i'])),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField('Rank', _controllers['exp_rank_$i'])),
+                    const SizedBox(width: 18),
+                    Expanded(child: _buildTextField('Unit', _controllers['exp_unit_$i'])),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField('Aircraft Type', _controllers['exp_aircraft_$i'])),
+                    const SizedBox(width: 18),
+                    Expanded(child: _buildTextField('Flight Hours', _controllers['exp_hours_$i'])),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                _buildTextField('Duties & Responsibilities', _controllers['exp_desc_$i'], false, 3),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          MinimalTextField(
-            label: 'Institution',
-            controller: _controllers['edu_inst_$index'],
-          ),
-          const SizedBox(height: 16),
-          MinimalTextField(
-            label: 'Degree/Field of Study',
-            controller: _controllers['edu_deg_$index'],
-          ),
-          const SizedBox(height: 16),
-          Row(
+      ],
+    );
+  }
+
+  Widget _buildFinalReviewStep() {
+    return Column(
+      children: [
+        // Top header for the review stage
+        Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Column(
             children: [
-              Expanded(
-                child: MinimalTextField(
-                  label: 'Duration',
-                  controller: _controllers['edu_date_$index'],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: MinimalTextField(
-                  label: 'Grade/CGPA',
-                  controller: _controllers['edu_grade_$index'],
-                ),
+              Text('Final Document Review', style: BrandTypography.h1),
+              Text(
+                'This is how your profile will appear to recruiters. Please verify all details.',
+                style: BrandTypography.body.copyWith(color: BrandColors.slate400),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
 
-  Widget _buildWorkStep() {
-    final count = _result?.experiences.length ?? 0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildStepHeader('Work Experience', 'Your professional history'),
-        const SizedBox(height: 32),
-        if (count == 0)
-          _buildEmptyState('No work experience found')
-        else
-          ...List.generate(
-            count,
-                (i) => _buildExperienceCard(i),
+        // The Virtual "Paper" CV
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: BrandColors.slate200),
+            boxShadow: [
+              BoxShadow(
+                color: BrandColors.slate950.withOpacity(0.05),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
+              ),
+            ],
           ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // --- LEFT SIDEBAR (Contact & Skills) ---
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    color: BrandColors.slate50,
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildReviewCircleAvatar(),
+                        const SizedBox(height: 32),
+                        _buildReviewSidebarSection('CONTACT', [
+                          _reviewInfoItem(Icons.email_outlined, _controllers['email']?.text),
+                          _reviewInfoItem(Icons.phone_iphone_outlined, _controllers['phone']?.text),
+                          _reviewInfoItem(Icons.location_on_outlined, _controllers['location']?.text),
+                        ]),
+                        const SizedBox(height: 40),
+                        _buildReviewSidebarSection('TECHNICAL SKILLS', [
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: _selectedSkills.map((skill) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: BrandColors.slate200),
+                              ),
+                              child: Text(
+                                skill,
+                                style: BrandTypography.label.copyWith(fontSize: 10, color: BrandColors.slate800),
+                              ),
+                            )).toList(),
+                          ),
+                        ]),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // --- MAIN CONTENT (Experience & Education) ---
+                Expanded(
+                  flex: 7,
+                  child: Padding(
+                    padding: const EdgeInsets.all(48),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name and Bio
+                        Text(_controllers['name']?.text.toUpperCase() ?? 'NAME NOT PROVIDED',
+                            style: BrandTypography.h1.copyWith(letterSpacing: 2, fontSize: 32)),
+                        const SizedBox(height: 12),
+                        Text(
+                          _controllers['bio']?.text ?? 'No professional summary provided.',
+                          style: BrandTypography.body.copyWith(color: BrandColors.slate800, height: 1.5),
+                        ),
+                        const SizedBox(height: 48),
+
+                        // Experience Section
+                        _buildReviewMainSection('PROFESSIONAL EXPERIENCE', Icons.work_outline),
+                        ..._buildExperienceReviewList(),
+
+                        const SizedBox(height: 40),
+
+                        // Education Section
+                        _buildReviewMainSection('ACADEMIC BACKGROUND', Icons.school_outlined),
+                        ..._buildEducationReviewList(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 40),
       ],
     );
   }
 
-  Widget _buildExperienceCard(int index) {
+// --- HELPER UI COMPONENTS FOR CV TEMPLATE ---
+
+  Widget _buildReviewCircleAvatar() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(24),
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Experience ${index + 1}',
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 20),
-          MinimalTextField(
-            label: 'Company',
-            controller: _controllers['exp_org_$index'],
-          ),
-          const SizedBox(height: 16),
-          MinimalTextField(
-            label: 'Job Title',
-            controller: _controllers['exp_role_$index'],
-          ),
-          const SizedBox(height: 16),
-          MinimalTextField(
-            label: 'Duration',
-            controller: _controllers['exp_date_$index'],
-          ),
-          const SizedBox(height: 16),
-          MinimalTextField(
-            label: 'Description',
-            controller: _controllers['exp_desc_$index'],
-            maxLines: 3,
-            hint: 'Key responsibilities and achievements',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReviewStep() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 60),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.check_circle_outline,
-              size: 40,
-              color: AppColors.success,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text('Ready to Create Account', style: AppTypography.heading1),
-          const SizedBox(height: 12),
-          Text(
-            'Review your information in the previous steps.\nYou can go back to make any changes.',
-            style: AppTypography.bodySecondary,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 60),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepHeader(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: AppTypography.heading2),
-        const SizedBox(height: 4),
-        Text(subtitle, style: AppTypography.bodySecondary),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
+        color: BrandColors.slate200,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 4),
       ),
       child: Center(
-        child: Text(message, style: AppTypography.bodySecondary),
+        child: Icon(Icons.person, size: 40, color: BrandColors.slate400),
       ),
     );
   }
 
-  Future<void> _submitAccount() async {
-    setState(() => _isProcessing = true);
-    final success = await widget.provider.submitExtractedCvAndCreateAccount(_result!);
-    setState(() => _isProcessing = false);
-    if (success) widget.onSuccess();
-  }
-}
-
-// ----------------------------------------------------------------------
-// UI COMPONENTS
-// ----------------------------------------------------------------------
-
-class PrimaryButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onPressed;
-
-  const PrimaryButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 0,
-      ),
-      child: Text(label, style: AppTypography.button),
-    );
-  }
-}
-
-class SecondaryButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onPressed;
-
-  const SecondaryButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textSecondary,
-        side: const BorderSide(color: AppColors.border),
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      child: Text(label, style: AppTypography.button),
-    );
-  }
-}
-
-class MinimalTextField extends StatelessWidget {
-  final String label;
-  final String? hint;
-  final TextEditingController? controller;
-  final int maxLines;
-  final bool required;
-
-  const MinimalTextField({
-    super.key,
-    required this.label,
-    this.controller,
-    this.hint,
-    this.maxLines = 1,
-    this.required = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildReviewSidebarSection(String title, List<Widget> children) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (required) ...[
-              const SizedBox(width: 4),
-              const Text('*', style: TextStyle(color: AppColors.error)),
+        Text(title, style: BrandTypography.label.copyWith(color: BrandColors.indigo, fontSize: 11)),
+        const SizedBox(height: 16),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _reviewInfoItem(IconData icon, String? text) {
+    if (text == null || text.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: BrandColors.slate400),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text, style: BrandTypography.body.copyWith(fontSize: 13, color: BrandColors.slate800)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewMainSection(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: BrandColors.slate950),
+              const SizedBox(width: 12),
+              Text(title, style: BrandTypography.h2.copyWith(fontSize: 16, letterSpacing: 1.5)),
             ],
+          ),
+          const Divider(height: 24, thickness: 1, color: BrandColors.slate950),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildExperienceReviewList() {
+    int count = _result?.professionalExperience.length ?? 0;
+    if (count == 0) return [Text('No experience entries.', style: BrandTypography.body)];
+
+    return List.generate(count, (i) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_controllers['exp_role_$i']?.text ?? '',
+                    style: BrandTypography.body.copyWith(fontWeight: FontWeight.w700, color: BrandColors.slate950)),
+                Text(_controllers['exp_date_$i']?.text ?? '',
+                    style: BrandTypography.label.copyWith(fontSize: 11)),
+              ],
+            ),
+            Text(_controllers['exp_org_$i']?.text ?? '',
+                style: BrandTypography.body.copyWith(color: BrandColors.indigo, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            if (_controllers['exp_aircraft_$i']?.text.isNotEmpty ?? false)
+              Text('AIRCRAFT: ${_controllers['exp_aircraft_$i']?.text} | ${_controllers['exp_hours_$i']?.text} hrs',
+                  style: BrandTypography.label.copyWith(fontSize: 10, color: BrandColors.slate400)),
+            const SizedBox(height: 8),
+            Text(_controllers['exp_desc_$i']?.text ?? '',
+                style: BrandTypography.body.copyWith(fontSize: 14, color: BrandColors.slate800)),
           ],
         ),
+      );
+    });
+  }
+
+  List<Widget> _buildEducationReviewList() {
+    int count = _result?.educationalProfile.length ?? 0;
+    if (count == 0) return [Text('No education entries.', style: BrandTypography.body)];
+
+    return List.generate(count, (i) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_controllers['edu_inst_$i']?.text ?? '',
+                      style: BrandTypography.body.copyWith(fontWeight: FontWeight.w700)),
+                  Text(_controllers['edu_deg_$i']?.text ?? '',
+                      style: BrandTypography.body.copyWith(fontSize: 14)),
+                ],
+              ),
+            ),
+            Text(_controllers['edu_date_$i']?.text ?? '',
+                style: BrandTypography.label.copyWith(fontSize: 11)),
+          ],
+        ),
+      );
+    });
+  }
+  // --- REUSABLE UI COMPONENTS ---
+
+  Widget _buildSectionHeader(String title, String sub) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: BrandTypography.h1.copyWith(fontSize: 26)),
+        const SizedBox(height: 4),
+        Text(sub, style: BrandTypography.body.copyWith(color: BrandColors.slate400)),
+      ],
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController? ctrl, [bool required = false, int maxLines = 1]) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: BrandTypography.label.copyWith(fontSize: 11)),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
+          controller: ctrl,
           maxLines: maxLines,
-          style: AppTypography.body,
-          validator: required
-              ? (value) => value?.isEmpty ?? true ? 'Required' : null
-              : null,
+          style: BrandTypography.body.copyWith(fontSize: 14),
+          validator: required ? (v) => v!.isEmpty ? 'Field required' : null : null,
           decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppTypography.body.copyWith(
-              color: AppColors.textTertiary,
+            filled: false,
+            fillColor: BrandColors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: BrandColors.slate200, width: 1.5),
             ),
-            filled: true,
-            fillColor: AppColors.surface,
-            contentPadding: const EdgeInsets.all(16),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: BrandColors.slate200, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: BrandColors.indigo, width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: BrandColors.rose, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: BrandColors.rose, width: 2),
             ),
           ),
         ),
       ],
     );
   }
+
+  Widget _buildDataCard({required String title, required List<Widget> children}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: BrandColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrandColors.slate200, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.bookmark_border, size: 18, color: BrandColors.indigo),
+              const SizedBox(width: 10),
+              Text(title, style: BrandTypography.label.copyWith(color: BrandColors.indigo, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 22),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String msg) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrandColors.slate200, width: 1.5),
+      ),
+      child: Center(child: Text(msg, style: BrandTypography.body.copyWith(color: BrandColors.slate400))),
+    );
+  }
+
+  Widget _buildStickyFooter() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: BrandColors.white,
+        border: Border(top: BorderSide(color: BrandColors.slate200, width: 1)),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (_currentStep > 0)
+                OutlinedButton(
+                  onPressed: () => setState(() => _currentStep--),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                    side: const BorderSide(color: BrandColors.slate300, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text('Previous Step', style: BrandTypography.body.copyWith(color: BrandColors.slate600, fontWeight: FontWeight.w600)),
+                )
+              else
+                const SizedBox(),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKeys[_currentStep]!.currentState!.validate()) {
+                    if (_currentStep < 3) {
+                      setState(() => _currentStep++);
+                    } else {
+                      _submitFinal();
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BrandColors.slate950,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 0,
+                ),
+                child: Text(
+                  _currentStep == 3 ? 'Confirm & Create Account' : 'Continue to Next Step',
+                  style: BrandTypography.body.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitFinal() async {
+    if (_result != null) {
+      _result!.personalProfile['skills'] = _selectedSkills;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final success = await widget.provider.submitExtractedCvAndCreateAccount(_result!);
+
+      setState(() => _isProcessing = false);
+
+      if (success) {
+        // Show success message
+        _showNotification('Profile created successfully!');
+
+        // Small delay to show the notification
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Call the success callback
+        widget.onSuccess();
+      } else {
+        _showNotification('Failed to create profile. Please try again.', isError: true);
+      }
+    } catch (e) {
+      setState(() => _isProcessing = false);
+      _showNotification('Error: ${e.toString()}', isError: true);
+    }
+  }
+
 }

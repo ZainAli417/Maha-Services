@@ -1388,40 +1388,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.work_outline_rounded, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  "Maha Services",
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-                const Spacer(),
-                if (provider.currentStep > 0)
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 600),
-                    child: _buildStepper(provider),
-                  ),
-                const Spacer(),
-                const SizedBox(width: 200),
-              ],
-            ),
-          ),
-
+          _buildTopBar(),
           // Content
           Expanded(
             child: FadeTransition(
@@ -1452,6 +1419,37 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
     );
   }
 }
+Widget _buildTopBar() {
+  return RepaintBoundary(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 65, vertical: 10),
+      decoration: BoxDecoration(
+        color:  Colors.transparent,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [_buildEnhancedLogo()],
+      ),
+    ),
+  );
+}
+
+Widget _buildEnhancedLogo() {
+  return Row(
+    children: [
+      Image.asset(
+        'images/logo.png',
+        width: 100,
+        height: 100,
+        fit: BoxFit.fill,
+        cacheWidth: 200, // Web optimization
+        cacheHeight: 200,
+      ),
+      const SizedBox(width: 14),
+    ],
+  );
+}
+
 
 // ================== NEW CV UPLOAD SCREEN ==================
 // class CvUploadScreen extends StatelessWidget {

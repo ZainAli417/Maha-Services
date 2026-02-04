@@ -12,8 +12,8 @@ class CvExtractionResult {
   final Map<String, dynamic> personalProfile;
   final List<Map<String, String>> educationalProfile;
   final String professionalSummary;
-  final List<Map<String, dynamic>> experiences; // ✅ Updated structure
-  final List<Map<String, String>> certifications; // ✅ Updated structure
+  final List<Map<String, dynamic>> professionalExperience; // ✅ Renamed from experiences
+  final List<Map<String, String>> certifications;
   final List<String> publications;
   final List<String> awards;
   final List<String> references;
@@ -23,25 +23,23 @@ class CvExtractionResult {
     required this.personalProfile,
     required this.educationalProfile,
     required this.professionalSummary,
-    required this.experiences,
+    required this.professionalExperience,
     required this.certifications,
     required this.publications,
     required this.awards,
     required this.references,
   });
-
   factory CvExtractionResult.empty() => CvExtractionResult(
     rawText: '',
     personalProfile: {},
     educationalProfile: [],
     professionalSummary: '',
-    experiences: [],
+    professionalExperience: [],
     certifications: [],
     publications: [],
     awards: [],
     references: [],
   );
-
   factory CvExtractionResult.fromJson(Map<String, dynamic> j) {
     final personal = (j['personalProfile'] as Map?)?.map((k, v) => MapEntry(k.toString(), v)) ?? {};
 
@@ -61,20 +59,28 @@ class CvExtractionResult {
     }
 
     // ✅ NEW: Work Experience parsing
+    // ✅ NEW: Professional Experience parsing (Aviation format)
     final exps = <Map<String, dynamic>>[];
-    if (j['experiences'] is List) {
-      for (final e in (j['experiences'] as List)) {
+    if (j['professionalExperience'] is List) {
+      for (final e in (j['professionalExperience'] as List)) {
         if (e is Map) {
           exps.add({
             'organization': (e['organization'] ?? '').toString(),
             'duration': (e['duration'] ?? '').toString(),
             'role': (e['role'] ?? '').toString(),
             'duties': (e['duties'] ?? '').toString(),
+            'rank': (e['rank'] ?? '').toString(),
+            'unit': (e['unit'] ?? '').toString(),
+            'command': (e['command'] ?? '').toString(),
+            'location': (e['location'] ?? '').toString(),
+            'aircraftType': (e['aircraftType'] ?? '').toString(),
+            'flightHours': (e['flightHours'] ?? '').toString(),
+            'startDate': (e['startDate'] ?? '').toString(),
+            'endDate': (e['endDate'] ?? '').toString(),
           });
         }
       }
     }
-
     // ✅ NEW: Certifications parsing
     final certs = <Map<String, String>>[];
     if (j['certifications'] is List) {
@@ -105,12 +111,13 @@ class CvExtractionResult {
       personalProfile: personal,
       educationalProfile: edu,
       professionalSummary: (j['professionalSummary'] ?? '').toString(),
-      experiences: exps,
+      professionalExperience: exps, // ✅ Updated
       certifications: certs,
       publications: listFrom(j['publications']),
       awards: listFrom(j['awards']),
       references: listFrom(j['references']),
     );
+
   }
 }
 class CvExtractor {
@@ -276,7 +283,7 @@ class CvExtractor {
 
   String _buildPrompt() {
     return '''
-Extract information from this CV/resume and return ONLY a JSON object with the following structure:
+Extract information from this aviation/defense CV/resume and return ONLY a JSON object with the following structure:
 
 {
   "rawText": "full extracted text from the document",
@@ -285,7 +292,7 @@ Extract information from this CV/resume and return ONLY a JSON object with the f
     "email": "email address", 
     "contactNumber": "phone number",
     "nationality": "nationality",
-    "skills": ["skill1", "skill2", "skill3"]
+    "skills": ["Tactical Operations", "Flight Planning", "Aircraft Systems", "Navigation"]
   },
   "educationalProfile": [
     {
@@ -296,12 +303,20 @@ Extract information from this CV/resume and return ONLY a JSON object with the f
     }
   ],
   "professionalSummary": "brief professional summary",
-  "experiences": [
+  "professionalExperience": [
     {
-      "organization": "company/organization name",
+      "organization": "organization name (e.g., PAF Base)",
       "duration": "start date - end date (e.g., Jan 2020 - Dec 2022)",
-      "role": "job title/position",
-      "duties": "key responsibilities and achievements"
+      "role": "job title/position (e.g., Fighter Pilot)",
+      "duties": "key responsibilities and achievements",
+      "rank": "military rank (e.g., Squadron Leader)",
+      "unit": "unit/squadron name (e.g., NUR BASE)",
+      "command": "command name (e.g., Central Air Command)",
+      "location": "location/country",
+      "aircraftType": "aircraft type (e.g., C-130, F-16)",
+      "flightHours": "total flight hours",
+      "startDate": "start date",
+      "endDate": "end date"
     }
   ],
   "certifications": [
@@ -318,8 +333,8 @@ Extract information from this CV/resume and return ONLY a JSON object with the f
 IMPORTANT: 
 - Return ONLY the JSON object, no other text
 - Use empty strings or empty arrays for missing fields
-- Extract as much information as possible from the document
-- For work experience, separate organization, duration, role, and duties clearly
+- Extract as much aviation/defense specific information as possible
+- For professional experience, include all aviation-specific fields like rank, unit, command, aircraft type, and flight hours
 - For certifications, include both the issuing organization and certification name
 ''';
   }
@@ -335,7 +350,7 @@ Structure the raw data into proper layout. Return ONLY a JSON object with the fo
     "email": "email address", 
     "contactNumber": "phone number",
     "nationality": "nationality",
-    "skills": ["skill1", "skill2", "skill3"]
+    "skills": ["Tactical Operations", "Flight Planning", "Aircraft Systems", "Navigation"]
   },
   "educationalProfile": [
     {
@@ -346,12 +361,20 @@ Structure the raw data into proper layout. Return ONLY a JSON object with the fo
     }
   ],
   "professionalSummary": "brief professional summary",
-  "experiences": [
+  "professionalExperience": [
     {
-      "organization": "company/organization name",
+      "organization": "organization name (e.g., PAF Base)",
       "duration": "start date - end date (e.g., Jan 2020 - Dec 2022)",
-      "role": "job title/position",
-      "duties": "key responsibilities and achievements"
+      "role": "job title/position (e.g., Fighter Pilot)",
+      "duties": "key responsibilities and achievements",
+      "rank": "military rank (e.g., Squadron Leader)",
+      "unit": "unit/squadron name (e.g., NUR BASE)",
+      "command": "command name (e.g., Central Air Command)",
+      "location": "location/country",
+      "aircraftType": "aircraft type (e.g., C-130, F-16)",
+      "flightHours": "total flight hours",
+      "startDate": "start date",
+      "endDate": "end date"
     }
   ],
   "certifications": [
@@ -368,8 +391,8 @@ Structure the raw data into proper layout. Return ONLY a JSON object with the fo
 IMPORTANT: 
 - Return ONLY the JSON object, no other text
 - Use empty strings or empty arrays for missing fields
-- Extract as much information as possible from the document
-- For work experience, separate organization, duration, role, and duties clearly
+- Extract as much aviation/defense specific information as possible
+- For professional experience, include all aviation-specific fields like rank, unit, command, aircraft type, and flight hours
 - For certifications, include both the issuing organization and certification name
 ''';
   }

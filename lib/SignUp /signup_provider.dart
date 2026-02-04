@@ -366,6 +366,8 @@ class SignupProvider extends ChangeNotifier {
     // Return the target route if successful
     return success ? targetRoute : null;
   }
+
+
   Future<bool> createJobSeekerProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -382,26 +384,35 @@ class SignupProvider extends ChangeNotifier {
 
       await _saveUserData(user.uid, _buildManualUserData(user.uid));
 
-      // ✅ FIXED: Query and update by uid field
-      final userQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: user.uid)
-          .limit(1)
-          .get();
+      // ✅ FIXED: Update isNew properly
+      try {
+        final userQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('uid', isEqualTo: user.uid)
+            .limit(1)
+            .get();
 
-      if (userQuery.docs.isNotEmpty) {
-        await userQuery.docs.first.reference.update({
-          'isNew': 'no',
-          'profileCompletedAt': FieldValue.serverTimestamp(),
-        });
-      } else {
-        debugPrint('⚠️ createJobSeekerProfile: User document not found for update');
+        if (userQuery.docs.isNotEmpty) {
+          final docId = userQuery.docs.first.id;
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(docId)
+              .update({
+            'isNew': 'no',
+            'profileCompletedAt': FieldValue.serverTimestamp(),
+          });
+
+          debugPrint('✅ Successfully updated isNew to "no" for user ${user.uid}');
+        } else {
+          debugPrint('⚠️ createJobSeekerProfile: User document not found for uid: ${user.uid}');
+        }
+      } catch (e) {
+        debugPrint('❌ Error in createJobSeekerProfile update: $e');
       }
 
       return true;
     });
   }
-
 
 
   Future<bool> submitExtractedCvAndCreateAccount(CvExtractionResult result) async {
@@ -428,25 +439,54 @@ class SignupProvider extends ChangeNotifier {
       // 4. Save full profile data using the existing authenticated user
       await _saveUserData(uid, _buildCvUserData(uid, result, user.email ?? ''));
 
-      // ✅ FIXED: Query and update by uid field
-      final userQuery = await FirebaseFirestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .limit(1)
-          .get();
+      // 5. ✅ FIXED: Update isNew field properly
+      try {
+        final userQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('uid', isEqualTo: uid)
+            .limit(1)
+            .get();
 
-      if (userQuery.docs.isNotEmpty) {
-        await userQuery.docs.first.reference.update({
-          'isNew': 'no',
-          'profileCompletedAt': FieldValue.serverTimestamp(),
-        });
-      } else {
-        debugPrint('⚠️ submitExtractedCvAndCreateAccount: User document not found for update');
+        if (userQuery.docs.isNotEmpty) {
+          final docId = userQuery.docs.first.id;
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(docId)
+              .update({
+            'isNew': 'no',
+            'profileCompletedAt': FieldValue.serverTimestamp(),
+          });
+
+          debugPrint('✅ Successfully updated isNew to "no" for user $uid');
+        } else {
+          debugPrint('⚠️ User document not found for uid: $uid');
+
+          // If not found, create the users document
+          await FirebaseFirestore.instance.collection('users').add({
+            'uid': uid,
+            'email': user.email ?? '',
+            'role': 'job_seeker',
+            'isNew': 'no',
+            'account_status': 'active',
+            'user_lvl': 'free',
+            'created_at': FieldValue.serverTimestamp(),
+            'profileCompletedAt': FieldValue.serverTimestamp(),
+            'name': nameController.text.trim(),
+          });
+
+          debugPrint('✅ Created new users document with isNew: no');
+        }
+      } catch (e) {
+        debugPrint('❌ Error updating isNew: $e');
+        // Don't fail the whole operation if this update fails
       }
 
       return true;
     });
-  }  Future<bool> _executeWithLoading(Future<bool> Function() operation) async {
+  }
+
+
+  Future<bool> _executeWithLoading(Future<bool> Function() operation) async {
     generalError = null;
     isLoading = true;
     notifyListeners();
@@ -521,7 +561,7 @@ class SignupProvider extends ChangeNotifier {
     },
     'educationalProfile': educationalProfile,
     'professionalProfile': {'summary': result.professionalSummary},
-    'professionalExperience': result.experiences,
+    'professionalExperience': result.professionalExperience,
     'certifications': result.certifications,
     'publications': result.publications,
     'awards': result.awards,
