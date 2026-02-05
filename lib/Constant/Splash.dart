@@ -291,6 +291,26 @@ class _LandingPageState extends State<LandingPage>
           ),
         ),
         const SizedBox(width: 16),
+        _AnimatedButton(
+          onPressed: () => context.go('/admin'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Admin Panel", style: _buttonTextStyle),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+              ],
+            ),
+          ),
+        ),
         _buildThemeToggle(),
       ],
     );
