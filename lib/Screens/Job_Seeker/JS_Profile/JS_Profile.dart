@@ -392,7 +392,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
   Widget _buildContent(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Consumer<ProfileProvider_NEW>(
         builder: (context, prov, _) {
           if (prov.isLoading) {
@@ -416,13 +416,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   border: Border(
                     left: BorderSide(color: Colors.grey.shade200, width: 1),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 8,
-                      offset: const Offset(-2, 0),
-                    ),
-                  ],
+
                 ),
                 child: JSProfileSidebar(provider: prov),
               ),
@@ -443,7 +437,6 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [
@@ -551,19 +544,22 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           _buildStepIndicators(),
           const SizedBox(height: 24),
           Expanded(
-            child: RepaintBoundary(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 550),
-                switchInCurve: Curves.easeInExpo,
-                switchOutCurve: Curves.easeInOutCubicEmphasized,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: Container(
-                  key: ValueKey<int>(_currentStep),
-                  child: _buildCurrentStepContent(prov),
-                ),
-              ),
+            child: RepaintBoundary( child: Container(
+              key: ValueKey<int>(_currentStep),
+              child:
+
+
+              _buildCurrentStepContent(prov),
+            ),
+              // child: AnimatedSwitcher(
+              //   duration: const Duration(milliseconds: 550),
+              //   switchInCurve: Curves.easeInExpo,
+              //   switchOutCurve: Curves.easeInOutCubicEmphasized,
+              //   transitionBuilder: (child, animation) {
+              //     return FadeTransition(opacity: animation, child: child);
+              //   },
+              //
+              // ),
             ),
           ),
           // const SizedBox(height: 20),
@@ -728,6 +724,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         height: 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.indigo),
                           gradient: prov.profilePicUrl.isEmpty
                               ? const LinearGradient(
                                   colors: [
@@ -989,8 +986,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
+                  filled: false,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey.shade200),
@@ -2381,8 +2377,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
+                    filled: false,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.grey.shade200),
@@ -2930,8 +2925,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               horizontal: 16,
               vertical: 12,
             ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
+            filled: false,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade200),

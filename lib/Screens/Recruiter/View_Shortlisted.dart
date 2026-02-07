@@ -796,7 +796,7 @@ class view_shortlisted_state extends State<view_shortlisted> with SingleTickerPr
             ),
           ),
           Expanded(flex: 2, child: _buildScoreDisplay(applicant)),
-          SizedBox(width: 20),
+          SizedBox(width: 10),
           Expanded(flex: 1, child: _buildStatusBadge(applicant)),
           SizedBox(width: 10),
           SizedBox(
@@ -863,7 +863,7 @@ class view_shortlisted_state extends State<view_shortlisted> with SingleTickerPr
       ),
       child: Text(
         'Shortlist',
-        style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF10B981)),
+        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF10B981)),
       ),
     );
   }

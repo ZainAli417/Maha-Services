@@ -63,33 +63,88 @@ class JobDetailModal_recruiter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fetch job reactively from provider (same way recruiter_job_listing uses it)
-    final jobData = _findJob(context);
-
-    // Show loading / not found UI
-    if (jobData == null) {
-      return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: SizedBox(
-          height: 180,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 12),
-                  Text('Loading job details...', style: GoogleFonts.poppins()),
-                ],
+    // ✅ FIX: Use FutureBuilder to fetch job data directly from Firestore
+    return FutureBuilder<Map<String, dynamic>?>(
+        future: _fetchJobFromFirestore(),
+        builder: (context, snapshot) {
+          // Show loading state
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                height: 200,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Loading job details...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: _textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-        ),
-      );
-    }
+            );
+          }
 
+          // Show error state
+          if (snapshot.hasError || snapshot.data == null) {
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                height: 200,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: _dangerColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Job not found',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'This job may have been removed or archived.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: _textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // ✅ Job data loaded successfully
+          final jobData = snapshot.data!;
     // --- Extract fields (use same keys your listing uses) ---
     final title = jobData['title'] as String? ?? 'Untitled Position';
     final company = jobData['company'] as String? ?? 'Unknown Company';
@@ -436,7 +491,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                           context,
                           listen: false,
                         );
-                        await provider.deleteJob(jobIdField);
+                        await provider.archiveJob(jobIdField);
                         Navigator.of(context).pop();
                       }
                     },
@@ -461,7 +516,10 @@ class JobDetailModal_recruiter extends StatelessWidget {
         ),
       ),
     );
+
   }
+    );
+        }
 
   // Reusable small widgets
 
@@ -641,8 +699,8 @@ class JobDetailModal_recruiter extends StatelessWidget {
               _buildInfoRow('Experience', experience),
               _buildInfoRow('Deadline', deadline),
               _buildInfoRow('Contact', contact),
-              _buildInfoRow('Job View Count', viewCount.toString()),
-              _buildInfoRow('No Of Applicants', applicationCount.toString()),
+              // _buildInfoRow('Job View Count', viewCount.toString()),
+              // _buildInfoRow('No Of Applicants', applicationCount.toString()),
             ],
           ),
         ),
@@ -743,4 +801,13 @@ class JobDetailModal_recruiter extends StatelessWidget {
       ),
     );
   }
+
+  Future<Map<String, dynamic>?> _fetchJobFromFirestore() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Posted_jobs_public')
+        .doc(jobId)
+        .get();
+    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
+  }
+
 }

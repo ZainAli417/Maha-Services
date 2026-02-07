@@ -96,7 +96,6 @@ class job_listing_provider extends ChangeNotifier {
     _isInitialized = true;
     notifyListeners();
   }
-
   Future<void> _initRealtimeListener() async {
     if (_cachedUserId == null) return;
     await _jobsSubscription?.cancel();
@@ -104,10 +103,13 @@ class job_listing_provider extends ChangeNotifier {
         .collection('recruiter')
         .doc(_cachedUserId)
         .collection('Posted_jobs')
+        .where('status', isNotEqualTo: 'archive')  // ← ADDED: Filter out archived jobs
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen(_updateJobList);
   }
+
+
 
   void _updateJobList(QuerySnapshot snapshot) {
     _jobList
@@ -309,17 +311,46 @@ class job_listing_provider extends ChangeNotifier {
     }
   }
 
-  Future<String?> deleteJob(String jobId) async {
+  Future<String?> archiveJob(String jobId) async {
     if (_cachedUserId == null) return 'Not authenticated.';
+
     try {
-      await _deleteJobFromBothCollections(jobId);
+      await _archiveJobInBothCollections(jobId);
       return null;
     } catch (e) {
-      debugPrint('Error deleting job: $e');
-      return 'Failed to delete job: $e';
+      debugPrint('Error archiving job: $e');
+      return 'Failed to archive job: $e';
     }
   }
 
+  Future<void> _archiveJobInBothCollections(String jobId) async {
+    final batch = _firestore.batch();
+
+    // Reference to the recruiter's private job list
+    final recruiterJobRef = _firestore
+        .collection('recruiter')
+        .doc(_cachedUserId)
+        .collection('Posted_jobs')
+        .doc(jobId);
+
+    // Reference to the public job list
+    final publicJobRef = _firestore
+        .collection('Posted_jobs_public')
+        .doc(jobId);
+
+    // Update status to 'archive' in both places atomically
+    batch.update(recruiterJobRef, {
+      'status': 'archive',
+      'updatedAt': FieldValue.serverTimestamp(), // Good practice to track when it was archived
+    });
+
+    batch.update(publicJobRef, {
+      'status': 'archive',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
   Future<String?> toggleJobStatus(String jobId, String currentStatus) async {
     if (_cachedUserId == null) return 'Not authenticated';
     try {
@@ -602,12 +633,6 @@ class job_listing_provider extends ChangeNotifier {
     await batch.commit();
   }
 
-  Future<void> _deleteJobFromBothCollections(String jobId) async {
-    final batch = _firestore.batch();
-    batch.delete(_firestore.collection('recruiter').doc(_cachedUserId).collection('Posted_jobs').doc(jobId));
-    batch.delete(_firestore.collection('Posted_jobs_public').doc(jobId));
-    await batch.commit();
-  }
 }
 
 // =============================================================================

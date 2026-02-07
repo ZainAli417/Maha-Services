@@ -112,7 +112,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
           geminiApiKey: widget.geminiApiKey,
         ),
         child: Scaffold(
-          backgroundColor: kBackgroundGray,
+          backgroundColor: Colors.white,
           body: Row(
             children: [
               JobSeekerSidebar(activeIndex: 2),
@@ -215,7 +215,6 @@ class _CompactHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [

@@ -292,7 +292,6 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [

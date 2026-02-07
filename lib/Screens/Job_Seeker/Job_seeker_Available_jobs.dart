@@ -319,7 +319,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           height: 60,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0)),top: BorderSide(color: Color(0xFFE2E8F0))),
           ),
           child: Row(
             children: [

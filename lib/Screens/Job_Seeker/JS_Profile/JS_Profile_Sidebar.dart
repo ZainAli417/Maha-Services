@@ -106,7 +106,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     final scoreColor = _getScoreColor(totalScore);
 
     return Container(
-      color: const Color(0xFFF9FAFB), // Very light grey background for sidebar
+      color: const Color(0xFFFFFFFF), // Very light grey background for sidebar
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(

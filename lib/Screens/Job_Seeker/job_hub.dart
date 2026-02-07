@@ -142,7 +142,6 @@ class _job_hubState extends State<job_hub>
               // Header above the 3-column layout
               _buildWelcomeSection(),
 
-              const SizedBox(height: 16),
 
               // The 3 columns themselves fill remaining space
               Expanded(
@@ -303,7 +302,6 @@ class _job_hubState extends State<job_hub>
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [

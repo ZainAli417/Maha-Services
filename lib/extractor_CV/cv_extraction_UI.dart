@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Assuming these paths remain the same as per your project structure
@@ -1249,13 +1250,11 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
     if (_result != null) {
       _result!.personalProfile['skills'] = _selectedSkills;
     }
-
-    setState(() => _isProcessing = true);
+    setState(() => _isProcessing = false);
 
     try {
       final success = await widget.provider.submitExtractedCvAndCreateAccount(_result!);
 
-      setState(() => _isProcessing = false);
 
       if (success) {
         // Show success message
@@ -1266,11 +1265,11 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
 
         // Call the success callback
         widget.onSuccess();
+        context.go('/dashboard');
       } else {
         _showNotification('Failed to create profile. Please try again.', isError: true);
       }
     } catch (e) {
-      setState(() => _isProcessing = false);
       _showNotification('Error: ${e.toString()}', isError: true);
     }
   }

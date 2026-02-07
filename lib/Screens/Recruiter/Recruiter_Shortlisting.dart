@@ -227,7 +227,6 @@ class _ShortlistingDashboardState extends State<ShortlistingDashboard> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [
@@ -253,7 +252,7 @@ class _ShortlistingDashboardState extends State<ShortlistingDashboard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Recruiter Dashboard',
+                'Shortlisting Dashboard',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

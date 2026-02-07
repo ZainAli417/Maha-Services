@@ -54,12 +54,13 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     _searchController.dispose();
     super.dispose();
   }
+
   void showTopNotification(
-      BuildContext context,
-      String message, {
-        required Color backgroundColor,
-        required IconData icon,
-      }) {
+    BuildContext context,
+    String message, {
+    required Color backgroundColor,
+    required IconData icon,
+  }) {
     final overlay = Overlay.of(context);
 
     final overlayEntry = OverlayEntry(
@@ -90,7 +91,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 Expanded(
                   child: Text(
                     message,
-                    style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -124,6 +128,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       icon: Icons.error,
     );
   }
+
   String _maskEmail(String email) {
     final parts = email.split('@');
     if (parts.length != 2) return '****@****.com';
@@ -151,6 +156,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       _selectAll = !_selectAll;
     });
   }
+
   void _toggleSelection(String userId) {
     setState(() {
       if (_selectedApplicants.contains(userId)) {
@@ -165,13 +171,14 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       }
     });
   }
+
   void _rankCandidatesByScore(ApplicantsProvider provider) {
     setState(() {
       // This will trigger a rebuild with sorted applicants
     });
     showSuccessLight(context, "Candidates ranked by AI match score");
-
   }
+
   Future<void> _autoShortlistHighScorers(ApplicantsProvider provider) async {
     final aiProvider = context.read<AIMatchProvider>();
     final eligibleCandidates = <String>[];
@@ -193,7 +200,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     }
 
     if (eligibleCandidates.isEmpty) {
-      showErrorTop(context, "No eligible candidates found (score > 65 and not already shortlisted");
+      showErrorTop(
+        context,
+        "No eligible candidates found (score > 65 and not already shortlisted",
+      );
 
       return;
     }
@@ -226,9 +236,14 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF8B5CF6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: Text('Confirm', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text(
+              'Confirm',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -240,16 +255,25 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     int successCount = 0;
     for (String userId in eligibleCandidates) {
       try {
-        final applicant = provider.applicants.firstWhere((a) => a.userId == userId);
-        await provider.updateApplicationStatus(userId, applicant.docId, 'shortlist');
+        final applicant = provider.applicants.firstWhere(
+          (a) => a.userId == userId,
+        );
+        await provider.updateApplicationStatus(
+          userId,
+          applicant.docId,
+          'shortlist',
+        );
         successCount++;
       } catch (e) {
         debugPrint('Failed to shortlist $userId: $e');
       }
     }
-    showSuccessLight(context, "$successCount candidate${successCount > 1 ? 's' : ''} auto-shortlisted successfully");
-
+    showSuccessLight(
+      context,
+      "$successCount candidate${successCount > 1 ? 's' : ''} auto-shortlisted successfully",
+    );
   }
+
   Future<void> _shortlistSelected(ApplicantsProvider provider) async {
     if (_selectedApplicants.isEmpty) {
       showSuccessLight(context, "Please select at least one candidate");
@@ -261,7 +285,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     int successCount = 0;
 
     for (String userId in _selectedApplicants) {
-      final applicant = provider.applicants.firstWhere((a) => a.userId == userId);
+      final applicant = provider.applicants.firstWhere(
+        (a) => a.userId == userId,
+      );
 
       // Validation: Skip if already shortlisted
       if (applicant.status.toLowerCase() == 'shortlist') {
@@ -269,7 +295,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         continue;
       }
 
-      await provider.updateApplicationStatus(userId, applicant.docId, 'Shortlist');
+      await provider.updateApplicationStatus(
+        userId,
+        applicant.docId,
+        'shortlist',
+      );
       successCount++;
     }
 
@@ -280,7 +310,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
     // Show appropriate message
     if (alreadyShortlisted > 0 && successCount == 0) {
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -345,6 +374,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     if (score >= 50) return 'Medium';
     return 'Low Match';
   }
+
   List<ApplicantRecord> _getFilteredApplicants(ApplicantsProvider provider) {
     var applicants = provider.applicants;
 
@@ -369,7 +399,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     return applicants;
   }
 
-// Helper to get applicant score
+  // Helper to get applicant score
   int _getApplicantScore(ApplicantRecord applicant) {
     final matchScoreData = applicant.profileSnapshot['match_score'];
     if (matchScoreData != null && matchScoreData is Map) {
@@ -377,12 +407,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     }
     return 0;
   }
-  
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    //  backgroundColor: const Color(0xFFFFFFFF),
+      //  backgroundColor: const Color(0xFFFFFFFF),
       body: Consumer<ApplicantsProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -396,8 +425,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 children: [
                   Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
                   const SizedBox(height: 16),
-                  Text('Error: ${provider.error}',
-                      style: GoogleFonts.poppins(color: Colors.red[700])),
+                  Text(
+                    'Error: ${provider.error}',
+                    style: GoogleFonts.poppins(color: Colors.red[700]),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.refresh(jobId: widget.jobId),
@@ -409,13 +440,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           }
 
           return Column(
-
             children: [
               _buildHeader(provider),
-             // _buildStatsSection(provider),
-              Expanded(
-                child: _buildDataTable(provider),
-              ),
+              // _buildStatsSection(provider),
+              Expanded(child: _buildDataTable(provider)),
             ],
           );
         },
@@ -428,9 +456,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       padding: const EdgeInsets.fromLTRB(32, 24, 32, 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
       ),
       child: Row(
         children: [
@@ -451,7 +477,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     ),
                     SizedBox(width: 12),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Color(0xFF8B5CF6).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
@@ -469,7 +498,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Manage applicants Efficiently Using AI, Unlike TTraditional Methods',
+                  'Manage applicants Efficiently Using AI, Unlike Traditional Methods',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Color(0xFF64748B),
@@ -494,48 +523,55 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-    style: _selectedApplicants.isEmpty
-    ? OutlinedButton.styleFrom(
-    foregroundColor: const Color(0xFF475569),
-    side: const BorderSide(color: Color(0xFFE2E8F0)),
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
-    ),
-    )
-        : OutlinedButton.styleFrom(
-    foregroundColor: Colors.white,
-    backgroundColor: const Color(0xFF8B5CF6),
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-    shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
-    ),
-    ),
+            style: _selectedApplicants.isEmpty
+                ? OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF475569),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  )
+                : OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF8B5CF6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
           ),
-    SizedBox(width: 12),
+          SizedBox(width: 12),
           Consumer<AIMatchProvider>(
             builder: (context, aiProvider, child) {
               return ElevatedButton.icon(
                 onPressed: aiProvider.isAnalyzing
                     ? null
                     : () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) => AIMatchScoreScreen(
-                      jobId: widget.jobId ?? '',
-                      jobTitle: provider.applicants.isNotEmpty
-                          ? (provider.applicants.first.jobData?.title ??
-                          'Job Position')
-                          : 'Job Position',
-                    ),
-                  );
-                },
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => AIMatchScoreScreen(
+                            jobId: widget.jobId ?? '',
+                            jobTitle: provider.applicants.isNotEmpty
+                                ? (provider.applicants.first.jobData?.title ??
+                                      'Job Position')
+                                : 'Job Position',
+                          ),
+                        );
+                      },
                 icon: Icon(
-                    aiProvider.isAnalyzing
-                        ? Icons.hourglass_empty
-                        : Icons.psychology_outlined,
-                    size: 18),
+                  aiProvider.isAnalyzing
+                      ? Icons.hourglass_empty
+                      : Icons.psychology_outlined,
+                  size: 18,
+                ),
                 label: Text(
                   aiProvider.isAnalyzing ? 'Analyzing...' : 'Run AI Analysis',
                   style: GoogleFonts.poppins(
@@ -556,8 +592,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             },
           ),
 
-
-
           SizedBox(width: 12),
           OutlinedButton.icon(
             onPressed: () {
@@ -566,7 +600,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               });
               _rankCandidatesByScore(provider);
             },
-            icon: Icon(_isRankingByScore ? Icons.filter_list : Icons.sort, size: 18),
+            icon: Icon(
+              _isRankingByScore ? Icons.filter_list : Icons.sort,
+              size: 18,
+            ),
             label: Text(
               _isRankingByScore ? 'Ranked' : 'Rank Now',
               style: GoogleFonts.poppins(
@@ -575,10 +612,16 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: _isRankingByScore ? Color(0xFF8B5CF6) : Color(0xFF475569),
-              backgroundColor: _isRankingByScore ? Color(0xFF8B5CF6).withOpacity(0.1) : Colors.white,
+              foregroundColor: _isRankingByScore
+                  ? Color(0xFF8B5CF6)
+                  : Color(0xFF475569),
+              backgroundColor: _isRankingByScore
+                  ? Color(0xFF8B5CF6).withOpacity(0.1)
+                  : Colors.white,
               side: BorderSide(
-                color: _isRankingByScore ? Color(0xFF8B5CF6) : Color(0xFFE2E8F0),
+                color: _isRankingByScore
+                    ? Color(0xFF8B5CF6)
+                    : Color(0xFFE2E8F0),
               ),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               shape: RoundedRectangleBorder(
@@ -587,7 +630,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             ),
           ),
           SizedBox(width: 12),
-// Auto Shortlist Button
+          // Auto Shortlist Button
           ElevatedButton.icon(
             onPressed: () => _autoShortlistHighScorers(provider),
             icon: Icon(Icons.auto_awesome, size: 18),
@@ -643,7 +686,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       }
                     }
 
-                    final avgScore = count > 0 ? (totalScore / count).round() : 0;
+                    final avgScore = count > 0
+                        ? (totalScore / count).round()
+                        : 0;
 
                     return _buildStatCard(
                       icon: Icons.star_outline,
@@ -657,10 +702,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             ),
           ),
           SizedBox(width: 48),
-          Expanded(
-            flex: 2,
-            child: _buildMatchDistribution(provider),
-          ),
+          Expanded(flex: 2, child: _buildMatchDistribution(provider)),
         ],
       ),
     );
@@ -779,21 +821,37 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        Text('0-40%',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Color(0xFF64748B))),
+                        Text(
+                          '0-40%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
                         Spacer(),
-                        Text('41-70%',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Color(0xFF64748B))),
+                        Text(
+                          '41-70%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
                         Spacer(),
-                        Text('71-85%',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Color(0xFF64748B))),
+                        Text(
+                          '71-85%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
                         Spacer(),
-                        Text('86-100%',
-                            style: GoogleFonts.poppins(
-                                fontSize: 11, color: Color(0xFF64748B))),
+                        Text(
+                          '86-100%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -811,17 +869,15 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                           decoration: BoxDecoration(
                             color: Color(0xFFEF4444),
                             borderRadius: BorderRadius.horizontal(
-                                left: Radius.circular(4)),
+                              left: Radius.circular(4),
+                            ),
                           ),
                         ),
                       ),
                     if (medCount > 0)
                       Expanded(
                         flex: medCount,
-                        child: Container(
-                          height: 8,
-                          color: Color(0xFFF59E0B),
-                        ),
+                        child: Container(height: 8, color: Color(0xFFF59E0B)),
                       ),
                     if (highCount > 0)
                       Expanded(
@@ -831,7 +887,8 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                           decoration: BoxDecoration(
                             color: Color(0xFF10B981),
                             borderRadius: BorderRadius.horizontal(
-                                right: Radius.circular(4)),
+                              right: Radius.circular(4),
+                            ),
                           ),
                         ),
                       ),
@@ -858,10 +915,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         SizedBox(width: 6),
         Text(
@@ -883,29 +937,38 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       child: Column(
         children: [
           Center(
-            child:Padding(padding: EdgeInsetsGeometry.fromLTRB(280,0,280,0),
-                child:_buildSearchBar(),
-              )),
+            child: Padding(
+              padding: EdgeInsetsGeometry.fromLTRB(280, 0, 280, 0),
+              child: _buildSearchBar(),
+            ),
+          ),
           _buildTableHeader(provider),
           Expanded(
             child: _getFilteredApplicants(provider).isEmpty
                 ? _buildEmptyState()
                 : ScrollConfiguration(
-              behavior: SmoothScrollBehavior(),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _getFilteredApplicants(provider).length,
-                itemBuilder: (context, index) {
-                  final applicant = _getFilteredApplicants(provider)[index];
-                  final isSelected =
-                  _selectedApplicants.contains(applicant.userId);
-                  return _buildTableRow(
-                      applicant, isSelected, provider, index);
-                },
-              ),
-            ),
+                    behavior: SmoothScrollBehavior(),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: _getFilteredApplicants(provider).length,
+                      itemBuilder: (context, index) {
+                        final applicant = _getFilteredApplicants(
+                          provider,
+                        )[index];
+                        final isSelected = _selectedApplicants.contains(
+                          applicant.userId,
+                        );
+                        return _buildTableRow(
+                          applicant,
+                          isSelected,
+                          provider,
+                          index,
+                        );
+                      },
+                    ),
+                  ),
           ),
-        //  if (provider.applicants.isNotEmpty) _buildPagination(provider),
+          //  if (provider.applicants.isNotEmpty) _buildPagination(provider),
         ],
       ),
     );
@@ -915,75 +978,80 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by name or keywords...',
-                hintStyle: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Color(0xFF94A3B8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or keywords...',
+                  hintStyle: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Color(0xFF94A3B8),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Color(0xFF94A3B8),
+                    size: 20,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFF8B5CF6)),
+                  ),
+                  filled: true,
+                  fillColor: Color(0xFFF8FAFC),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Color(0xFF8B5CF6)),
-                ),
-                filled: true,
-                fillColor: Color(0xFFF8FAFC),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                style: GoogleFonts.poppins(fontSize: 14),
               ),
-              style: GoogleFonts.poppins(fontSize: 14),
             ),
-          ),
-          // SizedBox(width: 12),
-          // OutlinedButton.icon(
-          //   onPressed: () {},
-          //   icon: Icon(Icons.tune, size: 18),
-          //   label: Text('Filter', style: GoogleFonts.poppins(fontSize: 14)),
-          //   style: OutlinedButton.styleFrom(
-          //     foregroundColor: Color(0xFF475569),
-          //     side: BorderSide(color: Color(0xFFE2E8F0)),
-          //     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          //     shape: RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.circular(8),
-          //     ),
-          //   ),
-          // ),
-          // SizedBox(width: 8),
-          // OutlinedButton.icon(
-          //   onPressed: () {},
-          //   icon: Icon(Icons.swap_vert, size: 18),
-          //   label: Text('Sort', style: GoogleFonts.poppins(fontSize: 14)),
-          //   style: OutlinedButton.styleFrom(
-          //     foregroundColor: Color(0xFF475569),
-          //     side: BorderSide(color: Color(0xFFE2E8F0)),
-          //     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          //     shape: RoundedRectangleBorder(
-          //       borderRadius: BorderRadius.circular(8),
-          //     ),
-          //   ),
-          // ),
-        ],
+            // SizedBox(width: 12),
+            // OutlinedButton.icon(
+            //   onPressed: () {},
+            //   icon: Icon(Icons.tune, size: 18),
+            //   label: Text('Filter', style: GoogleFonts.poppins(fontSize: 14)),
+            //   style: OutlinedButton.styleFrom(
+            //     foregroundColor: Color(0xFF475569),
+            //     side: BorderSide(color: Color(0xFFE2E8F0)),
+            //     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //   ),
+            // ),
+            // SizedBox(width: 8),
+            // OutlinedButton.icon(
+            //   onPressed: () {},
+            //   icon: Icon(Icons.swap_vert, size: 18),
+            //   label: Text('Sort', style: GoogleFonts.poppins(fontSize: 14)),
+            //   style: OutlinedButton.styleFrom(
+            //     foregroundColor: Color(0xFF475569),
+            //     side: BorderSide(color: Color(0xFFE2E8F0)),
+            //     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //   ),
+            // ),
+          ],
+        ),
       ),
-          ),
     );
   }
 
@@ -992,13 +1060,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: Color(0xFFF8FAFC),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
         children: [
-
           SizedBox(
             width: 40,
             child: Checkbox(
@@ -1010,61 +1075,79 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               activeColor: Color(0xFF8B5CF6),
             ),
           ),
-          SizedBox(width: 10,),
+          SizedBox(width: 10),
           Expanded(
             flex: 3,
-            child: Text('CANDIDATE',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'CANDIDATE',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           Expanded(
             flex: 3,
-            child: Text('EXPERIENCE',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'EXPERIENCE',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Text('APPLIED ON',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'APPLIED ON',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Text('AI MATCH SCORE',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'AI MATCH SCORE',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           Expanded(
             flex: 1,
-            child: Text('STATUS',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'STATUS',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
-          SizedBox(width: 10,),
+          SizedBox(width: 10),
           SizedBox(
             width: 80,
-            child: Text('ACTIONS',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
-                    letterSpacing: 0.5)),
+            child: Text(
+              'ACTIONS',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
         ],
       ),
@@ -1072,11 +1155,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   }
 
   Widget _buildTableRow(
-      ApplicantRecord applicant,
-      bool isSelected,
-      ApplicantsProvider provider,
-      int index,
-      ) {
+    ApplicantRecord applicant,
+    bool isSelected,
+    ApplicantsProvider provider,
+    int index,
+  ) {
     final avatarColors = [
       Color(0xFF3B82F6),
       Color(0xFF8B5CF6),
@@ -1089,9 +1172,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: isSelected ? Color(0xFFF5F3FF) : Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E8F0)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
         children: [
@@ -1106,7 +1187,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               activeColor: Color(0xFF8B5CF6),
             ),
           ),
-          SizedBox(width: 10,),
+          SizedBox(width: 10),
 
           Expanded(
             flex: 3,
@@ -1164,7 +1245,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              '${applicant.experienceYears} years\n${applicant.professionalStatus }',
+              '${applicant.experienceYears} years\n${applicant.professionalStatus}',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: Color(0xFF475569),
@@ -1183,7 +1264,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             ),
           ),
 
-
           Expanded(
             flex: 2,
             child: Builder(
@@ -1193,7 +1273,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
                 // Check if currently being processed by AI
                 final aiProvider = context.watch<AIMatchProvider>();
-                final isProcessing = aiProvider.isProcessingApplicant(applicant.userId);
+                final isProcessing = aiProvider.isProcessingApplicant(
+                  applicant.userId,
+                );
 
                 if (isProcessing) {
                   return Row(
@@ -1232,23 +1314,36 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     applicantName: applicant.name,
                     overallScore: score,
                     skillsMatch: matchScoreData['skillsMatch'] as int? ?? 0,
-                    experienceMatch: matchScoreData['experienceMatch'] as int? ?? 0,
-                    educationMatch: matchScoreData['educationMatch'] as int? ?? 0,
-                    strengths: List<String>.from(matchScoreData['strengths'] ?? []),
-                    weaknesses: List<String>.from(matchScoreData['weaknesses'] ?? []),
-                    recommendation: matchScoreData['recommendation']?.toString() ?? 'N/A',
-                    detailedAnalysis: matchScoreData['detailedAnalysis']?.toString() ?? '',
+                    experienceMatch:
+                        matchScoreData['experienceMatch'] as int? ?? 0,
+                    educationMatch:
+                        matchScoreData['educationMatch'] as int? ?? 0,
+                    strengths: List<String>.from(
+                      matchScoreData['strengths'] ?? [],
+                    ),
+                    weaknesses: List<String>.from(
+                      matchScoreData['weaknesses'] ?? [],
+                    ),
+                    recommendation:
+                        matchScoreData['recommendation']?.toString() ?? 'N/A',
+                    detailedAnalysis:
+                        matchScoreData['detailedAnalysis']?.toString() ?? '',
                     timestamp: DateTime.now(),
                   );
 
                   return InkWell(
-                    onTap: () => _showMatchDetailsDialog(context, displayResult),
+                    onTap: () =>
+                        _showMatchDetailsDialog(context, displayResult),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.lock, size: 12, color: color.withOpacity(0.6)), // 🔒 Lock indicator
+                            Icon(
+                              Icons.lock,
+                              size: 12,
+                              color: color.withOpacity(0.6),
+                            ), // 🔒 Lock indicator
                             SizedBox(width: 4),
                             Text(
                               '$score%',
@@ -1296,18 +1391,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             ),
           ),
 
-
-
-
-
-
-SizedBox(width: 20,),
-          Expanded(
-            flex: 1,
-                child: _buildStatusDropdown(applicant, provider),
-
-            ),
-          SizedBox(width: 10,),
+          SizedBox(width: 20),
+          Expanded(flex: 1, child: _buildStatusDropdown(applicant, provider)),
+          SizedBox(width: 10),
 
           SizedBox(
             width: 80,
@@ -1374,7 +1460,9 @@ SizedBox(width: 20,),
   }
 
   Widget _buildStatusDropdown(
-      ApplicantRecord applicant, ApplicantsProvider provider) {
+    ApplicantRecord applicant,
+    ApplicantsProvider provider,
+  ) {
     final statusConfig = {
       'pending': {
         'label': 'Pending',
@@ -1395,7 +1483,8 @@ SizedBox(width: 20,),
     };
 
     final currentStatus = applicant.status.toLowerCase();
-    final config = statusConfig[currentStatus] ??
+    final config =
+        statusConfig[currentStatus] ??
         {
           'label': 'Unknown',
           'color': Color(0xFF64748B),
@@ -1405,7 +1494,10 @@ SizedBox(width: 20,),
     return PopupMenuButton<String>(
       onSelected: (newStatus) async {
         await provider.updateApplicationStatus(
-            applicant.userId, applicant.docId, newStatus);
+          applicant.userId,
+          applicant.docId,
+          newStatus,
+        );
       },
       itemBuilder: (context) => [
         PopupMenuItem(
@@ -1421,8 +1513,7 @@ SizedBox(width: 20,),
                 ),
               ),
               SizedBox(width: 8),
-              Text('Pending',
-                  style: GoogleFonts.poppins(fontSize: 13)),
+              Text('Pending', style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1439,8 +1530,7 @@ SizedBox(width: 20,),
                 ),
               ),
               SizedBox(width: 8),
-              Text('Shortlist',
-                  style: GoogleFonts.poppins(fontSize: 13)),
+              Text('Shortlist', style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1457,8 +1547,7 @@ SizedBox(width: 20,),
                 ),
               ),
               SizedBox(width: 8),
-              Text('Rejected',
-                  style: GoogleFonts.poppins(fontSize: 13)),
+              Text('Rejected', style: GoogleFonts.poppins(fontSize: 13)),
             ],
           ),
         ),
@@ -1492,18 +1581,12 @@ SizedBox(width: 20,),
     );
   }
 
-
-
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 64,
-            color: Color(0xFF94A3B8),
-          ),
+          Icon(Icons.inbox_outlined, size: 64, color: Color(0xFF94A3B8)),
           SizedBox(height: 16),
           Text(
             'No Candidates Found',
@@ -1516,10 +1599,7 @@ SizedBox(width: 20,),
           SizedBox(height: 8),
           Text(
             'There are no applicants for this position yet',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Color(0xFF64748B),
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: Color(0xFF64748B)),
           ),
         ],
       ),
@@ -1606,7 +1686,9 @@ SizedBox(width: 20,),
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: result.getRecommendationColor().withOpacity(0.1),
+                            color: result.getRecommendationColor().withOpacity(
+                              0.1,
+                            ),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: result.getRecommendationColor(),
@@ -1641,8 +1723,11 @@ SizedBox(width: 20,),
                       if (result.strengths.isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.check_circle,
-                                color: const Color(0xFF10B981), size: 20),
+                            Icon(
+                              Icons.check_circle,
+                              color: const Color(0xFF10B981),
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Key Strengths',
@@ -1654,37 +1739,42 @@ SizedBox(width: 20,),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        ...result.strengths.map((s) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 6),
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981),
-                                  shape: BoxShape.circle,
+                        ...result.strengths.map(
+                          (s) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 6),
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  s,
-                                  style: GoogleFonts.poppins(fontSize: 13),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    s,
+                                    style: GoogleFonts.poppins(fontSize: 13),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        )),
+                        ),
                         const SizedBox(height: 16),
                       ],
                       if (result.weaknesses.isNotEmpty) ...[
                         Row(
                           children: [
-                            Icon(Icons.warning_amber_rounded,
-                                color: const Color(0xFFF59E0B), size: 20),
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: const Color(0xFFF59E0B),
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Areas for Improvement',
@@ -1696,30 +1786,32 @@ SizedBox(width: 20,),
                           ],
                         ),
                         const SizedBox(height: 12),
-                        ...result.weaknesses.map((w) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 6),
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF59E0B),
-                                  shape: BoxShape.circle,
+                        ...result.weaknesses.map(
+                          (w) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(top: 6),
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF59E0B),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  w,
-                                  style: GoogleFonts.poppins(fontSize: 13),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    w,
+                                    style: GoogleFonts.poppins(fontSize: 13),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        )),
+                        ),
                         const SizedBox(height: 16),
                       ],
                       Text(
@@ -1839,5 +1931,4 @@ SizedBox(width: 20,),
       ],
     );
   }
-
 }

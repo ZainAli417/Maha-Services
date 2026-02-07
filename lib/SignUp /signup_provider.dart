@@ -458,6 +458,7 @@ class SignupProvider extends ChangeNotifier {
           });
 
           debugPrint('✅ Successfully updated isNew to "no" for user $uid');
+
         } else {
           debugPrint('⚠️ User document not found for uid: $uid');
 
