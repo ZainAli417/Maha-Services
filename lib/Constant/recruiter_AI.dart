@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math; // Used for the typing indicator
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,126 +8,124 @@ import 'package:http/http.dart' as http;
 import 'package:job_portal/main.dart';
 
 // --------------------------------------------------
-// CONSTANT COLORS
+// 1. DESIGN SYSTEM
 // --------------------------------------------------
-class AppColors {
-  static const Color primary = Color(0xFF6366F1);
-  static const Color white = Colors.white;
-  static const Color paleWhite = Color(0xFFF5F5F5);
-
-  // Opacity variations of primary
-  static Color primaryLight = primary.withOpacity(0.2);
-  static Color primaryMedium = primary.withOpacity(0.3);
-  static Color primaryDark = primary.withOpacity(0.8);
+class AppTheme {
+  static const Color primary = Color(0xFF4F46E5);
+  static const Color primaryDark = Color(0xFF4338CA);
+  static const Color primaryLight = Color(0xFFE0E7FF);
+  static const Color background = Color(0xFFF9FAFB);
+  static const Color surface = Colors.white;
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color border = Color(0xFFE5E7EB);
+  static const Color success = Color(0xFF10B981);
 }
 
-// --------------------------------------------------
-// MODEL CLASS FOR A CHAT MESSAGE
-// --------------------------------------------------
 class ChatMessage {
   final String text;
   final bool isUser;
-  ChatMessage(this.text, {this.isUser = false});
+  final DateTime timestamp;
+  bool isAnimated; // Track if we've already done the "streaming" animation
+  int displayedLength; // Track how many characters are currently displayed
+
+  ChatMessage(this.text, {this.isUser = false, this.isAnimated = false, DateTime? timestamp})
+      : timestamp = timestamp ?? DateTime.now(),
+        displayedLength = isAnimated ? text.length : 0;
 }
 
 // --------------------------------------------------
-// SERVICE TO INTERACT WITH THE GEMINI API
+// 2. UPDATED MAIN WIDGET
 // --------------------------------------------------
-class GeminiService {
-  // 🚨 WARNING: Do NOT hardcode your API key in production apps.
-  static const String _model = 'gemini-2.5-flash-lite';
-  static final String _endpoint =
-     // 'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key==';
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key==${Env.geminiApiKey}';
+class AIJDBuilderWidget extends StatefulWidget {
+  final VoidCallback onClose; // Callback to minimize the widget
 
-  static Future<String> generateContent(String prompt) async {
-    final body = jsonEncode({
-      "contents": [
-        {
-          "parts": [
-            {"text": prompt}
-          ]
-        }
-      ],
-      "systemInstruction": {
-        "parts": [
-          {
-            "text":
-            "You are an expert Military and Defense Sector Recruiter AI assistant for creating Job Descriptions (JDs)"
-                "1.  **Output Format**: The final job description must start with a concise introductory paragraph, followed by bulleted lists for 'Key Responsibilities' and 'Qualifications'. Use Markdown for bolding section titles."
-          }
-        ]
-      }
-    });
-
-    try {
-      final response = await http.post(
-        Uri.parse(_endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      );
-
-      if (response.statusCode == 200) {
-        final decodedResponse = jsonDecode(response.body);
-        return decodedResponse['candidates'][0]['content']['parts'][0]['text'];
-      } else {
-        return "Sorry, I couldn't connect to the server. Please check the API key and endpoint. Error: ${response.body}";
-      }
-    } catch (e) {
-      return "An error occurred: $e";
-    }
-  }
-}
-
-// --------------------------------------------------
-// GEMINI CHAT WIDGET
-// --------------------------------------------------
-class GeminiChatWidget extends StatefulWidget {
-  const GeminiChatWidget({super.key});
+  const AIJDBuilderWidget({super.key, required this.onClose});
 
   @override
-  State<GeminiChatWidget> createState() => _GeminiChatWidgetState();
+  State<AIJDBuilderWidget> createState() => _AIJDBuilderWidgetState();
 }
 
-class _GeminiChatWidgetState extends State<GeminiChatWidget> {
+// NOTE: To maintain history on close/open, these are moved outside the State class
+// In a production app, use a Provider or Bloc to manage this state.
+final List<ChatMessage> _persistentMessages = [
+  ChatMessage(
+    "👋 **Hello! I'm your AI Job Architect.**\n\nI can help you draft precise military and defense job descriptions.\n\nTo begin, simply tell me:\n• The **Job Title**\n• Key **Responsibilities**\n• Required **Clearance Level**",
+    isAnimated: true, // Don't animate the first greeting
+  ),
+];
+final List<Map<String, String>> _persistentHistory = [];
+
+class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [];
+
   bool _isTyping = false;
+  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
-    // Initial bot prompt
-    _messages.add(
-      ChatMessage(
-        "Hello! I'm here to help you build a **job description**. To start, please tell me the **job role** you are hiring for.",
-      ),
-    );
+    _controller.addListener(() {
+      setState(() => _hasText = _controller.text.trim().isNotEmpty);
+    });
+    _scrollToBottom();
   }
 
-  void _sendMessage() async {
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _isTyping) return;
 
     setState(() {
-      _messages.add(ChatMessage(text, isUser: true));
+      _persistentMessages.add(ChatMessage(text, isUser: true, isAnimated: true));
       _isTyping = true;
+      _controller.clear();
     });
-    _controller.clear();
-    _scrollToBottom();
 
-    final botResponse = await GeminiService.generateContent(text);
-
-    setState(() {
-      _messages.add(ChatMessage(botResponse));
-      _isTyping = false;
-    });
     _scrollToBottom();
+    _persistentHistory.add({'role': 'user', 'content': text});
+
+    // Mock/API Call
+    final botResponse = await _generateContent(text, _persistentHistory);
+
+    if (mounted) {
+      setState(() {
+        _persistentHistory.add({'role': 'assistant', 'content': botResponse});
+        _persistentMessages.add(ChatMessage(botResponse, isUser: false, isAnimated: false));
+        _isTyping = false;
+      });
+      _scrollToBottom();
+    }
+  }
+
+  // Placeholder for your backend service logic
+  Future<String> _generateContent(String prompt, List<Map<String, String>> history) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Env.backendUrl}/ai-jdbuild'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'prompt': prompt, 'conversationHistory': history}),
+      ).timeout(const Duration(seconds: 60));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['text'] ?? data['response'];
+      }
+      return "⚠️ Connection error (${response.statusCode}).";
+    } catch (e) {
+      return "⚠️ Error: $e";
+    }
   }
 
   void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -137,290 +136,100 @@ class _GeminiChatWidgetState extends State<GeminiChatWidget> {
     });
   }
 
-  void _copyToClipboard(String text) {
-    String cleanText = text
-        .replaceAll(RegExp(r'\*\*(.*?)\*\*'), r'$1')
-        .replaceAll(RegExp(r'\*(.*?)\*'), r'$1');
-
-    Clipboard.setData(ClipboardData(text: cleanText));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Copied to clipboard!',
-          style: GoogleFonts.montserrat(
-            color: AppColors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  void _clearChat() {
+    setState(() {
+      _persistentMessages.clear();
+      _persistentHistory.clear();
+      _persistentMessages.add(ChatMessage("👋 **Ready for a fresh start.**", isAnimated: true));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.85, // adjust as needed
-        height: MediaQuery.of(context).size.height * 0.9, // adjust as needed
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header (no rounding on header itself)
-            Container(
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.zero,
-                border: Border(
-                  bottom: BorderSide(
-                    color: AppColors.primaryLight,
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome_mosaic_outlined,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'AI Job Description',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 18,              // slightly thinner
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Chat list
-            Expanded(
-              child: Container(
-                color: Colors.white, // use offWhite here
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _messages.length + (_isTyping ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _messages.length) {
-                      return _buildMessageBubble(
-                        ChatMessage("....", isUser: false),
-                      );
-                    }
-                    final message = _messages[index];
-                    return _buildMessageBubble(message);
-                  },
-                ),
-              ),
-            ),
-
-            // Input area
-            _buildInputArea(),
-          ],
-        ),
+    return Container(
+      width: 400,
+      height: 600,
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildHeader(),
+          Expanded(child: _buildMessagesList()),
+          _buildInputArea(),
+        ],
       ),
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message) {
-    final alignment =
-    message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start;
-    final bubbleColor = message.isUser ? AppColors.primary : AppColors.white;
-    final textColor = message.isUser ? AppColors.white : Colors.black87;
-
-    final avatar = Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        message.isUser ? Icons.person_outline_rounded : Icons.auto_awesome_rounded,
-        color: AppColors.primary,
-        size: 18,
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppTheme.border))),
       child: Row(
-        mainAxisAlignment: alignment,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!message.isUser) avatar,
-          if (!message.isUser) const SizedBox(width: 12),
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-              message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: BorderRadius.circular(16).copyWith(
-                      bottomLeft: message.isUser
-                          ? const Radius.circular(16)
-                          : const Radius.circular(4),
-                      bottomRight: message.isUser
-                          ? const Radius.circular(4)
-                          : const Radius.circular(16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: message.isUser
-                            ? AppColors.primary.withOpacity(0.2)
-                            : Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: message.text == "...."
-                      ? const _TypingIndicator()
-                      : _SelectableRichTextParser(
-                    text: message.text,
-                    style: GoogleFonts.montserrat(
-                      color: textColor,
-                      fontSize: 14,
-                      height: 1.5,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-                if (!message.isUser && message.text != "....") ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _CopyButton(
-                        onPressed: () => _copyToClipboard(message.text),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
+          const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text('JD Architect',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.textPrimary)),
           ),
-          if (message.isUser) const SizedBox(width: 12),
-          if (message.isUser) avatar,
+          IconButton(
+            onPressed: _clearChat,
+            icon: const Icon(Icons.refresh_rounded, size: 20),
+            color: AppTheme.textSecondary,
+          ),
+          IconButton(
+            onPressed: widget.onClose, // Now just calls the minimize callback
+            icon: const Icon(Icons.close_rounded, size: 22),
+            color: AppTheme.textSecondary,
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMessagesList() {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(20),
+      itemCount: _persistentMessages.length + (_isTyping ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _persistentMessages.length) return const _TypingIndicator();
+        return _MessageBubble(message: _persistentMessages[index]);
+      },
     );
   }
 
   Widget _buildInputArea() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppColors.primaryLight, width: 1),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primaryLight, width: 1),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Describe the role...',
+                filled: true,
+                fillColor: AppTheme.background,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
               ),
-              child: TextField(
-                controller: _controller,
-                onSubmitted: (_) => _sendMessage(),
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Type your message...',
-                  hintStyle: GoogleFonts.montserrat(
-                    color: Color(0xFF64748B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                maxLines: null,
-              ),
+              onSubmitted: (_) => _sendMessage(),
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+          const SizedBox(width: 8),
+          CircleAvatar(
+            backgroundColor: _hasText ? AppTheme.primary : AppTheme.border,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_upward, color: Colors.white),
+              onPressed: _hasText ? _sendMessage : null,
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: _sendMessage,
-                child: const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          )
         ],
       ),
     );
@@ -428,173 +237,267 @@ class _GeminiChatWidgetState extends State<GeminiChatWidget> {
 }
 
 // --------------------------------------------------
-// COPY BUTTON WIDGET
+// 3. THE STREAMING EFFECT & CLEAN MARKDOWN
 // --------------------------------------------------
-class _CopyButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _CopyButton({required this.onPressed});
+class _MessageBubble extends StatefulWidget {
+  final ChatMessage message;
+  const _MessageBubble({required this.message});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.primaryMedium, width: 1),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.copy_rounded,
-                  size: 14,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Copy',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<_MessageBubble> createState() => _MessageBubbleState();
 }
 
-// --------------------------------------------------
-// TYPING INDICATOR
-// --------------------------------------------------
-class _TypingIndicator extends StatefulWidget {
-  const _TypingIndicator();
-  @override
-  _TypingIndicatorState createState() => _TypingIndicatorState();
-}
-
-class _TypingIndicatorState extends State<_TypingIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+class _MessageBubbleState extends State<_MessageBubble> {
+  String _displayedText = "";
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat();
+    if (widget.message.isUser || widget.message.isAnimated) {
+      _displayedText = widget.message.text;
+    } else {
+      // Start from where we left off
+      _displayedText = widget.message.text.substring(0, widget.message.displayedLength);
+      _startStreaming();
+    }
+  }
+
+  void _startStreaming() {
+    // Only start if not already completed
+    if (widget.message.isAnimated) {
+      _displayedText = widget.message.text;
+      return;
+    }
+
+    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
+      if (widget.message.displayedLength < widget.message.text.length) {
+        if (mounted) {
+          setState(() {
+            widget.message.displayedLength++;
+            _displayedText = widget.message.text.substring(0, widget.message.displayedLength);
+          });
+        }
+      } else {
+        widget.message.isAnimated = true;
+        _timer?.cancel();
+      }
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(3, (index) {
-            double opacity = 0.4;
-            double progress = (_controller.value * 3) % 3;
-
-            if (progress >= index && progress < index + 1) {
-              opacity = 0.4 + (0.6 * (progress - index));
-            } else if (progress >= index + 1 && progress < index + 2) {
-              opacity = 1.0 - (0.6 * (progress - index - 1));
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              child: Opacity(
-                opacity: opacity,
-                child: Container(
-                  width: 6,
-                  height: 6,
+    bool isUser = widget.message.isUser;
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isUser) ...[
+            const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primaryLight,
+              child: Icon(Icons.auto_awesome, size: 16, color: AppTheme.primary),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(14),
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade600,
-                    borderRadius: BorderRadius.circular(3),
+                    color: isUser ? AppTheme.primary : AppTheme.background,
+                    borderRadius: BorderRadius.circular(18).copyWith(
+                      bottomRight: isUser ? const Radius.circular(0) : null,
+                      bottomLeft: !isUser ? const Radius.circular(0) : null,
+                    ),
                   ),
+                  child: _RichTextRenderer(text: _displayedText, isUser: isUser),
                 ),
-              ),
-            );
-          }),
-        );
-      },
+                if (!isUser && widget.message.isAnimated)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CopyButton(text: widget.message.text),
+                  ),
+              ],
+            ),
+          ),
+          if (isUser) ...[
+            const SizedBox(width: 8),
+            const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primary,
+              child: Icon(Icons.person, size: 16, color: Colors.white),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
 
 // --------------------------------------------------
-// RICH TEXT PARSER FOR MARKDOWN STYLES
+// 4. COPY BUTTON WIDGET
 // --------------------------------------------------
-class _SelectableRichTextParser extends StatelessWidget {
+class _CopyButton extends StatefulWidget {
   final String text;
-  final TextStyle? style;
+  const _CopyButton({required this.text});
 
-  const _SelectableRichTextParser({required this.text, this.style});
+  @override
+  State<_CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<_CopyButton> {
+  bool _copied = false;
+
+  void _copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: widget.text));
+    setState(() => _copied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final spans = _parseText(text);
+    return InkWell(
+      onTap: _copyToClipboard,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _copied ? Icons.check : Icons.content_copy,
+              size: 14,
+              color: AppTheme.textSecondary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _copied ? 'Copied!' : 'Copy',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --------------------------------------------------
+// 5. IMPROVED MARKDOWN RENDERER (REMOVES ALL SYMBOLS)
+// --------------------------------------------------
+class _RichTextRenderer extends StatelessWidget {
+  final String text;
+  final bool isUser;
+
+  const _RichTextRenderer({required this.text, required this.isUser});
+
+  @override
+  Widget build(BuildContext context) {
     return SelectableText.rich(
       TextSpan(
-        style: GoogleFonts.montserrat(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Colors.black87,
-          height: 1.5,
-        ).merge(style),
-        children: spans,
+        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: isUser ? Colors.white : AppTheme.textPrimary),
+        children: _parseMarkdown(text),
       ),
-      cursorColor: AppColors.primary,
-      selectionControls: MaterialTextSelectionControls(),
     );
   }
 
-  List<TextSpan> _parseText(String text) {
-    final List<TextSpan> spans = [];
-    final RegExp regExp = RegExp(r'(\*\*.*?\*\*|\*.*?\*)');
+  List<InlineSpan> _parseMarkdown(String content) {
+    List<InlineSpan> spans = [];
 
-    text.splitMapJoin(
-      regExp,
-      onMatch: (Match match) {
-        final part = match.group(0)!;
-        if (part.startsWith('**') && part.endsWith('**')) {
-          spans.add(TextSpan(
-            text: part.substring(2, part.length - 2),
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ));
-        } else if (part.startsWith('*') && part.endsWith('*')) {
-          spans.add(TextSpan(
-            text: part.substring(1, part.length - 1),
-            style: const TextStyle(fontStyle: FontStyle.italic),
-          ));
-        }
-        return '';
-      },
-      onNonMatch: (String segment) {
-        spans.add(TextSpan(text: segment));
-        return '';
-      },
+    // Clean content: Remove ALL markdown symbols
+    String cleanContent = content;
+
+    // Remove header symbols (##, ###, ####, etc.) at start of lines
+    cleanContent = cleanContent.replaceAllMapped(
+      RegExp(r'^#{1,6}\s+', multiLine: true),
+          (match) => '', // Just remove the hash symbols
     );
+
+    // Split by lines to handle line breaks properly
+    final lines = cleanContent.split('\n');
+
+    for (int i = 0; i < lines.length; i++) {
+      String line = lines[i];
+
+      // Parse bold text (**text**)
+      final RegExp boldExp = RegExp(r'\*\*(.+?)\*\*');
+      int lastIndex = 0;
+
+      for (final match in boldExp.allMatches(line)) {
+        // Add normal text before bold
+        if (match.start > lastIndex) {
+          spans.add(TextSpan(text: line.substring(lastIndex, match.start)));
+        }
+
+        // Add bold text WITHOUT the ** symbols
+        spans.add(TextSpan(
+          text: match.group(1), // Only the text inside **, not the ** itself
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ));
+
+        lastIndex = match.end;
+      }
+
+      // Add remaining text after last bold
+      if (lastIndex < line.length) {
+        spans.add(TextSpan(text: line.substring(lastIndex)));
+      }
+
+      // Add newline if not the last line
+      if (i < lines.length - 1) {
+        spans.add(const TextSpan(text: '\n'));
+      }
+    }
+
     return spans;
+  }
+}
+
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator();
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primaryLight,
+              child: Icon(Icons.auto_awesome, size: 16, color: AppTheme.primary),
+            ),
+            const SizedBox(width: 8),
+            const SizedBox(
+              width: 60,
+              child: LinearProgressIndicator(
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+                color: AppTheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

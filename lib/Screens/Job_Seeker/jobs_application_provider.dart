@@ -65,6 +65,7 @@ class JobApplicationsProvider with ChangeNotifier {
         .collection('applications')
         .doc(user.uid)
         .collection('applied_jobs');
+
     try {
       final existing = await appliedRef
           .where('jobId', isEqualTo: jobId)
@@ -72,33 +73,49 @@ class JobApplicationsProvider with ChangeNotifier {
           .get();
       if (existing.docs.isNotEmpty) {
         _errorMessage = 'You have already applied to this job.';
+        _appliedJobs.add(jobId); // Sync local state
         notifyListeners();
         return;
       }
     } catch (e) {
-      debugPrint('applyForJob: server-side guard failed: $e');
+      debugPrint('applyForJob: server-side guard check failed: $e');
     }
 
-    // 3️⃣ Begin apply flow - SET SPECIFIC JOB ID ✅
-    _currentlyApplyingJobId = jobId;  // ← CHANGED
+    // 3️⃣ Set loading state
+    _currentlyApplyingJobId = jobId;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final seekerRef = _firestore.collection('job_seeker').doc(user.uid);
-      final seekerSnap = await seekerRef.get();
+      // 4️⃣ FETCH THE JOB DOCUMENT TO GET RECRUITER UID
+      // We need the recruiterUid to know which recruiter's counter to increment
+      final jobDocSnap = await _firestore.collection('Posted_jobs_public').doc(jobId).get();
 
+      if (!jobDocSnap.exists) {
+        throw Exception('Operational error: Job posting not found.');
+      }
+
+      final jobData = jobDocSnap.data()!;
+      final String? recruiterUid = jobData['recruiterUid'];
+print(recruiterUid);
+      if (recruiterUid == null || recruiterUid.isEmpty) {
+        throw Exception('Operational error: Target recruiter ID missing.');
+      }
+
+      // 5️⃣ GET SEEKER PROFILE DATA
+      final seekerSnap = await _firestore.collection('job_seeker').doc(user.uid).get();
       if (!seekerSnap.exists) {
-        throw Exception('Seeker profile not found at job_seeker/${user.uid}.');
+        throw Exception('Seeker profile not found. Please complete your profile.');
       }
 
       final seekerDoc = seekerSnap.data()!;
-      final mainData = seekerDoc['user_data'] ?? <String, dynamic>{};
-      final subProfiles = seekerDoc['user_profile'] ?? <String, dynamic>{};
+      final mainData = seekerDoc['user_data'] ?? {};
+      final subProfiles = seekerDoc['user_profile'] ?? {};
 
       final applicationData = {
         'userId': user.uid,
         'jobId': jobId,
+        'recruiterUid': recruiterUid, // Storing for easier querying later
         'appliedAt': FieldValue.serverTimestamp(),
         'status': 'pending',
         'profileSnapshot': {
@@ -107,37 +124,34 @@ class JobApplicationsProvider with ChangeNotifier {
         },
       };
 
+      // 6️⃣ ATOMIC BATCH OPERATION
       final batch = _firestore.batch();
+
+      // A. Record the application in user's list
       final newAppRef = appliedRef.doc();
       batch.set(newAppRef, applicationData);
 
-      final jobRef = _firestore.collection('Posted_jobs_public').doc(jobId);
+      // B. Increment PUBLIC counter
+      final publicJobRef = _firestore.collection('Posted_jobs_public').doc(jobId);
+      batch.update(publicJobRef, {
+        'applicationCount': FieldValue.increment(1),
+      });
 
-      try {
-        batch.update(jobRef, {
-          'applicationCount': FieldValue.increment(1),
-          'viewCount': FieldValue.increment(1),
-        });
-        await batch.commit();
-      } catch (e) {
-        debugPrint('applyForJob: batch.update failed: $e');
-        final fallbackBatch = _firestore.batch();
-        fallbackBatch.set(newAppRef, applicationData);
-        fallbackBatch.set(jobRef, {
-          'applicationCount': FieldValue.increment(1),
-          'viewCount': FieldValue.increment(1),
-        }, SetOptions(merge: true));
-        await fallbackBatch.commit();
-      }
+
+
+      // Execute the transaction
+      await batch.commit();
 
       _appliedJobs.add(jobId);
       _errorMessage = null;
+
     } catch (e, st) {
-      debugPrint('applyForJob error: $e\n$st');
-      _errorMessage = e.toString();
+      debugPrint('applyForJob full error: $e\n$st');
+      _errorMessage = "Application Failed: ${e.toString()}";
     } finally {
-      _currentlyApplyingJobId = null;  // ← CHANGED
+      _currentlyApplyingJobId = null;
       notifyListeners();
     }
   }
+
 }

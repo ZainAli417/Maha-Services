@@ -16,6 +16,7 @@ import 'Screens/Job_Seeker/JS_Profile/JS_Profile.dart';
 import 'Login.dart';
 import 'Screens/Job_Seeker/job_hub.dart';
 import 'Screens/Job_Seeker/job_seeker_dashboard.dart';
+import 'Screens/Recruiter/Job_Applicant_Tracker.dart';
 import 'Screens/Recruiter/LIst_of_Applicants.dart';
 import 'Constant/Splash.dart';
 import 'Screens/Recruiter/Recruiter_Dashbaord.dart';
@@ -255,7 +256,7 @@ final GoRouter router = GoRouter(
     // Recruiter
     GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),
     GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
-    GoRoute(path: '/view-applications', pageBuilder: (c, s) => _fadePage(const ApplicantsScreen(), s)),
+    GoRoute(path: '/job-application-tracker', pageBuilder: (c, s) => _fadePage(const Job_Applicant_Tracker(), s)),
 
   ],
 );

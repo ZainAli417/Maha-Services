@@ -77,21 +77,22 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       onTap: () => context.go('/recruiter-dashboard'),
                     ),
                     _buildMenuItem(
+                      icon: Icons.spatial_tracking_outlined,
+                      activeIcon: Icons.spatial_tracking_rounded,
+                      label: 'Job Application Tracker',
+                      index: 1,
+                      isActive: widget.activeIndex == 1,
+                      onTap: () => context.go('/job-application-tracker'),
+                    ),
+
+                    _buildMenuItem(
 
                       icon: Icons.person_outline,
                       activeIcon: Icons.person,
                       label: 'Shortlisting',
-                      index: 1,
-                      isActive: widget.activeIndex == 1,
-                      onTap: () => context.go('/shortlisting'),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.auto_awesome_outlined,
-                      activeIcon: Icons.auto_awesome,
-                      label: 'Job Posting',
                       index: 2,
                       isActive: widget.activeIndex == 2,
-                      onTap: () => context.go('/view-applications'),
+                      onTap: () => context.go('/shortlisting'),
                     ),
 
                     const SizedBox(height: 20),

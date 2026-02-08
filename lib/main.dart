@@ -268,6 +268,11 @@ class Env {
   static String get geminiApiKey => '';
   static String get groqApiKey => '';
 
+  // ✅ ADD THIS - Backend URL
+  static const String backendUrl = String.fromEnvironment(
+    'BACKEND_URL',
+    defaultValue: 'http://localhost:3000', // Default for local development
+  );
   // Optional helper to check presence
   static bool get hasGeminiKey => geminiApiKey.isNotEmpty;
 }

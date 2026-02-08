@@ -54,7 +54,7 @@ class _ShortlistingState extends State<Shortlisting>
       backgroundColor: _background,
       body: Row(
         children: [
-          RecruiterSidebar(activeIndex: 1),
+          RecruiterSidebar(activeIndex: 2),
           Expanded(
             child: FadeTransition(
               opacity: _controller,

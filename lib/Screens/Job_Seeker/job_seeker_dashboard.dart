@@ -49,6 +49,19 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   static const Color kInfoPurple = Color(0xFF8B5CF6);
   static const Color kCardWhite = Color(0xFFFFFFFF);
 
+
+
+  static const Color _accent = Color(0xFF3B82F6);
+  static const Color _success = Color(0xFF10B981);
+  static const Color _warning = Color(0xFFF59E0B);
+  static const Color _error = Color(0xFFEF4444);
+  static const Color _info = Color(0xFF8B5CF6);
+  static const Color _surface = Color(0xFFFFFFFF);
+  static const Color _background = Color(0xFFF1F5F9);
+  static const Color _textPrimary = Color(0xFF0F172A);
+  static const Color _textSecondary = Color(0xFF64748B);
+  static const Color _border = Color(0xFFE2E8F0);
+
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus = 'All';
   String _selectedCompany = 'All';
@@ -682,24 +695,36 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     final trendData = analytics['applicationTrend'] as List<Map<String, dynamic>>;
 
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: kCardWhite,
-
+        color: _surface,
+        border: Border(bottom: BorderSide(color: _border)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Analytics Overview',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: _textPrimary,
+            ),
+          ),
+          const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Status Chart
               if (total > 0)
                 SizedBox(
-                  width: 260,
-                  height: 220,
-                  child: _buildDoughnutChart(stats),
+                  width: 280,
+                  height: 280,
+                  child: _buildStatusChart(stats),
                 ),
-              const SizedBox(width: 32),
+              const SizedBox(width: 24),
+
+              // Metrics
               Expanded(
                 child: Column(
                   children: [
@@ -710,7 +735,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                             'Response Rate',
                             '${responseRate.toStringAsFixed(1)}%',
                             Icons.trending_up,
-                            kAccentBlue,
+                            _accent,
+                            'Of applications received feedback',
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -719,7 +745,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                             'Avg Response Time',
                             avgResponse > 0 ? '$avgResponse days' : 'N/A',
                             Icons.access_time,
-                            kWarningOrange,
+                            _warning,
+                            'Time to first response',
                           ),
                         ),
                       ],
@@ -728,24 +755,23 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     Row(
                       children: [
                         if (topCompanies.isNotEmpty)
-                          Expanded(
-                            child: _buildTopCompaniesTile(topCompanies),
-                          ),
+                          Expanded(child: _buildTopCompaniesCard(topCompanies)),
                         const SizedBox(width: 16),
                         if (deptData.isNotEmpty)
-                          Expanded(
-                            child: _buildDepartmentTile(deptData),
-                          ),
+                          Expanded(child: _buildDepartmentCard(deptData)),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 32),
+
+              const SizedBox(width: 24),
+
+              // Trend Chart
               if (trendData.any((d) => (d['count'] as int) > 0))
                 SizedBox(
-                  width: 380,
-                  height: 220,
+                  width: 400,
+                  height: 280,
                   child: _buildTrendChart(trendData),
                 ),
             ],
@@ -755,117 +781,127 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     );
   }
 
-  Widget _buildDoughnutChart(Map<String, dynamic> stats) {
+  Widget _buildStatusChart(Map<String, dynamic> stats) {
     final total = (stats['pending'] as int) +
         (stats['shortlist'] as int) +
         (stats['accepted'] as int) +
         (stats['rejected'] as int);
 
     final chartData = [
-      ChartData('Pending', stats['pending'], kWarningOrange),
-      ChartData('Shortlist', stats['shortlist'], kInfoPurple),
-      ChartData('Accepted', stats['accepted'], kSuccessGreen),
-      ChartData('Rejected', stats['rejected'], kErrorRed),
+      ChartData('Pending', stats['pending'], _warning),
+      ChartData('Shortlist', stats['shortlist'], _info),
+      ChartData('Accepted', stats['accepted'], _success),
+      ChartData('Rejected', stats['rejected'], _error),
     ];
 
-    return SfCircularChart(
-      annotations: [
-        CircularChartAnnotation(
-          widget: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$total',
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: kTextPrimary,
-                  letterSpacing: -1,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
+      ),
+      child: SfCircularChart(
+        annotations: [
+          CircularChartAnnotation(
+            widget: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$total',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: _textPrimary,
+                  ),
                 ),
-              ),
-              Text(
-                'Total Apps',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: kTextSecondary,
+                Text(
+                  'Total',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _textSecondary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ],
+        legend: Legend(
+          isVisible: true,
+          position: LegendPosition.bottom,
+          textStyle: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: _textSecondary,
           ),
         ),
-      ],
-      legend: Legend(
-        isVisible: true,
-        position: LegendPosition.bottom,
-        textStyle: GoogleFonts.poppins(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: kTextSecondary,
-        ),
-        overflowMode: LegendItemOverflowMode.wrap,
+        series: [
+          DoughnutSeries<ChartData, String>(
+            dataSource: chartData,
+            xValueMapper: (data, _) => data.status,
+            yValueMapper: (data, _) => data.count,
+            pointColorMapper: (data, _) => data.color,
+            radius: '90%',
+            innerRadius: '70%',
+            strokeWidth: 0,
+          ),
+        ],
       ),
-      series: [
-        DoughnutSeries<ChartData, String>(
-          dataSource: chartData,
-          xValueMapper: (data, _) => data.status,
-          yValueMapper: (data, _) => data.count,
-          pointColorMapper: (data, _) => data.color,
-          radius: '100%',
-          innerRadius: '70%',
-          dataLabelSettings: const DataLabelSettings(isVisible: false),
-          strokeWidth: 0,
-        ),
-      ],
     );
   }
 
-  Widget _buildMetricCard(String label, String value, IconData icon, Color color) {
+  Widget _buildMetricCard(String title, String value, IconData icon, Color color, String subtitle) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 24),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: kTextSecondary,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: _textSecondary,
             ),
           ),
         ],
@@ -873,73 +909,70 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     );
   }
 
-  Widget _buildTopCompaniesTile(List<Map<String, dynamic>> companies) {
+  Widget _buildTopCompaniesCard(List<Map<String, dynamic>> companies) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: kBackgroundGray,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kBorderLight, width: 1.5),
+        color: _background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.business, size: 16, color: kAccentBlue),
+              Icon(Icons.business, size: 18, color: _accent),
               const SizedBox(width: 8),
               Text(
-                'Top Units',
+                'Top Companies',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: kTextSecondary,
-                  letterSpacing: 0.3,
+                  color: _textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           ...companies.take(3).map((c) {
-            final company = c['company'] as String;
-            final count = c['count'] as int;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
                   Container(
-                    width: 6,
-                    height: 6,
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
-                      color: kAccentBlue,
-                      shape: BoxShape.circle,
+                      color: _accent,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      company,
+                      c['company'],
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: kTextPrimary,
+                        color: _textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: kAccentBlue.withOpacity(0.1),
+                      color: _accent.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      '$count',
+                      '${c['count']}',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: kAccentBlue,
+                        fontWeight: FontWeight.w700,
+                        color: _accent,
                       ),
                     ),
                   ),
@@ -952,78 +985,72 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     );
   }
 
-  Widget _buildDepartmentTile(List<Map<String, dynamic>> deptData) {
+  Widget _buildDepartmentCard(List<Map<String, dynamic>> deptData) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: kBackgroundGray,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kBorderLight, width: 1.5),
+        color: _background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.pie_chart, size: 16, color: kSuccessGreen),
+              Icon(Icons.pie_chart_outline, size: 18, color: _success),
               const SizedBox(width: 8),
               Text(
-                'Success by Department',
+                'Success by Dept',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: kTextSecondary,
-                  letterSpacing: 0.3,
+                  color: _textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           ...deptData.take(3).map((d) {
-            final dept = d['department'] as String;
             final rate = d['rate'] as double;
-            Color rateColor = rate >= 50
-                ? kSuccessGreen
-                : rate >= 25
-                ? kWarningOrange
-                : kErrorRed;
+            final color = rate >= 50 ? _success : rate >= 25 ? _warning : _error;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
                   Container(
-                    width: 6,
-                    height: 6,
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
-                      color: rateColor,
-                      shape: BoxShape.circle,
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      dept,
+                      d['department'],
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: kTextPrimary,
+                        color: _textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: rateColor.withOpacity(0.1),
+                      color: color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '${rate.toStringAsFixed(0)}%',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: rateColor,
+                        fontWeight: FontWeight.w700,
+                        color: color,
                       ),
                     ),
                   ),
@@ -1038,66 +1065,54 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
 
   Widget _buildTrendChart(List<Map<String, dynamic>> trendData) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: kBackgroundGray,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: kBorderLight, width: 1.5),
+        color: _background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.show_chart, size: 16, color: kAccentBlue),
+              Icon(Icons.show_chart, size: 18, color: _accent),
               const SizedBox(width: 8),
               Text(
-                'Application Trend (30 Days)',
+                '30-Day Trend',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: kTextSecondary,
-                  letterSpacing: 0.3,
+                  color: _textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Expanded(
             child: SfCartesianChart(
               plotAreaBorderWidth: 0,
               primaryXAxis: DateTimeAxis(
                 intervalType: DateTimeIntervalType.days,
-                interval: 7,
+                interval: 5,
                 dateFormat: DateFormat.MMMd(),
                 majorGridLines: const MajorGridLines(width: 0),
                 axisLine: const AxisLine(width: 0),
                 labelStyle: GoogleFonts.poppins(
                   fontSize: 10,
-                  color: kTextSecondary,
-                  fontWeight: FontWeight.w500,
+                  color: _textSecondary,
                 ),
               ),
               primaryYAxis: NumericAxis(
                 majorGridLines: MajorGridLines(
-                  color: kBorderLight,
+                  color: _border,
                   width: 1,
                   dashArray: [5, 5],
                 ),
                 axisLine: const AxisLine(width: 0),
                 labelStyle: GoogleFonts.poppins(
                   fontSize: 10,
-                  color: kTextSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                color: kPrimaryBlue,
-                textStyle: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                  color: _textSecondary,
                 ),
               ),
               series: [
@@ -1106,21 +1121,18 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                   xValueMapper: (data, _) => data['date'] as DateTime,
                   yValueMapper: (data, _) => data['count'] as int,
                   gradient: LinearGradient(
-                    colors: [
-                      kAccentBlue.withOpacity(0.3),
-                      kAccentBlue.withOpacity(0.05),
-                    ],
+                    colors: [_accent.withOpacity(0.3), _accent.withOpacity(0.05)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
-                  borderColor: kAccentBlue,
-                  borderWidth: 2.5,
+                  borderColor: _accent,
+                  borderWidth: 3,
                   markerSettings: MarkerSettings(
                     isVisible: true,
                     height: 6,
                     width: 6,
-                    color: kAccentBlue,
-                    borderColor: Colors.white,
+                    color: _accent,
+                    borderColor: _surface,
                     borderWidth: 2,
                   ),
                 ),
@@ -1131,6 +1143,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       ),
     );
   }
+
 
   Widget _buildJobsList(List<dynamic> applications) {
     if (applications.isEmpty) {

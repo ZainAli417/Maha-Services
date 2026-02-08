@@ -1268,21 +1268,17 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
             flex: 2,
             child: Builder(
               builder: (context) {
-                // ✅ READ ONLY FROM DATABASE (profileSnapshot)
-                final matchScoreData = applicant.profileSnapshot['match_score'];
-
-                // Check if currently being processed by AI
+                final matchScoreData = applicant.matchScore;
                 final aiProvider = context.watch<AIMatchProvider>();
-                final isProcessing = aiProvider.isProcessingApplicant(
-                  applicant.userId,
-                );
+                final isProcessing = aiProvider.isProcessingApplicant(applicant.userId);
 
+                // 1️⃣ STATE: Currently being analyzed by the Node server
                 if (isProcessing) {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         width: 14,
                         height: 14,
                         child: CircularProgressIndicator(
@@ -1290,107 +1286,97 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                           valueColor: AlwaysStoppedAnimation(Color(0xFF8B5CF6)),
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         'Analyzing...',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: const Color(0xFF64748B),
                         ),
                       ),
                     ],
                   );
                 }
 
-                // ✅ Display score ONLY if exists in Firestore
-                if (matchScoreData != null && matchScoreData is Map) {
-                  final score = matchScoreData['overallScore'] as int? ?? 0;
-                  final color = _getScoreColor(score);
-                  final label = _getScoreLabel(score);
-
-                  // Reconstruct AIMatchResult for dialog
-                  final displayResult = AIMatchResult(
-                    applicantId: applicant.userId,
-                    applicantName: applicant.name,
-                    overallScore: score,
-                    skillsMatch: matchScoreData['skillsMatch'] as int? ?? 0,
-                    experienceMatch:
-                        matchScoreData['experienceMatch'] as int? ?? 0,
-                    educationMatch:
-                        matchScoreData['educationMatch'] as int? ?? 0,
-                    strengths: List<String>.from(
-                      matchScoreData['strengths'] ?? [],
-                    ),
-                    weaknesses: List<String>.from(
-                      matchScoreData['weaknesses'] ?? [],
-                    ),
-                    recommendation:
-                        matchScoreData['recommendation']?.toString() ?? 'N/A',
-                    detailedAnalysis:
-                        matchScoreData['detailedAnalysis']?.toString() ?? '',
-                    timestamp: DateTime.now(),
-                  );
-
-                  return InkWell(
-                    onTap: () =>
-                        _showMatchDetailsDialog(context, displayResult),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.lock,
-                              size: 12,
-                              color: color.withOpacity(0.6),
-                            ), // 🔒 Lock indicator
-                            SizedBox(width: 4),
-                            Text(
-                              '$score%',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: color,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              label,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: color,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 6),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: score / 100,
-                            backgroundColor: Color(0xFFE2E8F0),
-                            valueColor: AlwaysStoppedAnimation(color),
-                            minHeight: 6,
-                          ),
-                        ),
-                      ],
+                // 2️⃣ STATE: Not analyzed yet (Data is missing from Firestore)
+                // Check if matchScoreData is null OR if the specific field 'overallScore' is missing
+                if (matchScoreData == null || matchScoreData['overallScore'] == null) {
+                  return Text(
+                    'Not analyzed',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF94A3B8), // Muted grey
+                      fontStyle: FontStyle.italic,
                     ),
                   );
                 }
 
-                // Not analyzed yet
-                return Text(
-                  'Not analyzed',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Color(0xFF94A3B8),
+                // 3️⃣ STATE: Success (Data exists)
+                final score = matchScoreData['overallScore'] as int;
+                final color = _getScoreColor(score);
+                final label = _getScoreLabel(score);
+
+                // Reconstruct AIMatchResult for dialog
+                final displayResult = AIMatchResult(
+                  applicantId: applicant.userId,
+                  applicantName: applicant.name,
+                  overallScore: score,
+                  skillsMatch: matchScoreData['skillsMatch'] as int? ?? 0,
+                  experienceMatch: matchScoreData['experienceMatch'] as int? ?? 0,
+                  educationMatch: matchScoreData['educationMatch'] as int? ?? 0,
+                  strengths: List<String>.from(matchScoreData['strengths'] ?? []),
+                  weaknesses: List<String>.from(matchScoreData['weaknesses'] ?? []),
+                  recommendation: matchScoreData['recommendation']?.toString() ?? 'N/A',
+                  detailedAnalysis: matchScoreData['detailedAnalysis']?.toString() ?? '',
+                  timestamp: DateTime.now(),
+                );
+
+                return InkWell(
+                  onTap: () => _showMatchDetailsDialog(context, displayResult),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.lock, size: 12, color: color.withOpacity(0.6)),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$score%',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: color,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            label,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: score / 100,
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          valueColor: AlwaysStoppedAnimation(color),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
           ),
-
           SizedBox(width: 20),
           Expanded(flex: 1, child: _buildStatusDropdown(applicant, provider)),
           SizedBox(width: 10),

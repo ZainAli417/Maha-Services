@@ -181,7 +181,7 @@ class JobDetailModal extends StatelessWidget {
     // Extract view count and application count
     final viewCount = jobData['viewCount'] ?? 0;
     final applicationCount = jobData['applicationCount'] ?? 0;
-
+print(applicationCount);
     // Build UI (keeps your original widgets + wiring to provider functions)
     return Dialog(
       backgroundColor: _bgSurface,
