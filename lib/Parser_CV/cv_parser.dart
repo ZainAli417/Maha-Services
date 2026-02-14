@@ -1,4 +1,4 @@
-// lib/services/cv_extractor.dart
+// lib/services/cv_parser.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';

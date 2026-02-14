@@ -6,8 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io' as io;
 
-import '../main.dart';
-
 class CVAnalyzerBackendProvider extends ChangeNotifier {
   // State management
   bool _isLoading = false;
@@ -29,9 +27,8 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   String? get advisory => _advisory;
   List<Map<String, dynamic>> get highlights => _highlights;
 
-  final bool useDirectGemini;
-  final String geminiApiKey;
-  final String geminiModel;
+  // Server Configuration
+  final String serverUrl;
 
   // Constants
   static const int maxFileBytes = 2 * 1024 * 1024; // 2 MB
@@ -43,97 +40,11 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     'pdf', 'doc', 'docx', 'txt', 'rtf'
   ];
 
-// Replace the constructor parameters and initialization
+  // Constructor - now takes server URL instead of API key
   CVAnalyzerBackendProvider({
-    this.useDirectGemini = true,
-    String? geminiApiKey,
-    this.geminiModel = 'llama-3.3-70b-versatile', // Changed model
-  }) : geminiApiKey = geminiApiKey ?? Env.groqApiKey; // Changed to groqApiKey
+    this.serverUrl = 'http://localhost:3000', // Default to local server
+  });
 
-// Replace the _callGeminiAPI method
-  Future<String> _callGeminiAPI({
-    required String prompt,
-    required String fileData,
-    required String mimeType,
-  }) async {
-    final uri = Uri.parse(
-      'https://api.groq.com/openai/v1/chat/completions', // Changed endpoint
-    );
-
-    // Build payload for Groq API (OpenAI-compatible format)
-    final payload = {
-      'model': geminiModel,
-      'messages': [
-        {
-          'role': 'system',
-          'content': '''You are a professional CV analysis assistant and ATC System. 
-Analyze CV against the parameters sent to you thoroughly and provide structured feedback.
-Always return valid JSON matching the exact schema specified in the prompt.
-Be objective, constructive, and specific in your analysis.'''
-        },
-        {
-          'role': 'user',
-          'content': prompt,
-        }
-      ],
-      'temperature': 0.6,
-      'top_p': 0.95,
-      'response_format': {'type': 'json_object'}, // JSON mode for Groq
-    };
-
-    final response = await http
-        .post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${Env.groqApiKey}', // Groq uses Bearer auth
-      },
-      body: json.encode(payload),
-    )
-        .timeout(requestTimeout);
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      final jsonResponse = json.decode(response.body);
-      return _extractTextFromGroqResponse(jsonResponse); // Changed method name
-    } else {
-      final errorBody = response.body;
-      String errorMsg = 'Groq API error (${response.statusCode})'; // Changed message
-
-      try {
-        final errorJson = json.decode(errorBody);
-        if (errorJson['error']?['message'] != null) {
-          errorMsg += ': ${errorJson['error']['message']}';
-        }
-      } catch (_) {
-        if (errorBody.length < 200) {
-          errorMsg += ': $errorBody';
-        }
-      }
-
-      throw Exception(errorMsg);
-    }
-  }
-
-// Replace the _extractTextFromGeminiResponse method
-  String _extractTextFromGroqResponse(Map<String, dynamic> response) {
-    try {
-      final choices = response['choices'] as List?;
-      if (choices == null || choices.isEmpty) {
-        throw Exception('No choices in response');
-      }
-
-      final message = choices[0]['message'];
-      final content = message?['content']?.toString() ?? '';
-
-      if (content.isEmpty) {
-        throw Exception('Empty response from Groq');
-      }
-
-      return content;
-    } catch (e) {
-      throw Exception('Failed to parse Groq response: ${e.toString()}');
-    }
-  }
   // State setters
   void _setLoading(bool v) {
     _isLoading = v;
@@ -277,10 +188,8 @@ Be objective, constructive, and specific in your analysis.'''
       _animateProgress(from: 0.0, to: 0.08, durationMs: 500);
       await _validateFile(file);
 
-      // Route to appropriate backend
-      if (useDirectGemini) {
-        await _analyzeWithGemini(file, roleName, jobDescription);
-      }
+      // Process with server API
+      await _analyzeWithServer(file, roleName, jobDescription);
 
     } catch (e) {
       if (!_isCancelled) {
@@ -295,16 +204,12 @@ Be objective, constructive, and specific in your analysis.'''
     }
   }
 
-  /// Analyze using Gemini API directly (lets Gemini parse the file)
-  Future<void> _analyzeWithGemini(
+  /// Analyze using server API
+  Future<void> _analyzeWithServer(
       PlatformFile file,
       String roleName,
       String jobDescription,
       ) async {
-    if (geminiApiKey.isEmpty) {
-      throw Exception('Gemini API key is required');
-    }
-
     // Read file bytes
     _animateProgress(from: _progress, to: 0.25, durationMs: 1000);
     final fileBytes = await _getFileBytes(file);
@@ -313,15 +218,13 @@ Be objective, constructive, and specific in your analysis.'''
 
     _setProgress(0.30);
 
-    // Build prompt
-    final prompt = _buildAnalysisPrompt(roleName, jobDescription);
-
-    // Call Gemini with retry logic
+    // Call server with retry logic
     _animateProgress(from: 0.30, to: 0.85, durationMs: 4000);
-    final result = await _callGeminiWithRetry(
-      prompt: prompt,
+    final result = await _callServerWithRetry(
       fileData: base64Data,
       mimeType: mimeType,
+      roleName: roleName,
+      jobDescription: jobDescription,
     );
 
     _progressTimer?.cancel();
@@ -334,11 +237,12 @@ Be objective, constructive, and specific in your analysis.'''
     _setProgress(1.0);
   }
 
-  /// Call Gemini API with automatic retry and exponential backoff
-  Future<String> _callGeminiWithRetry({
-    required String prompt,
+  /// Call server API with automatic retry and exponential backoff
+  Future<Map<String, dynamic>> _callServerWithRetry({
     required String fileData,
     required String mimeType,
+    required String roleName,
+    required String jobDescription,
   }) async {
     int attempt = 0;
     Exception? lastError;
@@ -347,10 +251,11 @@ Be objective, constructive, and specific in your analysis.'''
       if (_isCancelled) throw Exception('Operation cancelled');
 
       try {
-        return await _callGeminiAPI(
-          prompt: prompt,
+        return await _callServerAPI(
           fileData: fileData,
           mimeType: mimeType,
+          roleName: roleName,
+          jobDescription: jobDescription,
         );
       } catch (e) {
         lastError = e is Exception ? e : Exception(e.toString());
@@ -368,175 +273,65 @@ Be objective, constructive, and specific in your analysis.'''
     throw lastError ?? Exception('Failed after $maxRetries attempts');
   }
 
-  /// Make actual Gemini API call
-//   Future<String> _callGeminiAPI({
-//     required String prompt,
-//     required String fileData,
-//     required String mimeType,
-//   }) async {
-//     final uri = Uri.parse(
-//       'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent',
-//     );
-//
-//     // Build payload with inline file data
-//     final payload = {
-//       'contents': [
-//         {
-//           'parts': [
-//             {
-//               'text': prompt,
-//             },
-//             {
-//               'inline_data': {
-//                 'mime_type': mimeType,
-//                 'data': fileData,
-//               }
-//             }
-//           ]
-//         }
-//       ],
-//       'generationConfig': {
-//         'temperature': 0.6,
-//         'topK': 40,
-//         'topP': 0.95,
-//         'responseMimeType': 'application/json',
-//       },
-//       'systemInstruction': {
-//         'parts': [
-//           {
-//             'text': '''You are a professional CV analysis assistant and ATC System.
-// Analyze CV against the parameters sent to you thoroughly and provide structured feedback.
-// Always return valid JSON matching the exact schema specified in the prompt.
-// Be objective, constructive, and specific in your analysis.'''
-//           }
-//         ]
-//       },
-//     };
-//
-//     final response = await http
-//         .post(
-//       uri,
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'x-goog-api-key': geminiApiKey,
-//       },
-//       body: json.encode(payload),
-//     )
-//         .timeout(requestTimeout);
-//
-//     if (response.statusCode >= 200 && response.statusCode < 300) {
-//       final jsonResponse = json.decode(response.body);
-//       return _extractTextFromGeminiResponse(jsonResponse);
-//     } else {
-//       final errorBody = response.body;
-//       String errorMsg = 'Gemini API error (${response.statusCode})';
-//
-//       try {
-//         final errorJson = json.decode(errorBody);
-//         if (errorJson['error']?['message'] != null) {
-//           errorMsg += ': ${errorJson['error']['message']}';
-//         }
-//       } catch (_) {
-//         if (errorBody.length < 200) {
-//           errorMsg += ': $errorBody';
-//         }
-//       }
-//
-//       throw Exception(errorMsg);
-//     }
-//   }
+  /// Make actual server API call
+  Future<Map<String, dynamic>> _callServerAPI({
+    required String fileData,
+    required String mimeType,
+    required String roleName,
+    required String jobDescription,
+  }) async {
+    final uri = Uri.parse('$serverUrl/cv-analysis');
 
-  /// Extract text response from Gemini API response
-  // String _extractTextFromGeminiResponse(Map<String, dynamic> response) {
-  //   try {
-  //     final candidates = response['candidates'] as List?;
-  //     if (candidates == null || candidates.isEmpty) {
-  //       throw Exception('No candidates in response');
-  //     }
-  //
-  //     final content = candidates[0]['content'];
-  //     final parts = content?['parts'] as List?;
-  //
-  //     if (parts == null || parts.isEmpty) {
-  //       throw Exception('No parts in response');
-  //     }
-  //
-  //     final text = parts[0]['text']?.toString() ?? '';
-  //     if (text.isEmpty) {
-  //       throw Exception('Empty response from Gemini');
-  //     }
-  //
-  //     return text;
-  //   } catch (e) {
-  //     throw Exception('Failed to parse Gemini response: ${e.toString()}');
-  //   }
-  // }
+    // Build payload
+    final payload = {
+      'fileData': fileData,
+      'mimeType': mimeType,
+      'roleName': roleName,
+      'jobDescription': jobDescription,
+    };
 
+    final response = await http
+        .post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(payload),
+    )
+        .timeout(requestTimeout);
 
-  /// Build analysis prompt
-  String _buildAnalysisPrompt(String roleName, String jobDescription) {
-    return '''Analyze the attached CV/resume document for the following position:
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final jsonResponse = json.decode(response.body);
+      return jsonResponse as Map<String, dynamic>;
+    } else {
+      final errorBody = response.body;
+      String errorMsg = 'Server API error (${response.statusCode})';
 
-**Role:** $roleName
+      try {
+        final errorJson = json.decode(errorBody);
+        if (errorJson['error'] != null) {
+          errorMsg += ': ${errorJson['error']}';
+        }
+        if (errorJson['message'] != null) {
+          errorMsg += ' - ${errorJson['message']}';
+        }
+      } catch (_) {
+        if (errorBody.length < 200) {
+          errorMsg += ': $errorBody';
+        }
+      }
 
-**Job Description:**
-$jobDescription
-
-**Analysis Requirements:**
-1. Calculate an overall match score (0-100) based on skills, experience, and qualifications
-2. Identify key strengths that align with the user selected role
-3. Point out gaps or areas for improvement for the role user wants
-4. Provide actionable recommendations according t JOb description given to you
-5. Highlight relevant experience and skills
-
-**Output Format:**
-Return a JSON object with this exact structure:
-{
-  "score": <number 0-100>,
-  "advisory": "<comprehensive analysis paragraph covering match assessment, strengths, weaknesses, and recommendations>",
-  "highlights": [
-    {
-      "type": "strength|weakness|skill|experience|gap",
-      "text": "<concise title/summary>",
-      "detail": "<detailed explanation>"
+      throw Exception(errorMsg);
     }
-  ]
-}
-
-**Important:**
-- Be specific and reference actual content from the CV
-- Provide at least 5-8 highlights covering different aspects
-- Keep advisory concise but comprehensive (3-5 sentences)
-- Ensure score reflects true alignment with job requirements
-- Return ONLY the JSON object, no markdown formatting or extra text''';
   }
 
   /// Parse API response and update state
-  void _parseAndSetResult(String responseText) {
+  void _parseAndSetResult(Map<String, dynamic> response) {
     try {
-      // Clean potential markdown formatting
-      String cleaned = responseText.trim();
-
-      // Remove markdown code blocks if present
-      if (cleaned.startsWith('```json')) {
-        cleaned = cleaned.substring(7);
-      } else if (cleaned.startsWith('```')) {
-        cleaned = cleaned.substring(3);
-      }
-
-      if (cleaned.endsWith('```')) {
-        cleaned = cleaned.substring(0, cleaned.length - 3);
-      }
-
-      cleaned = cleaned.trim();
-
-      // Parse JSON
-      final decoded = json.decode(cleaned) as Map<String, dynamic>;
-
       // Extract fields with validation
-      final score = _parseScore(decoded['score']);
-      final advisory = decoded['advisory']?.toString().trim() ?? 'Analysis completed';
-      final highlights = _parseHighlights(decoded['highlights']);
+      final score = _parseScore(response['score']);
+      final advisory = response['advisory']?.toString().trim() ?? 'Analysis completed';
+      final highlights = _parseHighlights(response['highlights']);
 
       // Validate score range
       if (score < 0 || score > 100) {
@@ -546,13 +341,7 @@ Return a JSON object with this exact structure:
       _setResult(sc: score, adv: advisory, hl: highlights);
 
     } catch (e) {
-      // Provide helpful error with sample of response
-      final sample = responseText.length > 200
-          ? '${responseText.substring(0, 200)}...'
-          : responseText;
-      throw Exception(
-          'Failed to parse response: ${e.toString()}\nResponse sample: $sample'
-      );
+      throw Exception('Failed to parse server response: ${e.toString()}');
     }
   }
 

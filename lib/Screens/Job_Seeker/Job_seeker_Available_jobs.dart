@@ -99,8 +99,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         // Search filter
         if (query.isNotEmpty) {
           final searchText =
-              '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
-                  .toLowerCase();
+          '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
+              .toLowerCase();
           if (!searchText.contains(query)) return false;
         }
 
@@ -194,7 +194,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       _searchController.clear();
       _selectedCompany = _selectedDepartment = _selectedLocation =
           _selectedJobType = _selectedExperience =
-              _selectedSalaryType = _selectedRank = _selectedClearance = null;
+          _selectedSalaryType = _selectedRank = _selectedClearance = null;
       _selectedBenefits.clear();
       _salaryRange = const RangeValues(0, 200000);
       _selectedSortOption = 'newest';
@@ -328,13 +328,13 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               Text('Filters & Search',
                   style: GoogleFonts.poppins(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151))),
               const Spacer(),
               if (_activeFiltersCount > 0) ...[
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6),
                     borderRadius: BorderRadius.circular(12),
@@ -391,19 +391,19 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       'Company',
                       _selectedCompany,
                       _getUnique('company'),
-                      (v) => setState(() => _selectedCompany = v)),
+                          (v) => setState(() => _selectedCompany = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Location',
                       _selectedLocation,
                       _getUnique('location'),
-                      (v) => setState(() => _selectedLocation = v)),
+                          (v) => setState(() => _selectedLocation = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Job Type',
                       _selectedJobType,
                       _getUnique('nature'),
-                      (v) => setState(() => _selectedJobType = v)),
+                          (v) => setState(() => _selectedJobType = v)),
                 ]),
 
                 const SizedBox(height: 24),
@@ -414,19 +414,19 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       'Department',
                       _selectedDepartment,
                       _getUnique('department'),
-                      (v) => setState(() => _selectedDepartment = v)),
+                          (v) => setState(() => _selectedDepartment = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Experience Level',
                       _selectedExperience,
                       _getUnique('experience'),
-                      (v) => setState(() => _selectedExperience = v)),
+                          (v) => setState(() => _selectedExperience = v)),
                   const SizedBox(height: 12),
                   _buildDropdown(
                       'Salary Type',
                       _selectedSalaryType,
                       _getUnique('salaryType'),
-                      (v) => setState(() => _selectedSalaryType = v)),
+                          (v) => setState(() => _selectedSalaryType = v)),
                 ]),
 
                 const SizedBox(height: 24),
@@ -473,7 +473,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               color: const Color(0xFF10B981).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
               border:
-                  Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+              Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -599,20 +599,20 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               hintStyle: GoogleFonts.poppins(
                   fontSize: 14, color: const Color(0xFF64748B)),
               prefixIcon:
-                  const Icon(Icons.search, size: 20, color: Color(0xFF64748B)),
+              const Icon(Icons.search, size: 20, color: Color(0xFF64748B)),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear,
-                          size: 18, color: Color(0xFF64748B)),
-                      onPressed: () {
-                        _searchController.clear();
-                        _applyFilters();
-                      },
-                    )
+                icon: const Icon(Icons.clear,
+                    size: 18, color: Color(0xFF64748B)),
+                onPressed: () {
+                  _searchController.clear();
+                  _applyFilters();
+                },
+              )
                   : null,
               border: InputBorder.none,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
           ),
         ),
@@ -677,11 +677,11 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   overlayColor: const Color(0xFF3B82F6).withOpacity(0.2),
                   trackHeight: 4,
                   thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 8),
+                  const RoundSliderThumbShape(enabledThumbRadius: 8),
                   overlayShape:
-                      const RoundSliderOverlayShape(overlayRadius: 16),
+                  const RoundSliderOverlayShape(overlayRadius: 16),
                   rangeThumbShape:
-                      const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
+                  const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
                 ),
                 child: RangeSlider(
                   values: _salaryRange,
@@ -727,7 +727,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -783,7 +783,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             isExpanded: true,
             underline: const SizedBox(),
             style:
-                GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151)),
+            GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151)),
             items: [
               DropdownMenuItem<String>(
                 value: null,
@@ -792,7 +792,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                         fontSize: 14, color: const Color(0xFF9CA3AF))),
               ),
               ...items.map(
-                  (item) => DropdownMenuItem(value: item, child: Text(item))),
+                      (item) => DropdownMenuItem(value: item, child: Text(item))),
             ],
             onChanged: (v) {
               onChanged(v);
@@ -939,16 +939,16 @@ class _CompactJobCardState extends State<CompactJobCard>
                           ),
                           child: logoUrl != null && logoUrl.isNotEmpty
                               ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: logoUrl,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
+                            child: CachedNetworkImage(
+                              imageUrl: logoUrl,
+                              fit: BoxFit.cover,
+                            ),
+                          )
                               : Icon(
-                                  Icons.business_center,
-                                  color: Color(0xFF64748B),
-                                  size: 24,
-                                ),
+                            Icons.business_center,
+                            color: Color(0xFF64748B),
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -959,7 +959,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                 title,
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                   height: 1.2,
                                 ),

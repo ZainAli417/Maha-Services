@@ -89,7 +89,7 @@ class _Home_adminState extends State<Home_admin>
               'Dashboard',
               style: GoogleFonts.poppins(
                 fontSize: 28,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: const Color(0xFF111827),
                 letterSpacing: -0.8,
                 height: 1.2,
@@ -237,7 +237,7 @@ class _Home_adminState extends State<Home_admin>
                       '${stat['growth']}%',
                       style: GoogleFonts.poppins(
                         fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: (stat['isPositive'] as bool)
                             ? const Color(0xFF10B981)
                             : const Color(0xFFEF4444),
@@ -253,7 +253,7 @@ class _Home_adminState extends State<Home_admin>
             '${stat['value']}',
             style: GoogleFonts.poppins(
               fontSize: 28,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFF111827),
               letterSpacing: -0.8,
               height: 1,
@@ -491,7 +491,7 @@ class _Home_adminState extends State<Home_admin>
                         '$percentage%',
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: const Color(0xFF111827),
                         ),
                       );
@@ -562,7 +562,7 @@ class _Home_adminState extends State<Home_admin>
             '${provider.totalJobsPosted}',
             style: GoogleFonts.poppins(
               fontSize: 32,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
               letterSpacing: -1,
               height: 1,
@@ -619,7 +619,7 @@ class _Home_adminState extends State<Home_admin>
             '${provider.totalRecruiterRequests}',
             style: GoogleFonts.poppins(
               fontSize: 32,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFF111827),
               letterSpacing: -1,
               height: 1,
@@ -698,7 +698,7 @@ class _Home_adminState extends State<Home_admin>
             '${summary['total_registrations']}',
             style: GoogleFonts.poppins(
               fontSize: 32,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFF111827),
               letterSpacing: -1,
               height: 1,
@@ -751,7 +751,7 @@ class _Home_adminState extends State<Home_admin>
             value,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: color,
               height: 1,
             ),

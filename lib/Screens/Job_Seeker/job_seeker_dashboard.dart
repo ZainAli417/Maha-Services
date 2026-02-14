@@ -718,68 +718,55 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               // Status Chart
               if (total > 0)
                 SizedBox(
-                  width: 280,
-                  height: 280,
+                  width: 300,
+                  height: 300,
                   child: _buildStatusChart(stats),
                 ),
               const SizedBox(width: 24),
 
               // Metrics
-              Expanded(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildMetricCard(
-                            'Response Rate',
-                            '${responseRate.toStringAsFixed(1)}%',
-                            Icons.trending_up,
-                            _accent,
-                            'Of applications received feedback',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildMetricCard(
-                            'Avg Response Time',
-                            avgResponse > 0 ? '$avgResponse days' : 'N/A',
-                            Icons.access_time,
-                            _warning,
-                            'Time to first response',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        if (topCompanies.isNotEmpty)
-                          Expanded(child: _buildTopCompaniesCard(topCompanies)),
-                        const SizedBox(width: 16),
-                        if (deptData.isNotEmpty)
-                          Expanded(child: _buildDepartmentCard(deptData)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 24),
 
               // Trend Chart
               if (trendData.any((d) => (d['count'] as int) > 0))
                 SizedBox(
-                  width: 400,
-                  height: 280,
+                  width: 600,
+                  height: 300,
                   child: _buildTrendChart(trendData),
                 ),
+              const SizedBox(width: 24),
+
+              Expanded(
+                child: Column(
+                  children: [
+                    // 1. Metric Cards (Keep as Row)
+
+
+                    // 2. Top Companies (Vertical - NO Expanded)
+                    if (topCompanies.isNotEmpty)
+                      SizedBox(
+                        width: double.infinity, // Force full width
+                        child: _buildTopCompaniesCard(topCompanies),
+                      ),
+
+                    const SizedBox(height: 16), // Spacing between them
+
+                    // 3. Departments (Vertical - NO Expanded)
+                    if (deptData.isNotEmpty)
+                      SizedBox(
+                        width: double.infinity, // Force full width
+                        child: _buildDepartmentCard(deptData),
+                      ),
+                  ],
+                ),
+              ),
+
             ],
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildStatusChart(Map<String, dynamic> stats) {
     final total = (stats['pending'] as int) +
@@ -851,63 +838,6 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon, Color color, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 22),
-              ),
-              const Spacer(),
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: _textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildTopCompaniesCard(List<Map<String, dynamic>> companies) {
     return Container(

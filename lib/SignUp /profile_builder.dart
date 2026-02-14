@@ -12,8 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../extractor_CV/cv_extraction_UI.dart';
-import '../extractor_CV/cv_extractor.dart';
+import '../Parser_CV/cv_parser-UI.dart';
+import '../Parser_CV/cv_parser.dart';
 import '../main.dart';
 
 class ProfileBuilderScreen extends StatefulWidget {

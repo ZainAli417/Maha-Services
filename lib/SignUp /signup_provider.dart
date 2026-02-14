@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../extractor_CV/cv_extractor.dart';
+import '../Parser_CV/cv_parser.dart';
 import 'package:web/web.dart';
 
 class SignupProvider extends ChangeNotifier {

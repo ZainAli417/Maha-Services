@@ -59,7 +59,6 @@ class _LandingPageState extends State<LandingPage>
   late TextStyle _navItemStyle;
   late TextStyle _buttonTextStyle;
 
-
   late ScrollController _scrollController;
 
   @override
@@ -128,11 +127,6 @@ class _LandingPageState extends State<LandingPage>
       fontSize: 15,
       fontWeight: FontWeight.w500,
     );
-    _buttonTextStyle = GoogleFonts.poppins(
-      fontWeight: FontWeight.w700,
-      fontSize: 14,
-      color: Colors.white,
-    );
   }
 
   @override
@@ -157,7 +151,9 @@ class _LandingPageState extends State<LandingPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.transparent,
+      backgroundColor: isDarkMode
+          ? const Color(0xFF0F172A)
+          : Colors.transparent,
       body: Stack(
         children: [
           // Optimized animated grid with RepaintBoundary
@@ -181,7 +177,6 @@ class _LandingPageState extends State<LandingPage>
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-
               /// ───────── Top Bar + Hero ─────────
               SliverToBoxAdapter(
                 child: Padding(
@@ -196,14 +191,10 @@ class _LandingPageState extends State<LandingPage>
               ),
 
               /// ───────── FEATURES ─────────
-              SliverToBoxAdapter(
-                child: _buildFeaturesSection(),
-              ),
+              SliverToBoxAdapter(child: _buildFeaturesSection()),
 
               /// ───────── FOOTER ─────────
-              SliverToBoxAdapter(
-                child: _buildFooter(),
-              ),
+              SliverToBoxAdapter(child: _buildFooter()),
             ],
           ),
 
@@ -235,13 +226,23 @@ class _LandingPageState extends State<LandingPage>
   Widget _buildEnhancedLogo() {
     return Row(
       children: [
-        Image.asset(
-          'images/logo.png',
+        Container(
           width: 100,
           height: 100,
-          fit: BoxFit.fill,
-          cacheWidth: 200, // Web optimization
-          cacheHeight: 200,
+          padding: const EdgeInsets.all(0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white, // change background color here
+
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              'images/logo.png',
+              fit: BoxFit.fill,
+              cacheWidth: 200,
+              cacheHeight: 200,
+            ),
+          ),
         ),
         const SizedBox(width: 14),
       ],
@@ -255,7 +256,7 @@ class _LandingPageState extends State<LandingPage>
         const SizedBox(width: 32),
         _buildNavItem('Workflow', Icons.account_tree_rounded),
         const SizedBox(width: 32),
-        _buildNavItem('Pricing', Icons.payments_rounded, ),
+        _buildNavItem('Pricing', Icons.payments_rounded),
         const SizedBox(width: 40),
         _AnimatedButton(
           onPressed: () => context.go('/login'),
@@ -266,7 +267,10 @@ class _LandingPageState extends State<LandingPage>
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFF6366F1), width: 2),
             ),
-            child: Text("Login", style: _logoTextStyle.copyWith(color: const Color(0xFF6366F1))),
+            child: Text(
+              "Login",
+              style: _logoTextStyle.copyWith(color: const Color(0xFF6366F1)),
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -283,9 +287,17 @@ class _LandingPageState extends State<LandingPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Get Started", style: _buttonTextStyle),
+                Text("Get Started",  style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),),
                 const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
               ],
             ),
           ),
@@ -304,13 +316,25 @@ class _LandingPageState extends State<LandingPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Admin Panel", style: _buttonTextStyle),
+                Text(
+                  "Admin Panel",
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
               ],
             ),
           ),
         ),
+        SizedBox(width: 15),
         _buildThemeToggle(),
       ],
     );
@@ -328,13 +352,17 @@ class _LandingPageState extends State<LandingPage>
             Icon(
               icon,
               size: 18,
-              color: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7280),
             ),
             const SizedBox(width: 6),
             Text(
               title,
               style: _navItemStyle.copyWith(
-                color: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
+                color: isDarkMode
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF6B7280),
               ),
             ),
           ],
@@ -351,15 +379,21 @@ class _LandingPageState extends State<LandingPage>
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: isDarkMode ? const Color(0xFF334155) : const Color(0xFFF3F4F6),
+            color: isDarkMode
+                ? const Color(0xFF334155)
+                : const Color(0xFFF3F4F6),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isDarkMode ? const Color(0xFF475569) : const Color(0xFFE5E7EB),
+              color: isDarkMode
+                  ? const Color(0xFF475569)
+                  : const Color(0xFFE5E7EB),
             ),
           ),
           child: Icon(
             isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-            color: isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFF6366F1),
+            color: isDarkMode
+                ? const Color(0xFFFBBF24)
+                : const Color(0xFF6366F1),
             size: 20,
           ),
         ),
@@ -376,10 +410,26 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFF6366F1),
         icon: Icons.person_rounded,
         items: [
-          FeatureItem('Profile Builder', 'Create comprehensive professional profiles', Icons.account_circle_rounded),
-          FeatureItem('CV Generator', 'AI-powered resume creation tools', Icons.description_rounded),
-          FeatureItem('Skill Showcase', 'Highlight expertise and certifications', Icons.workspace_premium_rounded),
-          FeatureItem('Public Portfolio', 'Share your journey with recruiters', Icons.public_rounded),
+          FeatureItem(
+            'Profile Builder',
+            'Create comprehensive professional profiles',
+            Icons.account_circle_rounded,
+          ),
+          FeatureItem(
+            'CV Generator',
+            'AI-powered resume creation tools',
+            Icons.description_rounded,
+          ),
+          FeatureItem(
+            'Skill Showcase',
+            'Highlight expertise and certifications',
+            Icons.workspace_premium_rounded,
+          ),
+          FeatureItem(
+            'Public Portfolio',
+            'Share your journey with recruiters',
+            Icons.public_rounded,
+          ),
         ],
       ),
       FeaturePortal(
@@ -389,10 +439,26 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFF10B981),
         icon: Icons.business_rounded,
         items: [
-          FeatureItem('Candidate Search', 'Browse qualified talent pool', Icons.search_rounded),
-          FeatureItem('Bulk Selection', 'Select multiple candidates at once', Icons.checklist_rounded),
-          FeatureItem('Request Management', 'Submit hiring requests to admin', Icons.send_rounded),
-          FeatureItem('Request Tracker', 'Realtime Recruitment Request Tracking', Icons.auto_graph),
+          FeatureItem(
+            'Candidate Search',
+            'Browse qualified talent pool',
+            Icons.search_rounded,
+          ),
+          FeatureItem(
+            'Bulk Selection',
+            'Select multiple candidates at once',
+            Icons.checklist_rounded,
+          ),
+          FeatureItem(
+            'Request Management',
+            'Submit hiring requests to admin',
+            Icons.send_rounded,
+          ),
+          FeatureItem(
+            'Request Tracker',
+            'Realtime Recruitment Request Tracking',
+            Icons.auto_graph,
+          ),
         ],
       ),
       FeaturePortal(
@@ -402,10 +468,26 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFFF59E0B),
         icon: Icons.admin_panel_settings_rounded,
         items: [
-          FeatureItem('Request Review', 'Evaluate recruiter requests', Icons.rate_review_rounded),
-          FeatureItem('Interview Scheduling', 'Organize and conduct interviews', Icons.event_rounded),
-          FeatureItem('Candidate Training', 'Skill development and preparation', Icons.school_rounded),
-          FeatureItem('Final Selection', 'Complete hiring and onboarding', Icons.how_to_reg_rounded),
+          FeatureItem(
+            'Request Review',
+            'Evaluate recruiter requests',
+            Icons.rate_review_rounded,
+          ),
+          FeatureItem(
+            'Interview Scheduling',
+            'Organize and conduct interviews',
+            Icons.event_rounded,
+          ),
+          FeatureItem(
+            'Candidate Training',
+            'Skill development and preparation',
+            Icons.school_rounded,
+          ),
+          FeatureItem(
+            'Final Selection',
+            'Complete hiring and onboarding',
+            Icons.how_to_reg_rounded,
+          ),
         ],
       ),
     ];
@@ -419,7 +501,11 @@ class _LandingPageState extends State<LandingPage>
             end: Alignment.bottomRight,
             colors: isDarkMode
                 ? [const Color(0x00f9fafb), const Color(0x00f9fafb)]
-                : [const Color(0x00f9fafb), const Color(0x00f9fafb), const Color(0x00f9fafb)],
+                : [
+              const Color(0x00f9fafb),
+              const Color(0x00f9fafb),
+              const Color(0x00f9fafb),
+            ],
           ),
         ),
         child: Column(
@@ -435,13 +521,19 @@ class _LandingPageState extends State<LandingPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (int i = 0; i < features.length; i++) ...[
-                  Expanded(child: RepaintBoundary(child: _buildFeatureCard(features[i]))),
+                  Expanded(
+                    child: RepaintBoundary(
+                      child: _buildFeatureCard(features[i]),
+                    ),
+                  ),
                   if (i < features.length - 1)
                     Padding(
                       padding: const EdgeInsets.only(top: 100),
                       child: Icon(
                         Icons.arrow_forward,
-                        color: isDarkMode ? const Color(0xFF475569) : const Color(0xFFD1D5DB),
+                        color: isDarkMode
+                            ? const Color(0xFF475569)
+                            : const Color(0xFFD1D5DB),
                         size: 40,
                       ),
                     ),
@@ -477,7 +569,10 @@ class _LandingPageState extends State<LandingPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [portal.color, portal.color.withOpacity(0.7)],
@@ -522,7 +617,9 @@ class _LandingPageState extends State<LandingPage>
             portal.subtitle,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7280),
               fontWeight: FontWeight.w500,
               height: 1.5,
             ),
@@ -532,7 +629,9 @@ class _LandingPageState extends State<LandingPage>
             final i = entry.key;
             final item = entry.value;
             return Padding(
-              padding: EdgeInsets.only(bottom: i < portal.items.length - 1 ? 16 : 0),
+              padding: EdgeInsets.only(
+                bottom: i < portal.items.length - 1 ? 16 : 0,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -555,7 +654,9 @@ class _LandingPageState extends State<LandingPage>
                           style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                            color: isDarkMode
+                                ? Colors.white
+                                : const Color(0xFF1F2937),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -563,7 +664,9 @@ class _LandingPageState extends State<LandingPage>
                           item.description,
                           style: GoogleFonts.poppins(
                             fontSize: 13,
-                            color: isDarkMode ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
+                            color: isDarkMode
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF9CA3AF),
                             height: 1.4,
                           ),
                         ),
@@ -711,7 +814,11 @@ class _LandingPageState extends State<LandingPage>
               cursor: SystemMouseCursors.click,
               child: Row(
                 children: [
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF6366F1), size: 12),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Color(0xFF6366F1),
+                    size: 12,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     item,
@@ -741,18 +848,27 @@ class _LandingPageState extends State<LandingPage>
         children: [
           Text(
             '© 2025 Maha Services. All rights reserved.',
-            style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontSize: 13),
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF6B7280),
+              fontSize: 13,
+            ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFF6366F1).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.3),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(Icons.psychology_rounded, color: Color(0xFF6366F1), size: 16),
+                const Icon(
+                  Icons.psychology_rounded,
+                  color: Color(0xFF6366F1),
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'Powered by AI',
@@ -770,7 +886,12 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
-  Widget _buildSectionHeader(String badge, String title, String subtitle, IconData icon) {
+  Widget _buildSectionHeader(
+      String badge,
+      String title,
+      String subtitle,
+      IconData icon,
+      ) {
     return FadeTransition(
       opacity: _workflowAnimation,
       child: Column(
@@ -785,7 +906,10 @@ class _LandingPageState extends State<LandingPage>
                 ],
               ),
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.5), width: 1.5),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.5),
+                width: 1.5,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -819,7 +943,9 @@ class _LandingPageState extends State<LandingPage>
             subtitle,
             style: GoogleFonts.poppins(
               fontSize: 18,
-              color: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF6B7280),
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7280),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -836,8 +962,16 @@ class _LandingPageState extends State<LandingPage>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDarkMode
-              ? [const Color(0x00f9fafb), const Color(0x00f9fafb), const Color(0x00f9fafb)]
-              : [const Color(0x00f9fafb), const Color(0x00f9fafb), const Color(0x00f9fafb)],
+              ? [
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+          ]
+              : [
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+          ],
         ),
       ),
       child: Column(
@@ -862,7 +996,11 @@ class _LandingPageState extends State<LandingPage>
           const SizedBox(height: 20),
           Text(
             'Trusted by Industry Leaders',
-            style: GoogleFonts.poppins(fontSize: 42, fontWeight: FontWeight.w800, color: Colors.white),
+            style: GoogleFonts.poppins(
+              fontSize: 42,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -877,13 +1015,29 @@ class _LandingPageState extends State<LandingPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+              _buildSuccessMetric(
+                '15K+',
+                'Successfully Hired',
+                Icons.people_rounded,
+              ),
               const SizedBox(width: 50),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+              _buildSuccessMetric(
+                '98%',
+                'Success Rate',
+                Icons.trending_up_rounded,
+              ),
               const SizedBox(width: 50),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+              _buildSuccessMetric(
+                '24h',
+                'Avg. Response',
+                Icons.schedule_rounded,
+              ),
               const SizedBox(width: 50),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+              _buildSuccessMetric(
+                '500+',
+                'Active Recruiters',
+                Icons.business_rounded,
+              ),
             ],
           ),
         ],
@@ -1038,7 +1192,11 @@ class _OptimizedGridPainter extends CustomPainter {
 
     // Draw vertical lines
     int verticalIndex = 0;
-    for (double x = -gridSize + (offset % gridSize); x < size.width + gridSize; x += gridSize) {
+    for (
+    double x = -gridSize + (offset % gridSize);
+    x < size.width + gridSize;
+    x += gridSize
+    ) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), _baseGridPaint);
 
       if (verticalIndex % beamUpdateInterval == 0) {
@@ -1071,11 +1229,16 @@ class _OptimizedGridPainter extends CustomPainter {
 
     // Draw horizontal lines
     int horizontalIndex = 0;
-    for (double y = -gridSize + (offset % gridSize); y < size.height + gridSize; y += gridSize) {
+    for (
+    double y = -gridSize + (offset % gridSize);
+    y < size.height + gridSize;
+    y += gridSize
+    ) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), _baseGridPaint);
 
       if (horizontalIndex % beamUpdateInterval == 0) {
-        final beamProgress = (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
+        final beamProgress =
+            (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
         final beamStart = beamProgress * size.width;
         final beamLength = size.width * 0.6;
 
@@ -1103,17 +1266,29 @@ class _OptimizedGridPainter extends CustomPainter {
     }
 
     // Simplified intersection glow (reduce calculations)
-    if (animationValue % 0.1 < 0.05) { // Only draw every 10th frame
+    if (animationValue % 0.1 < 0.05) {
+      // Only draw every 10th frame
       verticalIndex = 0;
-      for (double x = -gridSize + (offset % gridSize); x < size.width + gridSize; x += gridSize * 2) {
+      for (
+      double x = -gridSize + (offset % gridSize);
+      x < size.width + gridSize;
+      x += gridSize * 2
+      ) {
         horizontalIndex = 0;
-        for (double y = -gridSize + (offset % gridSize); y < size.height + gridSize; y += gridSize * 2) {
-          final beamProgressV = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-          final beamProgressH = (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
+        for (
+        double y = -gridSize + (offset % gridSize);
+        y < size.height + gridSize;
+        y += gridSize * 2
+        ) {
+          final beamProgressV =
+              (animationValue * 2 + verticalIndex * 0.3) % 1.0;
+          final beamProgressH =
+              (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
           final verticalBeamY = beamProgressV * size.height;
           final horizontalBeamX = beamProgressH * size.width;
 
-          if ((verticalBeamY - y).abs() < 50 && (horizontalBeamX - x).abs() < 50) {
+          if ((verticalBeamY - y).abs() < 50 &&
+              (horizontalBeamX - x).abs() < 50) {
             canvas.drawCircle(Offset(x, y), 8, _intersectionPaint);
           }
           horizontalIndex++;

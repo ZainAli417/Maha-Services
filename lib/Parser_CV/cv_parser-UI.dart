@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // Assuming these paths remain the same as per your project structure
 import '../SignUp /signup_provider.dart';
-import '../extractor_CV/cv_extractor.dart';
+import '../Parser_CV/cv_parser.dart';
 
 class BrandColors {
   // Clean White Theme

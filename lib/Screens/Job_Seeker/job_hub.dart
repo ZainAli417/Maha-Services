@@ -200,7 +200,7 @@ class _job_hubState extends State<job_hub>
                     const SizedBox(width: 20),
 
                     // Right column: AI Assistant (and potential extras)
-                 /*   Expanded(
+                    /*   Expanded(
                       flex: 1,
                       child: Column(
                         children: [
@@ -228,7 +228,7 @@ class _job_hubState extends State<job_hub>
           );
         }
 
-       else {
+        else {
           // Mobile: single column stacked top-to-bottom
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -275,7 +275,7 @@ class _job_hubState extends State<job_hub>
                   ),
                 ),
                 const SizedBox(height: 12),
-               /* _EnhancedAIAssistant(
+                /* _EnhancedAIAssistant(
                   messageController: _messageController,
                   messageFocusNode: _messageFocusNode,
                   isMessageFocused: _isMessageFocused,
