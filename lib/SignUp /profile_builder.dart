@@ -31,8 +31,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
-  static final String GEMINI_API_KEY = Env.geminiApiKey;
-  late final extractor = CvExtractor(geminiApiKey: GEMINI_API_KEY);
+  late final extractor = CvExtractor();
 
   // Professional Data Sets
   // final List<Map<String, dynamic>> _commonMajors = [

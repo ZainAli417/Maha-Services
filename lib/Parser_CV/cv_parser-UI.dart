@@ -580,10 +580,10 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
 
     return Center(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
         decoration: BoxDecoration(
           color: BrandColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: BrandColors.slate200, width: 1.5),
           boxShadow: [
             BoxShadow(
@@ -593,97 +593,114 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: List.generate(steps.length, (index) {
-            final isDone = _currentStep > index;
-            final isCurrent = _currentStep == index;
-            final isUpcoming = _currentStep < index;
+          children: [
+            // 1. The Timeline Row
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(steps.length, (index) {
+                final isDone = _currentStep > index;
+                final isCurrent = _currentStep == index;
+                final isUpcoming = _currentStep < index;
 
-            return Row(
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+                return Row(
                   children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: isCurrent ? 42 : 36,
-                      height: isCurrent ? 42 : 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: isCurrent
-                            ? LinearGradient(
-                          colors: [BrandColors.indigo, BrandColors.indigo.withOpacity(0.85)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                            : null,
-                        color: isDone ? BrandColors.emerald : (isUpcoming ? BrandColors.white : null),
-                        border: Border.all(
-                          color: isCurrent
-                              ? BrandColors.indigo
-                              : isDone
-                              ? BrandColors.emerald
-                              : BrandColors.slate300,
-                          width: isCurrent ? 2.5 : 2,
-                        ),
-                        boxShadow: isCurrent
-                            ? [
-                          BoxShadow(
-                            color: BrandColors.indigo.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Icon Circle
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: isCurrent ? 42 : 36,
+                          height: isCurrent ? 42 : 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isCurrent
+                                ? BrandColors.indigo
+                                : (isDone ? BrandColors.emerald : BrandColors.white),
+                            border: Border.all(
+                              color: isCurrent
+                                  ? BrandColors.indigo
+                                  : (isDone ? BrandColors.emerald : BrandColors.slate300),
+                              width: 2,
+                            ),
+                            boxShadow: isCurrent
+                                ? [
+                              BoxShadow(
+                                color: BrandColors.indigo.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              )
+                            ]
+                                : null,
                           ),
-                        ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: Icon(
-                          isDone ? Icons.check_rounded : steps[index]['icon'] as IconData,
-                          size: isCurrent ? 20 : 18,
-                          color: isCurrent || isDone ? Colors.white : BrandColors.slate400,
+                          child: Icon(
+                            isDone ? Icons.check_rounded : (steps[index]['icon'] as IconData),
+                            size: 18,
+                            color: isCurrent || isDone
+                                ? Colors.white
+                                : BrandColors.slate400,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        // Label
+                        Text(
+                          steps[index]['label'] as String,
+                          style: BrandTypography.caption.copyWith(
+                            fontSize: 11,
+                            fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                            color: isCurrent
+                                ? BrandColors.slate950
+                                : (isDone ? BrandColors.emerald : BrandColors.slate400),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      steps[index]['label'] as String,
-                      style: BrandTypography.caption.copyWith(
-                        fontSize: 11,
-                        fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
-                        color: isCurrent
-                            ? BrandColors.slate950
-                            : isDone
-                            ? BrandColors.emerald
-                            : BrandColors.slate400,
+                    // Connecting Line
+                    if (index < steps.length - 1)
+                      Container(
+                        width: 40,
+                        height: 2,
+                        margin: const EdgeInsets.only(bottom: 24, left: 8, right: 8),
+                        color: isDone ? BrandColors.emerald : BrandColors.slate200,
                       ),
-                    ),
                   ],
-                ),
-                if (index < steps.length - 1)
-                  Container(
-                    width: 50,
-                    height: 2.5,
-                    margin: const EdgeInsets.only(bottom: 28, left: 10, right: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(2),
-                      gradient: LinearGradient(
-                        colors: isDone
-                            ? [BrandColors.emerald, BrandColors.emerald.withOpacity(0.6)]
-                            : isCurrent
-                            ? [BrandColors.indigo.withOpacity(0.4), BrandColors.slate300]
-                            : [BrandColors.slate300, BrandColors.slate300],
-                      ),
+                );
+              }),
+            ),
+
+            const SizedBox(height: 5),
+
+            // 2. The AI Disclaimer
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: BrandColors.white, // Light orange/yellow background
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: BrandColors.emerald.withOpacity(0.5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome, size: 12, color: BrandColors.emerald),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Extraction is Powered by LLM May Not Extract Images or speical characters. You can edit any information now or later after creating profile",
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: BrandColors.emerald,
                     ),
                   ),
-              ],
-            );
-          }),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-
   Widget _buildStepContent() {
     switch (_currentStep) {
       case 0:
@@ -703,7 +720,7 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('Personal Profile', 'Essential identification and contact details'),
+        _buildSectionHeader('Personal Profile', 'Personal Record and contact details'),
         const SizedBox(height: 32),
         Row(
           children: [

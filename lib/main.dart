@@ -32,28 +32,25 @@ import 'login_provider.dart';
 /// (single dataset as you requested)
 /// ---------------------------
 final List<Map<String, dynamic>> _airforceProfiles = [
-// PROFILE 9
+  // PROFILE 9
   {
     "certifications": [
       {
         "organization": "PAF Intelligence School",
-        "name": "Military Intelligence Fundamentals"
+        "name": "Military Intelligence Fundamentals",
       },
-      {
-        "organization": "AASS",
-        "name": "Introduction to Cybersecurity"
-      }
+      {"organization": "AASS", "name": "Introduction to Cybersecurity"},
     ],
     "publications": [
-      "Air Intelligence Collection Techniques - Defence Insights"
+      "Air Intelligence Collection Techniques - Defence Insights",
     ],
     "educationalProfile": [
       {
         "duration": "2001-2005",
         "majorSubjects": "BS (Security & Strategic Studies)",
         "institutionName": "National Defence University (NDU)",
-        "marksOrCgpa": "3.50/4"
-      }
+        "marksOrCgpa": "3.50/4",
+      },
     ],
     "professionalExperience": [
       {
@@ -64,53 +61,43 @@ final List<Map<String, dynamic>> _airforceProfiles = [
         "startDate": "Sep 2006",
         "rank": "Wing Commander",
         "duration": "Sep 2006 - Present",
-        "duties": "Intelligence analysis, target assessment, strategic reporting",
+        "duties":
+            "Intelligence analysis, target assessment, strategic reporting",
         "unit": "Intelligence Wing",
         "command": "Headquarters",
         "endDate": "",
-        "role": "Intelligence Officer"
-      }
+        "role": "Intelligence Officer",
+      },
     ],
-    "experienceDocuments": [
-      "https://example.com/docs/intel_report_zafar.pdf"
-    ],
+    "experienceDocuments": ["https://example.com/docs/intel_report_zafar.pdf"],
     "professionalProfile": {
       "status": "active",
       "retirementDate": "",
-      "summary": "Intelligence officer specializing in air operations and targeting.",
-      "expectedRetirementDate": ""
+      "summary":
+          "Intelligence officer specializing in air operations and targeting.",
+      "expectedRetirementDate": "",
     },
-    "awards": [
-      "Excellence in Intelligence Award"
-    ],
+    "awards": ["Excellence in Intelligence Award"],
     "personalProfile": {
       "profilePicUrl": "https://example.com/profile/zafar.png",
       "nationality": "Pakistani",
       "contactNumber": "+92-3000000009",
       "name": "Zafar Iqbal",
       "createdAt": "2026-01-18T16:06:37Z",
-      "socialLinks": [
-        "https://www.linkedin.com/in/zafariqbal"
-      ],
+      "socialLinks": ["https://www.linkedin.com/in/zafariqbal"],
       "secondary_email": "zafar.alt@mail.com",
-      "skills": [
-        "Intelligence Analysis",
-        "OSINT",
-        "Targeting"
-      ],
+      "skills": ["Intelligence Analysis", "OSINT", "Targeting"],
       "email": "zafar.iqbal@paf.gov.pk",
-      "summary": "Seasoned intelligence analyst with focus on air campaign support.",
+      "summary":
+          "Seasoned intelligence analyst with focus on air campaign support.",
       "dob": "1980-10-02",
-      "objectives": "Improve intel fusion capabilities."
+      "objectives": "Improve intel fusion capabilities.",
     },
     "createdAt": "2026-01-18T16:06:37Z",
-    "references": [
-      "Air Commodore Tariq — Intelligence"
-    ]
-  }
+    "references": ["Air Commodore Tariq — Intelligence"],
+  },
 
-// PROFILE 10
-
+  // PROFILE 10
 ];
 
 /// ---------------------------
@@ -140,15 +127,14 @@ Future<void> triggerAirforceTestData(String uid, {int version = 1}) async {
     debugPrint('❌ Failed to inject test data: $e\n$st');
   }
 }
+
 Future<void> markAllUsersNotNew() async {
   try {
     final collectionRef = FirebaseFirestore.instance.collection('users');
     final snapshot = await collectionRef.get();
 
     for (final doc in snapshot.docs) {
-      await doc.reference.set({
-        'isNew': 'no',
-      }, SetOptions(merge: true));
+      await doc.reference.set({'isNew': 'no'}, SetOptions(merge: true));
     }
 
     debugPrint("✅ All users marked as isNew = no");
@@ -265,21 +251,5 @@ class RoleProvider extends ChangeNotifier {
 }
 
 class Env {
-  static String get geminiApiKey => '';
-  static String get groqApiKey => '';
-
-  // ✅ ADD THIS - Backend URL
-  static const String backendUrl = String.fromEnvironment(
-    'BACKEND_URL',
-    defaultValue: 'http://localhost:3000', // Default for local development
-  );
-  // Optional helper to check presence
-  static bool get hasGeminiKey => geminiApiKey.isNotEmpty;
+  static const String backendUrl = 'http://localhost:3000';
 }
-/// NOTE:
-/// - The trigger function writes into job_seeker/{uid}.user_data exactly the structure you requested.
-/// - To re-run injection for another UID, call:
-///     await triggerAirforceTestData("<OTHER_UID>", version: 1);
-///
-/// Security reminder: avoid calling `triggerAirforceTestData` in production accidentally.
-/// Consider gating the call behind a debug flag or an Admin-only UI button when testing.

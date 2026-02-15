@@ -11,10 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../Screens/Job_Seeker/job_hub.dart';
 import '../Screens/Job_Seeker/JS_Top_Bar.dart';
-import '../main.dart';
 import 'cv_analysis_provider.dart';
 
-// Professional color scheme
 const Color kPrimaryBlue = Color(0xFF1E40AF);
 const Color kAccentBlue = Color(0xFF3B82F6);
 const Color kTextPrimary = Color(0xFF0F172A);
@@ -26,10 +24,7 @@ const Color kWarningOrange = Color(0xFFEA580C);
 const Color kErrorRed = Color(0xFFDC2626);
 
 class CVAnalysisScreen extends StatefulWidget {
-  final String geminiApiKey;
-
-  CVAnalysisScreen({super.key, String? geminiApiKey})
-      : geminiApiKey = geminiApiKey ?? Env.geminiApiKey;
+  const CVAnalysisScreen({super.key});
 
   @override
   State<CVAnalysisScreen> createState() => _CVAnalysisScreenState();
@@ -138,10 +133,8 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
         return SafeArea(
           child: Column(
             children: [
-              // Compact header bar
               _CompactHeader(provider: prov),
 
-              // Main content area - maximized
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -198,8 +191,6 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     });
   }
 }
-
-// ============= COMPONENTS =============
 
 class _CompactHeader extends StatelessWidget {
   final CVAnalyzerBackendProvider provider;
@@ -295,7 +286,6 @@ class _ContentLayout extends StatelessWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left sidebar - Input controls (fixed width)
             SizedBox(
               width: isWide ? 380 : constraints.maxWidth,
               child: _InputPanel(
@@ -311,7 +301,6 @@ class _ContentLayout extends StatelessWidget {
 
             if (isWide) ...[
               const SizedBox(width: 20),
-              // Right panel - Results (flexible, takes remaining space)
               Expanded(
                 child: _ResultsPanel(provider: provider),
               ),
@@ -582,7 +571,6 @@ class _ResultsPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Score badge inline with title
           Row(
             children: [
               Text(
@@ -604,13 +592,11 @@ class _ResultsPanel extends StatelessWidget {
           Divider(color: kBorderLight, height: 1),
           const SizedBox(height: 20),
 
-          // Insights section
           if (provider.advisory != null) ...[
             _InsightsSection(advisory: provider.advisory!),
             if (provider.highlights.isNotEmpty) const SizedBox(height: 24),
           ],
 
-          // Highlights section
           if (provider.highlights.isNotEmpty)
             _HighlightsSection(highlights: provider.highlights),
         ],
@@ -1047,3 +1033,9 @@ class _AIProcessingDialog extends StatelessWidget {
   }
 }
 
+class SmoothScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}

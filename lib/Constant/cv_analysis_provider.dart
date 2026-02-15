@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io' as io;
 
+import '../main.dart';
+
 class CVAnalyzerBackendProvider extends ChangeNotifier {
-  // State management
   bool _isLoading = false;
   double _progress = 0.0;
   String? _error;
@@ -15,11 +16,9 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   String? _advisory;
   List<Map<String, dynamic>> _highlights = [];
 
-  // Cancellation support
   bool _isCancelled = false;
   Timer? _progressTimer;
 
-  // Getters
   bool get isLoading => _isLoading;
   double get progress => _progress;
   String? get error => _error;
@@ -27,25 +26,14 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   String? get advisory => _advisory;
   List<Map<String, dynamic>> get highlights => _highlights;
 
-  // Server Configuration
-  final String serverUrl;
-
-  // Constants
-  static const int maxFileBytes = 2 * 1024 * 1024; // 2 MB
+  static const int maxFileBytes = 2 * 1024 * 1024;
   static const Duration requestTimeout = Duration(seconds: 120);
   static const int maxRetries = 3;
 
-  // Supported file types
   static const List<String> supportedExtensions = [
     'pdf', 'doc', 'docx', 'txt', 'rtf'
   ];
 
-  // Constructor - now takes server URL instead of API key
-  CVAnalyzerBackendProvider({
-    this.serverUrl = 'http://localhost:3000', // Default to local server
-  });
-
-  // State setters
   void _setLoading(bool v) {
     _isLoading = v;
     notifyListeners();
@@ -69,7 +57,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cancel ongoing operation
   void cancel() {
     _isCancelled = true;
     _progressTimer?.cancel();
@@ -77,7 +64,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     _setError('Operation cancelled by user');
   }
 
-  /// Smooth progress animation
   void _animateProgress({
     required double from,
     required double to,
@@ -101,9 +87,7 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     });
   }
 
-  /// Validate file before processing
   Future<void> _validateFile(PlatformFile file) async {
-    // Check extension
     final extension = file.extension?.toLowerCase() ?? '';
     if (!supportedExtensions.contains(extension)) {
       throw Exception(
@@ -111,7 +95,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
       );
     }
 
-    // Check size
     final size = await _getFileSize(file);
     if (size == 0) {
       throw Exception('File is empty or cannot be read');
@@ -123,7 +106,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
   }
 
-  /// Get file size reliably across platforms
   Future<int> _getFileSize(PlatformFile file) async {
     if (file.size > 0) return file.size;
     if (file.bytes != null) return file.bytes!.lengthInBytes;
@@ -133,7 +115,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     return 0;
   }
 
-  /// Get file bytes reliably
   Future<Uint8List> _getFileBytes(PlatformFile file) async {
     if (file.bytes != null && file.bytes!.isNotEmpty) {
       return file.bytes!;
@@ -146,7 +127,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     throw Exception('Unable to read file content');
   }
 
-  /// Get MIME type for file
   String _getMimeType(String fileName) {
     final extension = fileName.toLowerCase().split('.').last;
     switch (extension) {
@@ -165,13 +145,11 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
   }
 
-  /// Main analysis entry point
   Future<void> analyzeCV({
     required PlatformFile file,
     required String roleName,
     required String jobDescription,
   }) async {
-    // Reset state
     _isCancelled = false;
     _setError(null);
     _setResult(sc: null, adv: null, hl: []);
@@ -179,16 +157,13 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     _setProgress(0.0);
 
     try {
-      // Validate inputs
       if (roleName.trim().isEmpty) {
         throw Exception('Role name is required');
       }
 
-      // Validate file
       _animateProgress(from: 0.0, to: 0.08, durationMs: 500);
       await _validateFile(file);
 
-      // Process with server API
       await _analyzeWithServer(file, roleName, jobDescription);
 
     } catch (e) {
@@ -204,13 +179,11 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
   }
 
-  /// Analyze using server API
   Future<void> _analyzeWithServer(
       PlatformFile file,
       String roleName,
       String jobDescription,
       ) async {
-    // Read file bytes
     _animateProgress(from: _progress, to: 0.25, durationMs: 1000);
     final fileBytes = await _getFileBytes(file);
     final base64Data = base64Encode(fileBytes);
@@ -218,7 +191,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
 
     _setProgress(0.30);
 
-    // Call server with retry logic
     _animateProgress(from: 0.30, to: 0.85, durationMs: 4000);
     final result = await _callServerWithRetry(
       fileData: base64Data,
@@ -230,14 +202,12 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     _progressTimer?.cancel();
     _setProgress(0.90);
 
-    // Parse and set results
     await Future.delayed(const Duration(milliseconds: 300));
     _parseAndSetResult(result);
 
     _setProgress(1.0);
   }
 
-  /// Call server API with automatic retry and exponential backoff
   Future<Map<String, dynamic>> _callServerWithRetry({
     required String fileData,
     required String mimeType,
@@ -262,7 +232,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
         attempt++;
 
         if (attempt < maxRetries) {
-          // Exponential backoff: 2s, 4s, 8s...
           final delaySeconds = (2 << (attempt - 1));
           debugPrint('Retry attempt $attempt after $delaySeconds seconds...');
           await Future.delayed(Duration(seconds: delaySeconds));
@@ -273,16 +242,14 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     throw lastError ?? Exception('Failed after $maxRetries attempts');
   }
 
-  /// Make actual server API call
   Future<Map<String, dynamic>> _callServerAPI({
     required String fileData,
     required String mimeType,
     required String roleName,
     required String jobDescription,
   }) async {
-    final uri = Uri.parse('$serverUrl/cv-analysis');
+    final uri = Uri.parse('${Env.backendUrl}/cv-analysis');
 
-    // Build payload
     final payload = {
       'fileData': fileData,
       'mimeType': mimeType,
@@ -325,15 +292,12 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
   }
 
-  /// Parse API response and update state
   void _parseAndSetResult(Map<String, dynamic> response) {
     try {
-      // Extract fields with validation
       final score = _parseScore(response['score']);
       final advisory = response['advisory']?.toString().trim() ?? 'Analysis completed';
       final highlights = _parseHighlights(response['highlights']);
 
-      // Validate score range
       if (score < 0 || score > 100) {
         throw Exception('Score must be between 0 and 100');
       }
@@ -345,7 +309,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
   }
 
-  /// Parse score with validation
   double _parseScore(dynamic score) {
     if (score == null) return 0.0;
     if (score is num) return score.toDouble().clamp(0.0, 100.0);
@@ -353,7 +316,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     return parsed.clamp(0.0, 100.0);
   }
 
-  /// Parse highlights array
   List<Map<String, dynamic>> _parseHighlights(dynamic highlights) {
     if (highlights is! List) return [];
 
@@ -367,7 +329,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
         .toList();
   }
 
-  /// Format bytes for human-readable display
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) {
@@ -376,7 +337,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
   }
 
-  /// Reset to initial state
   void reset() {
     cancel();
     _isCancelled = false;
