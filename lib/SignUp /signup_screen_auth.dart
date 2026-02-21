@@ -540,7 +540,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           const SizedBox(height: 28),
           _buildRoleSelector(p),
           const SizedBox(height: 28),
-          if (p.role == 'recruiter' || p.role == 'job_seeker') ...[
+          if (p.role == 'Recruiter') ...[
             _buildEnhancedTextField(
               controller: p.nameController,
               label: 'Full Name',
@@ -763,7 +763,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ),
           label: Text(
             provider.isCaptchaVerified
-                ? (provider.role == 'recruiter'
+                ? (provider.role == 'Recruiter'
                 ? 'Create Recruiter Account'
                 : 'Create Job Seeker Account')
                 : 'Verify First',
@@ -805,7 +805,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
 
     try {
-      if (provider.role == 'recruiter') {
+      if (provider.role == 'Recruiter') {
         final success = await provider.registerRecruiter();
 
         if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
@@ -894,8 +894,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             child: _buildRoleChip(
               label: 'Job Seeker',
               icon: Icons.person_search_rounded,
-              isSelected: p.role == 'job_seeker',
-              onTap: () => p.setRole('job_seeker'),
+              isSelected: p.role == 'Job Seeker',
+              onTap: () => p.setRole('Job Seeker'),
             ),
           ),
           const SizedBox(width: 6),
@@ -903,8 +903,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             child: _buildRoleChip(
               label: 'Recruiter',
               icon: Icons.business_center_rounded,
-              isSelected: p.role == 'recruiter',
-              onTap: () => p.setRole('recruiter'),
+              isSelected: p.role == 'Recruiter',
+              onTap: () => p.setRole('Recruiter'),
             ),
           ),
         ],

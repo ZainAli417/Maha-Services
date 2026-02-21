@@ -18,7 +18,6 @@ import 'Screens/Job_Seeker/jobs_application_provider.dart';
 import 'Screens/Recruiter/AI Candidate Matching_Provider.dart';
 import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Recruiter_provider_Job_listing.dart';
-import 'Screens/Recruiter/Signup_Provider_Recruiter.dart';
 import 'Screens/Recruiter/login_provider_Recruiter.dart';
 import 'Screens/Recruiter/R_Initials_provider.dart';
 import 'SignUp /signup_provider.dart';
@@ -57,7 +56,7 @@ final List<Map<String, dynamic>> _airforceProfiles = [
         "location": "PAF Intelligence Directorate, Islamabad",
         "aircraftType": "N/A",
         "organization": "Pakistan Air Force",
-        "flightHours": "N/A",
+        "flightHours": "2000",
         "startDate": "Sep 2006",
         "rank": "Wing Commander",
         "duration": "Sep 2006 - Present",
@@ -72,7 +71,7 @@ final List<Map<String, dynamic>> _airforceProfiles = [
     "experienceDocuments": ["https://example.com/docs/intel_report_zafar.pdf"],
     "professionalProfile": {
       "status": "active",
-      "retirementDate": "",
+      "retirementDate": "2026-01-17",
       "summary":
           "Intelligence officer specializing in air operations and targeting.",
       "expectedRetirementDate": "",
@@ -93,11 +92,10 @@ final List<Map<String, dynamic>> _airforceProfiles = [
       "dob": "1980-10-02",
       "objectives": "Improve intel fusion capabilities.",
     },
-    "createdAt": "2026-01-18T16:06:37Z",
+    "createdAt": TimeOfDay.fromDateTime(DateTime.now()).toString(),
     "references": ["Air Commodore Tariq — Intelligence"],
   },
 
-  // PROFILE 10
 ];
 
 /// ---------------------------
@@ -114,7 +112,7 @@ Future<void> triggerAirforceTestData(String uid, {int version = 1}) async {
 
     // Ensure dates inside nested maps are strings (they already are above).
     // Write to Firestore (merge=true so we don't wipe other fields).
-    await FirebaseFirestore.instance.collection('job_seeker').doc(uid).set({
+    await FirebaseFirestore.instance.collection('Job_Seeker').doc(uid).set({
       'user_data': data,
       'testInjectedAt': DateTime.now().toIso8601String(),
     }, SetOptions(merge: true));
@@ -152,21 +150,25 @@ void main() async {
 
   // Call trigger here (manual UID you provided). This will run once at app start.
   // Replace the UID if you want to test with another user.
-  //await triggerAirforceTestData("jE9DVqaSl8UzoIgVYYrjqCCaE5i1", version: 1);
-  // await markAllUsersNotNew();
+  // await triggerAirforceTestData("kXrYufRrFFbQePipdFeYylZjUEN2", version: 1);
+  //await markAllUsersNotNew();
 
   // If targeting web, make pretty URLs
   if (kIsWeb) {
     setUrlStrategy(PathUrlStrategy());
   }
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Precache a dummy text style to reduce jank
-    TextPainter(
-      text: TextSpan(text: " ", style: GoogleFonts.poppins()),
-      textDirection: TextDirection.ltr,
-    ).layout();
-  });
+  // ── Pre-load Google Fonts BEFORE runApp to avoid lazy_path.dart crash ──
+  // Trigger font downloads so the engine never measures text with a missing font.
+  GoogleFonts.poppins();       // enqueues the Poppins download
+  GoogleFonts.inter();         // enqueues the Inter download
+  try {
+    await GoogleFonts.pendingFonts();
+  } catch (_) {
+    // If font fetch fails (offline, etc.) we fall back to system fonts.
+    debugPrint('⚠️ Google Fonts pre-load failed – using fallback fonts.');
+  }
+
 
   runApp(
     MultiProvider(
@@ -174,7 +176,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
-        ChangeNotifierProvider(create: (_) => SignUpProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => LoginProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => JS_TopNavProvider()),
         ChangeNotifierProvider(create: (_) => JS_TopNavProvider()..refresh()),

@@ -509,19 +509,18 @@ class job_listing_provider extends ChangeNotifier {
 
     try {
       // Query users collection for a document where 'uid' equals the current user's uid
-      final q = await _firestore
+      final userDoc = await _firestore
           .collection('users')
-          .where('uid', isEqualTo: _cachedUserId)
-          .limit(1)
+          .doc(_cachedUserId)
           .get();
 
-      if (q.docs.isEmpty) {
+      if (!userDoc.exists) {
         debugPrint('[job_provider] _validateRecruiterRole: no user doc found for uid=$_cachedUserId');
         _isRecruiterCached = false;
         return false;
       }
 
-      final data = q.docs.first.data();
+      final data = userDoc.data() as Map<String, dynamic>;
       debugPrint('[job_provider] _validateRecruiterRole: user doc data: $data');
 
       final roleValue = (data['role'] ?? '').toString().toLowerCase();
@@ -594,8 +593,6 @@ class job_listing_provider extends ChangeNotifier {
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String(),
       'status': 'active',
-      'applicationCount': 0,
-      'viewCount': 0,
     };
   }
 
@@ -613,8 +610,15 @@ class job_listing_provider extends ChangeNotifier {
 
   Future<void> _saveJobData(String jobId, Map<String, dynamic> jobData) async {
     final batch = _firestore.batch();
-    batch.set(_firestore.collection('recruiter').doc(_cachedUserId).collection('Posted_jobs').doc(jobId), jobData);
-    batch.set(_firestore.collection('Posted_jobs_public').doc(jobId), jobData);
+    final recruiterJobData = Map<String, dynamic>.from(jobData);
+    final publicJobData = Map<String, dynamic>.from(jobData);
+    
+    // Add counters only to the public document
+    publicJobData['applicationCount'] = 0;
+    publicJobData['viewCount'] = 0;
+
+    batch.set(_firestore.collection('recruiter').doc(_cachedUserId).collection('Posted_jobs').doc(jobId), recruiterJobData);
+    batch.set(_firestore.collection('Posted_jobs_public').doc(jobId), publicJobData);
     await batch.commit();
   }
 

@@ -103,7 +103,7 @@ print(recruiterUid);
       }
 
       // 5️⃣ GET SEEKER PROFILE DATA
-      final seekerSnap = await _firestore.collection('job_seeker').doc(user.uid).get();
+      final seekerSnap = await _firestore.collection('Job_Seeker').doc(user.uid).get();
       if (!seekerSnap.exists) {
         throw Exception('Seeker profile not found. Please complete your profile.');
       }

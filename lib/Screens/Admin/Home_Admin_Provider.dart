@@ -58,7 +58,7 @@ class DashboardProvider extends ChangeNotifier {
   Future<void> _fetchJobSeekerStats() async {
     try {
       // Get total job seekers
-      final jobSeekerSnapshot = await _firestore.collection('job_seeker').get();
+      final jobSeekerSnapshot = await _firestore.collection('Job_Seeker').get();
       totalJobSeekers = jobSeekerSnapshot.docs.length;
 
       // Calculate growth (compare with last week)

@@ -219,7 +219,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           _buildFilterDropdown(
             'Role',
             _selectedRoleFilter,
-            ['all', 'job_seeker', 'recruiter', 'admin'],
+            ['all', 'Job Seeker', 'Recruiter', 'Admin'],
                 (value) => setState(() => _selectedRoleFilter = value!),
             Icons.work_outline,
           ),
@@ -891,6 +891,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           'bgColor': const Color(0xFFEEF2FF),
           'icon': Icons.business_center_rounded,
         };
+      case 'job seeker':
       case 'job_seeker':
         return {
           'color': const Color(0xFF10B981),
@@ -1069,7 +1070,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.5),
       builder: (dialogContext) {
-        String selectedRole = existingData?['role'] ?? 'job_seeker';
+        String selectedRole = existingData?['role'] ?? 'Job Seeker';
         String selectedLevel = existingData?['user_lvl'] ?? 'basic';
 
         return StatefulBuilder(
@@ -1318,7 +1319,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Expanded(
             child: _buildRoleOption(
               'Job Seeker',
-              'job_seeker',
+              'Job Seeker',
               selectedRole,
               Icons.work_outline_rounded,
               onChanged,
@@ -1328,9 +1329,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Expanded(
             child: _buildRoleOption(
               'Recruiter',
-              'recruiter',
+              'Recruiter',
               selectedRole,
-              Icons.business_center_outlined,
+              Icons.business_center_rounded,
               onChanged,
             ),
           ),

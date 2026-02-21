@@ -374,8 +374,8 @@ print(applicationCount);
                                   experience,
                                   deadline,
                                   contact,
-                                  viewCount.toString(),
-                                  applicationCount.toString()
+                                  applicationCount.toString(),
+                                  viewCount.toString()
                               ),
                             ),
                           ],

@@ -61,7 +61,7 @@ class LoginProvider with ChangeNotifier {
   String _normalizeRole(String role) {
     final normalized = role.trim().toLowerCase();
     if (['recruiter', 'employer'].contains(normalized)) return 'recruiter';
-    if (['job_seeker', 'jobseeker', 'job seeker', 'candidate'].contains(normalized)) return 'job_seeker';
+    if (['job_seeker', 'jobseeker', 'job seeker', 'candidate', 'Job_Seeker', 'Job Seeker'].contains(normalized)) return 'Job Seeker';
     return normalized;
   }
 
@@ -70,7 +70,7 @@ class LoginProvider with ChangeNotifier {
     final normalized = _normalizeRole(role);
     if (normalized == 'recruiter') return '/recruiter-dashboard';
     if (normalized == 'admin') return '/admin_dashboard';
-    // For job_seeker, default to dashboard (isNew check will override this in login)
+    // For Job Seeker, default to dashboard (isNew check will override this in login)
     return '/dashboard';
   }
   // ========== UID LOOKUP ==========
@@ -97,7 +97,7 @@ class LoginProvider with ChangeNotifier {
       }
 
       // 2) Fallback: Query role-specific collection
-      final collection = normExpected == 'recruiter' ? 'recruiter' : 'job_seeker';
+      final collection = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
       final emailPath = normExpected == 'recruiter'
           ? 'user_data.email'
           : 'user_data.personalProfile.email';
@@ -122,19 +122,19 @@ class LoginProvider with ChangeNotifier {
 // ========== CHECK isNew FIELD ==========
   Future<bool> _isNewUser(String uid) async {
     try {
-      // ✅ FIXED: Query by uid field, not document ID
-      final userQuery = await _firestore
+      // ✅ FIXED: Query by document ID (uid) directly instead of collection querying 
+      // This prevents permission denied errors on generic collection queries
+      final userDoc = await _firestore
           .collection('users')
-          .where('uid', isEqualTo: uid)
-          .limit(1)
+          .doc(uid)
           .get();
 
-      if (userQuery.docs.isEmpty) {
+      if (!userDoc.exists) {
         debugPrint('⚠️ _isNewUser: User document not found for uid: $uid');
         return true; // Assume new if doc doesn't exist
       }
 
-      final data = userQuery.docs.first.data();
+      final data = userDoc.data() as Map<String, dynamic>;
       final isNew = data['isNew'];
 
       debugPrint('🔍 _isNewUser check for $uid: isNew = $isNew');
@@ -162,7 +162,7 @@ class LoginProvider with ChangeNotifier {
       final normExpected = _normalizeRole(expectedRole);
 
       // Query the specific role collection
-      final collection = normExpected == 'recruiter' ? 'recruiter' : 'job_seeker';
+      final collection = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
       final docSnap = await _firestore.collection(collection).doc(uid).get();
 
       if (!docSnap.exists) return false;
@@ -206,14 +206,7 @@ class LoginProvider with ChangeNotifier {
     clearError();
 
     try {
-      // 1) Find UID for email and role
-      final foundUid = await _findUidForEmailAndRole(email.trim(), expectedRole);
-      if (foundUid == null) {
-        _setError('No account found as "$expectedRole". Please register or check your role selection.');
-        return null;
-      }
-
-      // 2) Sign in with Firebase Auth
+      // 1) Sign in with Firebase Auth
       final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -226,14 +219,7 @@ class LoginProvider with ChangeNotifier {
         return null;
       }
 
-      // 3) Verify UID matches
-      if (user.uid != foundUid) {
-        await _auth.signOut();
-        _setError('Account mismatch. Please contact support.');
-        return null;
-      }
-
-      // 4) Verify role
+      // 2) Verify role
       final roleVerified = await _verifyUserRole(user.uid, expectedRole);
       if (!roleVerified) {
         await _auth.signOut();
@@ -246,14 +232,14 @@ class LoginProvider with ChangeNotifier {
       _safeNotify();
 
       // 7) ✅ NEW: Check isNew for job_seekers and return appropriate route
-      if (_normalizeRole(expectedRole) == 'job_seeker') {
+      if (_normalizeRole(expectedRole) == 'Job Seeker') {
         final isNew = await _isNewUser(user.uid);
 
         if (isNew) {
-          debugPrint('✨ NEW job_seeker → /profile-builder');
+          debugPrint('✨ NEW Job_Seeker → /profile-builder');
           return '/profile-builder';
         } else {
-          debugPrint('👤 EXISTING job_seeker → /dashboard');
+          debugPrint('👤 EXISTING Job_Seeker → /dashboard');
           return '/dashboard';
         }
       }
@@ -309,7 +295,7 @@ class LoginProvider with ChangeNotifier {
   //     _safeNotify();
   //
   //     // return route for UI to navigate (UI should call context.go(route))
-  //     return _getRoleDashboard('job_seeker');
+  //     return _getRoleDashboard('Job Seeker');
   //   } on FirebaseAuthException catch (e) {
   //     _handleAuthError(e);
   //     return null;
@@ -330,13 +316,13 @@ class LoginProvider with ChangeNotifier {
   //         'email': (user.email ?? '').trim().toLowerCase(),
   //         'profilePicUrl': user.photoURL ?? '',
   //       },
-  //       'role': 'job_seeker',
+  //       'role': 'Job Seeker',
   //       'createdAt': FieldValue.serverTimestamp(),
   //       'lastLoginAt': FieldValue.serverTimestamp(),
   //       'loginMethod': 'google',
   //     };
   //
-  //     await _firestore.collection('job_seeker').doc(user.uid).set(
+  //     await _firestore.collection('Job_Seeker').doc(user.uid).set(
   //       {'user_data': userData},
   //       SetOptions(merge: true),
   //     );
@@ -346,7 +332,7 @@ class LoginProvider with ChangeNotifier {
   //       'uid': user.uid,
   //       'email': (user.email ?? '').trim().toLowerCase(),
   //       'name': user.displayName ?? '',
-  //       'role': 'job_seeker',
+  //       'role': 'Job Seeker',
   //       'createdAt': FieldValue.serverTimestamp(),
   //     }, SetOptions(merge: true));
   //   } catch (e) {
@@ -402,7 +388,7 @@ class LoginProvider with ChangeNotifier {
   // ========== HELPERS ==========
   Future<void> _updateLastLogin(String uid, String role) async {
     try {
-      final collection = _normalizeRole(role) == 'recruiter' ? 'recruiter' : 'job_seeker';
+      final collection = _normalizeRole(role) == 'recruiter' ? 'recruiter' : 'Job_Seeker';
       // Use nested field update safe path
       await _firestore.collection(collection).doc(uid).set({
         'user_data': {

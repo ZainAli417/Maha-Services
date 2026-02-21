@@ -201,7 +201,7 @@ class AdminDashboardProvider extends ChangeNotifier {
         debugPrint('🔎 resolving email to uid: $maybeEmail');
         // Look for job_seeker doc where user_data.email or email equals this email (best-effort)
         final query1 = await _firestore
-            .collection('job_seeker')
+            .collection('Job_Seeker')
             .where('user_data.email', isEqualTo: maybeEmail)
             .limit(1)
             .get(const GetOptions(source: Source.serverAndCache));
@@ -215,7 +215,7 @@ class AdminDashboardProvider extends ChangeNotifier {
 
         // fallback: maybe top-level 'email' field exists
         final query2 = await _firestore
-            .collection('job_seeker')
+            .collection('Job_Seeker')
             .where('email', isEqualTo: maybeEmail)
             .limit(1)
             .get(const GetOptions(source: Source.serverAndCache));
@@ -399,7 +399,7 @@ class AdminDashboardProvider extends ChangeNotifier {
             final candidateDocId = (resolvedDocId.isNotEmpty ? resolvedDocId : _lastSegment(origId));
             if (candidateDocId.isNotEmpty) {
               final doc = await _firestore
-                  .collection('job_seeker')
+                  .collection('Job_Seeker')
                   .doc(candidateDocId)
                   .get(const GetOptions(source: Source.serverAndCache));
               if (doc.exists) {
@@ -520,7 +520,7 @@ class AdminDashboardProvider extends ChangeNotifier {
 
       // Try parent doc first (embedded user_profile)
       final parentSnap = await _firestore
-          .collection('job_seeker')
+          .collection('Job_Seeker')
           .doc(uid)
           .get(const GetOptions(source: Source.serverAndCache));
 

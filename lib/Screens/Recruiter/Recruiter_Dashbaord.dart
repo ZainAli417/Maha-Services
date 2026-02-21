@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -191,8 +192,6 @@ class _EmptyWidget extends StatelessWidget {
   }
 }
 
-
-
 // COMPACT SIDE CHAT WIDGET - ADD THIS TO YOUR PARENT WIDGET FILE
 class AIFloatingChat extends StatefulWidget {
   const AIFloatingChat({super.key});
@@ -219,9 +218,7 @@ class _AIFloatingChatState extends State<AIFloatingChat> {
           Positioned(
             right: 24,
             bottom: 90, // Above the FAB button
-            child: AIJDBuilderWidget(
-              onClose: _toggleChat,
-            ),
+            child: AIJDBuilderWidget(onClose: _toggleChat),
           ),
 
         // FAB Button (positioned at bottom right)
@@ -236,7 +233,10 @@ class _AIFloatingChatState extends State<AIFloatingChat> {
               onTap: _toggleChat,
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -265,11 +265,6 @@ class _AIFloatingChatState extends State<AIFloatingChat> {
   }
 }
 
-
-
-
-
-
 class Recruiter_Analytics extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
   const Recruiter_Analytics({super.key, required this.jobs});
@@ -280,7 +275,6 @@ class Recruiter_Analytics extends StatefulWidget {
 
 class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     with TickerProviderStateMixin {
-
   // Controllers
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -325,9 +319,6 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     _slideController.forward();
   }
 
-
-
-
   @override
   void dispose() {
     _searchController.dispose();
@@ -365,8 +356,6 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     );
   }
 
-
-
   Widget _buildHeader() {
     const Color kPrimaryBlue = Color(0xFF1E40AF);
     const Color kTextPrimary = Color(0xFF0F172A);
@@ -375,9 +364,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           // Left Icon
@@ -423,7 +410,6 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
           const Spacer(),
           _buildPostJobButton(),
-
         ],
       ),
     );
@@ -475,8 +461,6 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
       ),
     );
   }
-
-
 
   // STATS OVERVIEW CARDS
   Widget _buildStatsOverview() {
@@ -598,12 +582,14 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                   child: Icon(icon, color: color, size: 22),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
-
                 ),
               ],
             ),
@@ -628,10 +614,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
             const SizedBox(height: 2),
             Text(
               subtitle,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: _textSecondary,
-              ),
+              style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
             ),
           ],
         ),
@@ -661,29 +644,18 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: _buildApplicationsTrendChart(data),
-                  ),
+                  Expanded(flex: 3, child: _buildApplicationsTrendChart(data)),
                   const SizedBox(width: 20),
-                  Expanded(
-                    flex: 2,
-                    child: _buildStatusDistribution(data),
-                  ),
+                  Expanded(flex: 2, child: _buildStatusDistribution(data)),
                 ],
               ),
               const SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: _buildTopSkillsChart(data),
-                  ),
+                  Expanded(flex: 2, child: _buildTopSkillsChart(data)),
                   const SizedBox(width: 20),
-                  Expanded(
-                    child: _buildTopJobsList(data),
-                  ),
+                  Expanded(child: _buildTopJobsList(data)),
                 ],
               ),
             ],
@@ -737,7 +709,10 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _accent.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -774,11 +749,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: trendData.last.y / 4,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: _border,
-                    strokeWidth: 1,
-                    dashArray: [5, 5],
-                  ),
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: _border, strokeWidth: 1, dashArray: [5, 5]),
                 ),
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
@@ -816,8 +788,12 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                       ),
                     ),
                   ),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
@@ -833,12 +809,13 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                     barWidth: 3,
                     dotData: FlDotData(
                       show: true,
-                      getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                        radius: 4,
-                        color: _accent,
-                        strokeWidth: 2,
-                        strokeColor: _background,
-                      ),
+                      getDotPainter: (spot, percent, barData, index) =>
+                          FlDotCirclePainter(
+                            radius: 4,
+                            color: _accent,
+                            strokeWidth: 2,
+                            strokeColor: _background,
+                          ),
                     ),
                     belowBarData: BarAreaData(
                       show: true,
@@ -968,10 +945,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           const SizedBox(height: 4),
           Text(
             'Distribution by current status',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: _textSecondary,
-            ),
+            style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
           ),
           const SizedBox(height: 24),
           Expanded(
@@ -985,7 +959,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                       centerSpaceRadius: 40,
                       sectionsSpace: 2,
                       pieTouchData: PieTouchData(
-                        touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+                        touchCallback:
+                            (FlTouchEvent event, pieTouchResponse) {},
                       ),
                     ),
                   ),
@@ -998,11 +973,19 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                     children: [
                       _buildLegendItem('Pending', pending.toString(), _warning),
                       const SizedBox(height: 12),
-                      _buildLegendItem('Accepted', accepted.toString(), _success),
+                      _buildLegendItem(
+                        'Accepted',
+                        accepted.toString(),
+                        _success,
+                      ),
                       const SizedBox(height: 12),
                       _buildLegendItem('Rejected', rejected.toString(), _error),
                       const SizedBox(height: 12),
-                      _buildLegendItem('shortlist', shortlist.toString(), _primary),
+                      _buildLegendItem(
+                        'shortlist',
+                        shortlist.toString(),
+                        _primary,
+                      ),
                     ],
                   ),
                 ),
@@ -1049,10 +1032,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
         Expanded(
           child: Text(
             label,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: _textSecondary,
-            ),
+            style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
           ),
         ),
         Text(
@@ -1112,7 +1092,10 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -1165,7 +1148,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w700,
-                                        color: index < 3 ? _accent : _textSecondary,
+                                        color: index < 3
+                                            ? _accent
+                                            : _textSecondary,
                                       ),
                                     ),
                                   ),
@@ -1266,10 +1251,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           const SizedBox(height: 4),
           Text(
             'Jobs with most applications',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: _textSecondary,
-            ),
+            style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
           ),
           const SizedBox(height: 24),
           Expanded(
@@ -1284,7 +1266,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                   builder: (context, snapshot) {
                     String jobTitle = 'Loading...';
                     if (snapshot.hasData && snapshot.data!.data() != null) {
-                      final data = snapshot.data!.data() as Map<String, dynamic>;
+                      final data =
+                          snapshot.data!.data() as Map<String, dynamic>;
                       jobTitle = data['title']?.toString() ?? 'Unknown Job';
                     }
 
@@ -1344,11 +1327,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.trending_up,
-                            color: _success,
-                            size: 20,
-                          ),
+                          Icon(Icons.trending_up, color: _success, size: 20),
                         ],
                       ),
                     );
@@ -1391,10 +1370,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           const SizedBox(height: 8),
           Text(
             message,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: _textSecondary,
-            ),
+            style: GoogleFonts.poppins(fontSize: 14, color: _textSecondary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1405,8 +1381,10 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   // DATA FETCHING
   Future<Map<String, dynamic>> _fetchAllApplicantsData() async {
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
       final applicantsSnapshot = await FirebaseFirestore.instance
           .collectionGroup('applied_jobs')
+          .where('recruiterUid', isEqualTo: uid)
           .get();
 
       int totalApplicants = applicantsSnapshot.docs.length;
@@ -1449,13 +1427,13 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
         // Parse profile data
         final profileSnapshot =
-        data['profileSnapshot'] as Map<String, dynamic>?;
+            data['profileSnapshot'] as Map<String, dynamic>?;
         if (profileSnapshot != null) {
           final accountData =
-          profileSnapshot['user_Account_Data'] as Map<String, dynamic>?;
+              profileSnapshot['user_Account_Data'] as Map<String, dynamic>?;
           if (accountData != null) {
             final personalProfile =
-            accountData['personalProfile'] as Map<String, dynamic>?;
+                accountData['personalProfile'] as Map<String, dynamic>?;
 
             // Count skills
             final skills = personalProfile?['skills'] as List?;
@@ -1496,29 +1474,29 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
       // Sort to get top items
       final topSkills =
-      (skillsCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(10)
-          .toList();
+          (skillsCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(10)
+              .toList();
 
       final topLocations =
-      (locationCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
+          (locationCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(5)
+              .toList();
 
       final topNationalities =
-      (nationalityCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
+          (nationalityCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(5)
+              .toList();
 
       // Get top jobs by application count
       final topJobs =
-      (jobApplicationCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
+          (jobApplicationCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(5)
+              .toList();
 
       // Calculate trend data
       final sortedDates = dailyApplications.keys.toList()..sort();
@@ -1548,7 +1526,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
       debugPrint('Error fetching applicants data: $e');
       return {};
     }
-  }}
+  }
+}
 
 // Helper function
 bool listEquals<T>(List<T>? a, List<T>? b) {
@@ -1559,12 +1538,3 @@ bool listEquals<T>(List<T>? a, List<T>? b) {
   }
   return true;
 }
-
-
-
-
-
-
-
-
-

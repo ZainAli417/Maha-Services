@@ -458,7 +458,9 @@ class ApplicantsProvider with ChangeNotifier {
     notifyListeners();
     _subscription?.cancel();
 
-    Query query = _firestore.collectionGroup('applied_jobs');
+    Query query = _firestore
+        .collectionGroup('applied_jobs')
+        .where('recruiterUid', isEqualTo: currentUser.uid);
 
     // Query-level optimization
     if (_currentJobId != null && _currentJobId!.isNotEmpty) {

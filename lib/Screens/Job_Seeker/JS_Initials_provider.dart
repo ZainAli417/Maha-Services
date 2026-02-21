@@ -20,7 +20,7 @@ class JS_TopNavProvider extends ChangeNotifier {
       }
 
       final docSnap = await FirebaseFirestore.instance
-          .collection('job_seeker')
+          .collection('Job_Seeker')
           .doc(user.uid)
           .get();
 

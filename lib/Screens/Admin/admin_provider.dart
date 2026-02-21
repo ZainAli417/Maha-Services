@@ -635,11 +635,11 @@ class AdminProvider extends ChangeNotifier {
     try {
       final results = await Future.wait(batches.map((batch) async {
         final snap = await _firestore
-            .collection('job_seeker')
+            .collection('Job_Seeker')
             .where(FieldPath.documentId, whereIn: batch)
             .get(const GetOptions(source: Source.cache))
             .catchError((_) => _firestore
-            .collection('job_seeker')
+            .collection('Job_Seeker')
             .where(FieldPath.documentId, whereIn: batch)
             .get(const GetOptions(source: Source.server)));
 

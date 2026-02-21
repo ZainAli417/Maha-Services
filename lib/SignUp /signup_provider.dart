@@ -15,7 +15,7 @@ import 'package:web/web.dart';
 
 class SignupProvider extends ChangeNotifier {
   // ========== STATE ==========
-  String role = 'job_seeker';
+  String role = 'Job Seeker';
   int personalVisibleIndex = 0;
   int currentStep = 0;
   bool showCvUploadSection = false;
@@ -52,9 +52,9 @@ class SignupProvider extends ChangeNotifier {
 
   // ========== ROLE & NAVIGATION ==========
   void setRole(String newRole) {
-    if (!['job_seeker', 'recruiter'].contains(newRole)) return;
+    if (!['Job Seeker', 'Recruiter'].contains(newRole)) return;
     role = newRole;
-    if (newRole == 'recruiter') showCvUploadSection = false;
+    if (newRole == 'Recruiter') showCvUploadSection = false;
     notifyListeners();
   }
 
@@ -127,7 +127,8 @@ class SignupProvider extends ChangeNotifier {
   Future<String?> _uploadProfilePic(String uid) async {
     if (profilePicBytes == null || profilePicBytes!.isEmpty) return null;
     try {
-      final ref = FirebaseStorage.instance.ref('$role/$uid/profilePic.jpg');
+      final collectionName = role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
+      final ref = FirebaseStorage.instance.ref('$collectionName/$uid/profilePic.jpg');
       await ref.putData(profilePicBytes!, SettableMetadata(contentType: 'image/jpeg'));
       return await ref.getDownloadURL();
     } catch (_) {
@@ -299,6 +300,17 @@ class SignupProvider extends ChangeNotifier {
       if (uid == null) throw Exception('Failed to obtain user id');
 
       await _saveUserData(uid, _buildRecruiterData(uid));
+
+      // ✅ NEW: Add entry to 'users' collection for role-based security rules
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'uid': uid,
+        'email': emailController.text.trim(),
+        'role': role, // 'Recruiter'
+        'isNew': 'no', // Recruiters don't have a multi-step builder yet
+        'account_status': 'active',
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
       return true;
     });
   }
@@ -339,17 +351,14 @@ class SignupProvider extends ChangeNotifier {
 
 
       // Write to Firestore: /users/{uid}
-      await FirebaseFirestore.instance.collection('users').doc().set({
-        'role': role,  // 'job_seeker'
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'role': role,  // 'Job Seeker'
         'email': emailController.text.trim(),
         'isNew': isNewValue,  // ✅ Set based on profile data
-        'name': nameController.text.trim(),
         'uid': uid,
         'account_status': 'active',
         'user_lvl': 'free',
         'created_at': FieldValue.serverTimestamp(),
-
-
       });
 
       // ✅ NEW: If profile data exists, save it now
@@ -384,28 +393,17 @@ class SignupProvider extends ChangeNotifier {
 
       await _saveUserData(user.uid, _buildManualUserData(user.uid));
 
-      // ✅ FIXED: Update isNew properly
+      // ✅ FIXED: Update isNew properly using document ID directly 
       try {
-        final userQuery = await FirebaseFirestore.instance
+        await FirebaseFirestore.instance
             .collection('users')
-            .where('uid', isEqualTo: user.uid)
-            .limit(1)
-            .get();
+            .doc(user.uid)
+            .update({
+          'isNew': 'no',
+          'profileCompletedAt': FieldValue.serverTimestamp(),
+        });
 
-        if (userQuery.docs.isNotEmpty) {
-          final docId = userQuery.docs.first.id;
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(docId)
-              .update({
-            'isNew': 'no',
-            'profileCompletedAt': FieldValue.serverTimestamp(),
-          });
-
-          debugPrint('✅ Successfully updated isNew to "no" for user ${user.uid}');
-        } else {
-          debugPrint('⚠️ createJobSeekerProfile: User document not found for uid: ${user.uid}');
-        }
+        debugPrint('✅ Successfully updated isNew to "no" for user ${user.uid}');
       } catch (e) {
         debugPrint('❌ Error in createJobSeekerProfile update: $e');
       }
@@ -439,47 +437,36 @@ class SignupProvider extends ChangeNotifier {
       // 4. Save full profile data using the existing authenticated user
       await _saveUserData(uid, _buildCvUserData(uid, result, user.email ?? ''));
 
-      // 5. ✅ FIXED: Update isNew field properly
+      // 5. ✅ FIXED: Update isNew field properly using document ID directly
       try {
-        final userQuery = await FirebaseFirestore.instance
+        await FirebaseFirestore.instance
             .collection('users')
-            .where('uid', isEqualTo: uid)
-            .limit(1)
-            .get();
+            .doc(uid)
+            .update({
+          'isNew': 'no',
+          'profileCompletedAt': FieldValue.serverTimestamp(),
+        });
 
-        if (userQuery.docs.isNotEmpty) {
-          final docId = userQuery.docs.first.id;
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(docId)
-              .update({
-            'isNew': 'no',
-            'profileCompletedAt': FieldValue.serverTimestamp(),
-          });
-
-          debugPrint('✅ Successfully updated isNew to "no" for user $uid');
-
-        } else {
-          debugPrint('⚠️ User document not found for uid: $uid');
-
-          // If not found, create the users document
-          await FirebaseFirestore.instance.collection('users').add({
+        debugPrint('✅ Successfully updated isNew to "no" for user $uid');
+      } catch (e) {
+        debugPrint('⚠️ User document maybe not found, attempting set: $e');
+        // If not found (update fails), create/set the users document
+        try {
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
             'uid': uid,
             'email': user.email ?? '',
-            'role': 'job_seeker',
+            'role': role,
             'isNew': 'no',
             'account_status': 'active',
             'user_lvl': 'free',
             'created_at': FieldValue.serverTimestamp(),
             'profileCompletedAt': FieldValue.serverTimestamp(),
             'name': nameController.text.trim(),
-          });
-
-          debugPrint('✅ Created new users document with isNew: no');
+          }, SetOptions(merge: true));
+          debugPrint('✅ Created/Merged users document with isNew: no');
+        } catch (e2) {
+          debugPrint('❌ Final fallback set failed: $e2');
         }
-      } catch (e) {
-        debugPrint('❌ Error updating isNew: $e');
-        // Don't fail the whole operation if this update fails
       }
 
       return true;
@@ -507,15 +494,12 @@ class SignupProvider extends ChangeNotifier {
   }
   Future<void> _saveUserData(String uid, Map<String, dynamic> userData) async {
     final firestore = FirebaseFirestore.instance;
+    final collectionName = role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
 
-    await firestore.collection(role).doc(uid).set(
+    await firestore.collection(collectionName).doc(uid).set(
       {'user_data': userData},
       SetOptions(merge: true),
     );
-
-    try {
-      await firestore.collection('users').add(_buildShadowData(uid, userData));
-    } catch (_) {}
   }
 
   Map<String, dynamic> _buildRecruiterData(String uid) => {
@@ -570,17 +554,7 @@ class SignupProvider extends ChangeNotifier {
     'createdAt': FieldValue.serverTimestamp(),
   };
 
-  Map<String, dynamic> _buildShadowData(String uid, Map<String, dynamic> userData) {
-    final personalProfile = userData['personalProfile'] as Map<String, dynamic>?;
-    return {
-      'fullName': personalProfile?['name'] ?? personalProfile?['fullName'] ?? nameController.text.trim(),
-      'email': personalProfile?['email'] ?? emailController.text.trim(),
-      'secondary_email': personalProfile?['secondary_email'] ?? secondaryEmail ?? '',
-      'uid': uid,
-      'role': role,
-      'createdAt': FieldValue.serverTimestamp(),
-    };
-  }
+
 
   void _populateFromCvResult(CvExtractionResult result) {
     final personal = result.personalProfile;

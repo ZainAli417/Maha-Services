@@ -841,6 +841,14 @@ class _CompactJobCardState extends State<CompactJobCard>
 
   void _showDetails() {
     HapticFeedback.lightImpact();
+
+    // Increment viewCount in Firestore
+    final jobId = widget.jobData['id'] as String;
+    FirebaseFirestore.instance
+        .collection('Posted_jobs_public')
+        .doc(jobId)
+        .update({'viewCount': FieldValue.increment(1)});
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -981,10 +989,30 @@ class _CompactJobCardState extends State<CompactJobCard>
                                 location,
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Color(0xFF64748B),
+                                  color: const Color(0xFF64748B),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.visibility_outlined,
+                                      size: 14, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 4),
+                                  Text('${job['viewCount'] ?? 0} views',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: const Color(0xFF64748B))),
+                                  const SizedBox(width: 12),
+                                  const Icon(Icons.people_outline,
+                                      size: 14, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 4),
+                                  Text('${job['applicationCount'] ?? 0} applications',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: const Color(0xFF64748B))),
+                                ],
                               ),
                             ],
                           ),

@@ -32,23 +32,23 @@ class RoleService {
     try {
       // 1. Run parallel checks
       final List<dynamic> results = await Future.wait([
-        _firestore.collection('job_seeker').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
+        _firestore.collection('Job_Seeker').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
         _firestore.collection('recruiter').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
         _firestore.collection('admin').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
-        _firestore.collection('users').where('uid', isEqualTo: uid).limit(1).get(),
+        _firestore.collection('users').doc(uid).get(),
       ]);
 
       final jsDoc = results[0] as DocumentSnapshot;
       final recDoc = results[1] as DocumentSnapshot;
       final adminDoc = results[2] as DocumentSnapshot;
-      final userQuery = results[3] as QuerySnapshot;
+      final userDoc = results[3] as DocumentSnapshot;
 
       String? role;
       bool isNew = false;
 
       // 3. Resolve Role from specific collections
       if (jsDoc.exists) {
-        role = 'job_seeker';
+        role = 'Job Seeker';
       } else if (recDoc.exists) {
         role = 'recruiter';
       } else if (adminDoc.exists) {
@@ -56,8 +56,8 @@ class RoleService {
       }
 
       // 4. Resolve isNew and Backup Role from 'users' collection
-      if (userQuery.docs.isNotEmpty) {
-        final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
 
         // Resolve isNew status
         final rawIsNew = userData['isNew'];
@@ -85,7 +85,7 @@ class RoleService {
     if (role == null) return null;
     final r = role.toLowerCase().trim();
     if (['recruiter', 'employer'].contains(r)) return 'recruiter';
-    if (['job_seeker', 'jobseeker', 'candidate'].contains(r)) return 'job_seeker';
+    if (['Job Seeker', 'jobseeker', 'candidate'].contains(r)) return 'Job Seeker';
     if (['admin', 'superadmin'].contains(r)) return 'admin';
     return null;
   }
@@ -199,7 +199,7 @@ final GoRouter router = GoRouter(
     }
 
     // A. New User Logic (Job Seeker ONLY)
-    if (role == 'job_seeker' && authProvider.isNewUser) {
+    if (role == 'Job Seeker' && authProvider.isNewUser) {
       if (location != '/profile-builder') {
         debugPrint('➡️ Redirecting new job seeker to profile builder');
         return '/profile-builder';
@@ -208,7 +208,7 @@ final GoRouter router = GoRouter(
     }
 
     // B. Prevent New Users going to Dashboard
-    if (role == 'job_seeker' && !authProvider.isNewUser && location == '/profile-builder') {
+    if (role == 'Job Seeker' && !authProvider.isNewUser && location == '/profile-builder') {
       debugPrint('➡️ Completed profile, going to dashboard');
       return '/dashboard';
     }
