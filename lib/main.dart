@@ -192,7 +192,6 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => JS_TopNavProvider()),
-        ChangeNotifierProvider(create: (_) => JS_TopNavProvider()..refresh()),
 
         ChangeNotifierProvider(create: (_) => ProfileProvider_NEW()),
         ChangeNotifierProvider(create: (_) => AuthNotifier()),

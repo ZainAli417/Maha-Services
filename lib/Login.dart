@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'widgets/custom_snackbars.dart';
 
 import 'Constant/Header_Nav.dart';
 import 'login_provider.dart';
@@ -94,18 +95,11 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
   void _snack(String text, {bool error = false}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          text,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-        ),
-        backgroundColor: error ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+    if (error) {
+      CustomSnackbars.showError(context, text);
+    } else {
+      CustomSnackbars.showSuccess(context, text);
+    }
   }
 
   Future<void> _onLogin() async {

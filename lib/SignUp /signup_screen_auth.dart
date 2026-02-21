@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../widgets/custom_snackbars.dart';
 import 'package:job_portal/SignUp%20/signup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -130,45 +131,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
 
   void _showSnackBar(String message, {required bool isError}) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                message,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: isError ? Colors.red.shade600 : Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 8,
-        margin: const EdgeInsets.all(16),
-        duration: Duration(milliseconds: isError ? 3500 : 2500),
-      ),
-    );
+    if (isError) {
+      CustomSnackbars.showError(context, message);
+    } else {
+      CustomSnackbars.showSuccess(context, message);
+    }
   }
 
   // ========== LEFT PANEL ==========

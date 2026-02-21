@@ -57,27 +57,25 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchJobSeekerStats() async {
     try {
-      // Get total job seekers
-      final jobSeekerSnapshot = await _firestore.collection('Job_Seeker').get();
-      totalJobSeekers = jobSeekerSnapshot.docs.length;
+      // 1. Get total job seekers using Count Query (O(1) cost vs O(N))
+      final totalSnap = await _firestore.collection('Job_Seeker').count().get();
+      totalJobSeekers = totalSnap.count ?? 0;
 
-      // Calculate growth (compare with last week)
+      // 2. Fetch only recent job seekers for growth and graph (Last 7 days)
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentJobSeekers = jobSeekerSnapshot.docs.where((doc) {
-        final data = doc.data();
-        if (data['created_at'] != null) {
-          final createdAt = (data['created_at'] as Timestamp).toDate();
-          return createdAt.isAfter(lastWeek);
-        }
-        return false;
-      }).length;
+      final recentSnap = await _firestore
+          .collection('Job_Seeker')
+          .where('created_at', isGreaterThan: Timestamp.fromDate(lastWeek))
+          .get();
 
+      final recentDocs = recentSnap.docs;
+      
       if (totalJobSeekers > 0) {
-        jobSeekerGrowth = (recentJobSeekers / totalJobSeekers) * 100;
+        jobSeekerGrowth = (recentDocs.length / totalJobSeekers) * 100;
       }
 
-      // Generate weekly data for graph
-      weeklyJobSeekers = _generateWeeklyData(jobSeekerSnapshot.docs);
+      // Generate weekly data for graph using only recent docs
+      weeklyJobSeekers = _generateWeeklyData(recentDocs, lastWeek);
     } catch (e) {
       debugPrint('Error fetching job seeker stats: $e');
     }
@@ -85,27 +83,25 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchRecruiterStats() async {
     try {
-      // Get total recruiters
-      final recruiterSnapshot = await _firestore.collection('recruiter').get();
-      totalRecruiters = recruiterSnapshot.docs.length;
+      // 1. Get total recruiters using Count Query
+      final totalSnap = await _firestore.collection('recruiter').count().get();
+      totalRecruiters = totalSnap.count ?? 0;
 
-      // Calculate growth
+      // 2. Fetch only recent recruiters
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentRecruiters = recruiterSnapshot.docs.where((doc) {
-        final data = doc.data();
-        if (data['created_at'] != null) {
-          final createdAt = (data['created_at'] as Timestamp).toDate();
-          return createdAt.isAfter(lastWeek);
-        }
-        return false;
-      }).length;
+      final recentSnap = await _firestore
+          .collection('recruiter')
+          .where('created_at', isGreaterThan: Timestamp.fromDate(lastWeek))
+          .get();
 
+      final recentDocs = recentSnap.docs;
+      
       if (totalRecruiters > 0) {
-        recruiterGrowth = (recentRecruiters / totalRecruiters) * 100;
+        recruiterGrowth = (recentDocs.length / totalRecruiters) * 100;
       }
 
       // Generate weekly data
-      weeklyRecruiters = _generateWeeklyData(recruiterSnapshot.docs);
+      weeklyRecruiters = _generateWeeklyData(recentDocs, lastWeek);
     } catch (e) {
       debugPrint('Error fetching recruiter stats: $e');
     }
@@ -113,27 +109,25 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchJobsStats() async {
     try {
-      // Get total jobs posted
-      final jobsSnapshot = await _firestore.collection('Posted_jobs_public').get();
-      totalJobsPosted = jobsSnapshot.docs.length;
+      // 1. Get total jobs posted using Count Query
+      final totalSnap = await _firestore.collection('Posted_jobs_public').count().get();
+      totalJobsPosted = totalSnap.count ?? 0;
 
-      // Calculate growth
+      // 2. Fetch only recent jobs
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentJobs = jobsSnapshot.docs.where((doc) {
-        final data = doc.data();
-        if (data['posted_date'] != null) {
-          final postedDate = (data['posted_date'] as Timestamp).toDate();
-          return postedDate.isAfter(lastWeek);
-        }
-        return false;
-      }).length;
+      final recentSnap = await _firestore
+          .collection('Posted_jobs_public')
+          .where('posted_date', isGreaterThan: Timestamp.fromDate(lastWeek))
+          .get();
 
+      final recentDocs = recentSnap.docs;
+      
       if (totalJobsPosted > 0) {
-        jobsGrowth = (recentJobs / totalJobsPosted) * 100;
+        jobsGrowth = (recentDocs.length / totalJobsPosted) * 100;
       }
 
       // Generate weekly data
-      weeklyJobs = _generateWeeklyData(jobsSnapshot.docs, dateField: 'posted_date');
+      weeklyJobs = _generateWeeklyData(recentDocs, lastWeek, dateField: 'posted_date');
     } catch (e) {
       debugPrint('Error fetching jobs stats: $e');
     }
@@ -141,15 +135,16 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchRecruiterRequests() async {
     try {
-      final requestsSnapshot = await _firestore.collection('recruiter_requests').get();
-      totalRecruiterRequests = requestsSnapshot.docs.length;
+      final totalSnap = await _firestore.collection('recruiter_requests').count().get();
+      totalRecruiterRequests = totalSnap.count ?? 0;
     } catch (e) {
       debugPrint('Error fetching recruiter requests: $e');
     }
   }
 
   List<Map<String, dynamic>> _generateWeeklyData(
-      List<QueryDocumentSnapshot> docs, {
+      List<QueryDocumentSnapshot> recentDocs,
+      DateTime startDate, {
         String dateField = 'created_at',
       }) {
     final weeklyData = <Map<String, dynamic>>[];
@@ -160,7 +155,7 @@ class DashboardProvider extends ChangeNotifier {
       final dayStart = DateTime(date.year, date.month, date.day);
       final dayEnd = dayStart.add(const Duration(days: 1));
 
-      final count = docs.where((doc) {
+      final count = recentDocs.where((doc) {
         final data = doc.data() as Map<String, dynamic>;
         if (data[dateField] != null) {
           final docDate = (data[dateField] as Timestamp).toDate();

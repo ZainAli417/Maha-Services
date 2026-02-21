@@ -10,17 +10,30 @@ import 'dart:async';
 
 import 'admin_provider.dart';
 
-class AdminDashboardScreen2 extends StatelessWidget {
+class AdminDashboardScreen2 extends StatefulWidget {
   const AdminDashboardScreen2({super.key});
 
   @override
+  State<AdminDashboardScreen2> createState() => _AdminDashboardScreen2State();
+}
+
+class _AdminDashboardScreen2State extends State<AdminDashboardScreen2> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger real-time fetch on entry
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AdminProvider>().fetchAllRequests(realtime: true);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminProvider()..fetchAllRequests(realtime: true),
-      child: const Scaffold(
-        backgroundColor: Color(0xFFFFFFFF),
-        body: _AdminDashboardBody(),
-      ),
+    return const Scaffold(
+      backgroundColor: Color(0xFFFFFFFF),
+      body: _AdminDashboardBody(),
     );
   }
 }

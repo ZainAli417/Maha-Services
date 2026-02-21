@@ -9,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class ProfileProvider_NEW extends ChangeNotifier {
   // ---------------- Configuration ----------------
-  final String role = 'Job Seeker';
+  final String role = 'Job_Seeker';
 
   // OPTIMIZATION: Cache Validity Duration
   static const Duration _cacheValidity = Duration(minutes: 5);

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/custom_snackbars.dart';
 
 class AdminProvider extends ChangeNotifier {
   final _formKey = GlobalKey<FormState>();
@@ -73,12 +74,12 @@ class AdminProvider extends ChangeNotifier {
         _message = _editingUserId == null ? 'User added successfully' : 'User updated successfully';
         clearForm();
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_message)));
+          CustomSnackbars.showSuccess(context, _message);
         }
       } catch (e) {
         _message = 'Error: $e';
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_message)));
+          CustomSnackbars.showError(context, _message);
         }
       } finally {
         _isLoading = false;
@@ -109,8 +110,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  void editUser(Map<String, dynamic> userData, String firestoreDocId) {
-    _nameController.text = userData['name'] ?? '';
+  void editUser(Map<String, dynamic> userData, String firestoreDocId, {String? resolvedName}) {
+    _nameController.text = resolvedName ?? userData['name'] ?? '';
     _emailController.text = userData['email'] ?? '';
     _roleController.text = userData['role'] ?? '';
     _userLevelController.text = userData['user_lvl'] ?? '';
@@ -497,18 +498,20 @@ class AdminProvider extends ChangeNotifier {
 
       // Deduplicate and extract IDs
       final Map<String, String> uniqueCandidates = {}; // key -> originalId
-      final List<String> orderedKeys = [];
+      final Map<String, Map<String, dynamic>> candidateHints = {}; // uid -> hintData
 
       for (final entry in rawEntries) {
         try {
           String origId = '';
+          Map<String, dynamic> hint = {};
 
           if (entry is DocumentReference) {
-            origId = entry.id ?? '';
+            origId = entry.id;
           } else if (entry is String) {
             origId = entry.trim();
           } else if (entry is Map) {
             final normalized = _normalizeMap(entry);
+            hint = normalized;
             origId = (normalized['uid'] ??
                 normalized['user_id'] ??
                 normalized['id'] ??
@@ -548,7 +551,10 @@ class AdminProvider extends ChangeNotifier {
 
           if (!uniqueCandidates.containsKey(key)) {
             uniqueCandidates[key] = cleanId;
-            orderedKeys.add(key);
+          }
+          
+          if (hint.isNotEmpty && cleanId.isNotEmpty) {
+            candidateHints[cleanId] = hint;
           }
         } catch (e) {
           debugPrint('⚠️ Error processing candidate entry: $e');
@@ -562,7 +568,7 @@ class AdminProvider extends ChangeNotifier {
 
       // Batch fetch candidates
       final candidateDetails =
-      await _batchFetchCandidates(uniqueCandidates.values.toList());
+      await _batchFetchCandidates(uniqueCandidates.values.toList(), hints: candidateHints);
 
       final result = <String, dynamic>{
         'request_doc': {'id': snap.id, 'data': data},
@@ -596,7 +602,7 @@ class AdminProvider extends ChangeNotifier {
   // ============================================================================
 
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
-      List<String> candidateIds) async {
+      List<String> candidateIds, {Map<String, Map<String, dynamic>>? hints}) async {
     const batchSize = 10;
     final batches = <List<String>>[];
 
@@ -648,25 +654,38 @@ class AdminProvider extends ChangeNotifier {
         for (final doc in snap.docs) {
           final jobSeekerData = _normalizeMap(doc.data());
           final userData = _normalizeMap(jobSeekerData['user_data'] ?? {});
-          final personalProfile =
-          _normalizeMap(userData['personalProfile'] ?? {});
 
-          final name = personalProfile['name']?.toString() ??
-              userData['name']?.toString() ??
-              doc.id;
-          final email = personalProfile['email']?.toString() ??
-              userData['email']?.toString() ??
-              '';
-          final phone = personalProfile['contactNumber']?.toString() ??
-              userData['phone']?.toString() ??
-              '';
+          // Try top-level first (modern schema), then variations
+        final personalProfile = _normalizeMap(
+          jobSeekerData['personalProfile'] ?? 
+          jobSeekerData['personal_profile'] ?? 
+          userData['personalProfile'] ?? 
+          userData['personal_profile'] ?? 
+          _normalizeMap(jobSeekerData['user_Account_Data'] ?? {})['personalProfile'] ??
+          {}
+        );
+
+        final name = personalProfile['name']?.toString() ??
+            personalProfile['fullName']?.toString() ??
+            jobSeekerData['name']?.toString() ??
+            userData['name']?.toString() ??
+            doc.id;
+        final email = personalProfile['email']?.toString() ??
+            jobSeekerData['email']?.toString() ??
+            userData['email']?.toString() ??
+            '';
+        final phone = personalProfile['contactNumber']?.toString() ??
+            personalProfile['phone']?.toString() ??
+            personalProfile['contact_number']?.toString() ??
+            userData['phone']?.toString() ??
+            '';
 
           final result = {
             'uid': doc.id,
             'name': name,
             'email': email,
             'phone': phone,
-            'user_data': userData,
+            'user_data': jobSeekerData, // Keep full data
           };
 
           // Cache it
@@ -682,21 +701,21 @@ class AdminProvider extends ChangeNotifier {
       }
 
       // Handle missing candidates
-      final foundIds = fetchedResults.map((c) => c['uid'] as String).toSet();
-      for (final id in uncachedIds) {
-        if (!foundIds.contains(id)) {
-          final fallback = {
-            'uid': id,
-            'name': 'Unknown',
-            'email': '',
-            'phone': '',
-            'user_data': {},
-          };
-          fetchedResults.add(fallback);
-          _candidateCache[id] = _CacheEntry(fallback, DateTime.now());
-        }
+    final foundIds = fetchedResults.map((c) => c['uid'] as String).toSet();
+    for (final id in uncachedIds) {
+      if (!foundIds.contains(id)) {
+        final hint = hints?[id] ?? {};
+        final fallback = {
+          'uid': id,
+          'name': hint['name'] ?? hint['fullName'] ?? 'Unknown',
+          'email': hint['email'] ?? '',
+          'phone': hint['phone'] ?? hint['contactNumber'] ?? '',
+          'user_data': hint,
+        };
+        fetchedResults.add(fallback);
+        _candidateCache[id] = _CacheEntry(fallback, DateTime.now());
       }
-
+    }
       debugPrint('✅ Batch fetched ${fetchedResults.length} candidates');
     } catch (e) {
       debugPrint('❌ Batch fetch error: $e');
@@ -948,11 +967,19 @@ class AdminProvider extends ChangeNotifier {
         if (doc.exists) {
           final data = _normalizeMap(doc.data());
           final userData = _normalizeMap(data['user_data']);
-          final personalProfile = _normalizeMap(userData['personalProfile']);
+          
+          final personalProfile = _normalizeMap(
+            data['personalProfile'] ?? 
+            data['personal_profile'] ?? 
+            userData['personalProfile'] ?? 
+            userData['personal_profile'] ?? 
+            _normalizeMap(data['user_Account_Data'] ?? {})['personalProfile'] ??
+            {}
+          );
           
           final name = personalProfile['name']?.toString() ?? 
-                       userData['name']?.toString() ?? 
                        data['name']?.toString() ?? 
+                       userData['name']?.toString() ?? 
                        'Unknown Job Seeker';
 
           // Cache it

@@ -105,7 +105,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
             const SizedBox(width: 12),
             Text(
               message,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
                 color: Colors.white,
@@ -222,7 +222,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
               const SizedBox(height: 8),
               Text(
                 steps[stepIndex]['label'] as String,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   color: isActive
@@ -253,7 +253,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
             const SizedBox(height: 24),
             Text(
               "Create Your Profile",
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF0F172A),
@@ -263,7 +263,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
             const SizedBox(height: 12),
             Text(
               "Choose how you'd like to build your professional profile",
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 18,
                 color: const Color(0xFF64748B),
                 fontWeight: FontWeight.w400,
@@ -342,7 +342,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                         const SizedBox(height: 16),
                         Text(
                           "Profile Photo",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: const Color(0xFF64748B),
                           ),
@@ -468,7 +468,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                         const SizedBox(width: 8),
                         Text(
                           "Professional Summary",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -513,7 +513,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                             const SizedBox(width: 8),
                             Text(
                               "Skills & Expertise",
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF0F172A),
@@ -529,7 +529,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                           ),
                           child: Text(
                             "Optional",
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: const Color(0xFF64748B),
                               fontWeight: FontWeight.w500,
@@ -541,7 +541,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                     const SizedBox(height: 8),
                     Text(
                       "Add skills to highlight your expertise (or skip this step)",
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF64748B),
                       ),
@@ -599,7 +599,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                       const SizedBox(height: 20),
                       Text(
                         "Suggestions:",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF94A3B8),
                           fontWeight: FontWeight.w500,
@@ -643,7 +643,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                         const SizedBox(width: 8),
                         Text(
                           "Career Objectives",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -817,7 +817,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                       children: [
                         Text(
                           p.nameController.text.isEmpty ? "Your Name" : p.nameController.text,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -868,7 +868,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                           onEdit: () => p.goToStep(1),
                           child: Text(
                             p.summaryController.text,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 15,
                               color: const Color(0xFF475569),
                               height: 1.6,
@@ -907,7 +907,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                                       children: [
                                         Text(
                                           e['institutionName'] ?? '',
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.poppins(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 16,
                                             color: const Color(0xFF0F172A),
@@ -916,7 +916,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                                         const SizedBox(height: 4),
                                         Text(
                                           "${e['majorSubjects']} • ${e['duration']}",
-                                          style: GoogleFonts.inter(
+                                          style: GoogleFonts.poppins(
                                             color: const Color(0xFF64748B),
                                             fontSize: 14,
                                           ),
@@ -924,7 +924,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                                         if (e['marksOrCgpa']?.isNotEmpty ?? false)
                                           Text(
                                             "Grade: ${e['marksOrCgpa']}",
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.poppins(
                                               color: const Color(0xFF94A3B8),
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,
@@ -955,7 +955,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                         child: p.skills.isEmpty
                             ? Text(
                           "No skills added",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: const Color(0xFF94A3B8),
                             fontStyle: FontStyle.italic,
                           ),
@@ -983,7 +983,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                           onEdit: () => p.goToStep(1),
                           child: Text(
                             p.objectivesController.text,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: const Color(0xFF475569),
                               height: 1.5,
@@ -1067,7 +1067,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                     const SizedBox(width: 16),
                     Text(
                       isEdit ? "Edit Education" : "Add Education",
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0F172A),
@@ -1117,7 +1117,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                         const SizedBox(height: 20),
                         Text(
                           "CGPA / Grade",
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -1134,7 +1134,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                             prefixIcon: Icon(Icons.score_outlined,
                                 color: const Color(0xFF94A3B8), size: 20),
                             hintText: 'e.g., 3.5 or 85%',
-                            hintStyle: GoogleFonts.inter(
+                            hintStyle: GoogleFonts.poppins(
                               color: const Color(0xFFCBD5E1),
                               fontSize: 15,
                             ),
@@ -1181,7 +1181,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                       ),
                       child: Text(
                         "Cancel",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           color: const Color(0xFF64748B),
                           fontWeight: FontWeight.w600,
                         ),
@@ -1262,7 +1262,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
               const SizedBox(height: 24),
               Text(
                 "Profile Created!",
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFF0F172A),
@@ -1271,7 +1271,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
               const SizedBox(height: 12),
               Text(
                 "Redirecting to your dashboard...",
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   color: const Color(0xFF64748B),
                 ),
@@ -1317,7 +1317,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0F172A),
@@ -1326,7 +1326,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                     fontSize: 15,
                     color: const Color(0xFF64748B),
                   ),
@@ -1353,7 +1353,7 @@ class _ProfileBuilderScreenState extends State<ProfileBuilderScreen>
           icon: const Icon(Icons.arrow_back_rounded, size: 18),
           label: Text(
             "Back",
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 15,
             ),
@@ -1607,7 +1607,7 @@ class _MethodCardState extends State<_MethodCard> {
               const SizedBox(height: 20),
               Text(
                 widget.title,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   letterSpacing: -0.3,
@@ -1617,7 +1617,7 @@ class _MethodCardState extends State<_MethodCard> {
               const SizedBox(height: 6),
               Text(
                 widget.description,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   height: 1.4,
                   color: const Color(0xFF64748B),
@@ -1663,7 +1663,7 @@ class _InputField extends StatelessWidget {
         if (showLabel) ...[
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A),
@@ -1677,14 +1677,14 @@ class _InputField extends StatelessWidget {
           onChanged: onChanged,
           onFieldSubmitted: onSubmitted,
           validator: validator ?? (v) => v!.isEmpty ? "Required" : null,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 15,
             color: const Color(0xFF0F172A),
           ),
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 20),
             hintText: hint,
-            hintStyle: GoogleFonts.inter(
+            hintStyle: GoogleFonts.poppins(
               color: const Color(0xFFCBD5E1),
               fontSize: 15,
             ),
@@ -1741,7 +1741,7 @@ class _AutoCompleteField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF0F172A),
@@ -1762,7 +1762,7 @@ class _AutoCompleteField extends StatelessWidget {
               controller: ctrl,
               focusNode: focus,
               onChanged: onChanged,
-              style: GoogleFonts.inter(fontSize: 15),
+              style: GoogleFonts.poppins(fontSize: 15),
               decoration: InputDecoration(
                 prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 20),
                 filled: false,
@@ -1814,7 +1814,7 @@ class _DatePickerFieldState extends State<_DatePickerField> {
       children: [
         Text(
           widget.label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF475569), // Slate-600 for labels
@@ -1851,7 +1851,7 @@ class _DatePickerFieldState extends State<_DatePickerField> {
                   const SizedBox(width: 12),
                   Text(
                     widget.value == null ? "Select date" : DateFormat('MMMM d, y').format(widget.value!),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: widget.value == null ? FontWeight.w400 : FontWeight.w500,
                       color: widget.value == null ? const Color(0xFF94A3B8) : const Color(0xFF0F172A),
@@ -1933,7 +1933,7 @@ class _AvatarUploaderState extends State<_AvatarUploader> {
                     const SizedBox(height: 4),
                     Text(
                       "Add Photo",
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF94A3B8),
@@ -2006,7 +2006,7 @@ class _SkillTag extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: compact ? 12 : 13,
               fontWeight: FontWeight.w600,
               color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF475569),
@@ -2054,7 +2054,7 @@ class _SuggestionChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 13,
                 color: const Color(0xFF64748B),
               ),
@@ -2102,7 +2102,7 @@ class _EducationTimelineItem extends StatelessWidget {
                 child: Center(
                   child: Text(
                     "${index + 1}",
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF6366F1),
                     ),
@@ -2148,7 +2148,7 @@ class _EducationTimelineItem extends StatelessWidget {
                           children: [
                             Text(
                               data['institutionName'] ?? '',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: const Color(0xFF0F172A),
@@ -2157,7 +2157,7 @@ class _EducationTimelineItem extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               data['majorSubjects'] ?? '',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 color: const Color(0xFF6366F1),
                                 fontWeight: FontWeight.w600,
@@ -2171,7 +2171,7 @@ class _EducationTimelineItem extends StatelessWidget {
                                 const SizedBox(width: 6),
                                 Text(
                                   data['duration'] ?? '',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     color: const Color(0xFF64748B),
                                     fontSize: 14,
                                   ),
@@ -2183,7 +2183,7 @@ class _EducationTimelineItem extends StatelessWidget {
                                   const SizedBox(width: 6),
                                   Text(
                                     data['marksOrCgpa'],
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.poppins(
                                       color: const Color(0xFF64748B),
                                       fontSize: 14,
                                     ),
@@ -2255,7 +2255,7 @@ class _ReviewCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     title,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF0F172A),
@@ -2277,7 +2277,7 @@ class _ReviewCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         "Edit",
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF6366F1),
@@ -2312,7 +2312,7 @@ class _QuickInfo extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           text,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             color: Colors.white.withOpacity(0.9),
           ),
@@ -2351,7 +2351,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF0F172A),
@@ -2360,7 +2360,7 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 15,
               color: const Color(0xFF64748B),
             ),
@@ -2426,7 +2426,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
             children: [
               Text(
                 widget.label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                   color: Colors.white,
@@ -2466,7 +2466,7 @@ class _SecondaryButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           side: const BorderSide(color: Color(0xFF6366F1)),
         ),
-        textStyle: GoogleFonts.inter(
+        textStyle: GoogleFonts.poppins(
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
@@ -2539,7 +2539,7 @@ class _YearDropdown extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF0F172A),
@@ -2558,7 +2558,7 @@ class _YearDropdown extends StatelessWidget {
               value: years.contains(value) ? value : years[0],
               isExpanded: true,
               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 15,
                 color: const Color(0xFF0F172A),
               ),

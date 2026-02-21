@@ -45,21 +45,21 @@ class BrandTypography {
     color: BrandColors.slate950,
   );
 
-  static TextStyle body = GoogleFonts.inter(
+  static TextStyle body = GoogleFonts.poppins(
     fontSize: 15,
     fontWeight: FontWeight.w400,
     color: BrandColors.slate800,
     height: 1.6,
   );
 
-  static TextStyle label = GoogleFonts.inter(
+  static TextStyle label = GoogleFonts.poppins(
     fontSize: 13,
     fontWeight: FontWeight.w600,
     color: BrandColors.slate600,
     letterSpacing: 0.5,
   );
 
-  static TextStyle caption = GoogleFonts.inter(
+  static TextStyle caption = GoogleFonts.poppins(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: BrandColors.slate400,
@@ -687,7 +687,7 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
                   const SizedBox(width: 6),
                   Text(
                     "Extraction is Powered by LLM May Not Extract Images or speical characters. You can edit any information now or later after creating profile",
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: BrandColors.emerald,

@@ -18,8 +18,13 @@ service cloud.firestore {
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() : null;
     }
 
+
     function isAdmin() {
-      return isAuth() && (userRole() == 'admin' || userRole() == 'superadmin');
+      return isAuth() && (
+        userRole() == 'admin' || 
+        userRole() == 'superadmin' ||
+        exists(/databases/$(database)/documents/admin/$(request.auth.uid))
+      );
     }
 
     function isRecruiter() {
@@ -61,8 +66,11 @@ service cloud.firestore {
       allow write: if isUser(jobSeekerId) || isAdmin();
 
       match /applied_jobs/{jobId} {
-        allow read: if isUser(jobSeekerId) || isAdmin() || isRecruiter();
-        allow write: if isUser(jobSeekerId) || isAdmin()|| isRecruiter();
+        allow read, write: if isUser(jobSeekerId) || isAdmin() || isRecruiter();
+      }
+      
+      match /{allSubcollections=**} {
+        allow read, write: if isUser(jobSeekerId) || isAdmin();
       }
     }
 
@@ -73,7 +81,11 @@ service cloud.firestore {
     match /recruiter_requests/{requestId} {
       allow read: if isAdmin() || (isRecruiter() && resource.data.recruiter_id == request.auth.uid);
       allow create: if isRecruiter();
-      allow update, delete: if isAdmin();
+      allow write: if isAdmin();
+      
+      match /{allSubcollections=**} {
+        allow read, write: if isAdmin();
+      }
     }
 
     // --- COLLECTION GROUP RULES ---

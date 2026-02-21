@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../widgets/custom_snackbars.dart';
 
 import 'admin_login_provider.dart';
 
@@ -780,10 +781,7 @@ class _LoginFormCard extends StatelessWidget {
                 _HoverTextButton(
                   text: 'Forgot Password?',
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Password recovery not implemented')),
-                    );
+                    CustomSnackbars.showInfo(context, 'Password recovery not implemented');
                   },
                 ),
               ],
@@ -832,9 +830,7 @@ class _LoginFormCard extends StatelessWidget {
                   if (context.mounted) context.go('/admin_dashboard');
                 } else {
                   if (prov.errorMessage != null && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(prov.errorMessage!)),
-                    );
+                    CustomSnackbars.showError(context, prov.errorMessage!);
                   }
                 }
               },

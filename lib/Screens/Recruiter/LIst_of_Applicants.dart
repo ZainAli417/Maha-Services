@@ -9,6 +9,7 @@ import '../../widgets/view_js_profile.dart';
 import 'AI Candidate Matching.dart';
 import 'AI Candidate Matching_Provider.dart';
 import 'LIst_of_Applicants_provider.dart';
+import '../../widgets/custom_snackbars.dart';
 
 class SmoothScrollBehavior extends MaterialScrollBehavior {
   @override
@@ -61,54 +62,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     required Color backgroundColor,
     required IconData icon,
   }) {
-    final overlay = Overlay.of(context);
-
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: 30,
-        left: 400,
-        right: 380,
-        child: Material(
-          color: Colors.transparent,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 400),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(overlayEntry);
-
-    Future.delayed(const Duration(seconds: 5), () {
-      overlayEntry.remove();
-    });
+    if (backgroundColor == Colors.red || backgroundColor == const Color(0xFFEF4444) || backgroundColor == const Color(0xFF7F1D1D)) {
+       CustomSnackbars.showError(context, message);
+    } else {
+       CustomSnackbars.showSuccess(context, message);
+    }
   }
 
   void showSuccessLight(BuildContext context, String message) {

@@ -176,7 +176,7 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
           const SizedBox(width: 12),
           Expanded(
             child: Text('JD Architect',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.textPrimary)),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.textPrimary)),
           ),
           IconButton(
             onPressed: _clearChat,
@@ -387,7 +387,7 @@ class _CopyButtonState extends State<_CopyButton> {
             const SizedBox(width: 4),
             Text(
               _copied ? 'Copied!' : 'Copy',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w500,
@@ -413,7 +413,7 @@ class _RichTextRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableText.rich(
       TextSpan(
-        style: GoogleFonts.inter(fontSize: 14, height: 1.5, color: isUser ? Colors.white : AppTheme.textPrimary),
+        style: GoogleFonts.poppins(fontSize: 14, height: 1.5, color: isUser ? Colors.white : AppTheme.textPrimary),
         children: _parseMarkdown(text),
       ),
     );

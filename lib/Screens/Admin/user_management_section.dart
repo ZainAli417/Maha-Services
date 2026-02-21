@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../widgets/custom_snackbars.dart';
 import 'admin_provider.dart';
 
 class UserManagementSection extends StatefulWidget {
@@ -86,9 +86,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AdminProvider(),
-      child: Consumer<AdminProvider>(
+    return Consumer<AdminProvider>(
         builder: (context, provider, child) {
           return FadeTransition(
             opacity: _fadeAnimation,
@@ -110,9 +108,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
             ),
           );
         },
-      ),
-    );
+      );
   }
+
+
   Widget _buildModernHeader(BuildContext context, AdminProvider prov) {
     return Container(
       height: 72,
@@ -179,7 +178,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           icon: const Icon(Icons.person_add_rounded, size: 18),
           label: Text(
             'Add User',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 14,
               letterSpacing: 0.3,
@@ -283,14 +282,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 14,
           color: const Color(0xFF0F172A),
           fontWeight: FontWeight.w400,
         ),
         decoration: InputDecoration(
           hintText: 'Search by name or email...',
-          hintStyle: GoogleFonts.inter(
+          hintStyle: GoogleFonts.poppins(
             color: const Color(0xFF94A3B8),
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -339,7 +338,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: DropdownButton<String>(
           value: value,
           onChanged: onChanged,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 14,
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.w500,
@@ -362,7 +361,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     item == 'all'
                         ? 'All ${label}s'
                         : item.replaceAll('_', ' ').split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' '),
-                    style: GoogleFonts.inter(fontSize: 14),
+                    style: GoogleFonts.poppins(fontSize: 14),
                   ),
                 ],
               ),
@@ -515,7 +514,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         Text(
           title,
           textAlign: align,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF64748B),
@@ -547,24 +546,35 @@ class _UserManagementSectionState extends State<UserManagementSection>
         hoverColor: const Color(0xFFF8FAFC),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: 3,
-                child: FutureBuilder<String>(
-                  future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
-                  builder: (context, snapshot) {
-                    final displayName = snapshot.data ?? name;
-                    return _buildUserInfo(displayName, email);
-                  },
-                ),
-              ),
-              Expanded(flex: 2, child: _buildRoleBadge(role)),
-              Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
-              Expanded(flex: 2, child: _buildStatusBadge(status)),
-              Expanded(flex: 2, child: _buildActions(context, provider, docId, data, status, email)),
-            ],
+          child: FutureBuilder<String>(
+            future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
+            builder: (context, snapshot) {
+              final displayName = snapshot.data ?? name;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: _buildUserInfo(displayName, email),
+                  ),
+                  Expanded(flex: 2, child: _buildRoleBadge(role)),
+                  Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
+                  Expanded(flex: 2, child: _buildStatusBadge(status)),
+                  Expanded(
+                    flex: 2,
+                    child: _buildActions(
+                      context,
+                      provider,
+                      docId,
+                      data,
+                      status,
+                      email,
+                      displayName,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -598,7 +608,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             child: Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -615,7 +625,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             children: [
               Text(
                 name,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -627,7 +637,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               const SizedBox(height: 2),
               Text(
                 email,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                   color: const Color(0xFF64748B),
@@ -654,7 +664,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(6),
         ),
-        textStyle: GoogleFonts.inter(fontSize: 12, color: Colors.white),
+        textStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.white),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
@@ -669,7 +679,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               const SizedBox(width: 6),
               Text(
                 role.replaceAll('_', ' ').split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' '),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: roleConfig['color'],
@@ -723,7 +733,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             const SizedBox(width: 6),
             Text(
               userLevel[0].toUpperCase() + userLevel.substring(1),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: textColor,
@@ -762,7 +772,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             const SizedBox(width: 6),
             Text(
               status[0].toUpperCase() + status.substring(1),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isActive ? const Color(0xFF059669) : const Color(0xFFDC2626),
@@ -781,6 +791,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       Map<String, dynamic> data,
       String status,
       String email,
+      String? name,
       ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -789,7 +800,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Icons.edit_note_rounded,
           'Edit User',
           const Color(0xFF4F46E5),
-              () => _showEditUserDialog(context, provider, data, docId),
+              () => _showEditUserDialog(context, provider, data, docId, name),
         ),
         const SizedBox(width: 6),
         _buildActionButton(
@@ -824,7 +835,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           ),
         ],
       ),
-      textStyle: GoogleFonts.inter(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500),
+      textStyle: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -865,7 +876,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               const SizedBox(width: 8),
               Text(
                 'Showing $count user${count != 1 ? 's' : ''} from System',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF64748B),
@@ -926,7 +937,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           const SizedBox(height: 20),
           Text(
             'Loading users...',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF64748B),
               fontWeight: FontWeight.w500,
@@ -954,7 +965,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           const SizedBox(height: 20),
           Text(
             'Unable to Load Users',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A),
@@ -965,7 +976,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             constraints: const BoxConstraints(maxWidth: 400),
             child: Text(
               error,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: const Color(0xFF64748B),
                 height: 1.5,
@@ -979,7 +990,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             icon: const Icon(Icons.refresh_rounded, size: 18),
             label: Text(
               'Retry',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4F46E5),
@@ -1011,7 +1022,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           const SizedBox(height: 24),
           Text(
             'No Users Found',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A),
@@ -1020,7 +1031,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           const SizedBox(height: 8),
           Text(
             'Try adjusting your search or filters to find what you\'re looking for',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF64748B),
               height: 1.5,
@@ -1038,7 +1049,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             icon: const Icon(Icons.clear_all_rounded, size: 18),
             label: Text(
               'Clear Filters',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF4F46E5),
               ),
@@ -1061,8 +1072,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
       AdminProvider provider,
       Map<String, dynamic> data,
       String docId,
+      String? resolvedName,
       ) {
-    provider.editUser(data, docId);
+    provider.editUser(data, docId, resolvedName: resolvedName);
     _showUserDialog(context, provider, 'Edit User', true, data);
   }
 
@@ -1136,7 +1148,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               children: [
                                 Text(
                                   title,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.white,
@@ -1146,7 +1158,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 const SizedBox(height: 4),
                                 Text(
                                   isEdit ? 'Update user information' : 'Create new account',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 13,
                                     color: Colors.white.withOpacity(0.9),
                                   ),
@@ -1247,7 +1259,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                             ),
                             child: Text(
                               'Cancel',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 color: const Color(0xFF64748B),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -1278,7 +1290,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 : Icon(isEdit ? Icons.save_rounded : Icons.add_rounded, size: 18),
                             label: Text(
                               isEdit ? 'Save Changes' : 'Create User',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -1381,7 +1393,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               const SizedBox(width: 10),
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF64748B),
@@ -1413,7 +1425,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       child: DropdownButtonFormField<String>(
         value: selectedLevel,
         focusColor: null,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.poppins(
           fontSize: 14,
           color: const Color(0xFF0F172A),
           fontWeight: FontWeight.w500,
@@ -1426,7 +1438,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               children: [
                 const Icon(Icons.person_outline, size: 18, color: Color(0xFF64748B)),
                 const SizedBox(width: 12),
-                Text('Basic Account', style: GoogleFonts.inter(fontSize: 14)),
+                Text('Basic Account', style: GoogleFonts.poppins(fontSize: 14)),
               ],
             ),
           ),
@@ -1438,7 +1450,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 const SizedBox(width: 12),
                 Row(
                   children: [
-                    Text('Premium Account', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
+                    Text('Premium Account', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1448,7 +1460,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       ),
                       child: Text(
                         'PRO',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.poppins(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFFD97706),
@@ -1471,7 +1483,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: GoogleFonts.inter(
+      style: GoogleFonts.poppins(
         fontSize: 13,
         fontWeight: FontWeight.w600,
         color: const Color(0xFF374151),
@@ -1534,7 +1546,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     const SizedBox(height: 24),
                     Text(
                       'Reset Password',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -1543,7 +1555,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     const SizedBox(height: 12),
                     Text(
                       'A password reset link will be sent to:',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: const Color(0xFF64748B),
                         height: 1.5,
@@ -1564,7 +1576,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           const SizedBox(width: 10),
                           Text(
                             email,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF0F172A),
@@ -1598,7 +1610,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         ),
                         child: Text(
                           'Cancel',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             color: const Color(0xFF64748B),
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -1612,12 +1624,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         onPressed: () {
                           provider.resetPassword(email);
                           Navigator.pop(dialogContext);
-                          _showSuccessSnackbar(context, 'Password reset email sent');
+                          CustomSnackbars.showSuccess(context, 'Password reset email sent');
                         },
                         icon: const Icon(Icons.send_rounded, size: 18),
                         label: Text(
                           'Send Link',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
@@ -1641,30 +1653,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-  void _showSuccessSnackbar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white),
-            const SizedBox(width: 12),
-            Text(
-              message,
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
 
   Widget _buildDialogField(
       String label,
@@ -1683,7 +1671,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           controller: controller,
           obscureText: obscureText,
           readOnly: readOnly,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.poppins(
             fontSize: 15,
             color: const Color(0xFF0F172A),
             fontWeight: FontWeight.w500,
@@ -1692,7 +1680,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
             filled: false,
             hintText: 'Enter $label',
-            hintStyle: GoogleFonts.inter(
+            hintStyle: GoogleFonts.poppins(
               fontSize: 14,
               color: const Color(0xFF94A3B8),
             ),
