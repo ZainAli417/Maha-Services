@@ -169,6 +169,20 @@ void main() async {
     debugPrint('⚠️ Google Fonts pre-load failed – using fallback fonts.');
   }
 
+  // ── Fix: Suppress LegacyJavaScriptObject crash in Flutter Web debug mode ──
+  // Flutter's widget_inspector.dart has a bug on web where error diagnostics
+  // crash with "LegacyJavaScriptObject is not a subtype of DiagnosticsNode".
+  // This custom handler prints errors cleanly without the buggy debug renderer.
+  if (kIsWeb) {
+    FlutterError.onError = (FlutterErrorDetails details) {
+      debugPrint('═══ Flutter Error ═══');
+      debugPrint('${details.exception}');
+      if (details.stack != null) {
+        debugPrint('${details.stack.toString().split('\n').take(8).join('\n')}');
+      }
+      debugPrint('═══════════════════');
+    };
+  }
 
   runApp(
     MultiProvider(

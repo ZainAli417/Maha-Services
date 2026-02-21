@@ -13,22 +13,21 @@ service cloud.firestore {
     }
 
     function userRole() {
-      // Cautiously fetch the user's role if the user doc exists to prevent crashes
+      // Fetch the user's role and normalize it to lowercase
       return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ?
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() : null;
     }
 
     function isAdmin() {
-      return isAuth() && (userRole() == 'admin' || userRole() == 'Admin');
+      return isAuth() && (userRole() == 'admin' || userRole() == 'superadmin');
     }
 
     function isRecruiter() {
-      // Allow capital 'R' and lowercase 'r'
-      return isAuth() && (userRole() == 'Recruiter' || userRole() == 'recruiter');
+      return isAuth() && (userRole() == 'recruiter' || userRole() == 'employer');
     }
 
     function isJobSeeker() {
-      return isAuth() && (userRole() == 'Job_Seeker' || userRole() == 'JobSeeker' || userRole() == 'job_seeker');
+      return isAuth() && (userRole() == 'job_seeker' || userRole() == 'jobseeker' || userRole() == 'candidate' || userRole() == 'job seeker');
     }
 
     // --- COLLECTION RULES ---
@@ -63,12 +62,12 @@ service cloud.firestore {
 
       match /applied_jobs/{jobId} {
         allow read: if isUser(jobSeekerId) || isAdmin() || isRecruiter();
-        allow write: if isUser(jobSeekerId) || isAdmin();
+        allow write: if isUser(jobSeekerId) || isAdmin()|| isRecruiter();
       }
     }
 
     match /applications/{userId}/{document=**} {
-      allow read, write: if isUser(userId) || isAdmin();
+      allow read, write: if isUser(userId) || isAdmin()|| isRecruiter();
     }
 
     match /recruiter_requests/{requestId} {

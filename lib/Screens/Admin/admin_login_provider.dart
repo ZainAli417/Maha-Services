@@ -168,28 +168,39 @@ class AdminAuthProvider extends ChangeNotifier {
     }
 
     try {
-      // Use get with source options for better performance
-      final doc = await _firestore
+      // 1. Check SPECIFIC admin collection first
+      final adminDoc = await _firestore
           .collection('admin')
           .doc(uid)
           .get(const GetOptions(source: Source.serverAndCache));
 
-      final isAdmin = doc.exists;
-
-      // Update cache
-      _adminCache[uid] = isAdmin;
-      _lastCacheTime = DateTime.now();
-
-      if (kDebugMode) {
-        print('Admin check: Fetched from Firestore - isAdmin: $isAdmin');
+      if (adminDoc.exists) {
+        _adminCache[uid] = true;
+        _lastCacheTime = DateTime.now();
+        return true;
       }
 
-      return isAdmin;
+      // 2. Fallback: Check the users collection's role field
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final String? role = data?['role']?.toString().toLowerCase();
+        final isAdmin = role == 'admin';
+
+        _adminCache[uid] = isAdmin;
+        _lastCacheTime = DateTime.now();
+        return isAdmin;
+      }
+
+      return false;
     } catch (e) {
       if (kDebugMode) {
         print('Admin check error: $e');
       }
-      // On error, don't cache and return false
       return false;
     }
   }

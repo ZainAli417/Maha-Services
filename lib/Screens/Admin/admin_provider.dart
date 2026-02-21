@@ -902,6 +902,71 @@ class AdminProvider extends ChangeNotifier {
     return <String, dynamic>{};
   }
 
+  // ============================================================================
+  // UNIFIED NAME RESOLUTION
+  // ============================================================================
+
+  /// Fetches the name of a user based on their role and specific collection structure
+  Future<String> fetchUnifiedName(String uid, String role) async {
+    final normalizedRole = role.toLowerCase().trim();
+
+    try {
+      // 1. ADMIN - Fetch from 'users' collection directly (this is usually already in data)
+      if (normalizedRole == 'admin') {
+        final doc = await _firestore.collection('users').doc(uid).get();
+        return doc.data()?['name'] ?? 'Unknown Admin';
+      }
+
+      // 2. RECRUITER - recruiter/{uid} -> user_data -> name
+      if (normalizedRole == 'recruiter') {
+        // Check cache first
+        if (_recruiterCache.containsKey(uid)) {
+          final cached = _recruiterCache[uid]!;
+          return cached.data['name'] ?? 'Unknown Recruiter';
+        }
+
+        final doc = await _firestore.collection('recruiter').doc(uid).get();
+        if (doc.exists) {
+          final data = _normalizeMap(doc.data());
+          final userData = _normalizeMap(data['user_data']);
+          final name = userData['name']?.toString() ?? data['name']?.toString() ?? 'Unknown Recruiter';
+          
+          // Cache it for future use
+          _recruiterCache[uid] = _CacheEntry({'name': name}, DateTime.now());
+          return name;
+        }
+      }
+
+      // 3. JOB SEEKER - Job_Seeker/{uid} -> user_data -> personalProfile -> name
+      if (normalizedRole == 'job seeker' || normalizedRole == 'job_seeker') {
+        // Check cache first
+        if (_candidateCache.containsKey(uid)) {
+          return _candidateCache[uid]!.data['name'] ?? 'Unknown Job Seeker';
+        }
+
+        final doc = await _firestore.collection('Job_Seeker').doc(uid).get();
+        if (doc.exists) {
+          final data = _normalizeMap(doc.data());
+          final userData = _normalizeMap(data['user_data']);
+          final personalProfile = _normalizeMap(userData['personalProfile']);
+          
+          final name = personalProfile['name']?.toString() ?? 
+                       userData['name']?.toString() ?? 
+                       data['name']?.toString() ?? 
+                       'Unknown Job Seeker';
+
+          // Cache it
+          _candidateCache[uid] = _CacheEntry({'name': name}, DateTime.now());
+          return name;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error fetching unified name for $uid ($role): $e');
+    }
+
+    return 'Unknown User';
+  }
+
   @override
   void dispose() {
     _nameController.dispose();

@@ -550,7 +550,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(flex: 3, child: _buildUserInfo(name, email)),
+              Expanded(
+                flex: 3,
+                child: FutureBuilder<String>(
+                  future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
+                  builder: (context, snapshot) {
+                    final displayName = snapshot.data ?? name;
+                    return _buildUserInfo(displayName, email);
+                  },
+                ),
+              ),
               Expanded(flex: 2, child: _buildRoleBadge(role)),
               Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
               Expanded(flex: 2, child: _buildStatusBadge(status)),
@@ -676,8 +685,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   Widget _buildLevelBadge(String userLevel) {
     final level = userLevel.toLowerCase();
     final isPremium = level == 'premium';
-    final isFree = level == 'free';
-    final isBasic = level == 'basic';
+    final isBasic = level == 'basic' || level == 'free'; // Treat legacy free as basic
 
     Color bgColor;
     Color borderColor;
@@ -691,12 +699,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
       iconColor = const Color(0xFFF59E0B);
       textColor = const Color(0xFFB45309);
       icon = Icons.workspace_premium_rounded;
-    } else if (isFree) {
-      bgColor = const Color(0xFFEFF6FF);
-      borderColor = const Color(0xFF93C5FD).withOpacity(0.5);
-      iconColor = const Color(0xFF3B82F6);
-      textColor = const Color(0xFF1D4ED8);
-      icon = Icons.card_giftcard_rounded;
     } else {
       bgColor = const Color(0xFFF1F5F9);
       borderColor = const Color(0xFFE2E8F0);
@@ -1418,16 +1420,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
         ),
         icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
         items: [
-          DropdownMenuItem(
-            value: 'free',
-            child: Row(
-              children: [
-                const Icon(Icons.card_giftcard_rounded, size: 18, color: Color(0xFF3B82F6)),
-                const SizedBox(width: 12),
-                Text('Free Account', style: GoogleFonts.inter(fontSize: 14)),
-              ],
-            ),
-          ),
           DropdownMenuItem(
             value: 'basic',
             child: Row(

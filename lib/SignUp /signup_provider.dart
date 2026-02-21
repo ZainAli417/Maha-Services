@@ -357,7 +357,7 @@ class SignupProvider extends ChangeNotifier {
         'isNew': isNewValue,  // ✅ Set based on profile data
         'uid': uid,
         'account_status': 'active',
-        'user_lvl': 'free',
+        'user_lvl': 'basic',
         'created_at': FieldValue.serverTimestamp(),
       });
 
@@ -458,7 +458,7 @@ class SignupProvider extends ChangeNotifier {
             'role': role,
             'isNew': 'no',
             'account_status': 'active',
-            'user_lvl': 'free',
+            'user_lvl': 'basic',
             'created_at': FieldValue.serverTimestamp(),
             'profileCompletedAt': FieldValue.serverTimestamp(),
             'name': nameController.text.trim(),
