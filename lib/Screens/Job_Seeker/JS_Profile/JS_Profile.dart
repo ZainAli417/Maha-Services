@@ -1296,9 +1296,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: prov.professionalStatus.isEmpty
-                        ? null
-                        : prov.professionalStatus,
+                    value: (prov.professionalStatus == 'serving' || prov.professionalStatus == 'retired')
+                        ? prov.professionalStatus
+                        : null,
                     hint: Text(
                       'Select status',
                       style: GoogleFonts.poppins(
