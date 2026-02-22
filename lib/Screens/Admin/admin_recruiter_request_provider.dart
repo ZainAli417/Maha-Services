@@ -562,8 +562,9 @@ class AdminProvider extends ChangeNotifier {
             final n = _normalizeMap(entry);
             hint = n;
             rawUid = (n['uid'] ?? n['user_id'] ?? n['id'] ?? '').toString().trim();
-            if (rawUid.isEmpty && n['email'] != null)
+            if (rawUid.isEmpty && n['email'] != null) {
               rawUid = n['email'].toString().trim();
+            }
           } else if (entry is String) {
             rawUid = entry.trim();
           } else if (entry is DocumentReference) {

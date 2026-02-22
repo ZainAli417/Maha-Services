@@ -41,7 +41,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildContent() {
     switch (_selectedMenu) {
       case 'Dashboard':
-        return const Home_admin();
+        return const AdminAnalyticsDashboardScreen();
       case 'User Management':
         return const UserManagementSection();
       case 'Recruiter Requests':

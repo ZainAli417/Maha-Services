@@ -1,506 +1,317 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+
 import 'admin_analytics_dashboard_Provider.dart';
 
-class Home_admin extends StatefulWidget {
-  const Home_admin({super.key});
+class AdminAnalyticsDashboardScreen extends StatefulWidget {
+  const AdminAnalyticsDashboardScreen({super.key});
 
   @override
-  State<Home_admin> createState() => _Home_adminState();
+  State<AdminAnalyticsDashboardScreen> createState() => _AdminAnalyticsDashboardScreenState();
 }
 
-class _Home_adminState extends State<Home_admin>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
+class _AdminAnalyticsDashboardScreenState extends State<AdminAnalyticsDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AdminAnalyticsProvider>().refresh();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DashboardProvider(),
-      child: Consumer<DashboardProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return _buildLoadingState();
-          }
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Consumer<AdminAnalyticsProvider>(
+        builder: (context, prov, child) {
+          final isWide = MediaQuery.of(context).size.width > 1100;
 
-          if (provider.errorMessage != null) {
-            return _buildErrorState(provider);
-          }
-
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: Container(
-              color: const Color(0xFFFAFAFA),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(provider),
-                    const SizedBox(height: 24),
-                    _buildMetricsGrid(provider),
-                    const SizedBox(height: 20),
-                    _buildChartsRow(provider),
-                    const SizedBox(height: 20),
-                    _buildBottomRow(provider),
-                  ],
+          return Column(
+            children: [
+              _buildModernHeader(prov),
+              Expanded(
+                child: prov.loading && prov.totalUsers == 0
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)))
+                    : RefreshIndicator(
+                  onRefresh: prov.refresh,
+                  backgroundColor: Colors.white,
+                  color: const Color(0xFF6366F1),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // MAIN CONTENT
+                      Expanded(
+                        flex: 7,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('Overview Metrics'),
+                              const SizedBox(height: 16),
+                              _buildKPISection(prov, isWide),
+                              const SizedBox(height: 32),
+                              _buildSectionTitle('Platform Activity & Demand'),
+                              const SizedBox(height: 16),
+                              if (isWide)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(flex: 3, child: _buildSkillsBarChart(prov)),
+                                    const SizedBox(width: 24),
+                                    Expanded(flex: 2, child: _buildTopRecruitersCard(prov)),
+                                  ],
+                                )
+                              else
+                                Column(
+                                  children: [
+                                    _buildSkillsBarChart(prov),
+                                    const SizedBox(height: 24),
+                                    _buildTopRecruitersCard(prov),
+                                  ],
+                                ),
+                              const SizedBox(height: 32),
+                              if (isWide)
+                                Row(
+                                  children: [
+                                    Expanded(child: _buildPieCard(
+                                      title: 'Requests Distribution',
+                                      data: prov.requestsByStatus,
+                                      colors: [const Color(0xFFF59E0B), const Color(0xFF10B981), const Color(0xFFEF4444)],
+                                    )),
+                                    const SizedBox(width: 24),
+                                    Expanded(child: _buildPieCard(
+                                      title: 'Jobs Distribution',
+                                      data: prov.jobsByStatus,
+                                      colors: [const Color(0xFF3B82F6), const Color(0xFF64748B)],
+                                    )),
+                                  ],
+                                )
+                              else
+                                Column(
+                                  children: [
+                                    _buildPieCard(
+                                      title: 'Requests Distribution',
+                                      data: prov.requestsByStatus,
+                                      colors: [const Color(0xFFF59E0B), const Color(0xFF10B981), const Color(0xFFEF4444)],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    _buildPieCard(
+                                      title: 'Jobs Distribution',
+                                      data: prov.jobsByStatus,
+                                      colors: [const Color(0xFF3B82F6), const Color(0xFF64748B)],
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                      // RIGHT SIDE PANEL: Recent Requests
+                      if (isWide)
+                        Container(
+                          width: 380,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border(left: BorderSide(color: Colors.grey.shade200)),
+                          ),
+                          child: _buildRightSidePanel(prov),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildHeader(DashboardProvider provider) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Dashboard',
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
-                letterSpacing: -0.8,
-                height: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Platform analytics & insights',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF6B7280),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ],
-        ),
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => provider.refreshData(),
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  // ─── Header ───────────────────────────────────────────────────────────────
+
+  Widget _buildModernHeader(AdminAnalyticsProvider prov) {
+    return Container(
+      height: 72,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF6366F1).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Refresh',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF374151),
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.analytics_outlined,
+                  color: Color(0xFF6366F1),
+                  size: 24,
                 ),
               ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricsGrid(DashboardProvider provider) {
-    final stats = provider.getTopStats();
-    return Row(
-      children: List.generate(4, (index) {
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: index < 3 ? 16 : 0),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: Duration(milliseconds: 300 + (index * 80)),
-              curve: Curves.easeOut,
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
-                    child: child,
-                  ),
-                );
-              },
-              child: _buildCompactMetricCard(stats[index]),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildCompactMetricCard(Map<String, dynamic> stat) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: (stat['color'] as Color).withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  stat['icon'] as IconData,
-                  color: stat['color'] as Color,
-                  size: 18,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (stat['isPositive'] as bool)
-                      ? const Color(0xFF10B981).withOpacity(0.08)
-                      : const Color(0xFFEF4444).withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      (stat['isPositive'] as bool)
-                          ? Icons.arrow_upward_rounded
-                          : Icons.arrow_downward_rounded,
-                      size: 10,
-                      color: (stat['isPositive'] as bool)
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444),
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${stat['growth']}%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: (stat['isPositive'] as bool)
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '${stat['value']}',
-            style: GoogleFonts.poppins(
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF111827),
-              letterSpacing: -0.8,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            stat['title'] as String,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF6B7280),
-              letterSpacing: -0.1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChartsRow(DashboardProvider provider) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 3,
-          child: _buildLineChart(provider),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          flex: 2,
-          child: _buildPieChart(provider),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLineChart(DashboardProvider provider) {
-    final jobSeekerData = provider.weeklyJobSeekers
-        .map((d) => ChartData(d['day'] as String, (d['count'] as int).toDouble()))
-        .toList();
-    final recruiterData = provider.weeklyRecruiters
-        .map((d) => ChartData(d['day'] as String, (d['count'] as int).toDouble()))
-        .toList();
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'User Growth Trend',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
-                  letterSpacing: -0.3,
-                ),
-              ),
-              Row(
+              const SizedBox(width: 16),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCompactLegend('Job Seekers', const Color(0xFF10B981)),
-                  const SizedBox(width: 12),
-                  _buildCompactLegend('Recruiters', const Color(0xFF8B5CF6)),
+                  Text(
+                    'Analytics Dashboard',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    'Real-time Platform Insights',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 220,
-            child: SfCartesianChart(
-              plotAreaBorderWidth: 0,
-              margin: const EdgeInsets.fromLTRB(0, 10, 10, 0),
-              primaryXAxis: CategoryAxis(
-                majorGridLines: const MajorGridLines(width: 0),
-                axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: const Color(0xFF9CA3AF),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              primaryYAxis: NumericAxis(
-                majorGridLines: MajorGridLines(
-                  width: 1,
-                  color: const Color(0xFFF3F4F6),
-                ),
-                axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: const Color(0xFF9CA3AF),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                elevation: 2,
-                canShowMarker: false,
-                header: '',
-                format: 'point.x: point.y',
-                textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
-              ),
-              series: <CartesianSeries<ChartData, String>>[
-                SplineAreaSeries<ChartData, String>(
-                  dataSource: jobSeekerData,
-                  xValueMapper: (ChartData data, _) => data.x,
-                  yValueMapper: (ChartData data, _) => data.y,
-                  name: 'Job Seekers',
-                  color: const Color(0xFF10B981).withOpacity(0.3),
-                  borderColor: const Color(0xFF10B981),
-                  borderWidth: 2,
-                  markerSettings: const MarkerSettings(
-                    isVisible: true,
-                    height: 5,
-                    width: 5,
-                    color: Colors.white,
-                    borderColor: Color(0xFF10B981),
-                    borderWidth: 2,
-                  ),
-                ),
-                SplineAreaSeries<ChartData, String>(
-                  dataSource: recruiterData,
-                  xValueMapper: (ChartData data, _) => data.x,
-                  yValueMapper: (ChartData data, _) => data.y,
-                  name: 'Recruiters',
-                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
-                  borderColor: const Color(0xFF8B5CF6),
-                  borderWidth: 2,
-                  markerSettings: const MarkerSettings(
-                    isVisible: true,
-                    height: 5,
-                    width: 5,
-                    color: Colors.white,
-                    borderColor: Color(0xFF8B5CF6),
-                    borderWidth: 2,
-                  ),
-                ),
-              ],
+          if (prov.loading)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildPieChart(DashboardProvider provider) {
-    final pieData = [
-      PieData('Job Seekers', provider.totalJobSeekers.toDouble(), const Color(0xFF10B981)),
-      PieData('Recruiters', provider.totalRecruiters.toDouble(), const Color(0xFF8B5CF6)),
+  Widget _buildSectionTitle(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1E293B),
+      ),
+    );
+  }
+
+  // ─── KPI Section ──────────────────────────────────────────────────────────
+
+  Widget _buildKPISection(AdminAnalyticsProvider prov, bool isWide) {
+    final kpis = [
+      _KPI('Total Users', prov.totalUsers, Icons.groups_outlined, const Color(0xFF3B82F6),
+          subtitle: 'JobSeeker: ${prov.totalJobSeekers} | Recruiter: ${prov.totalRecruiters} | Admin: ${prov.totalAdmins}'),
+      _KPI('Total Jobs Posted', prov.totalJobs, Icons.work_outline, const Color(0xFF10B981),
+          subtitle: 'Across platform'),
+      _KPI('Total Requests', prov.totalRequests, Icons.forward_to_inbox, const Color(0xFFF59E0B),
+          subtitle: 'Received from recruiters'),
+      _KPI('Handover Candidates', prov.candidatesProcessed, Icons.verified_user_outlined, const Color(0xFF8B5CF6),
+          subtitle: 'Candidates with status Handover'),
     ];
 
+    if (isWide) {
+      return GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+        childAspectRatio: 3,
+        children: kpis.map((kpi) => _buildKPICard(kpi)).toList(),
+      );
+    } else {
+      return GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 1,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 3,
+        children: kpis.map((kpi) => _buildKPICard(kpi)).toList(),
+      );
+    }
+  }
+
+  Widget _buildKPICard(_KPI kpi) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: kpi.color.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'User Distribution',
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF111827),
-              letterSpacing: -0.3,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kpi.color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(kpi.icon, color: kpi.color, size: 28),
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 220,
-            child: SfCircularChart(
-              margin: EdgeInsets.zero,
-              legend: Legend(
-                isVisible: true,
-                position: LegendPosition.bottom,
-                overflowMode: LegendItemOverflowMode.wrap,
-                textStyle: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF6B7280),
-                ),
-                iconHeight: 10,
-                iconWidth: 10,
-              ),
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                format: 'point.x: point.y',
-                textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
-              ),
-              series: <CircularSeries>[
-                DoughnutSeries<PieData, String>(
-                  dataSource: pieData,
-                  xValueMapper: (PieData data, _) => data.category,
-                  yValueMapper: (PieData data, _) => data.value,
-                  pointColorMapper: (PieData data, _) => data.color,
-                  dataLabelSettings: DataLabelSettings(
-                    isVisible: true,
-                    labelPosition: ChartDataLabelPosition.outside,
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
-                    ),
-                    builder: (data, point, series, pointIndex, seriesIndex) {
-                      final pieData = data as PieData;
-                      final total = provider.totalUsers;
-                      final percentage = total > 0 ? ((pieData.value / total) * 100).toStringAsFixed(1) : '0';
-                      return Text(
-                        '$percentage%',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF111827),
-                        ),
-                      );
-                    },
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  kpi.title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
                   ),
-                  innerRadius: '65%',
-                  radius: '90%',
-                  explode: true,
-                  explodeOffset: '3%',
+                ),
+                const SizedBox(height: 4),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: kpi.value),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Text(
+                      value.toString(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                        height: 1,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  kpi.subtitle,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -510,38 +321,24 @@ class _Home_adminState extends State<Home_admin>
     );
   }
 
-  Widget _buildBottomRow(DashboardProvider provider) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildJobsCard(provider),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildRequestsCard(provider),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildActivityCard(provider),
-        ),
-      ],
-    );
-  }
+  // ─── Charts Section ───────────────────────────────────────────────────────
 
-  Widget _buildJobsCard(DashboardProvider provider) {
+  Widget _buildSkillsBarChart(AdminAnalyticsProvider prov) {
+    final skills = prov.skillFrequencies.keys.toList();
+    final counts = prov.skillFrequencies.values.toList();
+    final maxCount = counts.isNotEmpty ? counts.reduce((a, b) => a > b ? a : b) : 1;
+
     return Container(
-      padding: const EdgeInsets.all(18),
+      height: 400,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.2),
-            blurRadius: 8,
+            color: const Color(0xFF0F172A).withOpacity(0.02),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -549,112 +346,103 @@ class _Home_adminState extends State<Home_admin>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.work_outline_rounded, color: Colors.white, size: 18),
-          ),
-          const SizedBox(height: 14),
           Text(
-            '${provider.totalJobsPosted}',
+            'In-Demand Technical Skills',
             style: GoogleFonts.poppins(
-              fontSize: 32,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
-              letterSpacing: -1,
-              height: 1,
+              color: const Color(0xFF1E293B),
             ),
           ),
-          const SizedBox(height: 4),
           Text(
-            'Jobs Posted',
+            'Based on latest Job Seeker profiles',
             style: GoogleFonts.poppins(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
+              color: const Color(0xFF64748B),
             ),
           ),
-          const SizedBox(height: 12),
-          _buildMiniSparkline(provider.weeklyJobs, Colors.white),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRequestsCard(DashboardProvider provider) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBBF24).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.pending_actions_outlined,
-              color: Color(0xFFFBBF24),
-              size: 18,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '${provider.totalRecruiterRequests}',
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF111827),
-              letterSpacing: -1,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Pending Requests',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBBF24).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.schedule_rounded, size: 10, color: Color(0xFFFBBF24)),
-                const SizedBox(width: 4),
-                Text(
-                  'Needs review',
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFFBBF24),
+          const SizedBox(height: 32),
+          Expanded(
+            child: skills.isEmpty
+                ? const Center(child: Text("Not enough data to graph", style: TextStyle(color: Colors.grey)))
+                : BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxCount.toDouble() * 1.2,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => const Color(0xFF1E293B),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${skills[group.x]}\n${rod.toY.round()} Users',
+                        GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                      );
+                    },
                   ),
                 ),
-              ],
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= skills.length) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            skills[index].length > 10 ? '${skills[index].substring(0, 8)}..' : skills[index],
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) => Text(
+                        value.toInt().toString(),
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF94A3B8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: const Color(0xFFF1F5F9),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(
+                  skills.length,
+                      (i) => BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: counts[i].toDouble(),
+                        color: const Color(0xFF6366F1),
+                        width: 20,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              swapAnimationDuration: const Duration(milliseconds: 600),
             ),
           ),
         ],
@@ -662,276 +450,300 @@ class _Home_adminState extends State<Home_admin>
     );
   }
 
-  Widget _buildActivityCard(DashboardProvider provider) {
-    final summary = provider.getActivitySummary();
+  Widget _buildTopRecruitersCard(AdminAnalyticsProvider prov) {
+    final tops = prov.topRecruiters;
     return Container(
-      padding: const EdgeInsets.all(18),
+      height: 400,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: const Color(0xFF0F172A).withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.trending_up_rounded,
-              color: Color(0xFF10B981),
-              size: 18,
-            ),
-          ),
-          const SizedBox(height: 14),
           Text(
-            '${summary['total_registrations']}',
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF111827),
-              letterSpacing: -1,
-              height: 1,
-            ),
+             'Top Active Recruiters',
+             style: GoogleFonts.poppins(
+               fontSize: 16,
+               fontWeight: FontWeight.w600,
+               color: const Color(0xFF1E293B),
+             ),
           ),
-          const SizedBox(height: 4),
           Text(
-            'Total Users',
+            'By total request volume',
             style: GoogleFonts.poppins(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF6B7280),
+              color: const Color(0xFF64748B),
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMicroStat(
-                  '${summary['job_seeker_percentage']}%',
-                  'Job Seekers',
-                  const Color(0xFF10B981),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildMicroStat(
-                  '${summary['recruiter_percentage']}%',
-                  'Recruiters',
-                  const Color(0xFF8B5CF6),
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 24),
+          Expanded(
+             child: tops.isEmpty
+                 ? const Center(child: Text("No recruiters activity yet", style: TextStyle(color: Colors.grey)))
+                 : ListView.separated(
+                   itemCount: tops.length,
+                   separatorBuilder: (c,i) => const SizedBox(height: 16),
+                   itemBuilder: (context, i) {
+                     final email = tops.keys.elementAt(i);
+                     final count = tops[email]!;
+                     return Row(
+                       children: [
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.1),
+                            child: Text(email[0].toUpperCase(), style: const TextStyle(color: Color(0xFF8B5CF6), fontWeight: FontWeight.bold)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              email,
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 13, color: const Color(0xFF334155)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                               color: const Color(0xFFF1F5F9),
+                               borderRadius: BorderRadius.circular(12)
+                            ),
+                            child: Text(
+                              '$count reqs',
+                              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF64748B)),
+                            ),
+                          )
+                       ],
+                     );
+                   }
+                 )
+          )
         ],
       ),
     );
   }
 
-  Widget _buildMicroStat(String value, String label, Color color) {
+  Widget _buildPieCard({required String title, required Map<String, int> data, required List<Color> colors}) {
+    final hasData = data.values.any((v) => v > 0);
+    int total = hasData ? data.values.reduce((a, b) => a + b) : 1;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(6),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value,
+            title,
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: color,
-              height: 1,
+              color: const Color(0xFF1E293B),
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 9,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF6B7280),
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMiniSparkline(List<Map<String, dynamic>> data, Color color) {
-    final sparkData = data
-        .map((d) => ChartData('', (d['count'] as int).toDouble()))
-        .toList();
-
-    return SizedBox(
-      height: 32,
-      child: SfCartesianChart(
-        plotAreaBorderWidth: 0,
-        margin: EdgeInsets.zero,
-        primaryXAxis: CategoryAxis(
-          isVisible: false,
-        ),
-        primaryYAxis: NumericAxis(
-          isVisible: false,
-        ),
-        series: <CartesianSeries<ChartData, String>>[
-          SplineSeries<ChartData, String>(
-            dataSource: sparkData,
-            xValueMapper: (ChartData data, _) => data.x,
-            yValueMapper: (ChartData data, _) => data.y,
-            color: color.withOpacity(0.8),
-            width: 2,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactLegend(String label, Color color) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF6B7280),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Container(
-      color: const Color(0xFFFAFAFA),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          const SizedBox(height: 24),
+          if (!hasData)
             const SizedBox(
-              width: 32,
-              height: 32,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-                strokeWidth: 2.5,
+              height: 180,
+              child: Center(child: Text("No Data", style: TextStyle(color: Colors.grey))),
+            )
+          else
+            SizedBox(
+              height: 180,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: PieChart(
+                      PieChartData(
+                        sectionsSpace: 2,
+                        centerSpaceRadius: 45,
+                        sections: List.generate(data.keys.length, (i) {
+                          final key = data.keys.elementAt(i);
+                          final value = data[key]!;
+                          return PieChartSectionData(
+                            color: colors[i % colors.length],
+                            value: value.toDouble(),
+                            title: '${((value / total) * 100).toStringAsFixed(0)}%',
+                            radius: 20,
+                            titleStyle: GoogleFonts.poppins(
+                                fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                          );
+                        }),
+                      ),
+                      swapAnimationDuration: const Duration(milliseconds: 600),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: List.generate(data.keys.length, (i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color: colors[i % colors.length],
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${data.keys.elementAt(i)} (${data.values.elementAt(i)})',
+                                  style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF475569)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Loading...',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6B7280),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildErrorState(DashboardProvider provider) {
-    return Container(
-      color: const Color(0xFFFAFAFA),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEE2E2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                size: 32,
-                color: Color(0xFFEF4444),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error Loading Dashboard',
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              provider.errorMessage ?? 'Unknown error',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: const Color(0xFF6B7280),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => provider.refreshData(),
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: Text(
-                'Retry',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 0,
-              ),
-            ),
-          ],
-        ),
-      ),
+  // ─── RIGHT SIDE PANEL ──────────────────────────────────────────────────────
+
+  Widget _buildRightSidePanel(AdminAnalyticsProvider prov) {
+    return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+          Container(
+             padding: const EdgeInsets.all(24),
+             decoration: const BoxDecoration(
+               border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+             ),
+             child: Row(
+                children: [
+                   const Icon(Icons.history, color: Color(0xFF6366F1), size: 20),
+                   const SizedBox(width: 10),
+                   Text(
+                      'Recent Real-time Requests',
+                      style: GoogleFonts.poppins(
+                         fontSize: 16,
+                         fontWeight: FontWeight.w600,
+                         color: const Color(0xFF1E293B)
+                      ),
+                   )
+                ],
+             )
+          ),
+          Expanded(
+             child: prov.recentRequests.isEmpty
+                ? const Center(
+                    child: Padding(
+                       padding: EdgeInsets.all(24.0),
+                       child: Text('No recent requests available.', style: TextStyle(color: Colors.grey)),
+                    )
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: prov.recentRequests.length,
+                    separatorBuilder: (c, i) => const Divider(height: 24, color: Color(0xFFF1F5F9)),
+                    itemBuilder: (context, index) {
+                       final r = prov.recentRequests[index];
+                       Color sColor = Colors.grey;
+                       final s = r['status'].toString().toLowerCase();
+                       if (s == 'approved' || s == 'active') sColor = const Color(0xFF10B981);
+                       else if (s == 'pending') sColor = const Color(0xFFF59E0B);
+                       else if (s == 'rejected' || s == 'closed') sColor = const Color(0xFFEF4444);
+
+                       return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                             Row(
+                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                               children: [
+                                 Text(
+                                    r['createdStr'],
+                                    style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF94A3B8)),
+                                 ),
+                                 Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: sColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4)
+                                    ),
+                                    child: Text(
+                                       s.toUpperCase(),
+                                       style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.bold, color: sColor),
+                                    ),
+                                 )
+                               ],
+                             ),
+                             const SizedBox(height: 8),
+                             Row(
+                               children: [
+                                  const Icon(Icons.person_outline, size: 14, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                     child: Text(
+                                        r['recruiterEmail'],
+                                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                                        overflow: TextOverflow.ellipsis,
+                                     ),
+                                  ),
+                               ],
+                             ),
+                             const SizedBox(height: 4),
+                             Row(
+                               children: [
+                                  const Icon(Icons.people_outline, size: 14, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                     '${r['candidatesCount']} Candidates Processed',
+                                     style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                                  ),
+                               ],
+                             )
+                          ],
+                       );
+                    }
+                  )
+          )
+       ],
     );
   }
 }
 
-// Data classes for charts
-class ChartData {
-  ChartData(this.x, this.y);
-  final String x;
-  final double y;
-}
-
-class PieData {
-  PieData(this.category, this.value, this.color);
-  final String category;
-  final double value;
+class _KPI {
+  final String title;
+  final int value;
+  final IconData icon;
   final Color color;
+  final String subtitle;
+
+  _KPI(this.title, this.value, this.icon, this.color, {required this.subtitle});
 }

@@ -9,6 +9,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'Constant/Forget Password Provider.dart';
 import 'Constant/cv_analysis_provider.dart';
+import 'Screens/Admin/admin_analytics_dashboard_Provider.dart';
 import 'Screens/Admin/admin_login_provider.dart';
 import 'Screens/Admin/admin_recruiter_request_provider.dart';
 import 'Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
@@ -198,6 +199,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CVAnalyzerBackendProvider()),
         ChangeNotifierProvider(create: (_) => AdminAuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => AdminAnalyticsProvider()),
 
         ChangeNotifierProvider(create: (_) => R_TopNavProvider()),
         ChangeNotifierProvider(create: (_) => job_listing_provider()),

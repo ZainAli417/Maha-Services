@@ -1,259 +1,224 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class DashboardProvider extends ChangeNotifier {
+class AdminAnalyticsProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Stats
+  bool loading = true;
+  bool _disposed = false;
+
+  // KPIs
   int totalUsers = 0;
   int totalJobSeekers = 0;
   int totalRecruiters = 0;
-  int totalJobsPosted = 0;
-  int totalRecruiterRequests = 0;
+  int totalAdmins = 0;
+  int totalJobs = 0;
+  int totalRequests = 0;
+  int candidatesProcessed = 0;
 
-  // Loading states
-  bool isLoading = true;
-  String? errorMessage;
+  // Chart Data
+  Map<String, int> skillFrequencies = {};
+  Map<String, int> jobsByStatus = {'Open': 0, 'Closed': 0};
+  Map<String, int> requestsByStatus = {'Pending': 0, 'Approved': 0, 'Rejected': 0};
+  Map<String, int> topRecruiters = {};
+  List<Map<String, dynamic>> recentRequests = [];
 
-  // Historical data for graphs (last 7 days)
-  List<Map<String, dynamic>> weeklyJobSeekers = [];
-  List<Map<String, dynamic>> weeklyRecruiters = [];
-  List<Map<String, dynamic>> weeklyJobs = [];
+  // Realtime listeners
+  StreamSubscription? _requestsSub;
+  StreamSubscription? _jobsSub;
+  StreamSubscription? _skillsSub;
 
-  // Growth percentages
-  double jobSeekerGrowth = 0.0;
-  double recruiterGrowth = 0.0;
-  double jobsGrowth = 0.0;
-
-  DashboardProvider() {
-    fetchDashboardData();
+  AdminAnalyticsProvider() {
+    _initDashboard();
   }
 
-  Future<void> fetchDashboardData() async {
-    try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+  Future<void> _initDashboard() async {
+    loading = true;
+    _safeNotify();
 
-      // Fetch all stats in parallel for better performance
-      await Future.wait([
-        _fetchJobSeekerStats(),
-        _fetchRecruiterStats(),
-        _fetchJobsStats(),
-        _fetchRecruiterRequests(),
-      ]);
+    await _fetchAggregateKPIs();
+    _startContinuousRealtimeListeners();
 
-      totalUsers = totalJobSeekers + totalRecruiters;
-
-      isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      errorMessage = 'Error loading dashboard: ${e.toString()}';
-      isLoading = false;
-      notifyListeners();
-      debugPrint('Dashboard Error: $e');
-    }
+    loading = false;
+    _safeNotify();
   }
 
-  Future<void> _fetchJobSeekerStats() async {
-    try {
-      // Get total job seekers
-      final jobSeekerSnapshot = await _firestore.collection('job_seeker').get();
-      totalJobSeekers = jobSeekerSnapshot.docs.length;
+  Future<void> refresh() async {
+    await _fetchAggregateKPIs();
+  }
 
-      // Calculate growth (compare with last week)
-      final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentJobSeekers = jobSeekerSnapshot.docs.where((doc) {
-        final data = doc.data();
-        if (data['created_at'] != null) {
-          final createdAt = (data['created_at'] as Timestamp).toDate();
-          return createdAt.isAfter(lastWeek);
+  Future<void> _fetchAggregateKPIs() async {
+    try {
+      // Users collection based counting
+      final usersSnap = await _firestore.collection('users').get();
+      int tempAdmin = 0, tempRec = 0, tempJs = 0;
+      
+      for (var doc in usersSnap.docs) {
+        final role = (doc.data()['role'] ?? '').toString().toLowerCase();
+        if (role == 'admin' || role == 'superadmin') {
+          tempAdmin++;
+        } else if (role == 'recruiter') {
+          tempRec++;
+        } else if (role == 'job seeker' || role == 'job_seeker') {
+          tempJs++;
         }
-        return false;
-      }).length;
-
-      if (totalJobSeekers > 0) {
-        jobSeekerGrowth = (recentJobSeekers / totalJobSeekers) * 100;
       }
 
-      // Generate weekly data for graph
-      weeklyJobSeekers = _generateWeeklyData(jobSeekerSnapshot.docs);
+      totalAdmins = tempAdmin;
+      totalRecruiters = tempRec;
+      totalJobSeekers = tempJs;
+      totalUsers = tempAdmin + tempRec + tempJs;
+
+      final jobsQuery = await _firestore.collection('Posted_jobs_public').count().get();
+      totalJobs = jobsQuery.count ?? 0;
+
+      final reqQuery = await _firestore.collection('recruiter_requests').count().get();
+      totalRequests = reqQuery.count ?? 0;
+      
+      _safeNotify();
     } catch (e) {
-      debugPrint('Error fetching job seeker stats: $e');
+      debugPrint('❌ _fetchAggregateKPIs error: $e');
     }
   }
 
-  Future<void> _fetchRecruiterStats() async {
-    try {
-      // Get total recruiters
-      final recruiterSnapshot = await _firestore.collection('recruiter').get();
-      totalRecruiters = recruiterSnapshot.docs.length;
-
-      // Calculate growth
-      final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentRecruiters = recruiterSnapshot.docs.where((doc) {
+  void _startContinuousRealtimeListeners() {
+    // 1. SKILLS
+    _skillsSub?.cancel();
+    _skillsSub = _firestore
+        .collection('Job_Seeker')
+        .limit(100)
+        .snapshots()
+        .listen((snap) {
+      if (_disposed) return;
+      final Map<String, int> freqs = {};
+      for (var doc in snap.docs) {
         final data = doc.data();
-        if (data['created_at'] != null) {
-          final createdAt = (data['created_at'] as Timestamp).toDate();
-          return createdAt.isAfter(lastWeek);
-        }
-        return false;
-      }).length;
+        final userData = data['user_data'] as Map<String, dynamic>? ?? {};
+        final personalProfile = userData['personalProfile'] as Map<String, dynamic>? ?? {};
+        final profProfile = userData['professionalProfile'] as Map<String, dynamic>? ?? {};
 
-      if (totalRecruiters > 0) {
-        recruiterGrowth = (recentRecruiters / totalRecruiters) * 100;
+        List<dynamic> skills = [];
+        if (data['skills'] is List) skills = data['skills'];
+        else if (personalProfile['skills'] is List) skills = personalProfile['skills'];
+        else if (profProfile['skills'] is List) skills = profProfile['skills'];
+        else if (userData['skills'] is List) skills = userData['skills'];
+
+        for (var s in skills) {
+          final skillStr = s.toString().trim();
+          if (skillStr.isNotEmpty) {
+            final capSkill = skillStr[0].toUpperCase() + skillStr.substring(1).toLowerCase();
+            freqs[capSkill] = (freqs[capSkill] ?? 0) + 1;
+          }
+        }
       }
 
-      // Generate weekly data
-      weeklyRecruiters = _generateWeeklyData(recruiterSnapshot.docs);
-    } catch (e) {
-      debugPrint('Error fetching recruiter stats: $e');
-    }
-  }
+      final sortedKeys = freqs.keys.toList()..sort((a, b) => freqs[b]!.compareTo(freqs[a]!));
+      skillFrequencies = { for (var k in sortedKeys.take(8)) k : freqs[k]! };
+      _safeNotify();
+    });
 
-  Future<void> _fetchJobsStats() async {
-    try {
-      // Get total jobs posted
-      final jobsSnapshot = await _firestore.collection('Posted_jobs_public').get();
-      totalJobsPosted = jobsSnapshot.docs.length;
-
-      // Calculate growth
-      final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentJobs = jobsSnapshot.docs.where((doc) {
-        final data = doc.data();
-        if (data['posted_date'] != null) {
-          final postedDate = (data['posted_date'] as Timestamp).toDate();
-          return postedDate.isAfter(lastWeek);
-        }
-        return false;
-      }).length;
-
-      if (totalJobsPosted > 0) {
-        jobsGrowth = (recentJobs / totalJobsPosted) * 100;
+    // 2. JOBS BY STATUS
+    _jobsSub?.cancel();
+    _jobsSub = _firestore
+        .collection('Posted_jobs_public')
+        .orderBy('created_at', descending: true)
+        .limit(100)
+        .snapshots()
+        .listen((snap) {
+      if (_disposed) return;
+      int open = 0, closed = 0;
+      for (var doc in snap.docs) {
+        final status = (doc.data()['status'] ?? 'open').toString().toLowerCase();
+        if (status == 'closed') closed++;
+        else open++;
       }
+      jobsByStatus = {'Open': open, 'Closed': closed};
+      _safeNotify();
+    });
 
-      // Generate weekly data
-      weeklyJobs = _generateWeeklyData(jobsSnapshot.docs, dateField: 'posted_date');
-    } catch (e) {
-      debugPrint('Error fetching jobs stats: $e');
-    }
-  }
+    // 3. REQUESTS & RECENT REQUESTS LIST & TOP RECRUITERS
+    _requestsSub?.cancel();
+    _requestsSub = _firestore
+        .collection('recruiter_requests')
+        .orderBy('created_at', descending: true)
+        .limit(200)
+        .snapshots()
+        .listen((snap) {
+      if (_disposed) return;
+      int pending = 0, approved = 0, rejected = 0;
+      int processed = 0;
+      
+      Map<String, int> recruiterReqCount = {};
+      List<Map<String, dynamic>> requestsList = [];
 
-  Future<void> _fetchRecruiterRequests() async {
-    try {
-      final requestsSnapshot = await _firestore.collection('recruiter_requests').get();
-      totalRecruiterRequests = requestsSnapshot.docs.length;
-    } catch (e) {
-      debugPrint('Error fetching recruiter requests: $e');
-    }
-  }
+      int limitList = 0;
 
-  List<Map<String, dynamic>> _generateWeeklyData(
-      List<QueryDocumentSnapshot> docs, {
-        String dateField = 'created_at',
-      }) {
-    final weeklyData = <Map<String, dynamic>>[];
-    final now = DateTime.now();
+      for (var doc in snap.docs) {
+        final data = doc.data();
+        final status = (data['status'] ?? 'pending').toString().toLowerCase();
+        String recruiterEmail = (data['recruiter_email'] ?? data['recruiterEmail'] ?? 'Unknown').toString();
+        if (recruiterEmail.isEmpty) recruiterEmail = 'Unknown';
+        
+        recruiterReqCount[recruiterEmail] = (recruiterReqCount[recruiterEmail] ?? 0) + 1;
 
-    for (int i = 6; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
-      final dayStart = DateTime(date.year, date.month, date.day);
-      final dayEnd = dayStart.add(const Duration(days: 1));
+        if (status == 'approved' || status == 'open' || status == 'active') approved++;
+        else if (status == 'rejected' || status == 'closed') rejected++;
+        else pending++;
 
-      final count = docs.where((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        if (data[dateField] != null) {
-          final docDate = (data[dateField] as Timestamp).toDate();
-          return docDate.isAfter(dayStart) && docDate.isBefore(dayEnd);
+        final cands = data['candidates'] as List<dynamic>? ?? [];
+        for (var c in cands) {
+          if (c is Map && (c['status'] ?? '').toString().toLowerCase() == 'handover') {
+            processed++;
+          }
         }
-        return false;
-      }).length;
 
-      weeklyData.add({
-        'day': _getDayName(date.weekday),
-        'date': date,
-        'count': count,
-      });
+        if (limitList < 15) {
+          limitList++;
+          requestsList.add({
+             'id': doc.id,
+             'recruiterEmail': recruiterEmail,
+             'status': status,
+             'candidatesCount': cands.length,
+             'createdStr': _formatDate(data['created_at']),
+          });
+        }
+      }
+      
+      final sortedRecruiters = recruiterReqCount.keys.toList()..sort((a, b) => recruiterReqCount[b]!.compareTo(recruiterReqCount[a]!));
+      topRecruiters = { for (var k in sortedRecruiters.take(5)) if (k != 'Unknown') k : recruiterReqCount[k]! };
+
+      recentRequests = requestsList;
+      requestsByStatus = {'Pending': pending, 'Approved': approved, 'Rejected': rejected};
+      candidatesProcessed = processed; 
+      _safeNotify();
+    });
+  }
+
+  String _formatDate(dynamic date) {
+    if (date is Timestamp) {
+      return DateFormat('MMM dd, yyyy').format(date.toDate());
+    } else if (date is DateTime) {
+      return DateFormat('MMM dd, yyyy').format(date);
+    } else if (date != null) {
+      return date.toString();
     }
-
-    return weeklyData;
+    return '';
   }
 
-  String _getDayName(int weekday) {
-    switch (weekday) {
-      case 1:
-        return 'Mon';
-      case 2:
-        return 'Tue';
-      case 3:
-        return 'Wed';
-      case 4:
-        return 'Thu';
-      case 5:
-        return 'Fri';
-      case 6:
-        return 'Sat';
-      case 7:
-        return 'Sun';
-      default:
-        return '';
+  void _safeNotify() {
+    if (!_disposed) {
+      notifyListeners();
     }
   }
 
-  Future<void> refreshData() async {
-    await fetchDashboardData();
-  }
-
-  // Get activity summary
-  Map<String, dynamic> getActivitySummary() {
-    return {
-      'total_registrations': totalUsers,
-      'active_jobs': totalJobsPosted,
-      'pending_requests': totalRecruiterRequests,
-      'job_seeker_percentage': totalUsers > 0
-          ? ((totalJobSeekers / totalUsers) * 100).toStringAsFixed(1)
-          : '0.0',
-      'recruiter_percentage': totalUsers > 0
-          ? ((totalRecruiters / totalUsers) * 100).toStringAsFixed(1)
-          : '0.0',
-    };
-  }
-
-  // Get top stats for quick view
-  List<Map<String, dynamic>> getTopStats() {
-    return [
-      {
-        'title': 'Total Users',
-        'value': totalUsers,
-        'growth': ((jobSeekerGrowth + recruiterGrowth) / 2).toStringAsFixed(1),
-        'icon': Icons.people_rounded,
-        'color': const Color(0xFF6366F1),
-        'isPositive': true,
-      },
-      {
-        'title': 'Job Seekers',
-        'value': totalJobSeekers,
-        'growth': jobSeekerGrowth.toStringAsFixed(1),
-        'icon': Icons.person_search_rounded,
-        'color': const Color(0xFF10B981),
-        'isPositive': jobSeekerGrowth > 0,
-      },
-      {
-        'title': 'Recruiters',
-        'value': totalRecruiters,
-        'growth': recruiterGrowth.toStringAsFixed(1),
-        'icon': Icons.business_center_rounded,
-        'color': const Color(0xFF8B5CF6),
-        'isPositive': recruiterGrowth > 0,
-      },
-      {
-        'title': 'Jobs Posted',
-        'value': totalJobsPosted,
-        'growth': jobsGrowth.toStringAsFixed(1),
-        'icon': Icons.work_rounded,
-        'color': const Color(0xFFFBBF24),
-        'isPositive': jobsGrowth > 0,
-      },
-    ];
+  @override
+  void dispose() {
+    _disposed = true;
+    _requestsSub?.cancel();
+    _jobsSub?.cancel();
+    _skillsSub?.cancel();
+    super.dispose();
   }
 }
