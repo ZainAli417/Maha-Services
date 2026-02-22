@@ -11,9 +11,9 @@ class UserManagementSection extends StatefulWidget {
   @override
   State<UserManagementSection> createState() => _UserManagementSectionState();
 }
-
 class _UserManagementSectionState extends State<UserManagementSection>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver { // ADD WidgetsBindingObserver
+
   String _searchQuery = '';
   String _selectedRoleFilter = 'all';
   String _selectedStatusFilter = 'all';
@@ -31,7 +31,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   @override
   void initState() {
     super.initState();
-
+    WidgetsBinding.instance.addObserver(this); // ADD THIS
     // Enhanced fade animation with smoother curve
     _fadeController = AnimationController(
       vsync: this,
@@ -62,6 +62,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
 
     _scrollController.addListener(() {
+      if (!mounted) return; // ADD THIS
+
       if (_scrollController.offset > 0 && !_isScrolled) {
         setState(() => _isScrolled = true);
       } else if (_scrollController.offset <= 0 && _isScrolled) {
@@ -76,12 +78,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   @override
-  void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    _staggerController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _fadeController.stop();
+      _slideController.stop();
+      _staggerController.stop();
+    }
   }
 
   @override
@@ -392,6 +396,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance.collection('users').snapshots(),
           builder: (context, snapshot) {
+            if (!mounted) return const SizedBox.shrink(); // ADD THIS LINE
+
             if (snapshot.hasError) {
               return _buildErrorState(snapshot.error.toString());
             }
@@ -549,8 +555,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
           child: FutureBuilder<String>(
             future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
             builder: (context, snapshot) {
-              final displayName = snapshot.data ?? name;
-              return Row(
+              if (!mounted) return const SizedBox.shrink(); // ADD THIS
+
+              final displayName = (snapshot.data != null && snapshot.data != 'Unknown User')
+                  ? snapshot.data!
+                  : (data['name']?.toString() ?? 'Unknown');              return Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
@@ -807,7 +816,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
           status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
           status == 'active' ? 'Suspend User' : 'Activate User',
           status == 'active' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-              () => provider.suspendUser(docId, status),
+              () async {
+            await provider.suspendUser(docId, status);
+            // Don't assume context is valid here - the provider should handle its own state
+          },
         ),
         const SizedBox(width: 6),
         _buildActionButton(
@@ -1270,12 +1282,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           ElevatedButton.icon(
                             onPressed: provider.isLoading
                                 ? null
-                                : () {
+                                : () async {
                               if (provider.formKey.currentState!.validate()) {
                                 provider.roleController.text = selectedRole;
                                 provider.userLevelController.text = selectedLevel;
-                                provider.addOrEditUser(context);
-                                Navigator.pop(dialogContext);
+
+                                final success = await provider.addOrEditUser();
+
+                                // CRITICAL FIX: Check mounted on the CORRECT context
+                                if (!mounted) return; // Check the widget's context first
+
+                                if (success) {
+                                  CustomSnackbars.showSuccess(context, provider.message);
+                                  // Check dialog context separately
+                                  if (stfContext.mounted) {
+                                    Navigator.pop(dialogContext);
+                                  }
+                                } else {
+                                  CustomSnackbars.showError(context, provider.message);
+                                }
                               }
                             },
                             icon: provider.isLoading
@@ -1710,6 +1735,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
         ),
       ],
     );
+  }
+  void dispose() {
+    // Stop animations first before disposing
+    _fadeController.stop();
+    _slideController.stop();
+    _staggerController.stop();
+    WidgetsBinding.instance.removeObserver(this); // ADD THIS
+    _fadeController.dispose();
+    _slideController.dispose();
+    _staggerController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
 }

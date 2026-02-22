@@ -14,6 +14,7 @@ class DashboardProvider extends ChangeNotifier {
   // Loading states
   bool isLoading = true;
   String? errorMessage;
+  bool _disposed = false;
 
   // Historical data for graphs (last 7 days)
   List<Map<String, dynamic>> weeklyJobSeekers = [];
@@ -29,11 +30,20 @@ class DashboardProvider extends ChangeNotifier {
     fetchDashboardData();
   }
 
+  Future<void> _safeNotify() async {
+    if (_disposed) return;
+    // Defer to next microtask to avoid building/notifying conflicts
+    Future.microtask(() {
+      if (!_disposed) notifyListeners();
+    });
+  }
+
   Future<void> fetchDashboardData() async {
     try {
+      if (_disposed) return;
       isLoading = true;
       errorMessage = null;
-      notifyListeners();
+      _safeNotify();
 
       // Fetch all stats in parallel for better performance
       await Future.wait([
@@ -43,14 +53,16 @@ class DashboardProvider extends ChangeNotifier {
         _fetchRecruiterRequests(),
       ]);
 
+      if (_disposed) return;
       totalUsers = totalJobSeekers + totalRecruiters;
 
       isLoading = false;
-      notifyListeners();
+      _safeNotify();
     } catch (e) {
+      if (_disposed) return;
       errorMessage = 'Error loading dashboard: ${e.toString()}';
       isLoading = false;
-      notifyListeners();
+      _safeNotify();
       debugPrint('Dashboard Error: $e');
     }
   }
@@ -250,5 +262,10 @@ class DashboardProvider extends ChangeNotifier {
         'isPositive': jobsGrowth > 0,
       },
     ];
+  }
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

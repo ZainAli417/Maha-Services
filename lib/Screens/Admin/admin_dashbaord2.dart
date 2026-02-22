@@ -46,16 +46,10 @@ class _AdminDashboardBody extends StatefulWidget {
 }
 
 class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
-  String? _selectedRequestId;
-  Map<String, dynamic>? _selectedRequestDetails;
   bool _loadingDetails = false;
-
-  // Cache for request details to avoid redundant fetches
-  final Map<String, Map<String, dynamic>> _detailsCache = {};
 
   @override
   void dispose() {
-    _detailsCache.clear();
     super.dispose();
   }
 
@@ -65,32 +59,20 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
 
 
   Future<void> _openDetails(BuildContext context, String requestId) async {
-    if (_selectedRequestId == requestId && _selectedRequestDetails != null) return;
+    final prov = Provider.of<AdminProvider>(context, listen: false);
+    if (prov.selectedRequestId == requestId) return;
 
     setState(() {
-      _selectedRequestId = requestId;
       _loadingDetails = true;
     });
 
-    if (_detailsCache.containsKey(requestId)) {
-      if (mounted) {
-        setState(() {
-          _selectedRequestDetails = _detailsCache[requestId];
-          _loadingDetails = false;
-        });
-      }
-      return;
+    await prov.selectRequest(requestId);
+
+    if (mounted) {
+      setState(() {
+        _loadingDetails = false;
+      });
     }
-
-    final prov = Provider.of<AdminProvider>(context, listen: false);
-    final details = await prov.fetchRequestDetails(requestId: requestId);
-
-    if (!mounted) return;  // ← was `if (mounted)` which is same, but explicit return is cleaner
-    setState(() {
-      _selectedRequestDetails = details;
-      _detailsCache[requestId] = details ?? {};
-      _loadingDetails = false;
-    });
   }
 
   @override
@@ -308,7 +290,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                 totalCandidates: total,
                 status: status,
                 createdStr: createdStr,
-                isSelected: id == _selectedRequestId,
+                isSelected: id == prov.selectedRequestId,
                 onTap: () {
                   if (isWide) {
                     _openDetails(context, id);
@@ -332,7 +314,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
       ),
       child: _loadingDetails
           ? const Center(child: CircularProgressIndicator())
-          : (_selectedRequestId == null
+          : (prov.selectedRequestId == null
           ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -369,10 +351,10 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
           ],
         ),
       )
-          : (_selectedRequestDetails == null
+          : (prov.selectedRequestDetails == null
           ? const Center(child: Text('No details loaded'))
           : _buildDetailsPanel(
-          context, prov, _selectedRequestDetails!))),
+          context, prov, prov.selectedRequestDetails!))),
     );
   }
 
@@ -473,6 +455,10 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   onChanged: (newStatus) async {
                     // ✅ Capture before any await — context is valid here
                     final messenger = ScaffoldMessenger.of(context);
+
+                    // Allow DropdownRoute to safely unmount
+                    await Future.delayed(const Duration(milliseconds: 150));
+
                     final ok = await prov.updateRequestStatus(
                       requestId: reqId,
                       newStatus: newStatus,
@@ -484,13 +470,8 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                         content: Text('Status changed to $newStatus'),
                         backgroundColor: Colors.green,
                       ));
-                      _detailsCache.remove(reqId);
-                      final updated = await prov.fetchRequestDetails(requestId: reqId);
-                      if (!mounted) return;  // ← guard after second await
-                      setState(() {
-                        _selectedRequestDetails = updated;
-                        _detailsCache[reqId] = updated ?? {};
-                      });
+                      // State update happens via provider now
+                      // Not needed: setState(() { ... })
                     }
                   },
                 ),
@@ -760,6 +741,9 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                         return;
                       }
 
+                      // Allow PopupMenu to unmount fully
+                      await Future.delayed(const Duration(milliseconds: 150));
+
                       final ok = await prov.updateCandidateStatus(
                         requestId: reqId,
                         candidateUid: candidateUid,
@@ -775,13 +759,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
 
                       if (!ok) return;
 
-                      _detailsCache.remove(reqId);
-                      final updated = await prov.fetchRequestDetails(requestId: reqId);
-                      if (!mounted) return;  // ← guard after second await
-                      setState(() {
-                        _selectedRequestDetails = updated;
-                        _detailsCache[reqId] = updated ?? {};
-                      });
+                      // Request cache cleared and details fetched in provider now
                     },
                   );
 
@@ -836,7 +814,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
     final name = getVal<String>('name', ['personalProfile', 'name'], candidate['name']?.toString() ?? 'Unknown');
     final email = getVal<String>('email', ['personalProfile', 'email'], candidate['email']?.toString() ?? '');
     final phone = getVal<String>('phone', ['personalProfile', 'phone'], candidate['phone']?.toString() ?? '');
-    
+
     // Fallback for personal profile fields if rawData is flat
     final nationality = getVal<String>('nationality', ['personalProfile', 'nationality'], '-');
     final dob = getVal<String>('dob', ['personalProfile', 'dob'], '-');
@@ -2413,11 +2391,11 @@ class _CandidateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stages = ['Shortlist', 'Screening', 'Interview', 'Technical', 'Offer', 'Handover'];
-    
+
     // Normalize status for pipeline index
     final displayStatus = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
     final currentIdx = stages.map((e) => e.toLowerCase()).toList().indexOf(displayStatus);
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -2505,7 +2483,7 @@ class _CandidateCard extends StatelessWidget {
                 children: List.generate(stages.length, (index) {
                   final isActive = index <= currentIdx;
                   final isLast = index == stages.length - 1;
-                  
+
                   return Expanded(
                     child: Row(
                       children: [

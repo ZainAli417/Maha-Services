@@ -12,19 +12,17 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == userId;
     }
 
-    function userRole() {
-      // Fetch the user's role and normalize it to lowercase
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ?
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() : null;
-    }
-
-
+    // Securely check if user is admin WITHOUT using the recursive get() in every rule
     function isAdmin() {
       return isAuth() && (
-        userRole() == 'admin' || 
-        userRole() == 'superadmin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() == 'superadmin' ||
         exists(/databases/$(database)/documents/admin/$(request.auth.uid))
       );
+    }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower();
     }
 
     function isRecruiter() {
@@ -32,66 +30,66 @@ service cloud.firestore {
     }
 
     function isJobSeeker() {
-      return isAuth() && (userRole() == 'job_seeker' || userRole() == 'jobseeker' || userRole() == 'candidate' || userRole() == 'job seeker');
+      let role = userRole();
+      return isAuth() && (role == 'job_seeker' || role == 'jobseeker' || role == 'candidate' || role == 'job seeker');
     }
 
-    // --- COLLECTION RULES ---
+    // --- GLOBAL ADMIN OVERRIDE ---
+    // Allow admins to do ANYTHING in the database
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- COLLECTION RULES (For non-admins) ---
 
     match /users/{userId} {
-      allow read, write: if isUser(userId) || isAdmin();
+      allow read, write: if isUser(userId);
     }
 
     match /admin/{adminId} {
-      allow read, write: if isUser(adminId) || isAdmin();
+      allow read, write: if isUser(adminId);
     }
 
     match /recruiter/{recruiterId} {
-      allow read: if isUser(recruiterId) || isAdmin();
-      allow write: if isUser(recruiterId) || isAdmin();
+      allow read, write: if isUser(recruiterId);
 
       match /Posted_jobs/{jobId} {
-        allow read, write: if isUser(recruiterId) || isAdmin();
+        allow read, write: if isUser(recruiterId);
       }
     }
 
     match /Posted_jobs_public/{jobId} {
       allow read: if isAuth();
-      allow create: if isRecruiter() || isAdmin();
+      allow create: if isRecruiter();
       allow update: if isAuth();
-      allow delete: if isAdmin() || (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+      allow delete: if (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
     }
 
     match /Job_Seeker/{jobSeekerId} {
-      allow read: if isUser(jobSeekerId) || isAdmin() || isRecruiter();
-      allow write: if isUser(jobSeekerId) || isAdmin();
+      allow read: if isUser(jobSeekerId) || isRecruiter();
+      allow write: if isUser(jobSeekerId);
 
       match /applied_jobs/{jobId} {
-        allow read, write: if isUser(jobSeekerId) || isAdmin() || isRecruiter();
+        allow read, write: if isUser(jobSeekerId) || isRecruiter();
       }
       
       match /{allSubcollections=**} {
-        allow read, write: if isUser(jobSeekerId) || isAdmin();
+        allow read, write: if isUser(jobSeekerId);
       }
     }
 
     match /applications/{userId}/{document=**} {
-      allow read, write: if isUser(userId) || isAdmin()|| isRecruiter();
+      allow read, write: if isUser(userId) || isRecruiter();
     }
 
     match /recruiter_requests/{requestId} {
-      allow read: if isAdmin() || (isRecruiter() && resource.data.recruiter_id == request.auth.uid);
+      allow read: if (isRecruiter() && resource.data.recruiter_id == request.auth.uid);
       allow create: if isRecruiter();
-      allow write: if isAdmin();
-      
-      match /{allSubcollections=**} {
-        allow read, write: if isAdmin();
-      }
     }
 
     // --- COLLECTION GROUP RULES ---
     match /{path=**}/applied_jobs/{jobId} {
-      // Allow recruiters to read applications specifically for THEIR jobs
-      allow read: if isAuth() && (isAdmin() || (isRecruiter() && resource.data.recruiterUid == request.auth.uid));
+      allow read: if isAuth() && (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
     }
   }
 }

@@ -357,8 +357,10 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
     required String status,
     required String currentStatus,
   }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    
     if (currentStatus.toLowerCase() != 'handover') {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('⚠️ Candidates can only be Hired or Rejected after Admin Handover'),
           backgroundColor: Colors.orange,
@@ -367,13 +369,18 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
       return;
     }
 
+    // Allow PopupMenuRoute to close fully to prevent "disposed EngineFlutterView" exception
+    await Future.delayed(const Duration(milliseconds: 150));
+
     final ok = await _provider.updateCandidateStatus(
       requestId: requestId,
       candidateUid: candidateUid,
       status: status,
     );
-    if (ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (!mounted) return;
+    
+    if (ok) {
+      messenger.showSnackBar(
         SnackBar(content: Text('Candidate marked as $status')),
       );
     }

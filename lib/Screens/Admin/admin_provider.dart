@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_snackbars.dart';
 
@@ -36,27 +37,38 @@ class AdminProvider extends ChangeNotifier {
 
   String get message => _message;
 
-  Future<void> addOrEditUser(BuildContext context) async {
+  Future<bool> addOrEditUser() async {
     if (_formKey.currentState?.validate() ?? false) {
       _isLoading = true;
       _message = '';
-      notifyListeners();
+      _safeNotify();
 
       try {
-        UserCredential? userCredential;
         String uid;
         DocumentReference userDocRef;
 
         if (_editingUserId == null) {
-          // CREATE NEW USER
-          userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          // CREATE NEW USER WITHOUT SIGNING OUT THE ADMIN
+          FirebaseApp tempApp;
+          try {
+            tempApp = Firebase.app('TemporaryUserCreator');
+          } catch (_) {
+            tempApp = await Firebase.initializeApp(
+              name: 'TemporaryUserCreator',
+              options: Firebase.app().options,
+            );
+          }
+
+          final tempAuth = FirebaseAuth.instanceFor(app: tempApp);
+          final userCredential = await tempAuth.createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
+          
           uid = userCredential.user!.uid;
+          await tempAuth.signOut();
 
-          userDocRef = FirebaseFirestore.instance.collection('users').doc();
+          userDocRef = _firestore.collection('users').doc(uid);
 
           await userDocRef.set({
             'name': _nameController.text.trim(),
@@ -70,34 +82,37 @@ class AdminProvider extends ChangeNotifier {
           });
         } else {
           // EDIT EXISTING USER
-          userDocRef = FirebaseFirestore.instance.collection('users').doc(
-              _editingUserId);
+          userDocRef = _firestore.collection('users').doc(_editingUserId);
 
           await userDocRef.update({
             'name': _nameController.text.trim(),
             'role': _roleController.text.trim(),
             'user_lvl': _userLevelController.text.trim(),
           });
-          uid = '';
+          uid = _editingUserId!;
         }
 
         _message = _editingUserId == null
             ? 'User added successfully'
             : 'User updated successfully';
+        
+        // Remove from cache if edited
+        _candidateCache.remove(uid);
+        _recruiterCache.remove(uid);
+        _emailToUidCache.remove(_emailController.text.trim());
+
         clearForm();
-        if (context.mounted) {
-          CustomSnackbars.showSuccess(context, _message);
-        }
+        return true;
       } catch (e) {
         _message = 'Error: $e';
-        if (context.mounted) {
-          CustomSnackbars.showError(context, _message);
-        }
+        debugPrint('❌ addOrEditUser error: $e');
+        return false;
       } finally {
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
       }
     }
+    return false;
   }
 
   Future<void> suspendUser(String firestoreDocId, String currentStatus) async {
@@ -110,7 +125,7 @@ class AdminProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error suspending user: $e');
     }
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<void> resetPassword(String email) async {
@@ -130,7 +145,7 @@ class AdminProvider extends ChangeNotifier {
     _userLevelController.text = userData['user_lvl'] ?? '';
     _passwordController.clear();
     _editingUserId = firestoreDocId;
-    notifyListeners();
+    _safeNotify();
   }
 
   void clearForm() {
@@ -141,7 +156,7 @@ class AdminProvider extends ChangeNotifier {
     _userLevelController.clear();
     _editingUserId = null;
     _message = '';
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================================
@@ -174,11 +189,27 @@ class AdminProvider extends ChangeNotifier {
   /// Debounce timer for notifications
   Timer? _notifyTimer;
 
+  String? _selectedRequestId;
+
+  String? get selectedRequestId => _selectedRequestId;
+
+  Map<String, dynamic>? get selectedRequestDetails {
+    if (_selectedRequestId == null) return null;
+    return _requestDetailsCache[_selectedRequestId]?.data;
+  }
+
+  Future<void> selectRequest(String requestId) async {
+    if (_selectedRequestId == requestId) return;
+    _selectedRequestId = requestId;
+    _safeNotify();
+    if (!_requestDetailsCache.containsKey(requestId)) {
+      await fetchRequestDetails(requestId: requestId);
+    }
+  }
+
   void _safeNotify() {
     if (_disposed) return;
-    // ✅ addPostFrameCallback is safe: it won't fire if the engine
-    // view is already disposed, unlike a raw Timer.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.microtask(() {
       if (!_disposed) notifyListeners();
     });
   }
@@ -427,6 +458,10 @@ class AdminProvider extends ChangeNotifier {
 
               // Invalidate detail cache for this request
               _requestDetailsCache.remove(change.doc.id);
+              if (_selectedRequestId == change.doc.id) {
+                // Fetch in background, listeners will be notified
+                fetchRequestDetails(requestId: change.doc.id);
+              }
             }
           } else if (change.type == DocumentChangeType.removed) {
             requests.removeWhere((r) => r['id'] == change.doc.id);
@@ -630,10 +665,10 @@ class AdminProvider extends ChangeNotifier {
     for (var i = 0; i < uncachedIds.length; i += batchSize) {
       final currentBatch = uncachedIds.sublist(i,
           i + batchSize > uncachedIds.length ? uncachedIds.length : i + batchSize);
-      
+
       // Filter out non-ID identifiers (like emails) that would crash FieldPath.documentId
       final validIds = currentBatch.where((id) => !id.contains('@') && id.length > 5).toList();
-      
+
       if (validIds.isNotEmpty) {
         batches.add(validIds);
       }
@@ -656,10 +691,10 @@ class AdminProvider extends ChangeNotifier {
 
           // Try top-level first (modern schema), then variations
         final personalProfile = _normalizeMap(
-          jobSeekerData['personalProfile'] ?? 
-          jobSeekerData['personal_profile'] ?? 
-          userData['personalProfile'] ?? 
-          userData['personal_profile'] ?? 
+          jobSeekerData['personalProfile'] ??
+          jobSeekerData['personal_profile'] ??
+          userData['personalProfile'] ??
+          userData['personal_profile'] ??
           _normalizeMap(jobSeekerData['user_Account_Data'] ?? {})['personalProfile'] ??
           {}
         );
@@ -823,6 +858,9 @@ class AdminProvider extends ChangeNotifier {
         requests[idx]['last_updated_at'] = DateTime.now();
       }
       _requestDetailsCache.remove(requestId);
+      if (_selectedRequestId == requestId) {
+        await fetchRequestDetails(requestId: requestId);
+      }
       _safeNotify();
       return true;
     } catch (e) {
@@ -884,6 +922,11 @@ class AdminProvider extends ChangeNotifier {
 
       debugPrint('✅ Candidate $candidateUid status updated to $status');
       _requestDetailsCache.remove(requestId);
+      if (_selectedRequestId == requestId) {
+        await fetchRequestDetails(requestId: requestId);
+      } else {
+        _safeNotify();
+      }
       return true;
     } catch (e) {
       debugPrint('❌ updateCandidateStatus error: $e');
@@ -953,9 +996,14 @@ class AdminProvider extends ChangeNotifier {
 
     try {
       // 1. ADMIN - Fetch from 'users' collection directly (this is usually already in data)
-      if (normalizedRole == 'admin') {
+      if (normalizedRole == 'admin' || normalizedRole == 'superadmin') {
+        if (_candidateCache.containsKey(uid)) {
+          return _candidateCache[uid]!.data['name'] ?? 'Unknown Admin';
+        }
         final doc = await _firestore.collection('users').doc(uid).get();
-        return doc.data()?['name'] ?? 'Unknown Admin';
+        final name = doc.data()?['name'] ?? 'Unknown Admin';
+        _candidateCache[uid] = _CacheEntry({'name': name}, DateTime.now());
+        return name;
       }
 
       // 2. RECRUITER - recruiter/{uid} -> user_data -> name
@@ -971,7 +1019,7 @@ class AdminProvider extends ChangeNotifier {
           final data = _normalizeMap(doc.data());
           final userData = _normalizeMap(data['user_data']);
           final name = userData['name']?.toString() ?? data['name']?.toString() ?? 'Unknown Recruiter';
-          
+
           // Cache it for future use
           _recruiterCache[uid] = _CacheEntry({'name': name}, DateTime.now());
           return name;
@@ -989,19 +1037,19 @@ class AdminProvider extends ChangeNotifier {
         if (doc.exists) {
           final data = _normalizeMap(doc.data());
           final userData = _normalizeMap(data['user_data']);
-          
+
           final personalProfile = _normalizeMap(
-            data['personalProfile'] ?? 
-            data['personal_profile'] ?? 
-            userData['personalProfile'] ?? 
-            userData['personal_profile'] ?? 
+            data['personalProfile'] ??
+            data['personal_profile'] ??
+            userData['personalProfile'] ??
+            userData['personal_profile'] ??
             _normalizeMap(data['user_Account_Data'] ?? {})['personalProfile'] ??
             {}
           );
-          
-          final name = personalProfile['name']?.toString() ?? 
-                       data['name']?.toString() ?? 
-                       userData['name']?.toString() ?? 
+
+          final name = personalProfile['name']?.toString() ??
+                       data['name']?.toString() ??
+                       userData['name']?.toString() ??
                        'Unknown Job Seeker';
 
           // Cache it

@@ -674,7 +674,7 @@ class ApplicantsProvider with ChangeNotifier {
     if (selectedApplicantIds.isEmpty) return;
     selectedApplicantIds.clear();
     // Check if we're in a build frame; if so, defer
-    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+    Future.microtask(() => notifyListeners());
   }
 
   void toggleSelection(String id) {
