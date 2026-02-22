@@ -94,6 +94,14 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       isActive: widget.activeIndex == 2,
                       onTap: () => context.go('/shortlisting'),
                     ),
+                    _buildMenuItem(
+                      icon: Icons.all_inbox_outlined,
+                      activeIcon: Icons.all_inbox,
+                      label: 'Request Box',
+                      index: 5,
+                      isActive: widget.activeIndex == 5,
+                      onTap: () => context.go('/request-box'),
+                    ),
 
                     const SizedBox(height: 20),
                     _buildSectionLabel('ACCOUNT'),

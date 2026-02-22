@@ -21,6 +21,7 @@ import 'Screens/Recruiter/LIst_of_Applicants.dart';
 import 'Constant/Splash.dart';
 import 'Screens/Recruiter/Recruiter_Dashbaord.dart';
 import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
+import 'Screens/Recruiter/Request_Box.dart';
 import 'SignUp /profile_builder.dart';
 import 'SignUp /signup_screen_auth.dart';
 
@@ -31,17 +32,11 @@ class RoleService {
   static Future<Map<String, dynamic>> fetchUserData(String uid) async {
     try {
       // 1. Run parallel checks
-      final List<dynamic> results = await Future.wait([
-        _firestore.collection('Job_Seeker').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
-        _firestore.collection('recruiter').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
-        _firestore.collection('admin').doc(uid).get(const GetOptions(source: Source.serverAndCache)),
-        _firestore.collection('users').doc(uid).get(),
-      ]);
-
-      final jsDoc = results[0] as DocumentSnapshot;
-      final recDoc = results[1] as DocumentSnapshot;
-      final adminDoc = results[2] as DocumentSnapshot;
-      final userDoc = results[3] as DocumentSnapshot;
+      // Use sequential fetching for better stability on startup
+      final jsDoc = await _firestore.collection('Job_Seeker').doc(uid).get();
+      final recDoc = await _firestore.collection('recruiter').doc(uid).get();
+      final adminDoc = await _firestore.collection('admin').doc(uid).get();
+      final userDoc = await _firestore.collection('users').doc(uid).get();
 
       String? role;
       bool isNew = false;
@@ -127,6 +122,8 @@ class AuthNotifier extends ChangeNotifier {
       _isFetching = false;
     } else {
       user = newUser;
+      // Add a small delay for Firebase state to stabilize
+      await Future.delayed(const Duration(milliseconds: 300));
       debugPrint('🔄 Fetching role data for: ${newUser.uid}');
 
       final data = await RoleService.fetchUserData(newUser.uid);
@@ -257,6 +254,7 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),
     GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
     GoRoute(path: '/job-application-tracker', pageBuilder: (c, s) => _fadePage(const Job_Applicant_Tracker(), s)),
+    GoRoute(path: '/request-box', pageBuilder: (c, s) => _fadePage(const RequestBoxScreen(), s)),
 
   ],
 );

@@ -405,9 +405,9 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
     final uniqueCandidates = <String, Map<String, dynamic>>{};
     for (final c in rawCandidates) {
       final candidateData = _normalizeMap(c);
-      final uid = candidateData['uid']?.toString().trim() ?? '';
+      final uid = (candidateData['uid'] ?? candidateData['id'] ?? '').toString().trim();
 
-      if (uid.isEmpty || uid == '-' || uid.toLowerCase() == 'null') continue;
+      if (uid.isEmpty || uid.toLowerCase() == 'null') continue;
 
       final canonUid = uid.toLowerCase();
       if (!uniqueCandidates.containsKey(canonUid)) {
@@ -729,7 +729,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 3.8,
+                  childAspectRatio: 1.9,
                 ),
                 itemCount: candidates.length,
                 itemBuilder: (context, index) {
@@ -806,61 +806,47 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
   }
 
   void _showCandidateCV(BuildContext context, Map<String, dynamic> candidate) {
-    final userData = _normalizeMap(candidate['user_data'] ?? {});
-    final personalProfile =
-    _normalizeMap(userData['personalProfile'] ?? userData);
-    final professionalProfile =
-    _normalizeMap(userData['professionalProfile'] ?? {});
+    // 1. Data Normalization (Supports Flat and Nested Structures)
+    final rawData = _normalizeMap(candidate['user_data'] ?? candidate);
+    final personalProfile = _normalizeMap(rawData['personalProfile'] ?? rawData);
+    final professionalProfile = _normalizeMap(rawData['professionalProfile'] ?? rawData);
 
-    final educationalProfile = (userData['educationalProfile'] is List)
-        ? (userData['educationalProfile'] as List)
-        .map((e) => _normalizeMap(e))
-        .toList()
-        : <Map<String, dynamic>>[];
+    // Dynamic extraction helper for flat/nested compatibility
+    T getVal<T>(String flatKey, List<String> nestedPath, T fallback) {
+      if (rawData.containsKey(flatKey) && rawData[flatKey] != null) return rawData[flatKey] as T;
+      dynamic current = rawData;
+      for (final p in nestedPath) {
+        if (current is Map && current.containsKey(p)) {
+          current = current[p];
+        } else {
+          return fallback;
+        }
+      }
+      return (current as T?) ?? fallback;
+    }
 
-    final professionalExperience = (userData['professionalExperience'] is List)
-        ? (userData['professionalExperience'] as List)
-        .map((e) => _normalizeMap(e))
-        .toList()
-        : <Map<String, dynamic>>[];
-
-    final certifications = (userData['certifications'] is List)
-        ? (userData['certifications'] as List)
-        .map((e) => _normalizeMap(e))
-        .toList()
-        : <Map<String, dynamic>>[];
+    final educationalProfile = (rawData['educationalProfile'] ?? rawData['educational_profile'] ?? []) as List;
+    final professionalExperience = (rawData['professionalExperience'] ?? rawData['professional_experience'] ?? []) as List;
+    final certificationList = (rawData['certifications'] ?? []) as List;
 
     List<String> safeStringList(dynamic field) {
       if (field == null) return [];
       if (field is List) {
-        return field
-            .map((e) => e?.toString() ?? '')
-            .where((s) => s.isNotEmpty)
-            .toList();
+        return field.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
       }
       return [];
     }
 
-    final publications = safeStringList(userData['publications']);
-    final awards = safeStringList(userData['awards']);
-    final references = safeStringList(userData['references']);
-    final skills = safeStringList(personalProfile['skills']);
-    final socialLinks = safeStringList(personalProfile['socialLinks']);
-    final experienceDocs = safeStringList(userData['experienceDocuments']);
+    final publications = safeStringList(rawData['publications']);
+    final awards = safeStringList(rawData['awards']);
+    final references = safeStringList(rawData['references']);
+    final skills = safeStringList(rawData['skills'] ?? personalProfile['skills']);
+    final socialLinks = safeStringList(rawData['social_links'] ?? rawData['socialLinks'] ?? personalProfile['socialLinks']);
+    final experienceDocs = safeStringList(rawData['experienceDocuments'] ?? rawData['experience_documents']);
 
-    final name = personalProfile['name']?.toString() ??
-        userData['name']?.toString() ??
-        candidate['name']?.toString() ??
-        'Unknown';
-    final email = personalProfile['email']?.toString() ??
-        userData['email']?.toString() ??
-        candidate['email']?.toString() ??
-        '';
-    final phone = personalProfile['contactNumber']?.toString() ??
-        personalProfile['phone']?.toString() ??
-        userData['phone']?.toString() ??
-        candidate['phone']?.toString() ??
-        '';
+    final name = getVal<String>('name', ['personalProfile', 'name'], 'Unknown');
+    final email = getVal<String>('email', ['personalProfile', 'email'], '');
+    final phone = getVal<String>('phone', ['personalProfile', 'phone'], '');
 
     showDialog(
       context: context,
@@ -1082,13 +1068,13 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                       ],
 
                       // Certifications
-                      if (certifications.isNotEmpty) ...[
+                      if (certificationList.isNotEmpty) ...[
                         const SizedBox(height: 32),
                         _buildSection(
                           'CERTIFICATIONS',
                           Icons.verified_outlined,
                           const Color(0xFFEC4899),
-                          certifications.map((cert) {
+                          certificationList.map((cert) {
                             final certMap = _normalizeMap(cert);
                             return _buildSimpleListCard(
                               certMap['name']?.toString() ??
@@ -2429,83 +2415,137 @@ class _CandidateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final stages = ['Shortlisted', 'Screening', 'Interview', 'Technical', 'Offer', 'Handover'];
+    final currentIdx = stages.map((e) => e.toLowerCase()).toList().indexOf(status.toLowerCase());
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'C',
-                    style: GoogleFonts.poppins(
-                      color: _getStatusColor(),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _getStatusColor().withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'C',
+                        style: GoogleFonts.poppins(
+                          color: _getStatusColor(),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: const Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      email,
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF64748B),
-                        fontSize: 12,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (status != 'unknown')
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: _getStatusColor().withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: const Color(0xFF0F172A),
                           ),
-                          child: Text(
-                            status,
-                            style: GoogleFonts.poppins(
-                              color: _getStatusColor(),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          email,
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFF64748B),
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
+                    onSelected: onMenuAction,
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'open_cv', child: Text('View Full Details')),
+                      const PopupMenuDivider(),
+                      ...stages.map((s) => PopupMenuItem(
+                        value: s.toLowerCase(),
+                        child: Text('Move to $s'),
+                      )),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Pipeline View
+              Row(
+                children: List.generate(stages.length, (index) {
+                  final isActive = index <= currentIdx;
+                  final isLast = index == stages.length - 1;
+                  
+                  return Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isActive ? _getStatusColor() : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                        if (!isLast) const SizedBox(width: 4),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    status.toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      color: _getStatusColor(),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'Stage ${currentIdx + 1}/${stages.length}',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

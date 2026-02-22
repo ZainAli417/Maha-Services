@@ -502,59 +502,32 @@ class AdminProvider extends ChangeNotifier {
 
       for (final entry in rawEntries) {
         try {
-          String origId = '';
+          String uid = '';
           Map<String, dynamic> hint = {};
 
-          if (entry is DocumentReference) {
-            origId = entry.id;
-          } else if (entry is String) {
-            origId = entry.trim();
-          } else if (entry is Map) {
+          if (entry is Map) {
             final normalized = _normalizeMap(entry);
             hint = normalized;
-            origId = (normalized['uid'] ??
+            uid = (normalized['uid'] ??
                 normalized['user_id'] ??
                 normalized['id'] ??
-                normalized['candidate_id'] ??
-                normalized['candidateUid'] ??
-                normalized['uid_str'] ??
-                '')
-                .toString()
-                .trim();
-
-            if (origId.isEmpty) {
-              if ((normalized['email'] ?? '').toString().isNotEmpty) {
-                origId = 'email:${normalized['email'].toString().trim()}';
-              } else if ((normalized['ref'] ?? normalized['doc_ref'] ?? '')
-                  .toString()
-                  .isNotEmpty) {
-                origId = normalized['ref'].toString().trim();
-              }
+                '').toString().trim();
+            
+            if (uid.isEmpty && normalized['email'] != null) {
+              uid = normalized['email'].toString().trim();
             }
-          } else {
-            origId = entry.toString().trim();
+          } else if (entry is String) {
+            uid = entry.trim();
+          } else if (entry is DocumentReference) {
+            uid = entry.id;
           }
 
-          if (origId.isEmpty ||
-              origId == '-' ||
-              origId.toLowerCase() == 'null') {
-            continue;
-          }
+          if (uid.isEmpty || uid.toLowerCase() == 'null') continue;
 
-          // Clean ID
-          String cleanId = _lastSegment(origId);
-          if (cleanId.startsWith('email:')) {
-            cleanId = cleanId.substring(6);
-          }
-
-          final key = _canon(cleanId);
-
+          final key = uid.toLowerCase();
           if (!uniqueCandidates.containsKey(key)) {
-            uniqueCandidates[key] = cleanId;
-          }
-          
-          if (hint.isNotEmpty && cleanId.isNotEmpty) {
-            candidateHints[cleanId] = hint;
+            uniqueCandidates[key] = uid;
+            if (hint.isNotEmpty) candidateHints[uid] = hint;
           }
         } catch (e) {
           debugPrint('⚠️ Error processing candidate entry: $e');
@@ -632,8 +605,15 @@ class AdminProvider extends ChangeNotifier {
     debugPrint('📥 Fetching ${uncachedIds.length} uncached candidates');
 
     for (var i = 0; i < uncachedIds.length; i += batchSize) {
-      batches.add(uncachedIds.sublist(i,
-          i + batchSize > uncachedIds.length ? uncachedIds.length : i + batchSize));
+      final currentBatch = uncachedIds.sublist(i,
+          i + batchSize > uncachedIds.length ? uncachedIds.length : i + batchSize);
+      
+      // Filter out non-ID identifiers (like emails) that would crash FieldPath.documentId
+      final validIds = currentBatch.where((id) => !id.contains('@') && id.length > 5).toList();
+      
+      if (validIds.isNotEmpty) {
+        batches.add(validIds);
+      }
     }
 
     final fetchedResults = <Map<String, dynamic>>[];
@@ -643,11 +623,7 @@ class AdminProvider extends ChangeNotifier {
         final snap = await _firestore
             .collection('Job_Seeker')
             .where(FieldPath.documentId, whereIn: batch)
-            .get(const GetOptions(source: Source.cache))
-            .catchError((_) => _firestore
-            .collection('Job_Seeker')
-            .where(FieldPath.documentId, whereIn: batch)
-            .get(const GetOptions(source: Source.server)));
+            .get();
 
         final batchResults = <Map<String, dynamic>>[];
 
@@ -840,10 +816,29 @@ class AdminProvider extends ChangeNotifier {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
 
-      final key = 'candidate_statuses.$candidateUid';
+      // 1. Get current data to update the local array item
+      final snap = await ref.get();
+      if (!snap.exists) return false;
+
+      final data = snap.data() as Map<String, dynamic>;
+      final List<dynamic> candidates = List.from(data['candidates'] ?? []);
+      
+      bool found = false;
+      for (int i = 0; i < candidates.length; i++) {
+        final c = _normalizeMap(candidates[i]);
+        if (c['uid'] == candidateUid) {
+          candidates[i]['status'] = status;
+          found = true;
+          break;
+        }
+      }
+
       final batch = _firestore.batch();
+      
+      // 2. Update both the map and the array for complete synchronization
       batch.update(ref, {
-        key: status,
+        'candidate_statuses.$candidateUid': status,
+        'candidates': candidates,
         'last_updated_at': now,
         'last_updated_by': performedBy ?? 'admin',
       });

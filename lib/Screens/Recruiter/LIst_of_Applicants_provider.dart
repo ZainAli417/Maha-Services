@@ -3,348 +3,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// ==========================================
-// 1. Optimized Applicant Record Model
-// ==========================================
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-class ApplicantRecord {
-  final String userId;
-  final String jobId;
-  final String status;
-  final DateTime appliedAt;
-  final String docId;
-  final DocumentReference reference;
-
-  // Stored Parsed Data (Computed ONCE)
-  final String name;
-  final String email;
-  final String secondaryEmail;
-  final String phone;
-  final String nationality;
-  final String pictureUrl;
-  final String location;
-
-  // 🆕 ADDED BACK MISSING FIELDS
-  final String dob;
-  final String objectives;
-  final String summary;
-
-  final String education; // Major/Degree
-  final String university;
-  final String educationDuration;
-  final String cgpa;
-  final String currentRole;
-  final String company;
-  final int experienceYears;
-  final String professionalStatus;
-  final String retirementDate;
-
-  // Collections
-  final List<String> skills;
-  final List<String> socialLinks;
-  final List<Map<String, dynamic>> experiences;
-  final List<Map<String, dynamic>> educations;
-  final List<Map<String, String>> certifications;
-  final List<String> publications;
-  final List<String> awards;
-  final List<dynamic> documents;
-// Add these fields after line 33 (after documents field):
-  final List<Map<String, dynamic>> experienceDocuments;
-  final List<Map<String, dynamic>> certificationDocuments;
-  // Raw Data (Kept for edge cases/updates)
-  final Map<String, dynamic> profileSnapshot;
-  final JobData? jobData;
-  final Map<String, dynamic> matchScore;
-
-  // Search Optimization
-  final String searchIndex;
-
-  ApplicantRecord._({
-    required this.userId,
-    required this.jobId,
-    required this.status,
-    required this.appliedAt,
-    required this.profileSnapshot,
-    required this.docId,
-    required this.reference,
-    this.jobData,
-    required this.name,
-    required this.email,
-    required this.secondaryEmail,
-    required this.phone,
-    required this.nationality,
-    required this.pictureUrl,
-    required this.location,
-    // 🆕 Required in constructor
-    required this.dob,
-    required this.objectives,
-    required this.summary,
-    required this.education,
-    required this.university,
-    required this.educationDuration,
-    required this.cgpa,
-    required this.currentRole,
-    required this.company,
-    required this.experienceYears,
-    required this.professionalStatus,
-    required this.retirementDate,
-    required this.skills,
-    required this.socialLinks,
-    required this.experiences,
-    required this.educations,
-    required this.certifications,
-    required this.publications,
-    required this.awards,
-    required this.documents,
-    required this.matchScore,
-    required this.searchIndex,
-
-    // Add after documents parameter:
-    required this.experienceDocuments,
-    required this.certificationDocuments,
-
-  });
-
-  // Getter alias for professional summary if used interchangeably
-  String get professionalSummary => summary;
-
-  /// Factory constructor handles all parsing logic ONCE upon instantiation
-  factory ApplicantRecord.fromSnapshot(
-      DocumentSnapshot doc,
-      Map<String, dynamic> data,
-      JobData? jobData
-      ) {
-    final parentDoc = doc.reference.parent.parent;
-    final userId = parentDoc?.id ?? 'unknown_user';
-
-    // Parse Date
-    DateTime appliedAt;
-    final rawDate = data['appliedAt'];
-    if (rawDate is Timestamp) appliedAt = rawDate.toDate();
-    else if (rawDate is String) appliedAt = DateTime.tryParse(rawDate) ?? DateTime.now();
-    else appliedAt = DateTime.now();
-
-    // Normalize Profile Data
-    final profileSnapshot = data['profileSnapshot'] is Map ? Map<String, dynamic>.from(data['profileSnapshot']) : <String, dynamic>{};
-    final userData = profileSnapshot['user_data'] ?? profileSnapshot['user_Account_Data'] ?? <String, dynamic>{};
-
-    final personal = userData['personalProfile'] ?? <String, dynamic>{};
-    final professional = userData['professionalProfile'] ?? userData['professional_profile'] ?? <String, dynamic>{};
-
-    // -- Extract Simple Fields --
-    final name = (personal['name'] ?? personal['fullName'] ?? 'Unknown').toString();
-    final email = (personal['email'] ?? '').toString();
-    final phone = (personal['contactNumber'] ?? '').toString();
-    final location = (personal['location'] ?? '').toString();
-    final nationality = (personal['nationality'] ?? '').toString();
-
-    // 🆕 Extract Missing Fields
-    final dob = (personal['dob'] ?? '').toString();
-    final objectives = (personal['objectives'] ?? '').toString();
-    // Try personal summary, then professional summary
-    final summary = (personal['summary'] ?? professional['summary'] ?? '').toString();
-
-    // -- Extract Lists --
-    // Skills
-    final rawSkills = personal['skills'] ?? personal['skillset'];
-    final List<String> skills = (rawSkills is List) ? rawSkills.map((e) => e.toString()).toList() : [];
-
-    // Experience
-    final rawExp = userData['professionalExperience'] ?? userData['professional_experience'] ?? userData['experiences'];
-    List<Map<String, dynamic>> experiences = [];
-    if (rawExp is List) {
-      experiences = rawExp.map((item) {
-        if (item is! Map) return <String, dynamic>{};
-        final m = item;
-        return {
-          'organization': m['organization'] ?? m['company'] ?? '',
-          'role': m['role'] ?? '',
-          'duration': m['duration'] ?? '',
-          'startDate': m['startDate'] ?? '',
-          'endDate': m['endDate'] ?? '',
-          'duties': m['duties'] ?? m['text'] ?? '',
-          'text': m['text'] ?? m['duties'] ?? '', // Preserve for legacy compatibility
-        };
-      }).toList();
-    }
-
-    // Education
-    final rawEdu = userData['educationalProfile'] ?? userData['educational_profile'];
-    List<Map<String, dynamic>> educations = [];
-    if (rawEdu is List) {
-      educations = rawEdu.map((item) => item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{}).toList();
-    }
-
-    // Replace the certifications parsing section with this enhanced version:
-    final rawCerts = userData['certifications'];
-    List<Map<String, String>> certifications = [];
-    if (rawCerts is List) {
-      for (var item in rawCerts) {
-        if (item is Map) {
-          final n = (item['name'] ?? item['certName'] ?? '').toString();
-          if (n.isNotEmpty) {
-            certifications.add({
-              'organization': (item['organization'] ?? '').toString(),
-              'name': n,
-              'issueDate': (item['issueDate'] ?? '').toString(),
-              'expiryDate': (item['expiryDate'] ?? '').toString(),
-            });
-          }
-        } else if (item is String && item.isNotEmpty) {
-          certifications.add({'organization': '', 'name': item, 'issueDate': '', 'expiryDate': ''});
-        }
-      }
-    }
-
-// Add this AFTER certifications parsing (around line 195):
-// Experience Documents
-    final rawExpDocs = userData['experienceDocuments'];
-    List<Map<String, dynamic>> experienceDocuments = [];
-    if (rawExpDocs is List) {
-      experienceDocuments = rawExpDocs.map((item) {
-        if (item is! Map) return <String, dynamic>{};
-        return {
-          'name': (item['name'] ?? '').toString(),
-          'url': (item['url'] ?? '').toString(),
-          'type': (item['type'] ?? item['contentType'] ?? '').toString(),
-          'uploadedAt': (item['uploadedAt'] ?? '').toString(),
-        };
-      }).toList();
-    }
-
-// Certification Documents
-    final rawCertDocs = userData['certificationDocuments'];
-    List<Map<String, dynamic>> certificationDocuments = [];
-    if (rawCertDocs is List) {
-      certificationDocuments = rawCertDocs.map((item) {
-        if (item is! Map) return <String, dynamic>{};
-        return {
-          'name': (item['name'] ?? '').toString(),
-          'url': (item['url'] ?? '').toString(),
-          'type': (item['type'] ?? item['contentType'] ?? '').toString(),
-          'uploadedAt': (item['uploadedAt'] ?? '').toString(),
-        };
-      }).toList();
-    }
-    // -- Derived Fields --
-    final firstEdu = educations.isNotEmpty ? educations.first : <String, dynamic>{};
-    final firstExp = experiences.isNotEmpty ? experiences.first : <String, dynamic>{};
-
-    // Pre-compute Search Index for O(1) filtering
-    final searchStr = '$name $email $phone $location ${skills.join(" ")} ${firstExp['organization'] ?? ''} ${firstExp['role'] ?? ''}'.toLowerCase();
-
-    return ApplicantRecord._(
-      userId: userId,
-      jobId: data['jobId'] ?? '',
-      status: (data['status'] as String?) ?? 'pending',
-      appliedAt: appliedAt,
-      profileSnapshot: profileSnapshot,
-      docId: doc.id,
-      reference: doc.reference,
-      jobData: jobData,
-      matchScore: data['match_score'] is Map ? Map<String, dynamic>.from(data['match_score']) : {},
-      // Fields
-      name: name,
-      email: email,
-      secondaryEmail: (personal['secondary_email'] ?? '').toString(),
-      phone: phone,
-      nationality: nationality,
-      pictureUrl: (personal['profilePicUrl'] ?? personal['pic_url'] ?? '').toString(),
-      location: location,
-      // 🆕 Pass new fields to constructor
-      dob: dob,
-      objectives: objectives,
-      summary: summary,
-
-      education: (firstEdu['majorSubjects'] ?? '').toString(),
-      university: (firstEdu['institutionName'] ?? '').toString(),
-      educationDuration: (firstEdu['duration'] ?? '').toString(),
-      cgpa: (firstEdu['marksOrCgpa'] ?? '').toString(),
-      currentRole: (firstExp['role'] ?? '').toString(),
-      company: (firstExp['organization'] ?? '').toString(),
-      experienceYears: experiences.length,
-      professionalStatus: (professional['status'] ?? professional['professionalStatus'] ?? '').toString(),
-      retirementDate: (professional['expectedRetirementDate'] ?? professional['retirementDate'] ?? '').toString(),
-      skills: skills,
-      socialLinks: (personal['socialLinks'] is List) ? (personal['socialLinks'] as List).map((e) => e.toString()).toList() : [],
-      experiences: experiences,
-      educations: educations,
-      certifications: certifications,
-      publications: (userData['publications'] is List) ? (userData['publications'] as List).map((e) => e.toString()).toList() : [],
-      awards: (userData['awards'] is List) ? (userData['awards'] as List).map((e) => e.toString()).toList() : [],
-      documents: (userData['documents'] is List) ? userData['documents'] : [],
-      searchIndex: searchStr,
-      // Add these two lines before the closing parenthesis:
-      experienceDocuments: experienceDocuments,
-      certificationDocuments: certificationDocuments,
-    );
+String _str(dynamic v, [String fb = '']) => v?.toString() ?? fb;
+List<String> _strList(dynamic v) =>
+    v is List ? v.map(_str).toList() : const [];
+List<Map<String, dynamic>> _mapList(dynamic v) => v is List
+    ? v.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).toList()
+    : const [];
+DateTime _parseTs(dynamic v) {
+  if (v is Timestamp) return v.toDate();
+  if (v is String) return DateTime.tryParse(v) ?? DateTime.now();
+  return DateTime.now();
+}
+Map<String, dynamic> _digMap(Map m, List<String> keys) {
+  for (final k in keys) {
+    final v = m[k];
+    if (v is Map) return Map<String, dynamic>.from(v);
   }
-
-  // Helper CopyWith (simplified for status updates)
-  ApplicantRecord copyWith({String? status, JobData? jobData}) {
-    return ApplicantRecord._(
-      userId: userId,
-      jobId: jobId,
-      status: status ?? this.status,
-      appliedAt: appliedAt,
-      profileSnapshot: profileSnapshot,
-      docId: docId,
-      reference: reference,
-      jobData: jobData ?? this.jobData,
-      // Pass through existing pre-parsed data
-      name: name,
-      email: email,
-      secondaryEmail: secondaryEmail,
-      phone: phone,
-      nationality: nationality,
-      pictureUrl: pictureUrl,
-      location: location,
-      // 🆕 Persist new fields in copyWith
-      dob: dob,
-      objectives: objectives,
-      summary: summary,
-      education: education,
-      university: university,
-      educationDuration: educationDuration,
-      cgpa: cgpa,
-      currentRole: currentRole,
-      company: company,
-      experienceYears: experienceYears,
-      professionalStatus: professionalStatus,
-      retirementDate: retirementDate,
-      skills: skills,
-      socialLinks: socialLinks,
-      experiences: experiences,
-      educations: educations,
-      certifications: certifications,
-      publications: publications,
-      awards: awards,
-      documents: documents,
-      matchScore: matchScore,
-      searchIndex: searchIndex,
-      // Add these two lines before the closing parenthesis:
-      experienceDocuments: experienceDocuments,
-      certificationDocuments: certificationDocuments,
-    );
-  }
+  return {};
 }
 
-// ==========================================
-// 2. Job Data Model
-// ==========================================
+dynamic _digVal(Map m, List<String> keys, [dynamic fallback]) {
+  for (final k in keys) {
+    if (m.containsKey(k) && m[k] != null) return m[k];
+  }
+  return fallback;
+}
+// ─── JobData ──────────────────────────────────────────────────────────────────
 
 class JobData {
-  final String jobId;
-  final String title;
-  final String company;
-  final String location;
-  final String jobType;
-  final String workType;
-  final double? salary;
-  final dynamic experience;
-  final List<String> requiredSkills;
-
-  JobData({
+  const JobData({
     required this.jobId,
     required this.title,
     required this.company,
@@ -355,36 +44,284 @@ class JobData {
     this.experience,
     required this.requiredSkills,
   });
+
+  final String jobId, title, company, location, jobType, workType;
+  final double? salary;
+  final dynamic experience;
+  final List<String> requiredSkills;
 }
 
-// ==========================================
-// 3. Optimized Provider
-// ==========================================
+// ─── ApplicantRecord ──────────────────────────────────────────────────────────
+
+class ApplicantRecord {
+  ApplicantRecord._({
+    required this.userId,
+    required this.jobId,
+    required this.status,
+    required this.appliedAt,
+    required this.profileSnapshot,
+    required this.docId,
+    required this.reference,
+    required this.matchScore,
+    required this.sentToAdmin,
+    required this.searchIndex,
+    this.jobData,
+    // Personal
+    required this.name,
+    required this.email,
+    required this.secondaryEmail,
+    required this.phone,
+    required this.nationality,
+    required this.pictureUrl,
+    required this.location,
+    required this.dob,
+    required this.objectives,
+    required this.summary,
+    // Professional
+    required this.education,
+    required this.university,
+    required this.educationDuration,
+    required this.cgpa,
+    required this.currentRole,
+    required this.company,
+    required this.experienceYears,
+    required this.professionalStatus,
+    required this.retirementDate,
+    // Collections
+    required this.skills,
+    required this.socialLinks,
+    required this.experiences,
+    required this.educations,
+    required this.certifications,
+    required this.publications,
+    required this.awards,
+    required this.documents,
+    required this.experienceDocuments,
+    required this.certificationDocuments,
+  });
+
+  // Identity
+  final String userId, jobId, docId, status, searchIndex;
+  final DateTime appliedAt;
+  final DocumentReference reference;
+  final Map<String, dynamic> profileSnapshot, matchScore;
+  final bool sentToAdmin;
+  final JobData? jobData;
+
+  // Personal
+  final String name, email, secondaryEmail, phone, nationality,
+      pictureUrl, location, dob, objectives, summary;
+
+  // Professional
+  final String education, university, educationDuration, cgpa,
+      currentRole, company, professionalStatus, retirementDate;
+  final int experienceYears;
+
+  // Collections
+  final List<String> skills, socialLinks, publications, awards;
+  final List<dynamic> documents;
+  final List<Map<String, dynamic>> experiences, educations,
+      experienceDocuments, certificationDocuments;
+  final List<Map<String, String>> certifications;
+
+  String get professionalSummary => summary;
+
+  factory ApplicantRecord.fromSnapshot(
+      DocumentSnapshot doc, Map<String, dynamic> data, JobData? jobData) {
+    final userId = doc.reference.parent.parent?.id ?? 'unknown_user';
+
+    final ps = data['profileSnapshot'] is Map
+        ? Map<String, dynamic>.from(data['profileSnapshot'] as Map)
+        : <String, dynamic>{};
+
+    final ud           = _digMap(ps, ['user_data', 'user_Account_Data']);
+    final personal     = _digMap(ud, ['personalProfile']);
+    final professional = _digMap(ud, ['professionalProfile', 'professional_profile']);
+
+    // ✅ FIX: name lives in personal, not ud
+    final name  = _str(personal['name'] ?? personal['fullName'], 'Unknown');
+    final email = _str(personal['email']);
+    final phone = _str(personal['contactNumber']);
+
+    // ✅ FIX: summary merged from personal + professional without _dig
+    final summary = _str(personal['summary'] ?? professional['summary']);
+
+    // ✅ FIX: use _digVal (returns dynamic) for list fields
+    final rawExp = _digVal(ud, ['professionalExperience', 'professional_experience', 'experiences']);
+    final rawEdu = _digVal(ud, ['educationalProfile', 'educational_profile']);
+
+    // Experience
+    final experiences = rawExp is List
+        ? rawExp.map<Map<String, dynamic>>((e) {
+      if (e is! Map) return <String, dynamic>{};
+      return {
+        'organization': e['organization'] ?? e['company'] ?? '',
+        'role':         e['role']         ?? '',
+        'duration':     e['duration']     ?? '',
+        'startDate':    e['startDate']    ?? '',
+        'endDate':      e['endDate']      ?? '',
+        'duties':       e['duties']       ?? e['text'] ?? '',
+        'text':         e['text']         ?? e['duties'] ?? '',
+      };
+    }).toList()
+        : <Map<String, dynamic>>[];
+
+    // Education
+    final educations = _mapList(rawEdu);
+
+    // Certifications
+    final certifications = <Map<String, String>>[];
+    final rawCerts = ud['certifications'];
+    if (rawCerts is List) {
+      for (final item in rawCerts) {
+        if (item is Map) {
+          final n = _str(item['name'] ?? item['certName']);
+          if (n.isNotEmpty) {
+            certifications.add({
+              'organization': _str(item['organization']),
+              'name':         n,
+              'issueDate':    _str(item['issueDate']),
+              'expiryDate':   _str(item['expiryDate']),
+            });
+          }
+        } else if (item is String && item.isNotEmpty) {
+          certifications.add({'organization': '', 'name': item, 'issueDate': '', 'expiryDate': ''});
+        }
+      }
+    }
+
+    // ✅ FIX: explicit return type List<Map<String,dynamic>> on local function
+    List<Map<String, dynamic>> parseDocs(dynamic raw) {
+      if (raw is! List) return const [];
+      return raw.map<Map<String, dynamic>>((e) {
+        if (e is! Map) return <String, dynamic>{};
+        return {
+          'name':       _str(e['name']),
+          'url':        _str(e['url']),
+          'type':       _str(e['type'] ?? e['contentType']),
+          'uploadedAt': _str(e['uploadedAt']),
+        };
+      }).toList();
+    }
+
+    final firstEdu = educations.isNotEmpty ? educations.first : <String, dynamic>{};
+    final firstExp = experiences.isNotEmpty ? experiences.first : <String, dynamic>{};
+
+    // ✅ FIX: skills live in personal, not ud — _digMap on personal
+    final skills = _strList(_digVal(personal, ['skills', 'skillset']));
+
+    // ✅ FIX: pictureUrl lives in personal, not ud
+    final pictureUrl = _str(personal['profilePicUrl'] ?? personal['pic_url']);
+
+    // ✅ FIX: professionalStatus and retirementDate use _digVal on professional Map
+    final professionalStatus = _str(
+      _digVal(professional, ['status', 'professionalStatus']),
+    );
+    final retirementDate = _str(
+      _digVal(professional, ['expectedRetirementDate', 'retirementDate']),
+    );
+
+    return ApplicantRecord._(
+      userId:               userId,
+      jobId:                _str(data['jobId']),
+      status:               _str(data['status'], 'pending'),
+      appliedAt:            _parseTs(data['appliedAt']),
+      profileSnapshot:      ps,
+      docId:                doc.id,
+      reference:            doc.reference,
+      jobData:              jobData,
+      matchScore:           data['match_score'] is Map
+          ? Map<String, dynamic>.from(data['match_score'] as Map)
+          : {},
+      sentToAdmin:          data['sentToAdmin'] == true,
+      name:                 name,
+      email:                email,
+      secondaryEmail:       _str(personal['secondary_email']),
+      phone:                phone,
+      nationality:          _str(personal['nationality']),
+      pictureUrl:           pictureUrl,
+      location:             _str(personal['location']),
+      dob:                  _str(personal['dob']),
+      objectives:           _str(personal['objectives']),
+      summary:              summary,
+      education:            _str(firstEdu['majorSubjects']),
+      university:           _str(firstEdu['institutionName']),
+      educationDuration:    _str(firstEdu['duration']),
+      cgpa:                 _str(firstEdu['marksOrCgpa']),
+      currentRole:          _str(firstExp['role']),
+      company:              _str(firstExp['organization']),
+      experienceYears:      experiences.length,
+      professionalStatus:   professionalStatus,
+      retirementDate:       retirementDate,
+      skills:               skills,
+      socialLinks:          _strList(personal['socialLinks']),
+      experiences:          experiences,
+      educations:           educations,
+      certifications:       certifications,
+      publications:         _strList(ud['publications']),
+      awards:               _strList(ud['awards']),
+      documents:            ud['documents'] is List ? ud['documents'] as List : const [],
+      experienceDocuments:  parseDocs(ud['experienceDocuments']),
+      certificationDocuments: parseDocs(ud['certificationDocuments']),
+      searchIndex: '$name $email $phone ${_str(personal['location'])} '
+          '${skills.join(' ')} ${firstExp['organization'] ?? ''} '
+          '${firstExp['role'] ?? ''}'.toLowerCase(),
+    );
+  }
+  ApplicantRecord copyWith({String? status, JobData? jobData, bool? sentToAdmin}) =>
+      ApplicantRecord._(
+        userId: userId, jobId: jobId, status: status ?? this.status,
+        appliedAt: appliedAt, profileSnapshot: profileSnapshot,
+        docId: docId, reference: reference,
+        jobData: jobData ?? this.jobData,
+        matchScore: matchScore, sentToAdmin: sentToAdmin ?? this.sentToAdmin,
+        searchIndex: searchIndex, name: name, email: email,
+        secondaryEmail: secondaryEmail, phone: phone, nationality: nationality,
+        pictureUrl: pictureUrl, location: location, dob: dob,
+        objectives: objectives, summary: summary, education: education,
+        university: university, educationDuration: educationDuration,
+        cgpa: cgpa, currentRole: currentRole, company: company,
+        experienceYears: experienceYears, professionalStatus: professionalStatus,
+        retirementDate: retirementDate, skills: skills, socialLinks: socialLinks,
+        experiences: experiences, educations: educations,
+        certifications: certifications, publications: publications,
+        awards: awards, documents: documents,
+        experienceDocuments: experienceDocuments,
+        certificationDocuments: certificationDocuments,
+      );
+}
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 class ApplicantsProvider with ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _db   = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
 
-  // State Management
+  // ── State ──
   bool isLoading = true;
   String? error;
   String? _currentJobId;
+  String? _initializedUid;
+  bool _isInitializing = false;
+
   StreamSubscription<QuerySnapshot>? _subscription;
+  StreamSubscription<QuerySnapshot>? _requestsSubscription;
   Timer? _searchDebounce;
 
-  // Data Containers
-  List<ApplicantRecord> _allApplicants = [];
-  List<ApplicantRecord> _filteredApplicants = [];
+  // ── Data ──
+  List<ApplicantRecord> _all = [];
+  List<ApplicantRecord> _filtered = [];
+  List<Map<String, dynamic>> _recruiterRequests = [];
 
-  // Selection
+  // ── Caches ──
+  final Map<String, JobData?> _jobCache = {};
+  final Map<String, ApplicantRecord> _recordCache = {};
+  final Map<String, int> _hashCache = {};
+
+  // ── Selection ──
   final Set<String> selectedApplicantIds = {};
 
-  // Caches
-  final Map<String, JobData?> _jobDataCache = {};
-  final Map<String, ApplicantRecord> _recordCache = {};
-  final Map<String, int> _docHashCache = {};
-
-  // Filters
+  // ── Filters ──
   String searchQuery = '';
   String statusFilter = 'All';
   String experienceFilter = 'All';
@@ -402,143 +339,198 @@ class ApplicantsProvider with ChangeNotifier {
   bool hasAwards = false;
   String sortBy = 'applied_desc';
 
-  // Available options (Cached Sets)
-  final Set<String> availableExperiences = {};
-  final Set<String> availableLocations = {};
-  final Set<String> availableEducations = {};
-  final Set<String> availableJobs = {};
-  final Set<String> availableSkills = {};
+  // ── Available filter options ──
+  final Set<String> availableExperiences  = {};
+  final Set<String> availableLocations    = {};
+  final Set<String> availableEducations   = {};
+  final Set<String> availableJobs         = {};
+  final Set<String> availableSkills       = {};
   final Set<String> availableNationalities = {};
 
-  ApplicantsProvider() {
-    _initRealtimeUpdates();
-  }
+  // ── Getters ──
+  List<ApplicantRecord> get applicants       => _filtered;
+  List<ApplicantRecord> get allApplicants    => _all;
+  List<Map<String, dynamic>> get recruiterRequests => _recruiterRequests;
 
-  // Getters
-  List<ApplicantRecord> get applicants => _filteredApplicants;
-  List<ApplicantRecord> get allApplicants => _allApplicants;
-  int get totalApplicants => _allApplicants.length;
-  int get filteredCount => _filteredApplicants.length;
+  int get totalApplicants  => _all.length;
+  int get filteredCount    => _filtered.length;
+  int get pendingCount     => _all.where((a) => a.status == 'pending').length;
+  int get acceptedCount    => _all.where((a) => a.status == 'accepted').length;
+  int get rejectedCount    => _all.where((a) => a.status == 'rejected').length;
+  int get shortlistCount   => _all.where((a) => a.status == 'shortlist').length;
 
-  int get pendingCount => _allApplicants.where((a) => a.status.toLowerCase() == 'pending').length;
-  int get acceptedCount => _allApplicants.where((a) => a.status.toLowerCase() == 'accepted').length;
-  int get rejectedCount => _allApplicants.where((a) => a.status.toLowerCase() == 'rejected').length;
-  int get shortlistCount => _allApplicants.where((a) => a.status.toLowerCase() == 'shortlist').length;
-
-  // Shortlist Getters
   List<ApplicantRecord> get shortlistedApplicants =>
-      _allApplicants.where((a) => a.status.toLowerCase() == 'shortlist').toList();
+      _all.where((a) => a.status.toLowerCase() == 'shortlist').toList();
 
-  List<ApplicantRecord> getShortlistedForJob(String? jobId) {
-    if (jobId == null || jobId.isEmpty) return shortlistedApplicants;
-    return _allApplicants.where((a) => a.status.toLowerCase() == 'shortlist' && a.jobId == jobId).toList();
-  }
+  List<ApplicantRecord> getShortlistedForJob(String? jobId) =>
+      (jobId == null || jobId.isEmpty)
+          ? shortlistedApplicants
+          : _all.where((a) => a.status.toLowerCase() == 'shortlist' && a.jobId == jobId).toList();
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _requestsSubscription?.cancel();
     _searchDebounce?.cancel();
     super.dispose();
   }
 
-  // ==========================================
-  // Core Logic: Realtime Updates
-  // ==========================================
+  // ─── Realtime Stream ──────────────────────────────────────────────────────
 
-  void _initRealtimeUpdates() {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) {
+  void refresh({String? jobId}) {
+    if (_currentJobId != jobId) {
+      _currentJobId = jobId;
+      _jobCache.clear();
+      _recordCache.clear();
+      _hashCache.clear();
+      _isInitializing = false; // Allow re-init on job change
+    }
+    _initStreams();
+  }
+
+  void _initStreams() {
+    final user = _auth.currentUser;
+    if (user == null) {
       error = 'No user logged in';
       isLoading = false;
       notifyListeners();
       return;
     }
 
+    // ✅ Request stream: restart only if user changed
+    if (_initializedUid != user.uid) {
+      _requestsSubscription?.cancel();
+      _requestsSubscription = _db
+          .collection('recruiter_requests')
+          .where('recruiter_id', isEqualTo: user.uid)
+          .orderBy('created_at', descending: true)
+          .snapshots()
+          .listen((snap) {
+        _recruiterRequests = snap.docs
+            .map((d) => Map<String, dynamic>.from(d.data() as Map))
+            .toList();
+        notifyListeners();
+      });
+    }
+
+    if (_isInitializing || (_initializedUid == user.uid && _subscription != null)) return;
+
+    _isInitializing = true;
+    _initializedUid = user.uid;
     isLoading = true;
     notifyListeners();
+
     _subscription?.cancel();
 
-    Query query = _firestore
+    // ✅ Web-friendly: limit collectionGroup query fields to avoid composite index issues
+    Query query = _db
         .collectionGroup('applied_jobs')
-        .where('recruiterUid', isEqualTo: currentUser.uid);
+        .where('recruiterUid', isEqualTo: user.uid);
 
-    // Query-level optimization
     if (_currentJobId != null && _currentJobId!.isNotEmpty) {
       query = query.where('jobId', isEqualTo: _currentJobId);
     }
     query = query.orderBy('appliedAt', descending: true);
 
-    _subscription = query.snapshots().listen((snapshot) async {
-      // 1. Identify missing job data first
-      final Set<String> neededJobIds = {};
-      for (final doc in snapshot.docs) {
-        final jId = doc.get('jobId') as String?;
-        if (jId != null && !_jobDataCache.containsKey(jId)) {
-          neededJobIds.add(jId);
-        }
-      }
-
-      // 2. Batch fetch job data
-      if (neededJobIds.isNotEmpty) {
-        await _ensureJobDataCached(neededJobIds);
-      }
-
-      // 3. Process records with Hash Caching
-      final List<ApplicantRecord> newRecordList = [];
-      bool filtersNeedUpdate = false;
-
-      for (final doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final currentHash = data.toString().hashCode;
-
-        if (_recordCache.containsKey(doc.id) && _docHashCache[doc.id] == currentHash) {
-          // No changes, use cache
-          newRecordList.add(_recordCache[doc.id]!);
-        } else {
-          // Data changed or new, parse
-          final jobId = data['jobId'] as String?;
-          if (jobId != null && jobId.isNotEmpty) {
-            final record = ApplicantRecord.fromSnapshot(doc, data, _jobDataCache[jobId]);
-            _recordCache[doc.id] = record;
-            _docHashCache[doc.id] = currentHash;
-            newRecordList.add(record);
-            filtersNeedUpdate = true;
-          }
-        }
-      }
-
-      _allApplicants = newRecordList;
-
-      // 4. Garbage Collection
-      if (_recordCache.length > _allApplicants.length) {
-        final activeIds = _allApplicants.map((e) => e.docId).toSet();
-        _recordCache.removeWhere((key, _) => !activeIds.contains(key));
-        _docHashCache.removeWhere((key, _) => !activeIds.contains(key));
-        filtersNeedUpdate = true;
-      }
-
-      if (filtersNeedUpdate || _filteredApplicants.isEmpty) {
-        _populateFilterOptions();
-        _applyFilters();
-      } else {
-        // If data didn't change structurally, just re-apply sorting/filtering to be safe
-        _applyFilters();
-      }
-
-      isLoading = false;
-      notifyListeners();
-
-    }, onError: (e) {
-      debugPrint('Stream Error: $e');
-      error = e.toString();
-      isLoading = false;
-      notifyListeners();
-    });
+    _subscription = query.snapshots().listen(
+      _onApplicantsSnapshot,
+      onError: (e) {
+        error = e.toString();
+        isLoading = false;
+        _isInitializing = false;
+        notifyListeners();
+      },
+    );
   }
 
-  // ==========================================
-  // Filtering Logic (Optimized)
-  // ==========================================
+  Future<void> _onApplicantsSnapshot(QuerySnapshot snap) async {
+    // 1. Collect uncached job IDs in one pass
+    final needed = <String>{};
+    for (final doc in snap.docs) {
+      final jId = (doc.data() as Map)['jobId'] as String?;
+      if (jId != null && !_jobCache.containsKey(jId)) needed.add(jId);
+    }
+
+    // 2. Batch-fetch jobs — parallel, web-safe
+    if (needed.isNotEmpty) {
+      await Future.wait(needed.map(_fetchJob));
+    }
+
+    // 3. Process docs with hash-diff caching
+    bool structureChanged = false;
+    final newList = <ApplicantRecord>[];
+
+    for (final doc in snap.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final hash = Object.hash(doc.id, data.toString());
+
+      if (_recordCache.containsKey(doc.id) && _hashCache[doc.id] == hash) {
+        newList.add(_recordCache[doc.id]!);
+      } else {
+        final jId = data['jobId'] as String?;
+        if (jId != null && jId.isNotEmpty) {
+          final rec = ApplicantRecord.fromSnapshot(doc, data, _jobCache[jId]);
+          _recordCache[doc.id] = rec;
+          _hashCache[doc.id]   = hash;
+          newList.add(rec);
+          structureChanged = true;
+        }
+      }
+    }
+
+    _all = newList;
+
+    // 4. GC stale cache entries
+    if (_recordCache.length > _all.length) {
+      final live = _all.map((a) => a.docId).toSet();
+      _recordCache.removeWhere((k, _) => !live.contains(k));
+      _hashCache.removeWhere((k, _)   => !live.contains(k));
+      structureChanged = true;
+    }
+
+    if (structureChanged) _populateFilterOptions();
+    _applyFilters(); // Always re-apply (handles sort/filter changes)
+
+    isLoading = false;
+    _isInitializing = false;
+    notifyListeners();
+  }
+
+  // ─── Job Fetching ─────────────────────────────────────────────────────────
+
+  Future<void> _fetchJob(String jobId) async {
+    if (_jobCache.containsKey(jobId)) return;
+    try {
+      final doc  = await _db.collection('Posted_jobs_public').doc(jobId).get();
+      if (!doc.exists) { _jobCache[jobId] = null; return; }
+      final data = doc.data()!;
+
+      double? salary;
+      final rawSalary = data['salary'];
+      if (rawSalary is num) {
+        salary = rawSalary.toDouble();
+      } else if (rawSalary is String) {
+        final m = RegExp(r'[\d,]+').firstMatch(rawSalary);
+        salary = m != null ? double.tryParse(m.group(0)!.replaceAll(',', '')) : null;
+      }
+
+      _jobCache[jobId] = JobData(
+        jobId: jobId,
+        title: _str(data['title'], 'Unknown'),
+        company: _str(data['company']),
+        location: _str(data['location']),
+        jobType: _str(data['job_type']),
+        workType: _str(data['workModes']),
+        salary: salary,
+        experience: data['experience'],
+        requiredSkills: _strList(data['required_skills']),
+      );
+    } catch (_) {
+      _jobCache[jobId] = null;
+    }
+  }
+
+  // ─── Filtering ────────────────────────────────────────────────────────────
 
   void _populateFilterOptions() {
     availableExperiences.clear();
@@ -548,140 +540,99 @@ class ApplicantsProvider with ChangeNotifier {
     availableSkills.clear();
     availableNationalities.clear();
 
-    for (final applicant in _allApplicants) {
-      if (applicant.jobData != null) availableJobs.add(applicant.jobData!.title);
-      if (applicant.location.isNotEmpty) availableLocations.add(applicant.location);
-      if (applicant.education.isNotEmpty) availableEducations.add(applicant.education);
-      if (applicant.nationality.isNotEmpty) availableNationalities.add(applicant.nationality);
-      availableSkills.addAll(applicant.skills);
+    for (final a in _all) {
+      if (a.jobData != null)        availableJobs.add(a.jobData!.title);
+      if (a.location.isNotEmpty)    availableLocations.add(a.location);
+      if (a.education.isNotEmpty)   availableEducations.add(a.education);
+      if (a.nationality.isNotEmpty) availableNationalities.add(a.nationality);
+      availableSkills.addAll(a.skills);
 
-      // Calculate experience bucket once
-      final y = applicant.experienceYears;
-      if (y == 0) availableExperiences.add('Entry Level');
-      else if (y <= 2) availableExperiences.add('1-2 years');
-      else if (y <= 5) availableExperiences.add('3-5 years');
-      else if (y <= 10) availableExperiences.add('6-10 years');
-      else availableExperiences.add('10+ years');
+      final y = a.experienceYears;
+      availableExperiences.add(
+        y == 0 ? 'Entry Level' : y <= 2 ? '1-2 years' : y <= 5
+            ? '3-5 years' : y <= 10 ? '6-10 years' : '10+ years',
+      );
     }
   }
 
   void _applyFilters() {
-    final searchLower = searchQuery.toLowerCase();
+    final q        = searchQuery.toLowerCase();
+    final hasQ     = q.isNotEmpty;
+    final chkStat  = statusFilter != 'All';
+    final chkJob   = jobFilter != 'All';
+    final chkLoc   = locationFilter != 'All';
+    final chkEdu   = educationFilter != 'All';
+    final chkNat   = nationalityFilter != 'All';
+    final chkProf  = professionalStatusFilter != 'All';
+    final chkSkill = skillsFilter.isNotEmpty;
+    final chkDate  = appliedDateRange != null;
 
-    // Using simple boolean flags for checks is faster than string comparison in loop
-    final bool checkStatus = statusFilter != 'All';
-    final bool checkJob = jobFilter != 'All';
-    final bool checkLoc = locationFilter != 'All';
-    final bool checkEdu = educationFilter != 'All';
-    final bool checkNat = nationalityFilter != 'All';
-    final bool checkProf = professionalStatusFilter != 'All';
-    final bool checkSkills = skillsFilter.isNotEmpty;
-    final bool checkDate = appliedDateRange != null;
-    final bool checkSearch = searchLower.isNotEmpty;
+    _filtered = _all.where((a) {
+      if (hasQ   && !a.searchIndex.contains(q))                                                   return false;
+      if (chkStat && a.status.toLowerCase() != statusFilter.toLowerCase())                         return false;
+      if (chkJob  && a.jobData?.title != jobFilter)                                                return false;
+      if (chkLoc  && a.location != locationFilter)                                                 return false;
+      if (chkEdu  && a.education != educationFilter)                                               return false;
+      if (chkNat  && a.nationality != nationalityFilter)                                           return false;
+      if (chkProf && a.professionalStatus.toLowerCase() != professionalStatusFilter.toLowerCase()) return false;
 
-    _filteredApplicants = _allApplicants.where((applicant) {
-      // 1. Search (Fastest fail check via pre-computed index)
-      if (checkSearch && !applicant.searchIndex.contains(searchLower)) return false;
+      if (a.experienceYears < experienceYearsRange.start ||
+          a.experienceYears > experienceYearsRange.end)                                           return false;
+      if (hasCertifications && a.certifications.isEmpty)                                          return false;
+      if (hasPublications   && a.publications.isEmpty)                                            return false;
+      if (hasAwards         && a.awards.isEmpty)                                                  return false;
 
-      // 2. Direct Equality Checks (Fast)
-      if (checkStatus && applicant.status.toLowerCase() != statusFilter.toLowerCase()) return false;
-      if (checkJob && applicant.jobData?.title != jobFilter) return false;
-      if (checkLoc && applicant.location != locationFilter) return false;
-      if (checkEdu && applicant.education != educationFilter) return false;
-      if (checkNat && applicant.nationality != nationalityFilter) return false;
-      if (checkProf && applicant.professionalStatus.toLowerCase() != professionalStatusFilter.toLowerCase()) return false;
-
-      // 3. Range & Boolean Checks
-      if (applicant.experienceYears < experienceYearsRange.start || applicant.experienceYears > experienceYearsRange.end) return false;
-      if (hasCertifications && applicant.certifications.isEmpty) return false;
-      if (hasPublications && applicant.publications.isEmpty) return false;
-      if (hasAwards && applicant.awards.isEmpty) return false;
-
-      // 4. Experience Category Check
       if (experienceFilter != 'All') {
-        final y = applicant.experienceYears;
-        String level = y == 0 ? 'Entry Level' : y <= 2 ? '1-2 years' : y <= 5 ? '3-5 years' : y <= 10 ? '6-10 years' : '10+ years';
-        if (level != experienceFilter) return false;
+        final y = a.experienceYears;
+        final lv = y == 0 ? 'Entry Level' : y <= 2 ? '1-2 years' : y <= 5
+            ? '3-5 years' : y <= 10 ? '6-10 years' : '10+ years';
+        if (lv != experienceFilter) return false;
       }
 
-      // 5. Retirement Check (Complex Calculation)
       if (retirementStatusFilter != 'All') {
-        if (applicant.retirementDate.isEmpty) return false;
+        if (a.retirementDate.isEmpty) return false;
         try {
-          final diff = DateTime.parse(applicant.retirementDate).difference(DateTime.now()).inDays / 365;
-          bool match = false;
-          if (retirementStatusFilter == 'Within 1 Year') match = diff <= 1 && diff >= 0;
-          else if (retirementStatusFilter == '1-3 Years') match = diff > 1 && diff <= 3;
-          else if (retirementStatusFilter == '3-5 Years') match = diff > 3 && diff <= 5;
-          else if (retirementStatusFilter == '5+ Years') match = diff > 5;
-          if (!match) return false;
+          final diff = DateTime.parse(a.retirementDate).difference(DateTime.now()).inDays / 365;
+          final ok = retirementStatusFilter == 'Within 1 Year' ? (diff <= 1 && diff >= 0)
+              : retirementStatusFilter == '1-3 Years' ? (diff > 1 && diff <= 3)
+              : retirementStatusFilter == '3-5 Years' ? (diff > 3 && diff <= 5)
+              : retirementStatusFilter == '5+ Years'  ? diff > 5
+              : false;
+          if (!ok) return false;
         } catch (_) { return false; }
       }
 
-      // 6. Skills (Array intersection - costliest check, do last)
-      if (checkSkills) {
-        for (final skill in skillsFilter) {
-          if (!applicant.skills.contains(skill)) return false;
-        }
-      }
+      if (chkSkill && skillsFilter.any((s) => !a.skills.contains(s))) return false;
 
-      // 7. Date Range
-      if (checkDate) {
-        if (applicant.appliedAt.isBefore(appliedDateRange!.start) ||
-            applicant.appliedAt.isAfter(appliedDateRange!.end.add(const Duration(days: 1)))) return false;
+      if (chkDate) {
+        if (a.appliedAt.isBefore(appliedDateRange!.start) ||
+            a.appliedAt.isAfter(appliedDateRange!.end.add(const Duration(days: 1)))) return false;
       }
 
       return true;
     }).toList();
 
-    _applySorting();
+    _sort();
   }
 
-  void _applySorting() {
-    if (_filteredApplicants.isEmpty) return;
-
-    // Sort in place is more memory efficient
+  void _sort() {
+    if (_filtered.isEmpty) return;
     switch (sortBy) {
-      case 'applied_desc': _filteredApplicants.sort((a, b) => b.appliedAt.compareTo(a.appliedAt)); break;
-      case 'applied_asc': _filteredApplicants.sort((a, b) => a.appliedAt.compareTo(b.appliedAt)); break;
-      case 'name_asc': _filteredApplicants.sort((a, b) => a.name.compareTo(b.name)); break;
-      case 'name_desc': _filteredApplicants.sort((a, b) => b.name.compareTo(a.name)); break;
-      case 'experience_desc': _filteredApplicants.sort((a, b) => b.experienceYears.compareTo(a.experienceYears)); break;
+      case 'applied_desc':   _filtered.sort((a, b) => b.appliedAt.compareTo(a.appliedAt)); break;
+      case 'applied_asc':    _filtered.sort((a, b) => a.appliedAt.compareTo(b.appliedAt)); break;
+      case 'name_asc':       _filtered.sort((a, b) => a.name.compareTo(b.name));           break;
+      case 'name_desc':      _filtered.sort((a, b) => b.name.compareTo(a.name));           break;
+      case 'experience_desc': _filtered.sort((a, b) => b.experienceYears.compareTo(a.experienceYears)); break;
     }
   }
 
-  // ==========================================
-  // Public Actions
-  // ==========================================
+  // ─── Public Filter API ────────────────────────────────────────────────────
 
-  void toggleSelection(String applicantId) {
-    if (selectedApplicantIds.contains(applicantId)) selectedApplicantIds.remove(applicantId);
-    else selectedApplicantIds.add(applicantId);
-    notifyListeners();
-  }
+  void _set(VoidCallback fn) { fn(); _applyFilters(); notifyListeners(); }
 
-  void selectAll(List<ApplicantRecord> applicants) {
-    selectedApplicantIds.clear();
-    selectedApplicantIds.addAll(applicants.map((a) => a.userId));
-    notifyListeners();
-  }
-
-  void clearSelection() {
-    selectedApplicantIds.clear();
-    notifyListeners();
-  }
-
-  bool isSelected(String applicantId) => selectedApplicantIds.contains(applicantId);
-
-  // Filter Updates
   void updateSearchQuery(String query) {
-    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
-    if (query.isEmpty) {
-      searchQuery = '';
-      _applyFilters();
-      notifyListeners();
-      return;
-    }
+    _searchDebounce?.cancel();
+    if (query.isEmpty) { searchQuery = ''; _set(() {}); return; }
     _searchDebounce = Timer(const Duration(milliseconds: 300), () {
       searchQuery = query;
       _applyFilters();
@@ -689,73 +640,80 @@ class ApplicantsProvider with ChangeNotifier {
     });
   }
 
-  // Setter helpers to reduce boilerplate
-  void _updateFilter(VoidCallback update) {
-    update();
-    _applyFilters();
-    notifyListeners();
-  }
+  void updateStatusFilter(String v)            => _set(() => statusFilter = v);
+  void updateJobFilter(String v)               => _set(() => jobFilter = v);
+  void updateExperienceFilter(String v)        => _set(() => experienceFilter = v);
+  void updateLocationFilter(String v)          => _set(() => locationFilter = v);
+  void updateEducationFilter(String v)         => _set(() => educationFilter = v);
+  void updateNationalityFilter(String v)       => _set(() => nationalityFilter = v);
+  void updateProfessionalStatusFilter(String v)=> _set(() => professionalStatusFilter = v);
+  void updateRetirementStatusFilter(String v)  => _set(() => retirementStatusFilter = v);
+  void updateSkillsFilter(List<String> v)      => _set(() => skillsFilter = v);
+  void updateAppliedDateRange(DateTimeRange? v)=> _set(() => appliedDateRange = v);
+  void updateExperienceYearsRange(RangeValues v)=> _set(() => experienceYearsRange = v);
+  void updateHasCertifications(bool v)         => _set(() => hasCertifications = v);
+  void updateHasPublications(bool v)           => _set(() => hasPublications = v);
+  void updateHasAwards(bool v)                 => _set(() => hasAwards = v);
+  void updateSorting(String v)                 => _set(() => sortBy = v);
 
-  void updateStatusFilter(String s) => _updateFilter(() => statusFilter = s);
-  void updateJobFilter(String j) => _updateFilter(() => jobFilter = j);
-  void updateExperienceFilter(String e) => _updateFilter(() => experienceFilter = e);
-  void updateLocationFilter(String l) => _updateFilter(() => locationFilter = l);
-  void updateEducationFilter(String e) => _updateFilter(() => educationFilter = e);
-  void updateNationalityFilter(String n) => _updateFilter(() => nationalityFilter = n);
-  void updateProfessionalStatusFilter(String s) => _updateFilter(() => professionalStatusFilter = s);
-  void updateRetirementStatusFilter(String s) => _updateFilter(() => retirementStatusFilter = s);
-  void updateSkillsFilter(List<String> s) => _updateFilter(() => skillsFilter = s);
-  void updateAppliedDateRange(DateTimeRange? r) => _updateFilter(() => appliedDateRange = r);
-  void updateExperienceYearsRange(RangeValues r) => _updateFilter(() => experienceYearsRange = r);
-  void updateHasCertifications(bool b) => _updateFilter(() => hasCertifications = b);
-  void updateHasPublications(bool b) => _updateFilter(() => hasPublications = b);
-  void updateHasAwards(bool b) => _updateFilter(() => hasAwards = b);
-  void updateSorting(String s) => _updateFilter(() => sortBy = s);
-
-  void clearAllFilters() {
-    searchQuery = '';
-    statusFilter = 'All';
-    jobFilter = 'All';
-    experienceFilter = 'All';
-    locationFilter = 'All';
-    educationFilter = 'All';
-    nationalityFilter = 'All';
-    professionalStatusFilter = 'All';
-    retirementStatusFilter = 'All';
-    skillsFilter.clear();
-    appliedDateRange = null;
+  void clearAllFilters() => _set(() {
+    searchQuery = ''; statusFilter = 'All'; jobFilter = 'All';
+    experienceFilter = 'All'; locationFilter = 'All'; educationFilter = 'All';
+    nationalityFilter = 'All'; professionalStatusFilter = 'All';
+    retirementStatusFilter = 'All'; skillsFilter = []; appliedDateRange = null;
     experienceYearsRange = const RangeValues(0, 30);
-    hasCertifications = false;
-    hasPublications = false;
-    hasAwards = false;
+    hasCertifications = false; hasPublications = false; hasAwards = false;
     sortBy = 'applied_desc';
-    _applyFilters();
+  });
+
+  // ─── Selection ────────────────────────────────────────────────────────────
+
+  // ✅ Deferred notifyListeners via microtask — prevents "widget tree locked" error
+  // when clearSelection() is called from dispose() or didUpdateWidget()
+  void clearSelection() {
+    if (selectedApplicantIds.isEmpty) return;
+    selectedApplicantIds.clear();
+    // Check if we're in a build frame; if so, defer
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+  }
+
+  void toggleSelection(String id) {
+    selectedApplicantIds.contains(id)
+        ? selectedApplicantIds.remove(id)
+        : selectedApplicantIds.add(id);
     notifyListeners();
   }
 
-  Future<void> updateApplicationStatus(String applicantUserId, String docId, String newStatus) async {
+  void selectAll(List<ApplicantRecord> list) {
+    selectedApplicantIds
+      ..clear()
+      ..addAll(list.map((a) => a.userId));
+    notifyListeners();
+  }
+
+  bool isSelected(String id) => selectedApplicantIds.contains(id);
+
+  // ─── Actions ──────────────────────────────────────────────────────────────
+
+  Future<void> updateApplicationStatus(
+      String userId, String docId, String newStatus) async {
+    final idx = _all.indexWhere((a) => a.userId == userId && a.docId == docId);
+    if (idx == -1) return;
+
+    final updated = _all[idx].copyWith(status: newStatus);
+    _all[idx] = updated;
+    _recordCache[docId] = updated;
+    _applyFilters();
+    notifyListeners();
+
     try {
-      final index = _allApplicants.indexWhere((a) => a.userId == applicantUserId && a.docId == docId);
-      if (index != -1) {
-        final original = _allApplicants[index];
-        // Only update the status field using copyWith
-        final updated = original.copyWith(status: newStatus);
-
-        _allApplicants[index] = updated;
-        _recordCache[docId] = updated;
-
-        _applyFilters();
-        notifyListeners();
-
-        await original.reference.update({'status': newStatus});
-      }
+      await updated.reference.update({'status': newStatus});
     } catch (e) {
       error = 'Failed to update status: $e';
       notifyListeners();
     }
   }
 
-  // 🆕 Sending Logic (Optimized for safe access)
   Future<String?> sendSelectedCandidatesToAdmin({String? notes}) async {
     if (selectedApplicantIds.isEmpty) return null;
 
@@ -766,148 +724,99 @@ class ApplicantsProvider with ChangeNotifier {
       return null;
     }
 
-    final selectedApplicants = _allApplicants
-        .where((a) => selectedApplicantIds.contains(a.userId))
+    final selected = _all
+        .where((a) => selectedApplicantIds.contains(a.userId) && !a.sentToAdmin)
         .toList();
 
-    if (selectedApplicants.isEmpty) return null;
-
-    final List<String> candidateIds = [];
-    final List<Map<String, dynamic>> candidateMaps = [];
-
-    for (final app in selectedApplicants) {
-      candidateIds.add(app.userId);
-
-      // Build complete candidate data map
-      candidateMaps.add({
-        // Basic Info
-        'uid': app.userId,
-        'name': app.name,
-        'email': app.email,
-        'phone': app.phone,
-        'nationality': app.nationality,
-        'picture_url': app.pictureUrl,
-        'location': app.location,
-        'dob': app.dob,
-        'secondary_email': app.secondaryEmail,
-
-        // Job Application Info
-        'job_id': app.jobId,
-        'job_title': app.jobData?.title ?? '',
-        'applied_at': app.appliedAt.toIso8601String(),
-        'status': app.status,
-        'match_score': app.matchScore,
-
-        // Professional Info
-        'professional_status': app.professionalStatus,
-        'retirement_date': app.retirementDate,
-        'summary': app.summary,
-        'objectives': app.objectives,
-
-        // Experience & Education
-        'experience_years': app.experienceYears,
-        'current_role': app.currentRole,
-        'company': app.company,
-        'education': app.education,
-        'university': app.university,
-        'education_duration': app.educationDuration,
-        'cgpa': app.cgpa,
-
-        // Collections
-        'skills': app.skills,
-        'social_links': app.socialLinks,
-        'certifications': app.certifications,
-        'publications': app.publications,
-        'awards': app.awards,
-
-        // Detailed Profiles (Full Arrays)
-        'professionalExperience': app.experiences,
-        'educationalProfile': app.educations,
-
-        // Documents
-        'documents': app.documents,
-        'experienceDocuments': app.experienceDocuments,
-        'certificationDocuments': app.certificationDocuments,
-
-        // Full Profile Snapshot (for admin to access raw data)
-        'profileSnapshot': app.profileSnapshot,
-      });
+    if (selected.isEmpty) {
+      error = 'Selected candidates have already been sent to admin';
+      notifyListeners();
+      return null;
     }
 
+    // ✅ Build payload in single pass
+    final candidateMaps = selected.map((a) => {
+      'uid': a.userId, 'name': a.name, 'email': a.email, 'phone': a.phone,
+      'nationality': a.nationality, 'picture_url': a.pictureUrl,
+      'location': a.location, 'dob': a.dob, 'secondary_email': a.secondaryEmail,
+      'job_id': a.jobId, 'job_title': a.jobData?.title ?? '',
+      'applied_at': a.appliedAt.toIso8601String(), 'status': a.status,
+      'match_score': a.matchScore, 'professional_status': a.professionalStatus,
+      'retirement_date': a.retirementDate, 'summary': a.summary,
+      'objectives': a.objectives, 'experience_years': a.experienceYears,
+      'current_role': a.currentRole, 'company': a.company,
+      'education': a.education, 'university': a.university,
+      'education_duration': a.educationDuration, 'cgpa': a.cgpa,
+      'skills': a.skills, 'social_links': a.socialLinks,
+      'certifications': a.certifications, 'publications': a.publications,
+      'awards': a.awards, 'professionalExperience': a.experiences,
+      'educationalProfile': a.educations, 'documents': a.documents,
+      'experienceDocuments': a.experienceDocuments,
+      'certificationDocuments': a.certificationDocuments,
+    }).toList();
+
     try {
-      final reqDoc = _firestore.collection('recruiter_requests').doc();
-      await reqDoc.set({
-        'request_id': reqDoc.id,
+      final reqRef = _db.collection('recruiter_requests').doc();
+
+      // ✅ Single batch for both the new doc and all sentToAdmin updates
+      final batch = _db.batch();
+
+      batch.set(reqRef, {
+        'request_id': reqRef.id,
         'recruiter_id': recruiter.uid,
         'recruiter_email': recruiter.email ?? '',
         'created_at': FieldValue.serverTimestamp(),
         'notes': (notes ?? '').trim(),
-        'total_candidates': candidateIds.length,
+        'total_candidates': selected.length,
         'status': 'pending',
-        'candidate_ids': candidateIds,
+        'candidate_ids': selected.map((a) => a.userId).toList(),
         'candidates': candidateMaps,
-        'request_type': 'candidate_submission',
         'source': 'shortlist_view',
       });
 
+      for (final a in selected) {
+        batch.update(a.reference, {'sentToAdmin': true});
+      }
+
+      await batch.commit(); // ✅ One round-trip instead of two
       clearSelection();
-      return reqDoc.id;
+      return reqRef.id;
     } catch (e) {
-      error = 'Failed to send: $e';
-      notifyListeners();
+      debugPrint('sendSelectedCandidatesToAdmin error: $e');
       return null;
     }
   }
-  void refresh({String? jobId}) {
-    if (_currentJobId != jobId) {
-      _currentJobId = jobId;
-      _jobDataCache.clear();
-      _recordCache.clear();
-      _docHashCache.clear();
-    }
-    _initRealtimeUpdates();
-  }
 
-  // ==========================================
-  // Private Helpers
-  // ==========================================
-
-  Future<void> _ensureJobDataCached(Set<String> jobIds) async {
-    final futures = jobIds.map((id) => _fetchAndCacheJob(id));
-    await Future.wait(futures);
-  }
-
-  Future<void> _fetchAndCacheJob(String jobId) async {
-    if (_jobDataCache.containsKey(jobId)) return;
+  Future<bool> updateCandidateStatus({
+    required String requestId,
+    required String candidateUid,
+    required String status,
+  }) async {
     try {
-      final doc = await _firestore.collection('Posted_jobs_public').doc(jobId).get();
-      if (!doc.exists) {
-        _jobDataCache[jobId] = null;
-        return;
-      }
-      final data = doc.data() ?? {};
+      final ref  = _db.collection('recruiter_requests').doc(requestId);
+      final snap = await ref.get();
+      if (!snap.exists) return false;
 
-      // Parse Salary
-      double? salary;
-      if (data['salary'] is num) salary = (data['salary'] as num).toDouble();
-      else if (data['salary'] is String) {
-        final match = RegExp(r'[\d,]+').firstMatch(data['salary']);
-        if (match != null) salary = double.tryParse(match.group(0)?.replaceAll(',', '') ?? '');
+      final candidates = List<dynamic>.from(
+          (snap.data() as Map<String, dynamic>)['candidates'] ?? []);
+
+      for (int i = 0; i < candidates.length; i++) {
+        final c = Map<String, dynamic>.from(candidates[i] as Map);
+        if (c['uid'] == candidateUid) {
+          candidates[i] = {...c, 'status': status};
+          break;
+        }
       }
 
-      _jobDataCache[jobId] = JobData(
-        jobId: jobId,
-        title: data['title']?.toString() ?? 'Unknown',
-        company: data['company']?.toString() ?? '',
-        location: data['location']?.toString() ?? '',
-        jobType: data['job_type']?.toString() ?? '',
-        workType: data['workModes']?.toString() ?? '',
-        salary: salary,
-        experience: data['experience'],
-        requiredSkills: (data['required_skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      );
-    } catch (_) {
-      _jobDataCache[jobId] = null;
+      await ref.update({
+        'candidates': candidates,
+        'candidate_statuses.$candidateUid': status,
+        'last_updated_at': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('updateCandidateStatus error: $e');
+      return false;
     }
   }
 }
