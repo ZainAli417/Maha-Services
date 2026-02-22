@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'Home_Admin_Provider.dart';
+import 'admin_analytics_dashboard_Provider.dart';
 
 class Home_admin extends StatefulWidget {
   const Home_admin({super.key});

@@ -1,4 +1,4 @@
-// admin_provider.dart
+// admin_recruiter_request_provider.dart
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -556,20 +556,26 @@ class AdminProvider extends ChangeNotifier {
 
       for (final entry in rawEntries) {
         try {
-          String uid = '';
+          String rawUid = '';
           Map<String, dynamic> hint = {};
           if (entry is Map) {
             final n = _normalizeMap(entry);
             hint = n;
-            uid = (n['uid'] ?? n['user_id'] ?? n['id'] ?? '').toString().trim();
-            if (uid.isEmpty && n['email'] != null)
-              uid = n['email'].toString().trim();
+            rawUid = (n['uid'] ?? n['user_id'] ?? n['id'] ?? '').toString().trim();
+            if (rawUid.isEmpty && n['email'] != null)
+              rawUid = n['email'].toString().trim();
           } else if (entry is String) {
-            uid = entry.trim();
+            rawUid = entry.trim();
           } else if (entry is DocumentReference) {
-            uid = entry.id;
+            rawUid = entry.id;
           }
+          
+          if (rawUid.isEmpty || rawUid.toLowerCase() == 'null') continue;
+          
+          // Normalize ID to extract UID from paths like "Job_Seeker/XYZ"
+          final uid = _lastSegment(rawUid);
           if (uid.isEmpty || uid.toLowerCase() == 'null') continue;
+          
           final key = uid.toLowerCase();
           if (!uniqueCandidates.containsKey(key)) {
             uniqueCandidates[key] = uid;
@@ -633,11 +639,12 @@ class AdminProvider extends ChangeNotifier {
   // ============================================================================
 
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
-      List<String> candidateIds, {Map<String, Map<String, dynamic>>? hints}) async {
-    const batchSize = 10;
-    final batches = <List<String>>[];
+    List<String> candidateIds, {
+    Map<String, Map<String, dynamic>>? hints,
+    int batchSize = 10,
+  }) async {
+    if (candidateIds.isEmpty) return [];
 
-    // Remove already cached candidates
     final uncachedIds = <String>[];
     final cachedResults = <Map<String, dynamic>>[];
 
@@ -645,10 +652,11 @@ class AdminProvider extends ChangeNotifier {
       if (_candidateCache.containsKey(id)) {
         final cached = _candidateCache[id]!;
         if (DateTime.now().difference(cached.timestamp) < _cacheTTL) {
-          cachedResults.add(cached.data);
           debugPrint('💾 Cache HIT for candidate: $id');
+          cachedResults.add(cached.data);
           continue;
         } else {
+          debugPrint('⏰ Cache EXPIRED for candidate: $id');
           _candidateCache.remove(id);
         }
       }
@@ -661,20 +669,22 @@ class AdminProvider extends ChangeNotifier {
     }
 
     debugPrint('📥 Fetching ${uncachedIds.length} uncached candidates');
+    final fetchedResults = <Map<String, dynamic>>[];
+    final batches = <List<String>>[];
 
     for (var i = 0; i < uncachedIds.length; i += batchSize) {
-      final currentBatch = uncachedIds.sublist(i,
-          i + batchSize > uncachedIds.length ? uncachedIds.length : i + batchSize);
-
-      // Filter out non-ID identifiers (like emails) that would crash FieldPath.documentId
-      final validIds = currentBatch.where((id) => !id.contains('@') && id.length > 5).toList();
-
+      final currentBatch = uncachedIds.sublist(
+        i,
+        i + batchSize > uncachedIds.length ? uncachedIds.length : i + batchSize,
+      );
+      // Only filter out obvious non-ID strings like empty or purely null values
+      final validIds = currentBatch.where((id) => id.isNotEmpty && id.toLowerCase() != 'null').toList();
       if (validIds.isNotEmpty) {
         batches.add(validIds);
+      } else {
+        debugPrint('⚠️ Skipping batch with only invalid IDs: $currentBatch');
       }
     }
-
-    final fetchedResults = <Map<String, dynamic>>[];
 
     try {
       final results = await Future.wait(batches.map((batch) async {
@@ -684,35 +694,34 @@ class AdminProvider extends ChangeNotifier {
             .get();
 
         final batchResults = <Map<String, dynamic>>[];
-
         for (final doc in snap.docs) {
           final jobSeekerData = _normalizeMap(doc.data());
           final userData = _normalizeMap(jobSeekerData['user_data'] ?? {});
 
-          // Try top-level first (modern schema), then variations
-        final personalProfile = _normalizeMap(
-          jobSeekerData['personalProfile'] ??
-          jobSeekerData['personal_profile'] ??
-          userData['personalProfile'] ??
-          userData['personal_profile'] ??
-          _normalizeMap(jobSeekerData['user_Account_Data'] ?? {})['personalProfile'] ??
-          {}
-        );
+          final personalProfile = _normalizeMap(
+            jobSeekerData['personalProfile'] ??
+            jobSeekerData['personal_profile'] ??
+            userData['personalProfile'] ??
+            userData['personal_profile'] ??
+            {}
+          );
 
-        final name = personalProfile['name']?.toString() ??
-            personalProfile['fullName']?.toString() ??
-            jobSeekerData['name']?.toString() ??
-            userData['name']?.toString() ??
-            doc.id;
-        final email = personalProfile['email']?.toString() ??
-            jobSeekerData['email']?.toString() ??
-            userData['email']?.toString() ??
-            '';
-        final phone = personalProfile['contactNumber']?.toString() ??
-            personalProfile['phone']?.toString() ??
-            personalProfile['contact_number']?.toString() ??
-            userData['phone']?.toString() ??
-            '';
+          final name = personalProfile['name']?.toString() ??
+              personalProfile['fullName']?.toString() ??
+              jobSeekerData['name']?.toString() ??
+              userData['name']?.toString() ??
+              doc.id;
+
+          final email = personalProfile['email']?.toString() ??
+              jobSeekerData['email']?.toString() ??
+              userData['email']?.toString() ??
+              '';
+
+          final phone = personalProfile['contactNumber']?.toString() ??
+              personalProfile['phone']?.toString() ??
+              personalProfile['contact_number']?.toString() ??
+              userData['phone']?.toString() ??
+              '';
 
           final hintData = _normalizeMap(hints?[doc.id]);
 
@@ -722,45 +731,47 @@ class AdminProvider extends ChangeNotifier {
             'email': email,
             'phone': phone,
             'user_data': {
-              ...hintData,  // Prefer snapshot data for profile fields (skills, experience, etc.)
-              ...jobSeekerData, // Overwrite with latest identity info if present
+              ...hintData,
+              ...jobSeekerData,
             },
           };
 
-          // Cache it
           _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
           batchResults.add(result);
         }
-
         return batchResults;
       }));
 
-      for (final batch in results) {
-        fetchedResults.addAll(batch);
+      for (final batchResult in results) {
+        fetchedResults.addAll(batchResult);
       }
 
-      // Handle missing candidates
-    final foundIds = fetchedResults.map((c) => c['uid'] as String).toSet();
-    for (final id in uncachedIds) {
-      if (!foundIds.contains(id)) {
-        final hint = hints?[id] ?? {};
-        final fallback = {
-          'uid': id,
-          'name': hint['name'] ?? hint['fullName'] ?? 'Unknown',
-          'email': hint['email'] ?? '',
-          'phone': hint['phone'] ?? hint['contactNumber'] ?? '',
-          'user_data': hint,
-        };
-        fetchedResults.add(fallback);
-        _candidateCache[id] = _CacheEntry(fallback, DateTime.now());
+      // Handle orphans (IDs that exist in request but not in Job_Seeker collection)
+      final foundIds = fetchedResults.map((c) => c['uid'] as String).toSet();
+      for (final id in uncachedIds) {
+        if (!foundIds.contains(id)) {
+          debugPrint('⚠️ Candidate $id not found in Job_Seeker collection. Creating fallback.');
+          final hint = _normalizeMap(hints?[id]);
+          final phone = (hint['phone'] ?? hint['contactNumber'] ?? hint['contact_number'] ?? '').toString();
+          
+          final fallback = {
+            'uid': id,
+            'name': hint['name'] ?? hint['fullName'] ?? 'Unknown User',
+            'email': hint['email'] ?? '',
+            'phone': phone,
+            'user_data': hint,
+          };
+          fetchedResults.add(fallback);
+          _candidateCache[id] = _CacheEntry(fallback, DateTime.now());
+        }
       }
-    }
-      debugPrint('✅ Batch fetched ${fetchedResults.length} candidates');
     } catch (e) {
-      debugPrint('❌ Batch fetch error: $e');
+      debugPrint('❌ _batchFetchCandidates error: $e');
     }
 
-    return [...cachedResults, ...fetchedResults];
+    final finalResults = [...cachedResults, ...fetchedResults];
+    debugPrint('✅ Admin: batch fetched ${finalResults.length} candidates (cached: ${cachedResults.length}, new: ${fetchedResults.length})');
+    return finalResults;
   }
 
   // ============================================================================

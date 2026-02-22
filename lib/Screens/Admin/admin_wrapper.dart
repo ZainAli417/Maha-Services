@@ -1,8 +1,8 @@
 // admin_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:job_portal/Screens/Admin/sidebar.dart';
-import 'Home_admin.dart';
-import 'admin_dashbaord2.dart';
+import 'admin_analytics_dashboard.dart';
+import 'admin_recruiter_request_management.dart';
 import 'user_management_section.dart';
 
 class AdminDashboardScreen extends StatefulWidget {

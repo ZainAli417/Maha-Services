@@ -14,7 +14,6 @@ class DashboardProvider extends ChangeNotifier {
   // Loading states
   bool isLoading = true;
   String? errorMessage;
-  bool _disposed = false;
 
   // Historical data for graphs (last 7 days)
   List<Map<String, dynamic>> weeklyJobSeekers = [];
@@ -30,20 +29,11 @@ class DashboardProvider extends ChangeNotifier {
     fetchDashboardData();
   }
 
-  Future<void> _safeNotify() async {
-    if (_disposed) return;
-    // Defer to next microtask to avoid building/notifying conflicts
-    Future.microtask(() {
-      if (!_disposed) notifyListeners();
-    });
-  }
-
   Future<void> fetchDashboardData() async {
     try {
-      if (_disposed) return;
       isLoading = true;
       errorMessage = null;
-      _safeNotify();
+      notifyListeners();
 
       // Fetch all stats in parallel for better performance
       await Future.wait([
@@ -53,41 +43,41 @@ class DashboardProvider extends ChangeNotifier {
         _fetchRecruiterRequests(),
       ]);
 
-      if (_disposed) return;
       totalUsers = totalJobSeekers + totalRecruiters;
 
       isLoading = false;
-      _safeNotify();
+      notifyListeners();
     } catch (e) {
-      if (_disposed) return;
       errorMessage = 'Error loading dashboard: ${e.toString()}';
       isLoading = false;
-      _safeNotify();
+      notifyListeners();
       debugPrint('Dashboard Error: $e');
     }
   }
 
   Future<void> _fetchJobSeekerStats() async {
     try {
-      // 1. Get total job seekers using Count Query (O(1) cost vs O(N))
-      final totalSnap = await _firestore.collection('Job_Seeker').count().get();
-      totalJobSeekers = totalSnap.count ?? 0;
+      // Get total job seekers
+      final jobSeekerSnapshot = await _firestore.collection('job_seeker').get();
+      totalJobSeekers = jobSeekerSnapshot.docs.length;
 
-      // 2. Fetch only recent job seekers for growth and graph (Last 7 days)
+      // Calculate growth (compare with last week)
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentSnap = await _firestore
-          .collection('Job_Seeker')
-          .where('created_at', isGreaterThan: Timestamp.fromDate(lastWeek))
-          .get();
+      final recentJobSeekers = jobSeekerSnapshot.docs.where((doc) {
+        final data = doc.data();
+        if (data['created_at'] != null) {
+          final createdAt = (data['created_at'] as Timestamp).toDate();
+          return createdAt.isAfter(lastWeek);
+        }
+        return false;
+      }).length;
 
-      final recentDocs = recentSnap.docs;
-      
       if (totalJobSeekers > 0) {
-        jobSeekerGrowth = (recentDocs.length / totalJobSeekers) * 100;
+        jobSeekerGrowth = (recentJobSeekers / totalJobSeekers) * 100;
       }
 
-      // Generate weekly data for graph using only recent docs
-      weeklyJobSeekers = _generateWeeklyData(recentDocs, lastWeek);
+      // Generate weekly data for graph
+      weeklyJobSeekers = _generateWeeklyData(jobSeekerSnapshot.docs);
     } catch (e) {
       debugPrint('Error fetching job seeker stats: $e');
     }
@@ -95,25 +85,27 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchRecruiterStats() async {
     try {
-      // 1. Get total recruiters using Count Query
-      final totalSnap = await _firestore.collection('recruiter').count().get();
-      totalRecruiters = totalSnap.count ?? 0;
+      // Get total recruiters
+      final recruiterSnapshot = await _firestore.collection('recruiter').get();
+      totalRecruiters = recruiterSnapshot.docs.length;
 
-      // 2. Fetch only recent recruiters
+      // Calculate growth
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentSnap = await _firestore
-          .collection('recruiter')
-          .where('created_at', isGreaterThan: Timestamp.fromDate(lastWeek))
-          .get();
+      final recentRecruiters = recruiterSnapshot.docs.where((doc) {
+        final data = doc.data();
+        if (data['created_at'] != null) {
+          final createdAt = (data['created_at'] as Timestamp).toDate();
+          return createdAt.isAfter(lastWeek);
+        }
+        return false;
+      }).length;
 
-      final recentDocs = recentSnap.docs;
-      
       if (totalRecruiters > 0) {
-        recruiterGrowth = (recentDocs.length / totalRecruiters) * 100;
+        recruiterGrowth = (recentRecruiters / totalRecruiters) * 100;
       }
 
       // Generate weekly data
-      weeklyRecruiters = _generateWeeklyData(recentDocs, lastWeek);
+      weeklyRecruiters = _generateWeeklyData(recruiterSnapshot.docs);
     } catch (e) {
       debugPrint('Error fetching recruiter stats: $e');
     }
@@ -121,25 +113,27 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchJobsStats() async {
     try {
-      // 1. Get total jobs posted using Count Query
-      final totalSnap = await _firestore.collection('Posted_jobs_public').count().get();
-      totalJobsPosted = totalSnap.count ?? 0;
+      // Get total jobs posted
+      final jobsSnapshot = await _firestore.collection('Posted_jobs_public').get();
+      totalJobsPosted = jobsSnapshot.docs.length;
 
-      // 2. Fetch only recent jobs
+      // Calculate growth
       final lastWeek = DateTime.now().subtract(const Duration(days: 7));
-      final recentSnap = await _firestore
-          .collection('Posted_jobs_public')
-          .where('posted_date', isGreaterThan: Timestamp.fromDate(lastWeek))
-          .get();
+      final recentJobs = jobsSnapshot.docs.where((doc) {
+        final data = doc.data();
+        if (data['posted_date'] != null) {
+          final postedDate = (data['posted_date'] as Timestamp).toDate();
+          return postedDate.isAfter(lastWeek);
+        }
+        return false;
+      }).length;
 
-      final recentDocs = recentSnap.docs;
-      
       if (totalJobsPosted > 0) {
-        jobsGrowth = (recentDocs.length / totalJobsPosted) * 100;
+        jobsGrowth = (recentJobs / totalJobsPosted) * 100;
       }
 
       // Generate weekly data
-      weeklyJobs = _generateWeeklyData(recentDocs, lastWeek, dateField: 'posted_date');
+      weeklyJobs = _generateWeeklyData(jobsSnapshot.docs, dateField: 'posted_date');
     } catch (e) {
       debugPrint('Error fetching jobs stats: $e');
     }
@@ -147,16 +141,15 @@ class DashboardProvider extends ChangeNotifier {
 
   Future<void> _fetchRecruiterRequests() async {
     try {
-      final totalSnap = await _firestore.collection('recruiter_requests').count().get();
-      totalRecruiterRequests = totalSnap.count ?? 0;
+      final requestsSnapshot = await _firestore.collection('recruiter_requests').get();
+      totalRecruiterRequests = requestsSnapshot.docs.length;
     } catch (e) {
       debugPrint('Error fetching recruiter requests: $e');
     }
   }
 
   List<Map<String, dynamic>> _generateWeeklyData(
-      List<QueryDocumentSnapshot> recentDocs,
-      DateTime startDate, {
+      List<QueryDocumentSnapshot> docs, {
         String dateField = 'created_at',
       }) {
     final weeklyData = <Map<String, dynamic>>[];
@@ -167,7 +160,7 @@ class DashboardProvider extends ChangeNotifier {
       final dayStart = DateTime(date.year, date.month, date.day);
       final dayEnd = dayStart.add(const Duration(days: 1));
 
-      final count = recentDocs.where((doc) {
+      final count = docs.where((doc) {
         final data = doc.data() as Map<String, dynamic>;
         if (data[dateField] != null) {
           final docDate = (data[dateField] as Timestamp).toDate();
@@ -262,10 +255,5 @@ class DashboardProvider extends ChangeNotifier {
         'isPositive': jobsGrowth > 0,
       },
     ];
-  }
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
   }
 }

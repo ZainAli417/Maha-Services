@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
-import 'admin_provider.dart';
+import 'admin_recruiter_request_provider.dart';
 
 class AdminDashboardScreen2 extends StatefulWidget {
   const AdminDashboardScreen2({super.key});
