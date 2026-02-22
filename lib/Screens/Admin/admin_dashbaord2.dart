@@ -63,17 +63,15 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
     return AdminProvider.normalizeMapStatic(m);
   }
 
+
   Future<void> _openDetails(BuildContext context, String requestId) async {
-    if (_selectedRequestId == requestId && _selectedRequestDetails != null) {
-      return; // Already selected and loaded
-    }
+    if (_selectedRequestId == requestId && _selectedRequestDetails != null) return;
 
     setState(() {
       _selectedRequestId = requestId;
       _loadingDetails = true;
     });
 
-    // Check cache first
     if (_detailsCache.containsKey(requestId)) {
       if (mounted) {
         setState(() {
@@ -87,13 +85,12 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
     final prov = Provider.of<AdminProvider>(context, listen: false);
     final details = await prov.fetchRequestDetails(requestId: requestId);
 
-    if (mounted) {
-      setState(() {
-        _selectedRequestDetails = details;
-        _detailsCache[requestId] = details ?? {};
-        _loadingDetails = false;
-      });
-    }
+    if (!mounted) return;  // ← was `if (mounted)` which is same, but explicit return is cleaner
+    setState(() {
+      _selectedRequestDetails = details;
+      _detailsCache[requestId] = details ?? {};
+      _loadingDetails = false;
+    });
   }
 
   @override
@@ -474,31 +471,31 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                 _ModernStatusDropdown(
                   currentStatus: status,
                   onChanged: (newStatus) async {
+                    // ✅ Capture before any await — context is valid here
+                    final messenger = ScaffoldMessenger.of(context);
                     final ok = await prov.updateRequestStatus(
                       requestId: reqId,
                       newStatus: newStatus,
                       performedBy: 'admin_dashboard',
                     );
-                    if (ok && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Status changed to $newStatus'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      // Invalidate cache and refresh
+                    if (!mounted) return;  // ← guard after first await
+                    if (ok) {
+                      messenger.showSnackBar(SnackBar(
+                        content: Text('Status changed to $newStatus'),
+                        backgroundColor: Colors.green,
+                      ));
                       _detailsCache.remove(reqId);
-                      final updated =
-                      await prov.fetchRequestDetails(requestId: reqId);
-                      if (mounted) {
-                        setState(() {
-                          _selectedRequestDetails = updated;
-                          _detailsCache[reqId] = updated ?? {};
-                        });
-                      }
+                      final updated = await prov.fetchRequestDetails(requestId: reqId);
+                      if (!mounted) return;  // ← guard after second await
+                      setState(() {
+                        _selectedRequestDetails = updated;
+                        _detailsCache[reqId] = updated ?? {};
+                      });
                     }
                   },
                 ),
+
+
               ],
             ),
             const SizedBox(height: 24),
@@ -741,62 +738,54 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                   final candidateStatus =
                       candidateStatusNormalized[canonUid] ?? 'unknown';
 
+
                   return _CandidateCard(
                     name: name,
                     email: email,
                     status: candidateStatus,
+                    onTap: () => _showCandidateCV(context, c),
                     onMenuAction: (action) async {
+                      // ✅ Capture before any await
+                      final messenger = ScaffoldMessenger.of(context);
+
                       if (action == 'open_cv') {
                         final userData = _normalizeMap(c['user_data'] ?? {});
                         final experienceDocs =
-                            (userData['experienceDocuments'] as List?)
-                                ?.cast<String>() ??
-                                [];
-                        final cvUrl =
-                        experienceDocs.isNotEmpty ? experienceDocs.first : '';
-
-                        if (cvUrl.isNotEmpty && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('CV URL: $cvUrl')),
-                          );
-                        } else if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('No CV document available')),
-                          );
-                        }
-                      } else {
-                        final ok = await prov.updateCandidateStatus(
-                          requestId: reqId,
-                          candidateUid: candidateUid,
-                          status: action,
-                          performedBy: 'admin_dashboard',
-                        );
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(ok
-                                  ? '✅ Updated to $action'
-                                  : '❌ Failed to update'),
-                              backgroundColor: ok ? Colors.green : Colors.red,
-                            ),
-                          );
-                        }
-                        if (ok && mounted) {
-                          _detailsCache.remove(reqId);
-                          final updated =
-                          await prov.fetchRequestDetails(requestId: reqId);
-                          if (mounted) {
-                            setState(() {
-                              _selectedRequestDetails = updated;
-                              _detailsCache[reqId] = updated ?? {};
-                            });
-                          }
-                        }
+                            (userData['experienceDocuments'] as List?)?.cast<String>() ?? [];
+                        final cvUrl = experienceDocs.isNotEmpty ? experienceDocs.first : '';
+                        if (!mounted) return;
+                        messenger.showSnackBar(SnackBar(
+                          content: Text(cvUrl.isNotEmpty ? 'CV URL: $cvUrl' : 'No CV document available'),
+                        ));
+                        return;
                       }
+
+                      final ok = await prov.updateCandidateStatus(
+                        requestId: reqId,
+                        candidateUid: candidateUid,
+                        status: action,
+                        performedBy: 'admin_dashboard',
+                      );
+                      if (!mounted) return;  // ← guard after first await
+
+                      messenger.showSnackBar(SnackBar(
+                        content: Text(ok ? '✅ Updated to $action' : '❌ Failed to update'),
+                        backgroundColor: ok ? Colors.green : Colors.red,
+                      ));
+
+                      if (!ok) return;
+
+                      _detailsCache.remove(reqId);
+                      final updated = await prov.fetchRequestDetails(requestId: reqId);
+                      if (!mounted) return;  // ← guard after second await
+                      setState(() {
+                        _selectedRequestDetails = updated;
+                        _detailsCache[reqId] = updated ?? {};
+                      });
                     },
-                    onTap: () => _showCandidateCV(context, c),
                   );
+
+
                 },
               ),
           ],
@@ -844,9 +833,16 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
     final socialLinks = safeStringList(rawData['social_links'] ?? rawData['socialLinks'] ?? personalProfile['socialLinks']);
     final experienceDocs = safeStringList(rawData['experienceDocuments'] ?? rawData['experience_documents']);
 
-    final name = getVal<String>('name', ['personalProfile', 'name'], 'Unknown');
-    final email = getVal<String>('email', ['personalProfile', 'email'], '');
-    final phone = getVal<String>('phone', ['personalProfile', 'phone'], '');
+    final name = getVal<String>('name', ['personalProfile', 'name'], candidate['name']?.toString() ?? 'Unknown');
+    final email = getVal<String>('email', ['personalProfile', 'email'], candidate['email']?.toString() ?? '');
+    final phone = getVal<String>('phone', ['personalProfile', 'phone'], candidate['phone']?.toString() ?? '');
+    
+    // Fallback for personal profile fields if rawData is flat
+    final nationality = getVal<String>('nationality', ['personalProfile', 'nationality'], '-');
+    final dob = getVal<String>('dob', ['personalProfile', 'dob'], '-');
+    final secondaryEmail = getVal<String>('secondary_email', ['personalProfile', 'secondary_email'], '');
+    final personalSummary = getVal<String>('summary', ['personalProfile', 'summary'], '');
+    final objectives = getVal<String>('objectives', ['personalProfile', 'objectives'], '');
 
     showDialog(
       context: context,
@@ -930,29 +926,20 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                         Icons.person_outline,
                         const Color(0xFF6366F1),
                         [
-                          _buildRow('Nationality',
-                              personalProfile['nationality']?.toString() ?? '-'),
-                          _buildRow('Date of Birth',
-                              personalProfile['dob']?.toString() ?? '-'),
-                          if ((personalProfile['secondary_email']?.toString() ??
-                              '')
-                              .isNotEmpty)
-                            _buildRow(
-                                'Secondary Email',
-                                personalProfile['secondary_email']?.toString() ??
-                                    ''),
-                          if ((personalProfile['summary']?.toString() ?? '')
-                              .isNotEmpty)
+                          _buildRow('Nationality', nationality),
+                          _buildRow('Date of Birth', dob),
+                          if (secondaryEmail.isNotEmpty)
+                            _buildRow('Secondary Email', secondaryEmail),
+                          if (personalSummary.isNotEmpty)
                             _buildRow(
                               'Summary',
-                              personalProfile['summary']?.toString() ?? '',
+                              personalSummary,
                               isMultiline: true,
                             ),
-                          if ((personalProfile['objectives']?.toString() ?? '')
-                              .isNotEmpty)
+                          if (objectives.isNotEmpty)
                             _buildRow(
                               'Objectives',
-                              personalProfile['objectives']?.toString() ?? '',
+                              objectives,
                               isMultiline: true,
                             ),
                         ],
@@ -2402,21 +2389,34 @@ class _CandidateCard extends StatelessWidget {
 
   Color _getStatusColor() {
     switch (status.toLowerCase()) {
-      case 'interview':
+      case 'shortlist':
+      case 'shortlisted':
+        return const Color(0xFF6366F1);
+      case 'screening':
         return const Color(0xFF3B82F6);
-      case 'accepted':
+      case 'interview':
+        return const Color(0xFF8B5CF6);
+      case 'technical':
+        return const Color(0xFF06B6D4);
+      case 'offer':
+        return const Color(0xFFF59E0B);
+      case 'handover':
+      case 'hired':
         return const Color(0xFF10B981);
       case 'rejected':
         return const Color(0xFFEF4444);
       default:
-        return const Color(0xFF8B5CF6);
+        return const Color(0xFF64748B);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final stages = ['Shortlisted', 'Screening', 'Interview', 'Technical', 'Offer', 'Handover'];
-    final currentIdx = stages.map((e) => e.toLowerCase()).toList().indexOf(status.toLowerCase());
+    final stages = ['Shortlist', 'Screening', 'Interview', 'Technical', 'Offer', 'Handover'];
+    
+    // Normalize status for pipeline index
+    final displayStatus = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+    final currentIdx = stages.map((e) => e.toLowerCase()).toList().indexOf(displayStatus);
     
     return Material(
       color: Colors.transparent,
@@ -2528,23 +2528,49 @@ class _CandidateCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    status.toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      color: _getStatusColor(),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          status.toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            color: _getStatusColor(),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          'Stage ${currentIdx + 1}/${stages.length}',
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    'Stage ${currentIdx + 1}/${stages.length}',
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
+                  if (currentIdx < stages.length - 1)
+                    ElevatedButton(
+                      onPressed: () => onMenuAction(stages[currentIdx + 1].toLowerCase()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _getStatusColor().withOpacity(0.1),
+                        foregroundColor: _getStatusColor(),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Next', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          SizedBox(width: 4),
+                          Icon(Icons.arrow_forward_ios, size: 10),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ],

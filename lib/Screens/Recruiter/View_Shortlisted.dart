@@ -109,7 +109,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
   List<ApplicantRecord> _getFilteredApplicants(ApplicantsProvider provider) {
-    var applicants = provider.getShortlistedForJob(widget.jobId);
+    var applicants = provider.getShortlistForJob(widget.jobId);
 
     final query = _searchController.text.trim().toLowerCase();
     if (query.isNotEmpty) {
@@ -680,12 +680,12 @@ class _ViewShortlistedState extends State<view_shortlisted>
       children: [
         const Icon(Icons.person_search_sharp, size: 64, color: Color(0xFF94A3B8)),
         const SizedBox(height: 16),
-        Text('No Shortlisted Applicants',
+        Text('No candidates in shortlist',
             style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600, color: const Color(0xFF475569))),
         const SizedBox(height: 8),
         Text(
           widget.jobId != null
-              ? 'No candidates shortlisted for this position yet'
+              ? 'No candidates in shortlist for this position yet'
               : 'Select a job to view shortlisted candidates',
           style: GoogleFonts.poppins(fontSize: 14, color: _textSecondary),
         ),

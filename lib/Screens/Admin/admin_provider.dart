@@ -19,13 +19,21 @@ class AdminProvider extends ChangeNotifier {
 
   // Getters
   GlobalKey<FormState> get formKey => _formKey;
+
   TextEditingController get nameController => _nameController;
+
   TextEditingController get emailController => _emailController;
+
   TextEditingController get passwordController => _passwordController;
+
   TextEditingController get roleController => _roleController;
+
   TextEditingController get userLevelController => _userLevelController;
+
   String? get editingUserId => _editingUserId;
+
   bool get isLoading => _isLoading;
+
   String get message => _message;
 
   Future<void> addOrEditUser(BuildContext context) async {
@@ -41,7 +49,8 @@ class AdminProvider extends ChangeNotifier {
 
         if (_editingUserId == null) {
           // CREATE NEW USER
-          userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
@@ -61,7 +70,8 @@ class AdminProvider extends ChangeNotifier {
           });
         } else {
           // EDIT EXISTING USER
-          userDocRef = FirebaseFirestore.instance.collection('users').doc(_editingUserId);
+          userDocRef = FirebaseFirestore.instance.collection('users').doc(
+              _editingUserId);
 
           await userDocRef.update({
             'name': _nameController.text.trim(),
@@ -71,7 +81,9 @@ class AdminProvider extends ChangeNotifier {
           uid = '';
         }
 
-        _message = _editingUserId == null ? 'User added successfully' : 'User updated successfully';
+        _message = _editingUserId == null
+            ? 'User added successfully'
+            : 'User updated successfully';
         clearForm();
         if (context.mounted) {
           CustomSnackbars.showSuccess(context, _message);
@@ -110,7 +122,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  void editUser(Map<String, dynamic> userData, String firestoreDocId, {String? resolvedName}) {
+  void editUser(Map<String, dynamic> userData, String firestoreDocId,
+      {String? resolvedName}) {
     _nameController.text = resolvedName ?? userData['name'] ?? '';
     _emailController.text = userData['email'] ?? '';
     _roleController.text = userData['role'] ?? '';
@@ -163,13 +176,13 @@ class AdminProvider extends ChangeNotifier {
 
   void _safeNotify() {
     if (_disposed) return;
-
-    // Debounce notifications to avoid excessive rebuilds
-    _notifyTimer?.cancel();
-    _notifyTimer = Timer(const Duration(milliseconds: 100), () {
+    // ✅ addPostFrameCallback is safe: it won't fire if the engine
+    // view is already disposed, unlike a raw Timer.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_disposed) notifyListeners();
     });
   }
+
 
   // ============================================================================
   // HELPER METHODS
@@ -226,10 +239,11 @@ class AdminProvider extends ChangeNotifier {
           .collection('recruiter_requests')
           .orderBy('created_at', descending: true)
           .get(const GetOptions(source: Source.cache))
-          .catchError((_) => _firestore
-          .collection('recruiter_requests')
-          .orderBy('created_at', descending: true)
-          .get(const GetOptions(source: Source.server)));
+          .catchError((_) =>
+          _firestore
+              .collection('recruiter_requests')
+              .orderBy('created_at', descending: true)
+              .get(const GetOptions(source: Source.server)));
 
       debugPrint('🔎 Found ${snap.docs.length} request docs');
 
@@ -309,10 +323,12 @@ class AdminProvider extends ChangeNotifier {
 
     for (var i = 0; i < recruiterIds.length; i += batchSize) {
       batches.add(recruiterIds.sublist(
-          i, i + batchSize > recruiterIds.length ? recruiterIds.length : i + batchSize));
+          i, i + batchSize > recruiterIds.length ? recruiterIds.length : i +
+          batchSize));
     }
 
-    debugPrint('📦 Prefetching ${recruiterIds.length} recruiters in ${batches.length} batches');
+    debugPrint('📦 Prefetching ${recruiterIds.length} recruiters in ${batches
+        .length} batches');
 
     try {
       await Future.wait(batches.map((batch) async {
@@ -320,14 +336,16 @@ class AdminProvider extends ChangeNotifier {
             .collection('recruiter')
             .where(FieldPath.documentId, whereIn: batch)
             .get(const GetOptions(source: Source.cache))
-            .catchError((_) => _firestore
-            .collection('recruiter')
-            .where(FieldPath.documentId, whereIn: batch)
-            .get(const GetOptions(source: Source.server)));
+            .catchError((_) =>
+            _firestore
+                .collection('recruiter')
+                .where(FieldPath.documentId, whereIn: batch)
+                .get(const GetOptions(source: Source.server)));
 
         for (final doc in snap.docs) {
           final data = _normalizeMap(doc.data());
-          final userData = data.containsKey('user_data') && data['user_data'] != null
+          final userData = data.containsKey('user_data') &&
+              data['user_data'] != null
               ? _normalizeMap(data['user_data'])
               : {
             'name': data['name'] ?? data['displayName'] ?? '',
@@ -462,19 +480,27 @@ class AdminProvider extends ChangeNotifier {
     loading = true;
     _safeNotify();
 
+
     try {
-      // Fetch request document
       final snap = await _firestore
           .collection('recruiter_requests')
           .doc(requestId)
           .get(const GetOptions(source: Source.cache))
-          .catchError((_) => _firestore
-          .collection('recruiter_requests')
-          .doc(requestId)
-          .get(const GetOptions(source: Source.server)));
+          .catchError((_) =>
+          _firestore
+              .collection('recruiter_requests')
+              .doc(requestId)
+              .get(const GetOptions(source: Source.server)));
+
+      // ← guard after first await
+      if (_disposed) {
+        completer.complete(null);
+        _pendingFetches.remove(requestId);
+        loading = false;
+        return null;
+      }
 
       if (!snap.exists) {
-        debugPrint('⚠️ Request $requestId not found');
         completer.complete(null);
         _pendingFetches.remove(requestId);
         loading = false;
@@ -483,47 +509,32 @@ class AdminProvider extends ChangeNotifier {
       }
 
       final data = _normalizeMap(snap.data());
-      final recruiterId =
-      (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
+      final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '')
+          .toString();
 
-      // Collect candidate IDs
       final candidatesFromCandidates = _normalizeList(data['candidates']);
       final candidatesFromIds = _normalizeList(data['candidate_ids']);
+      final rawEntries = [...candidatesFromCandidates, ...candidatesFromIds];
 
-      final List<dynamic> rawEntries = [];
-      rawEntries.addAll(candidatesFromCandidates);
-      rawEntries.addAll(candidatesFromIds);
-
-      debugPrint('🔎 Raw request entries count: ${rawEntries.length}');
-
-      // Deduplicate and extract IDs
-      final Map<String, String> uniqueCandidates = {}; // key -> originalId
-      final Map<String, Map<String, dynamic>> candidateHints = {}; // uid -> hintData
+      final Map<String, String> uniqueCandidates = {};
+      final Map<String, Map<String, dynamic>> candidateHints = {};
 
       for (final entry in rawEntries) {
         try {
           String uid = '';
           Map<String, dynamic> hint = {};
-
           if (entry is Map) {
-            final normalized = _normalizeMap(entry);
-            hint = normalized;
-            uid = (normalized['uid'] ??
-                normalized['user_id'] ??
-                normalized['id'] ??
-                '').toString().trim();
-            
-            if (uid.isEmpty && normalized['email'] != null) {
-              uid = normalized['email'].toString().trim();
-            }
+            final n = _normalizeMap(entry);
+            hint = n;
+            uid = (n['uid'] ?? n['user_id'] ?? n['id'] ?? '').toString().trim();
+            if (uid.isEmpty && n['email'] != null)
+              uid = n['email'].toString().trim();
           } else if (entry is String) {
             uid = entry.trim();
           } else if (entry is DocumentReference) {
             uid = entry.id;
           }
-
           if (uid.isEmpty || uid.toLowerCase() == 'null') continue;
-
           final key = uid.toLowerCase();
           if (!uniqueCandidates.containsKey(key)) {
             uniqueCandidates[key] = uid;
@@ -534,14 +545,28 @@ class AdminProvider extends ChangeNotifier {
         }
       }
 
-      debugPrint('✅ Resolved ${uniqueCandidates.length} unique candidates');
-
-      // Fetch recruiter info (cached)
       final recruiterInfo = await _fetchRecruiterInfo(recruiterId);
 
-      // Batch fetch candidates
-      final candidateDetails =
-      await _batchFetchCandidates(uniqueCandidates.values.toList(), hints: candidateHints);
+      // ← guard after second await
+      if (_disposed) {
+        completer.complete(null);
+        _pendingFetches.remove(requestId);
+        loading = false;
+        return null;
+      }
+
+      final candidateDetails = await _batchFetchCandidates(
+        uniqueCandidates.values.toList(),
+        hints: candidateHints,
+      );
+
+      // ← guard after third await
+      if (_disposed) {
+        completer.complete(null);
+        _pendingFetches.remove(requestId);
+        loading = false;
+        return null;
+      }
 
       final result = <String, dynamic>{
         'request_doc': {'id': snap.id, 'data': data},
@@ -549,20 +574,15 @@ class AdminProvider extends ChangeNotifier {
         'candidates': candidateDetails,
       };
 
-      // Cache the result
-      _requestDetailsCache[requestId] =
-          _CacheEntry(result, DateTime.now());
-      debugPrint('💾 Cached request details for $requestId');
-
+      _requestDetailsCache[requestId] = _CacheEntry(result, DateTime.now());
       completer.complete(result);
       _pendingFetches.remove(requestId);
-
       loading = false;
       _safeNotify();
       return result;
     } catch (e, st) {
       debugPrint('❌ fetchRequestDetails error: $e\n$st');
-      completer.completeError(e);
+      if (!completer.isCompleted) completer.completeError(e);
       _pendingFetches.remove(requestId);
       loading = false;
       _safeNotify();
@@ -570,7 +590,10 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  // ============================================================================
+
+
+
+    // ============================================================================
   // BATCH FETCH CANDIDATES (Parallel + Cached)
   // ============================================================================
 
@@ -656,12 +679,17 @@ class AdminProvider extends ChangeNotifier {
             userData['phone']?.toString() ??
             '';
 
+          final hintData = _normalizeMap(hints?[doc.id]);
+
           final result = {
             'uid': doc.id,
             'name': name,
             'email': email,
             'phone': phone,
-            'user_data': jobSeekerData, // Keep full data
+            'user_data': {
+              ...hintData,  // Prefer snapshot data for profile fields (skills, experience, etc.)
+              ...jobSeekerData, // Overwrite with latest identity info if present
+            },
           };
 
           // Cache it
@@ -758,12 +786,14 @@ class AdminProvider extends ChangeNotifier {
   // UPDATE OPERATIONS (Optimized with Cache Invalidation)
   // ============================================================================
 
+
   Future<bool> updateRequestStatus({
     required String requestId,
     required String newStatus,
     String? note,
     String? performedBy,
   }) async {
+    if (_disposed) return false;   // ← guard before network call
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
@@ -774,7 +804,6 @@ class AdminProvider extends ChangeNotifier {
         'last_updated_at': now,
         'last_updated_by': performedBy ?? 'admin',
       });
-
       final auditRef = ref.collection('audit').doc();
       batch.set(auditRef, {
         'action': 'update_status',
@@ -785,18 +814,15 @@ class AdminProvider extends ChangeNotifier {
       });
 
       await batch.commit();
-      debugPrint('✅ Request $requestId status updated to $newStatus');
+      if (_disposed) return true;  // ← committed OK but skip local state updates
 
-      // Update local cache
+      debugPrint('✅ Request $requestId status updated to $newStatus');
       final idx = requests.indexWhere((r) => r['id'] == requestId);
       if (idx != -1) {
         requests[idx]['status'] = newStatus;
         requests[idx]['last_updated_at'] = DateTime.now();
       }
-
-      // Invalidate detail cache
       _requestDetailsCache.remove(requestId);
-
       _safeNotify();
       return true;
     } catch (e) {
@@ -805,6 +831,8 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+
+
   Future<bool> updateCandidateStatus({
     required String requestId,
     required String candidateUid,
@@ -812,37 +840,35 @@ class AdminProvider extends ChangeNotifier {
     String? note,
     String? performedBy,
   }) async {
+    if (_disposed) return false;   // ← guard before first network call
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
 
-      // 1. Get current data to update the local array item
       final snap = await ref.get();
+      if (_disposed) return false;  // ← guard after first await
       if (!snap.exists) return false;
 
       final data = snap.data() as Map<String, dynamic>;
       final List<dynamic> candidates = List.from(data['candidates'] ?? []);
-      
-      bool found = false;
+      final normalizedStatus =
+      status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+
       for (int i = 0; i < candidates.length; i++) {
         final c = _normalizeMap(candidates[i]);
         if (c['uid'] == candidateUid) {
-          candidates[i]['status'] = status;
-          found = true;
+          candidates[i] = {...c, 'status': normalizedStatus};
           break;
         }
       }
 
       final batch = _firestore.batch();
-      
-      // 2. Update both the map and the array for complete synchronization
       batch.update(ref, {
-        'candidate_statuses.$candidateUid': status,
+        'candidate_statuses.$candidateUid': normalizedStatus,
         'candidates': candidates,
         'last_updated_at': now,
         'last_updated_by': performedBy ?? 'admin',
       });
-
       final auditRef = ref.collection('audit').doc();
       batch.set(auditRef, {
         'action': 'update_candidate_status',
@@ -854,17 +880,18 @@ class AdminProvider extends ChangeNotifier {
       });
 
       await batch.commit();
+      if (_disposed) return true;  // ← committed OK, skip cache invalidation
+
       debugPrint('✅ Candidate $candidateUid status updated to $status');
-
-      // Invalidate detail cache
       _requestDetailsCache.remove(requestId);
-
       return true;
     } catch (e) {
       debugPrint('❌ updateCandidateStatus error: $e');
       return false;
     }
   }
+
+
 
   // ============================================================================
   // CACHE MANAGEMENT
@@ -991,19 +1018,25 @@ class AdminProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;           // ← FIRST: blocks all _safeNotify calls immediately
+    _notifyTimer?.cancel();
+    _requestsSub?.cancel();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _roleController.dispose();
     _userLevelController.dispose();
-    _notifyTimer?.cancel();
-    _disposed = true;
-    _requestsSub?.cancel();
-    clearCaches();
+    // ✅ Inline clears — avoids calling _safeNotify() from clearCaches() during dispose
+    _recruiterCache.clear();
+    _candidateCache.clear();
+    _requestDetailsCache.clear();
+    _emailToUidCache.clear();
     _pendingFetches.clear();
     debugPrint('🧹 AdminProvider disposed');
     super.dispose();
   }
+
+
 }
 
 // ============================================================================

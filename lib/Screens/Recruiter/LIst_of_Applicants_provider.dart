@@ -359,12 +359,12 @@ class ApplicantsProvider with ChangeNotifier {
   int get rejectedCount    => _all.where((a) => a.status == 'rejected').length;
   int get shortlistCount   => _all.where((a) => a.status == 'shortlist').length;
 
-  List<ApplicantRecord> get shortlistedApplicants =>
+  List<ApplicantRecord> get shortlistApplicants =>
       _all.where((a) => a.status.toLowerCase() == 'shortlist').toList();
 
-  List<ApplicantRecord> getShortlistedForJob(String? jobId) =>
+  List<ApplicantRecord> getShortlistForJob(String? jobId) =>
       (jobId == null || jobId.isEmpty)
-          ? shortlistedApplicants
+          ? shortlistApplicants
           : _all.where((a) => a.status.toLowerCase() == 'shortlist' && a.jobId == jobId).toList();
 
   @override

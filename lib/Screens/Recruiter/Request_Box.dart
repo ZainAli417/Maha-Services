@@ -315,6 +315,7 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
                 _CandidateActionMenu(
                   requestId: requestId,
                   candidateUid: uid,
+                  currentStatus: status,
                   onStatusSelected: _onCandidateStatusChanged,
                 ),
             ],
@@ -354,7 +355,18 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
     required String requestId,
     required String candidateUid,
     required String status,
+    required String currentStatus,
   }) async {
+    if (currentStatus.toLowerCase() != 'handover') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Candidates can only be Hired or Rejected after Admin Handover'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     final ok = await _provider.updateCandidateStatus(
       requestId: requestId,
       candidateUid: candidateUid,
@@ -369,12 +381,24 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
   Color _candidateStatusColor(String status) {
-    switch (status) {
-      case 'hired':    return _success;
-      case 'rejected': return Colors.red;
-      case 'handover': return const Color(0xFF6366F1);
-      case 'offer':    return const Color(0xFF8B5CF6);
-      default:         return _textSecondary;
+    switch (status.toLowerCase()) {
+      case 'shortlist':
+        return const Color(0xFF6366F1);
+      case 'screening':
+        return const Color(0xFF3B82F6);
+      case 'interview':
+        return const Color(0xFF8B5CF6);
+      case 'technical':
+        return const Color(0xFF06B6D4);
+      case 'offer':
+        return const Color(0xFFF59E0B);
+      case 'handover':
+      case 'hired':
+        return const Color(0xFF10B981);
+      case 'rejected':
+        return Colors.red;
+      default:
+        return _textSecondary;
     }
   }
 
@@ -416,15 +440,18 @@ class _CandidateActionMenu extends StatelessWidget {
   const _CandidateActionMenu({
     required this.requestId,
     required this.candidateUid,
+    required this.currentStatus,
     required this.onStatusSelected,
   });
 
   final String requestId;
   final String candidateUid;
+  final String currentStatus;
   final Future<void> Function({
   required String requestId,
   required String candidateUid,
   required String status,
+  required String currentStatus,
   }) onStatusSelected;
 
   static const _success = Color(0xFF10B981);
@@ -438,6 +465,7 @@ class _CandidateActionMenu extends StatelessWidget {
         requestId: requestId,
         candidateUid: candidateUid,
         status: val,
+        currentStatus: currentStatus,
       ),
       itemBuilder: (_) => [
         PopupMenuItem(

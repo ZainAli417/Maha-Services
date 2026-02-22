@@ -160,7 +160,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     if (eligibleCandidates.isEmpty) {
       showErrorTop(
         context,
-        "No eligible candidates found (score > 65 and not already shortlisted",
+        "No eligible candidates found (score > 65 and not already in shortlist)",
       );
 
       return;
@@ -182,7 +182,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           ],
         ),
         content: Text(
-          'This will shortlist ${eligibleCandidates.length} candidate${eligibleCandidates.length > 1 ? 's' : ''} with AI match score > 65%.\n\nAlready shortlisted candidates will be skipped.',
+          'This will add ${eligibleCandidates.length} candidate${eligibleCandidates.length > 1 ? 's' : ''} to shortlist with AI match score > 65%.\n\nAlready in shortlist candidates will be skipped.',
           style: GoogleFonts.poppins(fontSize: 14),
         ),
         actions: [
