@@ -24,6 +24,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
   Map<String, int> requestsByStatus = {'Pending': 0, 'Approved': 0, 'Rejected': 0};
   Map<String, int> topRecruiters = {};
   List<Map<String, dynamic>> recentRequests = [];
+  List<Map<String, dynamic>> allJobs = [];
 
   // Realtime listeners
   StreamSubscription? _requestsSub;
@@ -119,21 +120,30 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       _safeNotify();
     });
 
-    // 2. JOBS BY STATUS
+    // 2. JOBS BY STATUS & LIST
     _jobsSub?.cancel();
     _jobsSub = _firestore
         .collection('Posted_jobs_public')
-        .orderBy('created_at', descending: true)
+        .orderBy('timestamp', descending: true) // Fixed field name
         .limit(100)
         .snapshots()
         .listen((snap) {
       if (_disposed) return;
       int open = 0, closed = 0;
+      List<Map<String, dynamic>> tempJobs = [];
       for (var doc in snap.docs) {
-        final status = (doc.data()['status'] ?? 'open').toString().toLowerCase();
+        final data = doc.data();
+        final status = (data['status'] ?? 'open').toString().toLowerCase();
         if (status == 'closed') closed++;
         else open++;
+
+        tempJobs.add({
+          'id': doc.id,
+          ...data,
+          'createdStr': _formatDate(data['timestamp'] ?? data['createdAt']),
+        });
       }
+      allJobs = tempJobs;
       jobsByStatus = {'Open': open, 'Closed': closed};
       _safeNotify();
     });
