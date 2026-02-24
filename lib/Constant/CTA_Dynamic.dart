@@ -121,6 +121,11 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final bottomOffset = MediaQuery.of(context).viewPadding.bottom + (isMobile ? 20 : 50);
+    final sideOffset = isMobile ? 10.0 : 20.0;
+
     return Positioned.fill(
       child: IgnorePointer(
         // IgnorePointer allows underlying scroll to work; we only enable interactions on visible children.
@@ -133,20 +138,21 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
               children: [
                 // Left floating button
                 Positioned(
-                  left: 20,
-                  bottom: MediaQuery.of(context).viewPadding.bottom + 50,
+                  left: sideOffset,
+                  bottom: bottomOffset,
                   child: Transform.translate(
                     offset: Offset(0, 40 * (1 - _floatingSlide.value.dy)),
                     child: Opacity(
                       opacity: _floatingOpacity.value,
                       child: _FloatingCTA(
-                        label: 'Join as Candidate',
+                        label: isMobile ? 'Candidate' : 'Join as Candidate',
                         icon: Icons.person_add_rounded,
                         isPrimary: true,
                         isDarkMode: widget.isDarkMode,
                         onPressed: () => context.go('/register'),
                         // small elevation pop when entering
                         entranceProgress: _floatingController.value,
+                        isMobile: isMobile,
                       ),
                     ),
                   ),
@@ -154,19 +160,20 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
 
                 // Right floating button
                 Positioned(
-                  right: 20,
-                  bottom: MediaQuery.of(context).viewPadding.bottom + 50,
+                  right: sideOffset,
+                  bottom: bottomOffset,
                   child: Transform.translate(
                     offset: Offset(0, 40 * (1 - _floatingSlide.value.dy)),
                     child: Opacity(
                       opacity: _floatingOpacity.value,
                       child: _FloatingCTA(
-                        label: 'I\'m a Recruiter',
+                        label: isMobile ? 'Recruiter' : 'I\'m a Recruiter',
                         icon: Icons.business_center_rounded,
                         isPrimary: false,
                         isDarkMode: widget.isDarkMode,
                         onPressed: () => context.go('/register'),
                         entranceProgress: _floatingController.value,
+                        isMobile: isMobile,
                       ),
                     ),
                   ),
@@ -189,6 +196,7 @@ class _FloatingCTA extends StatefulWidget {
   final bool isDarkMode;
   final VoidCallback onPressed;
   final double entranceProgress; // 0.0 .. 1.0
+  final bool isMobile;
 
   const _FloatingCTA({
     required this.label,
@@ -197,6 +205,7 @@ class _FloatingCTA extends StatefulWidget {
     required this.isDarkMode,
     required this.onPressed,
     required this.entranceProgress,
+    this.isMobile = false,
   });
 
   @override
@@ -234,6 +243,11 @@ class _FloatingCTAState extends State<_FloatingCTA>
   Widget build(BuildContext context) {
     // Entrance animation (slide-in feel)
     final entranceScale = 0.88 + (0.12 * widget.entranceProgress);
+    final hPad = widget.isMobile ? 12.0 : 22.0;
+    final vPad = widget.isMobile ? 10.0 : 14.0;
+    final iconSize = widget.isMobile ? 16.0 : 20.0;
+    final fontSize = widget.isMobile ? 12.0 : 14.5;
+    final borderRadius = widget.isMobile ? 10.0 : 14.0;
 
     return MouseRegion(
       onEnter: (_) => _hoverController.forward(),
@@ -271,23 +285,23 @@ class _FloatingCTAState extends State<_FloatingCTA>
               elevation: elevation,
               color: backgroundColor,
               shadowColor: shadowColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(borderRadius),
               child: InkWell(
                 onTap: widget.onPressed,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(borderRadius),
                 splashFactory: InkRipple.splashFactory,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 14,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: hPad,
+                    vertical: vPad,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(borderRadius),
                     border: widget.isPrimary
                         ? null
                         : Border.all(
                       color: const Color(0xFF10B981),
-                      width: 2,
+                      width: widget.isMobile ? 1.5 : 2,
                     ),
                   ),
                   child: Row(
@@ -295,15 +309,15 @@ class _FloatingCTAState extends State<_FloatingCTA>
                     children: [
                       Icon(
                         widget.icon,
-                        size: 20,
+                        size: iconSize,
                         color: foregroundColor,
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: widget.isMobile ? 6 : 10),
                       Text(
                         widget.label,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 14.5,
+                          fontSize: fontSize,
                           fontWeight: FontWeight.w600,
                           color: foregroundColor,
                         ),

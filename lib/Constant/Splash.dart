@@ -150,6 +150,11 @@ class _LandingPageState extends State<LandingPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final outerH = isMobile ? 12.0 : (isTablet ? 30.0 : 50.0);
+
     return Scaffold(
       backgroundColor: isDarkMode
           ? const Color(0xFF0F172A)
@@ -180,7 +185,7 @@ class _LandingPageState extends State<LandingPage>
               /// ───────── Top Bar + Hero ─────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
+                  padding: EdgeInsets.fromLTRB(outerH, 0, outerH, 0),
                   child: Column(
                     children: [
                       _buildTopBar(),
@@ -209,59 +214,185 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildTopBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final hPad = isMobile ? 8.0 : (isTablet ? 20.0 : 65.0);
+    final vPad = isMobile ? 6.0 : 10.0;
+
     return RepaintBoundary(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 65, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
         decoration: BoxDecoration(
           color: isDarkMode ? const Color(0x00f9fafb) : Colors.transparent,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [_buildEnhancedLogo(), _buildNavigation()],
-        ),
+        child: isMobile
+            ? Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [_buildEnhancedLogo(), _buildThemeToggle()],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildNavigation(),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [_buildEnhancedLogo(), _buildNavigation()],
+              ),
       ),
     );
   }
 
   Widget _buildEnhancedLogo() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final logoSize = isMobile ? 50.0 : 100.0;
+    final cacheSize = isMobile ? 100 : 200;
+
     return Row(
       children: [
         Container(
-          width: 100,
-          height: 100,
+          width: logoSize,
+          height: logoSize,
           padding: const EdgeInsets.all(0),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white, // change background color here
-
+            color: Colors.white,
           ),
           child: ClipOval(
             child: Image.asset(
               'images/logo.png',
               fit: BoxFit.fill,
-              cacheWidth: 200,
-              cacheHeight: 200,
+              cacheWidth: cacheSize,
+              cacheHeight: cacheSize,
             ),
           ),
         ),
-        const SizedBox(width: 14),
+        SizedBox(width: isMobile ? 6 : 14),
       ],
     );
   }
 
   Widget _buildNavigation() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+
+    if (isMobile) {
+      // On mobile: compact row with just Login + Get Started + Admin, no nav items
+      final btnHPad = 10.0;
+      final btnVPad = 8.0;
+      final btnFontSize = 11.0;
+      final iconSize = 12.0;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _AnimatedButton(
+              onPressed: () => context.go('/login'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
+                ),
+                child: Text(
+                  "Login",
+                  style: _logoTextStyle.copyWith(
+                    color: const Color(0xFF6366F1),
+                    fontSize: btnFontSize,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            _AnimatedButton(
+              onPressed: () => context.go('/register'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Get Started", style: GoogleFonts.poppins(
+                      fontSize: btnFontSize,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    )),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: iconSize,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            _AnimatedButton(
+              onPressed: () => context.go('/admin'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Admin",
+                      style: GoogleFonts.poppins(
+                        fontSize: btnFontSize,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: iconSize,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Tablet & Desktop
+    final navSpacing = isTablet ? 16.0 : 32.0;
+    final btnHPad = isTablet ? 14.0 : 24.0;
+    final btnVPad = isTablet ? 8.0 : 12.0;
+    final btnFontSize = isTablet ? 12.0 : 14.0;
+    final iconSize = isTablet ? 14.0 : 16.0;
+
     return Row(
       children: [
         _buildNavItem('Features', Icons.stars_rounded),
-        const SizedBox(width: 32),
+        SizedBox(width: navSpacing),
         _buildNavItem('Workflow', Icons.account_tree_rounded),
-        const SizedBox(width: 32),
+        SizedBox(width: navSpacing),
         _buildNavItem('Pricing', Icons.payments_rounded),
-        const SizedBox(width: 40),
+        SizedBox(width: isTablet ? 20 : 40),
         _AnimatedButton(
           onPressed: () => context.go('/login'),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -269,15 +400,18 @@ class _LandingPageState extends State<LandingPage>
             ),
             child: Text(
               "Login",
-              style: _logoTextStyle.copyWith(color: const Color(0xFF6366F1)),
+              style: _logoTextStyle.copyWith(
+                color: const Color(0xFF6366F1),
+                fontSize: btnFontSize,
+              ),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isTablet ? 8 : 16),
         _AnimatedButton(
           onPressed: () => context.go('/register'),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -288,25 +422,25 @@ class _LandingPageState extends State<LandingPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text("Get Started",  style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: btnFontSize,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),),
-                const SizedBox(width: 8),
-                const Icon(
+                SizedBox(width: isTablet ? 4 : 8),
+                Icon(
                   Icons.arrow_forward_rounded,
-                  size: 16,
+                  size: iconSize,
                   color: Colors.white,
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isTablet ? 8 : 16),
         _AnimatedButton(
           onPressed: () => context.go('/admin'),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -319,28 +453,33 @@ class _LandingPageState extends State<LandingPage>
                 Text(
                   "Admin Panel",
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: btnFontSize,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Icon(
+                SizedBox(width: isTablet ? 4 : 8),
+                Icon(
                   Icons.arrow_forward_rounded,
-                  size: 16,
+                  size: iconSize,
                   color: Colors.white,
                 ),
               ],
             ),
           ),
         ),
-        SizedBox(width: 15),
+        SizedBox(width: isTablet ? 8 : 15),
         _buildThemeToggle(),
       ],
     );
   }
 
   Widget _buildNavItem(String title, IconData icon) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final iconSize = isTablet ? 14.0 : 18.0;
+    final fontSize = isTablet ? 13.0 : 15.0;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -351,15 +490,16 @@ class _LandingPageState extends State<LandingPage>
           children: [
             Icon(
               icon,
-              size: 18,
+              size: iconSize,
               color: isDarkMode
                   ? const Color(0xFF94A3B8)
                   : const Color(0xFF6B7280),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: isTablet ? 4 : 6),
             Text(
               title,
               style: _navItemStyle.copyWith(
+                fontSize: fontSize,
                 color: isDarkMode
                     ? const Color(0xFF94A3B8)
                     : const Color(0xFF6B7280),
@@ -372,12 +512,17 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildThemeToggle() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final pad = isMobile ? 6.0 : 10.0;
+    final iconSize = isMobile ? 16.0 : 20.0;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: toggleTheme,
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(pad),
           decoration: BoxDecoration(
             color: isDarkMode
                 ? const Color(0xFF334155)
@@ -394,7 +539,7 @@ class _LandingPageState extends State<LandingPage>
             color: isDarkMode
                 ? const Color(0xFFFBBF24)
                 : const Color(0xFF6366F1),
-            size: 20,
+            size: iconSize,
           ),
         ),
       ),
@@ -402,6 +547,11 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFeaturesSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
+
     final features = [
       FeaturePortal(
         number: '01',
@@ -494,7 +644,7 @@ class _LandingPageState extends State<LandingPage>
 
     return RepaintBoundary(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 0),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -516,31 +666,52 @@ class _LandingPageState extends State<LandingPage>
               'Three powerful portals, one seamless journey',
               Icons.apps_rounded,
             ),
-            const SizedBox(height: 40),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int i = 0; i < features.length; i++) ...[
-                  Expanded(
-                    child: RepaintBoundary(
-                      child: _buildFeatureCard(features[i]),
-                    ),
+            SizedBox(height: isMobile ? 20 : 40),
+            isMobile
+                ? Column(
+                    children: [
+                      for (int i = 0; i < features.length; i++) ...[
+                        RepaintBoundary(
+                          child: _buildFeatureCard(features[i]),
+                        ),
+                        if (i < features.length - 1)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Icon(
+                              Icons.arrow_downward,
+                              color: isDarkMode
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFD1D5DB),
+                              size: 28,
+                            ),
+                          ),
+                      ],
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (int i = 0; i < features.length; i++) ...[
+                        Expanded(
+                          child: RepaintBoundary(
+                            child: _buildFeatureCard(features[i]),
+                          ),
+                        ),
+                        if (i < features.length - 1)
+                          Padding(
+                            padding: EdgeInsets.only(top: isTablet ? 60 : 100),
+                            child: Icon(
+                              Icons.arrow_forward,
+                              color: isDarkMode
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFD1D5DB),
+                              size: isTablet ? 28 : 40,
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
-                  if (i < features.length - 1)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 100),
-                      child: Icon(
-                        Icons.arrow_forward,
-                        color: isDarkMode
-                            ? const Color(0xFF475569)
-                            : const Color(0xFFD1D5DB),
-                        size: 40,
-                      ),
-                    ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 40),
+            SizedBox(height: isMobile ? 20 : 40),
           ],
         ),
       ),
@@ -548,17 +719,33 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFeatureCard(FeaturePortal portal) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final cardPad = isMobile ? 18.0 : (isTablet ? 20.0 : 32.0);
+    final numberFontSize = isMobile ? 13.0 : 16.0;
+    final numberHPad = isMobile ? 12.0 : 16.0;
+    final numberVPad = isMobile ? 6.0 : 8.0;
+    final iconContainerPad = isMobile ? 10.0 : 14.0;
+    final portalIconSize = isMobile ? 24.0 : 32.0;
+    final titleFontSize = isMobile ? 18.0 : (isTablet ? 20.0 : 24.0);
+    final subtitleFontSize = isMobile ? 12.0 : 14.0;
+    final itemIconSize = isMobile ? 18.0 : 22.0;
+    final itemIconPad = isMobile ? 8.0 : 10.0;
+    final itemTitleFontSize = isMobile ? 13.0 : 15.0;
+    final itemDescFontSize = isMobile ? 11.0 : 13.0;
+
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(cardPad),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
         border: Border.all(color: portal.color.withOpacity(0.2), width: 2),
         boxShadow: [
           BoxShadow(
             color: portal.color.withOpacity(0.08),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
+            blurRadius: isMobile ? 16 : 30,
+            offset: Offset(0, isMobile ? 6 : 10),
           ),
         ],
       ),
@@ -569,9 +756,9 @@ class _LandingPageState extends State<LandingPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                padding: EdgeInsets.symmetric(
+                  horizontal: numberHPad,
+                  vertical: numberVPad,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -582,14 +769,14 @@ class _LandingPageState extends State<LandingPage>
                 child: Text(
                   portal.number,
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
+                    fontSize: numberFontSize,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(iconContainerPad),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -597,26 +784,26 @@ class _LandingPageState extends State<LandingPage>
                       portal.color.withOpacity(0.05),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                 ),
-                child: Icon(portal.icon, color: portal.color, size: 32),
+                child: Icon(portal.icon, color: portal.color, size: portalIconSize),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
           Text(
             portal.title,
             style: GoogleFonts.poppins(
-              fontSize: 24,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w600,
               color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isMobile ? 4 : 8),
           Text(
             portal.subtitle,
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: subtitleFontSize,
               color: isDarkMode
                   ? const Color(0xFF94A3B8)
                   : const Color(0xFF6B7280),
@@ -624,27 +811,27 @@ class _LandingPageState extends State<LandingPage>
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: isMobile ? 16 : 28),
           ...portal.items.asMap().entries.map((entry) {
             final i = entry.key;
             final item = entry.value;
             return Padding(
               padding: EdgeInsets.only(
-                bottom: i < portal.items.length - 1 ? 16 : 0,
+                bottom: i < portal.items.length - 1 ? (isMobile ? 10 : 16) : 0,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(itemIconPad),
                     decoration: BoxDecoration(
                       color: portal.color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                       border: Border.all(color: portal.color.withOpacity(0.2)),
                     ),
-                    child: Icon(item.icon, color: portal.color, size: 22),
+                    child: Icon(item.icon, color: portal.color, size: itemIconSize),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: isMobile ? 10 : 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,7 +839,7 @@ class _LandingPageState extends State<LandingPage>
                         Text(
                           item.title,
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: itemTitleFontSize,
                             fontWeight: FontWeight.w600,
                             color: isDarkMode
                                 ? Colors.white
@@ -663,7 +850,7 @@ class _LandingPageState extends State<LandingPage>
                         Text(
                           item.description,
                           style: GoogleFonts.poppins(
-                            fontSize: 13,
+                            fontSize: itemDescFontSize,
                             color: isDarkMode
                                 ? const Color(0xFF64748B)
                                 : const Color(0xFF9CA3AF),
@@ -683,6 +870,10 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFooter() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+
     return RepaintBoundary(
       child: Container(
         decoration: BoxDecoration(
@@ -698,42 +889,73 @@ class _LandingPageState extends State<LandingPage>
           children: [
             _buildStatsShowcase(),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 20 : (isTablet ? 30 : 50),
+                vertical: 10,
+              ),
               child: Column(
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: _buildFooterBrand()),
-                      const SizedBox(width: 80),
-                      Expanded(
-                        child: _buildFooterColumn('For Candidates', [
-                          'Create Profile',
-                          'Build CV',
-                          'Browse Jobs',
-                          'Career Resources',
-                        ]),
-                      ),
-                      const SizedBox(width: 60),
-                      Expanded(
-                        child: _buildFooterColumn('For Recruiters', [
-                          'Find Talent',
-                          'Submit Requests',
-                          'Pricing Plans',
-                          'Success Stories',
-                        ]),
-                      ),
-                      const SizedBox(width: 60),
-                      Expanded(
-                        child: _buildFooterColumn('Company', [
-                          'About Us',
-                          'Contact',
-                          'Careers',
-                          'Privacy Policy',
-                        ]),
-                      ),
-                    ],
-                  ),
+                  isMobile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildFooterBrand(),
+                            const SizedBox(height: 24),
+                            _buildFooterColumn('For Candidates', [
+                              'Create Profile',
+                              'Build CV',
+                              'Browse Jobs',
+                              'Career Resources',
+                            ]),
+                            const SizedBox(height: 20),
+                            _buildFooterColumn('For Recruiters', [
+                              'Find Talent',
+                              'Submit Requests',
+                              'Pricing Plans',
+                              'Success Stories',
+                            ]),
+                            const SizedBox(height: 20),
+                            _buildFooterColumn('Company', [
+                              'About Us',
+                              'Contact',
+                              'Careers',
+                              'Privacy Policy',
+                            ]),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: _buildFooterBrand()),
+                            SizedBox(width: isTablet ? 30 : 80),
+                            Expanded(
+                              child: _buildFooterColumn('For Candidates', [
+                                'Create Profile',
+                                'Build CV',
+                                'Browse Jobs',
+                                'Career Resources',
+                              ]),
+                            ),
+                            SizedBox(width: isTablet ? 20 : 60),
+                            Expanded(
+                              child: _buildFooterColumn('For Recruiters', [
+                                'Find Talent',
+                                'Submit Requests',
+                                'Pricing Plans',
+                                'Success Stories',
+                              ]),
+                            ),
+                            SizedBox(width: isTablet ? 20 : 60),
+                            Expanded(
+                              child: _buildFooterColumn('Company', [
+                                'About Us',
+                                'Contact',
+                                'Careers',
+                                'Privacy Policy',
+                              ]),
+                            ),
+                          ],
+                        ),
                 ],
               ),
             ),
@@ -745,27 +967,32 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFooterBrand() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final titleFontSize = isMobile ? 20.0 : 28.0;
+    final descFontSize = isMobile ? 12.0 : 14.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'MAHA SERVICES',
           style: GoogleFonts.poppins(
-            fontSize: 28,
+            fontSize: titleFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: isMobile ? 10 : 16),
         Text(
           'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
           style: GoogleFonts.poppins(
             color: const Color(0xFF9CA3AF),
-            fontSize: 14,
+            fontSize: descFontSize,
             height: 1.8,
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: isMobile ? 16 : 24),
         Row(
           children: [
             _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2)),
@@ -780,51 +1007,62 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildSocialIcon(IconData icon, Color color) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final pad = isMobile ? 8.0 : 10.0;
+    final iconSize = isMobile ? 16.0 : 20.0;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withOpacity(0.3)),
         ),
-        child: Icon(icon, color: color, size: 20),
+        child: Icon(icon, color: color, size: iconSize),
       ),
     );
   }
 
   Widget _buildFooterColumn(String title, List<String> items) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final titleFontSize = isMobile ? 14.0 : 16.0;
+    final itemFontSize = isMobile ? 12.0 : 13.0;
+    final arrowSize = isMobile ? 10.0 : 12.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: GoogleFonts.poppins(
-            fontSize: 16,
+            fontSize: titleFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: isMobile ? 12 : 20),
         ...items.map(
               (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 14),
+            padding: EdgeInsets.only(bottom: isMobile ? 10 : 14),
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios_rounded,
                     color: Color(0xFF6366F1),
-                    size: 12,
+                    size: arrowSize,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: isMobile ? 6 : 8),
                   Text(
                     item,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF9CA3AF),
-                      fontSize: 13,
+                      fontSize: itemFontSize,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -838,51 +1076,101 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFooterBottom() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final hPad = isMobile ? 16.0 : (isTablet ? 40.0 : 80.0);
+    final vPad = isMobile ? 16.0 : 30.0;
+    final copyrightFontSize = isMobile ? 11.0 : 13.0;
+    final aiFontSize = isMobile ? 10.0 : 12.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 30),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xFF374151), width: 1)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '© 2025 Maha Services. All rights reserved.',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF6B7280),
-              fontSize: 13,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
-              ),
-            ),
-            child: Row(
+      child: isMobile
+          ? Column(
               children: [
-                const Icon(
-                  Icons.psychology_rounded,
-                  color: Color(0xFF6366F1),
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
                 Text(
-                  'Powered by AI',
+                  '© 2025 Maha Services. All rights reserved.',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF6366F1),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFontSize,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.psychology_rounded,
+                        color: Color(0xFF6366F1),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Powered by AI',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF6366F1),
+                          fontSize: aiFontSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '© 2025 Maha Services. All rights reserved.',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFontSize,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.psychology_rounded,
+                        color: Color(0xFF6366F1),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Powered by AI',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF6366F1),
+                          fontSize: aiFontSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -892,12 +1180,22 @@ class _LandingPageState extends State<LandingPage>
       String subtitle,
       IconData icon,
       ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final badgeFontSize = isMobile ? 10.0 : 13.0;
+    final badgeIconSize = isMobile ? 14.0 : 18.0;
+    final badgeHPad = isMobile ? 12.0 : 20.0;
+    final badgeVPad = isMobile ? 6.0 : 10.0;
+    final titleFontSize = isMobile ? 24.0 : (isTablet ? 34.0 : 48.0);
+    final subtitleFontSize = isMobile ? 13.0 : 18.0;
+
     return FadeTransition(
       opacity: _workflowAnimation,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: badgeHPad, vertical: badgeVPad),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -914,13 +1212,13 @@ class _LandingPageState extends State<LandingPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: const Color(0xFF7233FB), size: 18),
-                const SizedBox(width: 10),
+                Icon(icon, color: const Color(0xFF7233FB), size: badgeIconSize),
+                SizedBox(width: isMobile ? 6 : 10),
                 Text(
                   badge,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF7233FB),
-                    fontSize: 13,
+                    fontSize: badgeFontSize,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -928,21 +1226,23 @@ class _LandingPageState extends State<LandingPage>
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 14 : 24),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 48,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w900,
               color: isDarkMode ? Colors.white : const Color(0xFF081D69),
               letterSpacing: -1,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 8 : 16),
           Text(
             subtitle,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 18,
+              fontSize: subtitleFontSize,
               color: isDarkMode
                   ? const Color(0xFF94A3B8)
                   : const Color(0xFF6B7280),
@@ -955,8 +1255,18 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildStatsShowcase() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final vPad = isMobile ? 24.0 : 50.0;
+    final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
+    final titleFontSize = isMobile ? 24.0 : (isTablet ? 32.0 : 42.0);
+    final subtitleFontSize = isMobile ? 13.0 : 18.0;
+    final provenFontSize = isMobile ? 10.0 : 12.0;
+    final statSpacing = isMobile ? 12.0 : (isTablet ? 20.0 : 50.0);
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 80),
+      padding: EdgeInsets.symmetric(vertical: vPad, horizontal: hPad),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -977,7 +1287,10 @@ class _LandingPageState extends State<LandingPage>
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 12 : 20,
+              vertical: isMobile ? 5 : 8,
+            ),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(50),
@@ -986,84 +1299,91 @@ class _LandingPageState extends State<LandingPage>
             child: Text(
               '⚡ PROVEN SUCCESS',
               style: GoogleFonts.poppins(
-                fontSize: 12,
+                fontSize: provenFontSize,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
                 letterSpacing: 1.5,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMobile ? 12 : 20),
           Text(
             'Trusted by Industry Leaders',
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 42,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isMobile ? 8 : 12),
           Text(
             'Real numbers, real impact - see how we transform hiring',
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 18,
+              fontSize: subtitleFontSize,
               color: Colors.white.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 70),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSuccessMetric(
-                '15K+',
-                'Successfully Hired',
-                Icons.people_rounded,
-              ),
-              const SizedBox(width: 50),
-              _buildSuccessMetric(
-                '98%',
-                'Success Rate',
-                Icons.trending_up_rounded,
-              ),
-              const SizedBox(width: 50),
-              _buildSuccessMetric(
-                '24h',
-                'Avg. Response',
-                Icons.schedule_rounded,
-              ),
-              const SizedBox(width: 50),
-              _buildSuccessMetric(
-                '500+',
-                'Active Recruiters',
-                Icons.business_rounded,
-              ),
-            ],
-          ),
+          SizedBox(height: isMobile ? 24 : 70),
+          isMobile
+              ? Wrap(
+                  spacing: statSpacing,
+                  runSpacing: statSpacing,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+                    _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+                    _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+                    _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+                  ],
+                ),
         ],
       ),
     );
   }
 
   Widget _buildSuccessMetric(String value, String label, IconData icon) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final hPad = isMobile ? 14.0 : 24.0;
+    final vPad = isMobile ? 10.0 : 16.0;
+    final iconSize = isMobile ? 18.0 : 24.0;
+    final valueFontSize = isMobile ? 18.0 : 24.0;
+    final labelFontSize = isMobile ? 10.0 : 12.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.6), size: 24),
-          const SizedBox(width: 12),
+          Icon(icon, color: Colors.white.withOpacity(0.6), size: iconSize),
+          SizedBox(width: isMobile ? 8 : 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 value,
                 style: GoogleFonts.poppins(
-                  fontSize: 24,
+                  fontSize: valueFontSize,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
@@ -1071,7 +1391,7 @@ class _LandingPageState extends State<LandingPage>
               Text(
                 label,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: labelFontSize,
                   color: Colors.white.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                 ),
