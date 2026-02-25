@@ -383,10 +383,10 @@ class _LandingPageState extends State<LandingPage>
 
     return Row(
       children: [
-        _buildNavItem('Features', Icons.stars_rounded),
-        SizedBox(width: navSpacing),
-        _buildNavItem('Workflow', Icons.account_tree_rounded),
-        SizedBox(width: navSpacing),
+        // _buildNavItem('Features', Icons.stars_rounded),
+        // SizedBox(width: navSpacing),
+        // _buildNavItem('Workflow', Icons.account_tree_rounded),
+        // SizedBox(width: navSpacing),
         _buildNavItem('Pricing', Icons.payments_rounded),
         SizedBox(width: isTablet ? 20 : 40),
         _AnimatedButton(
@@ -900,60 +900,60 @@ class _LandingPageState extends State<LandingPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildFooterBrand(),
-                            const SizedBox(height: 24),
-                            _buildFooterColumn('For Candidates', [
-                              'Create Profile',
-                              'Build CV',
-                              'Browse Jobs',
-                              'Career Resources',
-                            ]),
-                            const SizedBox(height: 20),
-                            _buildFooterColumn('For Recruiters', [
-                              'Find Talent',
-                              'Submit Requests',
-                              'Pricing Plans',
-                              'Success Stories',
-                            ]),
-                            const SizedBox(height: 20),
-                            _buildFooterColumn('Company', [
-                              'About Us',
-                              'Contact',
-                              'Careers',
-                              'Privacy Policy',
-                            ]),
+                            // const SizedBox(height: 24),
+                            // _buildFooterColumn('For Candidates', [
+                            //   'Create Profile',
+                            //   'Build CV',
+                            //   'Browse Jobs',
+                            //   'Career Resources',
+                            // ]),
+                            // const SizedBox(height: 20),
+                            // _buildFooterColumn('For Recruiters', [
+                            //   'Find Talent',
+                            //   'Submit Requests',
+                            //   'Pricing Plans',
+                            //   'Success Stories',
+                            // ]),
+                            // const SizedBox(height: 20),
+                            // _buildFooterColumn('Company', [
+                            //   'About Us',
+                            //   'Contact',
+                            //   'Careers',
+                            //   'Privacy Policy',
+                            // ]),
                           ],
                         )
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(flex: 2, child: _buildFooterBrand()),
-                            SizedBox(width: isTablet ? 30 : 80),
-                            Expanded(
-                              child: _buildFooterColumn('For Candidates', [
-                                'Create Profile',
-                                'Build CV',
-                                'Browse Jobs',
-                                'Career Resources',
-                              ]),
-                            ),
-                            SizedBox(width: isTablet ? 20 : 60),
-                            Expanded(
-                              child: _buildFooterColumn('For Recruiters', [
-                                'Find Talent',
-                                'Submit Requests',
-                                'Pricing Plans',
-                                'Success Stories',
-                              ]),
-                            ),
-                            SizedBox(width: isTablet ? 20 : 60),
-                            Expanded(
-                              child: _buildFooterColumn('Company', [
-                                'About Us',
-                                'Contact',
-                                'Careers',
-                                'Privacy Policy',
-                              ]),
-                            ),
+                            // SizedBox(width: isTablet ? 30 : 80),
+                            // Expanded(
+                            //   child: _buildFooterColumn('For Candidates', [
+                            //     'Create Profile',
+                            //     'Build CV',
+                            //     'Browse Jobs',
+                            //     'Career Resources',
+                            //   ]),
+                            // ),
+                            // SizedBox(width: isTablet ? 20 : 60),
+                            // Expanded(
+                            //   child: _buildFooterColumn('For Recruiters', [
+                            //     'Find Talent',
+                            //     'Submit Requests',
+                            //     'Pricing Plans',
+                            //     'Success Stories',
+                            //   ]),
+                            // ),
+                            // SizedBox(width: isTablet ? 20 : 60),
+                            // Expanded(
+                            //   child: _buildFooterColumn('Company', [
+                            //     'About Us',
+                            //     'Contact',
+                            //     'Careers',
+                            //     'Privacy Policy',
+                            //   ]),
+                            // ),
                           ],
                         ),
                 ],
