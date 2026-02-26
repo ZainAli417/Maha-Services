@@ -62,7 +62,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isWideScreen = size.width > 1200;
+    final isDesktop = size.width > 1024;
+    final isTablet = size.width > 768 && size.width <= 1024;
+    final isMobile = size.width <= 768;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -83,7 +85,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                     position: _slideAnimation,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1400),
-                      child: isWideScreen
+                      child: isDesktop
                           ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +104,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                           : Column(
                         children: const [
                           _LeftInfoSection(),
-                          SizedBox(height: 40),
+                          SizedBox(height: 48),
                           _LoginFormCard(),
                         ],
                       ),
@@ -114,7 +116,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
           ),
 
           // Top navigation bar
-          const _TopNavigationBar(),
+          _TopNavigationBar(isMobile: isMobile),
         ],
       ),
     );
@@ -353,7 +355,8 @@ class _GridPainter extends CustomPainter {
 }
 // Top Navigation Bar
 class _TopNavigationBar extends StatelessWidget {
-  const _TopNavigationBar();
+  final bool isMobile;
+  const _TopNavigationBar({required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -362,7 +365,8 @@ class _TopNavigationBar extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+        padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 32, vertical: isMobile ? 12 : 20),
         color: Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -377,24 +381,26 @@ class _TopNavigationBar extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.admin_panel_settings,
-                      color: Colors.white, size: 24),
+                  child: Icon(Icons.admin_panel_settings,
+                      color: Colors.white, size: isMobile ? 20 : 24),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'ADMIN PORTAL',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: const Color(0xFF2C3E50),
+                if (!isMobile) ...[
+                  const SizedBox(width: 12),
+                  Text(
+                    'ADMIN PORTAL',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                      color: const Color(0xFF2C3E50),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
             _HoverButton(
               icon: Icons.help_outline,
-              label: 'Go To Home?',
+              label: isMobile ? 'Home' : 'Go To Home?',
               onPressed: () {
                 context.go('/');
               },
@@ -412,8 +418,11 @@ class _LeftInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width <= 768;
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         // Main heading with animation
         TweenAnimationBuilder<double>(
@@ -429,7 +438,7 @@ class _LeftInfoSection extends StatelessWidget {
             );
           },
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
             children: [
               Container(
                 padding:
@@ -461,24 +470,26 @@ class _LeftInfoSection extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Administrator\nControl Center',
+                isMobile ? 'Administrator Control Center' : 'Administrator\nControl Center',
                 style: GoogleFonts.poppins(
-                  fontSize: 48,
+                  fontSize: isMobile ? 32 : 48,
                   fontWeight: FontWeight.w800,
                   height: 1.2,
                   color: const Color(0xFF2C3E50),
                   letterSpacing: -0.5,
                 ),
+                textAlign: isMobile ? TextAlign.center : TextAlign.start,
               ),
               const SizedBox(height: 20),
               Text(
                 'Manage your platform with powerful tools and comprehensive analytics. Access user management, system settings, and real-time monitoring from one centralized dashboard.',
                 style: GoogleFonts.roboto(
-                  fontSize: 16,
+                  fontSize: isMobile ? 14 : 16,
                   height: 1.6,
                   color: const Color(0xFF546E7A),
                   fontWeight: FontWeight.w400,
                 ),
+                textAlign: isMobile ? TextAlign.center : TextAlign.start,
               ),
             ],
           ),
@@ -490,6 +501,7 @@ class _LeftInfoSection extends StatelessWidget {
         Wrap(
           spacing: 16,
           runSpacing: 16,
+          alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
           children: const [
             _FeatureCard(
               icon: Icons.people_alt_outlined,
@@ -568,7 +580,7 @@ class _FeatureCardState extends State<_FeatureCard> {
         onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 260,
+          width: MediaQuery.of(context).size.width <= 768 ? double.infinity : 260,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -659,7 +671,7 @@ class _LoginFormCard extends StatelessWidget {
       },
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500),
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width <= 768 ? 24 : 40),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -861,19 +873,19 @@ class _LoginFormCard extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Security badges
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
               children: const [
                 _SecurityBadge(
                   icon: Icons.shield_outlined,
                   label: 'SSL Secured',
                 ),
-                SizedBox(width: 20),
                 _SecurityBadge(
                   icon: Icons.verified_user_outlined,
                   label: 'Firebase Auth',
                 ),
-                SizedBox(width: 20),
                 _SecurityBadge(
                   icon: Icons.lock_clock_outlined,
                   label: '2FA Ready',

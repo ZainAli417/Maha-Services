@@ -352,7 +352,7 @@ class _LandingPageState extends State<LandingPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "Admin",
+                      "A",
                       style: GoogleFonts.poppins(
                         fontSize: btnFontSize,
                         fontWeight: FontWeight.w600,
@@ -369,6 +369,10 @@ class _LandingPageState extends State<LandingPage>
                 ),
               ),
             ),
+            const SizedBox(width: 6),
+
+            _buildNavItem('Pricing', Icons.payments_rounded),
+
           ],
         ),
       );
@@ -1093,7 +1097,7 @@ class _LandingPageState extends State<LandingPage>
           ? Column(
               children: [
                 Text(
-                  '© 2025 Maha Services. All rights reserved.',
+                  '© 2026 Maha Services. All rights reserved.',
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
                     fontSize: copyrightFontSize,

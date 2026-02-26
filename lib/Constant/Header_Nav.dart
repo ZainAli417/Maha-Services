@@ -60,7 +60,10 @@ class _HeaderNavState extends State<HeaderNav> with TickerProviderStateMixin {
           child: ClipRRect(
             // keep clip but remove blur/backdrop to make header visually separate
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 0),
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width < 900 ? 16 : 48,
+                vertical: 12,
+              ),
               // solid white background (no transparent gradient)
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -210,19 +213,22 @@ class _HeaderNavState extends State<HeaderNav> with TickerProviderStateMixin {
     return Row(
       children: [
         // Logo simplified for mobile as well
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(
-              'images/logo.jpeg',
-              height: 100,
-              width: 100,
-              fit: BoxFit.contain,
+        GestureDetector(
+          onTap: () => context.go('/'),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                'images/logo.png',
+                height: 32,
+                width: 32,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
@@ -230,23 +236,30 @@ class _HeaderNavState extends State<HeaderNav> with TickerProviderStateMixin {
         const Spacer(),
 
         // Mobile menu button
-        Container(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-            ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Colors.white),
-            onPressed: () {
-              // Show mobile menu
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
               showModalBottomSheet(
                 context: context,
                 backgroundColor: Colors.transparent,
+                isScrollControlled: true,
                 builder: (context) => _buildMobileMenu(context),
               );
             },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.menu_rounded,
+                color: Color(0xFF6366F1),
+                size: 24,
+              ),
+            ),
           ),
         ),
       ],

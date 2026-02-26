@@ -52,6 +52,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 900;
+    final horizontalPadding = isMobile ? 20.0 : 40.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFC),
       body: Stack(
@@ -94,17 +98,17 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                                 const HeaderNav(),
 
                                 const SizedBox(height: 20),
-                                _buildHeader(),
+                                _buildHeader(isMobile),
                                 const SizedBox(height: 40),
-                                _buildUserTypeSelector(),
+                                _buildUserTypeSelector(isMobile),
                                 const SizedBox(height: 40),
-                                _buildBillingToggle(),
+                                _buildBillingToggle(isMobile),
                                 const SizedBox(height: 64),
                                 _buildPricingCards(),
                                 const SizedBox(height: 80),
-                                _buildFAQSection(),
+                                _buildFAQSection(isMobile),
                                 const SizedBox(height: 80),
-                                _buildFooter(),
+                                _buildFooter(isMobile),
                               ],
                             ),
                           ),
@@ -121,75 +125,78 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(100),
-            border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.2),
-              width: 1,
+  Widget _buildHeader(bool isMobile) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF6366F1),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'PRICING PLANS',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1),
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF6366F1),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'PRICING PLANS',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF6366F1),
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Choose Your Perfect Plan',
-          style: GoogleFonts.poppins(
-            fontSize: 48,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
-            letterSpacing: -1.5,
-            height: 1.1,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: 600,
-          child: Text(
-            'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
+          const SizedBox(height: 24),
+          Text(
+            'Choose Your Perfect Plan',
             style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-              color: const Color(0xFF64748B),
-              height: 1.6,
-              letterSpacing: -0.2,
+              fontSize: isMobile ? 32 : 48,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+              letterSpacing: -1.5,
+              height: 1.1,
             ),
             textAlign: TextAlign.center,
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: isMobile ? double.infinity : 600,
+            child: Text(
+              'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 16 : 18,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF64748B),
+                height: 1.6,
+                letterSpacing: -0.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildUserTypeSelector() {
+  Widget _buildUserTypeSelector(bool isMobile) {
     final userTypes = [
       {'label': 'Job Seeker', 'icon': Icons.person_search},
       {'label': 'Recruiter', 'icon': Icons.business_center},
@@ -198,6 +205,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
 
     return Container(
       padding: const EdgeInsets.all(6),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -210,58 +218,63 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: userTypes.map((type) {
-          final isSelected = _selectedUserType == type['label'];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: GestureDetector(
-              onTap: () =>
-                  setState(() => _selectedUserType = type['label'] as String),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 14),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? const LinearGradient(
+      child: isMobile 
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: userTypes.map((type) => _buildUserTypeItem(type, isMobile)).toList(),
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: userTypes.map((type) => _buildUserTypeItem(type, isMobile)).toList(),
+          ),
+    );
+  }
+
+  Widget _buildUserTypeItem(Map<String, dynamic> type, bool isMobile) {
+    final isSelected = _selectedUserType == type['label'];
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedUserType = type['label'] as String),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: isMobile ? double.infinity : null,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
                     colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                   )
-                      : null,
-                  color: isSelected ? null : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      type['icon'] as IconData,
-                      size: 20,
-                      color: isSelected ? Colors.white : const Color(
-                          0xFF64748B),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      type['label'] as String,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : const Color(
-                            0xFF64748B),
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ],
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+            children: [
+              Icon(
+                type['icon'] as IconData,
+                size: 20,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                type['label'] as String,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                  letterSpacing: -0.2,
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildBillingToggle() {
+  Widget _buildBillingToggle(bool isMobile) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -276,13 +289,14 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 4,
+        runSpacing: 4,
         children: [
           _buildToggleOption('Monthly', !_isAnnual, () {
             setState(() => _isAnnual = false);
           }),
-          const SizedBox(width: 4),
           _buildToggleOption('Annual', _isAnnual, () {
             setState(() => _isAnnual = true);
           }, showBadge: true),
@@ -579,7 +593,8 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         transform: Matrix4.identity()
           ..translate(0.0, isHovered ? -8.0 : 0.0),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 380),
+          constraints: BoxConstraints(maxWidth: isHovered ? 400 : 380),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -824,7 +839,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(bool isMobile) {
     return RepaintBoundary(
       child: Container(
         decoration: BoxDecoration(
@@ -836,48 +851,79 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         ),
         child: Column(
           children: [
-            _buildStatsShowcase(),
+            _buildStatsShowcase(isMobile),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 50,
+                vertical: 40,
+              ),
               child: Column(
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: _buildFooterBrand()),
-                      const SizedBox(width: 80),
-                      Expanded(
-                        child: _buildFooterColumn('For Candidates', [
-                          'Create Profile',
-                          'Build CV',
-                          'Browse Jobs',
-                          'Career Resources',
-                        ]),
-                      ),
-                      const SizedBox(width: 60),
-                      Expanded(
-                        child: _buildFooterColumn('For Recruiters', [
-                          'Find Talent',
-                          'Submit Requests',
-                          'Pricing Plans',
-                          'Success Stories',
-                        ]),
-                      ),
-                      const SizedBox(width: 60),
-                      Expanded(
-                        child: _buildFooterColumn('Company', [
-                          'About Us',
-                          'Contact',
-                          'Careers',
-                          'Privacy Policy',
-                        ]),
-                      ),
-                    ],
-                  ),
+                  isMobile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildFooterBrand(),
+                            const SizedBox(height: 48),
+                            _buildFooterColumn('For Candidates', [
+                              'Create Profile',
+                              'Build CV',
+                              'Browse Jobs',
+                              'Career Resources',
+                            ]),
+                            const SizedBox(height: 32),
+                            _buildFooterColumn('For Recruiters', [
+                              'Find Talent',
+                              'Submit Requests',
+                              'Pricing Plans',
+                              'Success Stories',
+                            ]),
+                            const SizedBox(height: 32),
+                            _buildFooterColumn('Company', [
+                              'About Us',
+                              'Contact',
+                              'Careers',
+                              'Privacy Policy',
+                            ]),
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: _buildFooterBrand()),
+                            const SizedBox(width: 80),
+                            Expanded(
+                              child: _buildFooterColumn('For Candidates', [
+                                'Create Profile',
+                                'Build CV',
+                                'Browse Jobs',
+                                'Career Resources',
+                              ]),
+                            ),
+                            const SizedBox(width: 60),
+                            Expanded(
+                              child: _buildFooterColumn('For Recruiters', [
+                                'Find Talent',
+                                'Submit Requests',
+                                'Pricing Plans',
+                                'Success Stories',
+                              ]),
+                            ),
+                            const SizedBox(width: 60),
+                            Expanded(
+                              child: _buildFooterColumn('Company', [
+                                'About Us',
+                                'Contact',
+                                'Careers',
+                                'Privacy Policy',
+                              ]),
+                            ),
+                          ],
+                        ),
                 ],
               ),
             ),
-            _buildFooterBottom(),
+            _buildFooterBottom(isMobile),
           ],
         ),
       ),
@@ -973,39 +1019,62 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildFooterBottom() {
+  Widget _buildFooterBottom(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 30),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 24 : 80,
+        vertical: 30,
+      ),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: Color(0xFF374151), width: 1)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '© 2025 Maha Services. All rights reserved.',
-            style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontSize: 13),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
-            ),
-            child: Row(
+      child: isMobile
+          ? Column(
               children: [
-                const Icon(Icons.psychology_rounded, color: Color(0xFF6366F1), size: 16),
-                const SizedBox(width: 6),
                 Text(
-                  'Powered by AI',
+                  '© 2025 Maha Services. All rights reserved.',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF6366F1),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6B7280),
+                    fontSize: 13,
                   ),
+                  textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 20),
+                _buildAIBadge(),
               ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '© 2025 Maha Services. All rights reserved.',
+                  style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontSize: 13),
+                ),
+                _buildAIBadge(),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildAIBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6366F1).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.psychology_rounded, color: Color(0xFF6366F1), size: 16),
+          const SizedBox(width: 6),
+          Text(
+            'Powered by AI',
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF6366F1),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -1013,15 +1082,16 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildFAQSection() {
+  Widget _buildFAQSection(bool isMobile) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 800),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
       child: Column(
         children: [
           Text(
             'Frequently asked questions',
             style: GoogleFonts.poppins(
-              fontSize: 32,
+              fontSize: isMobile ? 28 : 32,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
               letterSpacing: -1,
@@ -1045,7 +1115,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
           const SizedBox(height: 16),
           _buildFAQItem(
-            'What happens when I cancel?',
+            'What happens when i cancel?',
             'You can cancel anytime. You\'ll retain access until the end of your billing period.',
           ),
         ],
@@ -1091,9 +1161,12 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildStatsShowcase() {
+  Widget _buildStatsShowcase(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 80),
+      padding: EdgeInsets.symmetric(
+        vertical: 60,
+        horizontal: isMobile ? 24 : 80,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1123,28 +1196,34 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           const SizedBox(height: 20),
           Text(
             'Trusted by Industry Leaders',
-            style: GoogleFonts.poppins(fontSize: 42, fontWeight: FontWeight.w800, color: Colors.white),
+            style: GoogleFonts.poppins(
+              fontSize: isMobile ? 28 : 42,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
             'Real numbers, real impact - see how we transform hiring',
             style: GoogleFonts.poppins(
-              fontSize: 18,
+              fontSize: isMobile ? 14 : 18,
               color: Colors.white.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 70),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          const SizedBox(height: 60),
+          Wrap(
+            spacing: 24,
+            runSpacing: 24,
+            alignment: WrapAlignment.center,
             children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-              const SizedBox(width: 50),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-              const SizedBox(width: 50),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-              const SizedBox(width: 50),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded, isMobile),
+              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded, isMobile),
+              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded, isMobile),
+              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded, isMobile),
             ],
           ),
         ],
@@ -1152,38 +1231,43 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildSuccessMetric(String value, String label, IconData icon) {
+  Widget _buildSuccessMetric(String value, String label, IconData icon, bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      width: isMobile ? (MediaQuery.of(context).size.width - 72) / 2 : null,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: Colors.white.withOpacity(0.6), size: 24),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 20 : 24,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.6),
-                  fontWeight: FontWeight.w500,
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
