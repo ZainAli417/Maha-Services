@@ -60,6 +60,7 @@ class _LandingPageState extends State<LandingPage>
   late TextStyle _buttonTextStyle;
 
   late ScrollController _scrollController;
+  bool _showScrollToTop = false;
 
   @override
   void initState() {
@@ -116,6 +117,13 @@ class _LandingPageState extends State<LandingPage>
     _fadeController.forward();
 
     _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 400 && !_showScrollToTop) {
+        setState(() => _showScrollToTop = true);
+      } else if (_scrollController.offset <= 400 && _showScrollToTop) {
+        setState(() => _showScrollToTop = false);
+      }
+    });
   }
 
   void _initializeTextStyles() {
@@ -146,6 +154,14 @@ class _LandingPageState extends State<LandingPage>
       isDarkMode = !isDarkMode;
       _initializeTextStyles(); // Refresh text styles
     });
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
@@ -209,6 +225,16 @@ class _LandingPageState extends State<LandingPage>
             scrollController: _scrollController,
           ),
         ],
+      ),
+      floatingActionButton: AnimatedScale(
+        scale: _showScrollToTop ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 300),
+        child: FloatingActionButton(
+          onPressed: _scrollToTop,
+          backgroundColor: const Color(0xFF6366F1),
+          elevation: 4,
+          child: const Icon(Icons.arrow_upward_rounded, color: Colors.white),
+        ),
       ),
     );
   }

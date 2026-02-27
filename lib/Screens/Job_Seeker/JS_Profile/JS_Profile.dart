@@ -20,6 +20,7 @@ class ProfileScreen_NEW extends StatefulWidget {
 
 class _JSProfileScreenState extends State<ProfileScreen_NEW>
     with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentStep = 0;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -370,14 +371,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     });
   }
 
+  bool get _isMobile => MediaQuery.of(context).size.width < 768;
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = _isMobile;
     return ScrollConfiguration(
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
+        key: _scaffoldKey,
+        drawer: isMobile
+            ? Drawer(
+                child: JobSeekerSidebar(activeIndex: 1, isDrawer: true),
+              )
+            : null,
         body: Row(
           children: [
-            JobSeekerSidebar(activeIndex: 1),
+            if (!isMobile) JobSeekerSidebar(activeIndex: 1),
             Expanded(
               child: FadeTransition(
                 opacity: _animController,
@@ -386,17 +396,65 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             ),
           ],
         ),
+        floatingActionButton: null,
+      ),
+    );
+  }
+
+  void _showSidebarSheet(ProfileProvider_NEW prov) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (ctx, scrollCtrl) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollCtrl,
+                  child: JSProfileSidebar(provider: prov),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildContent(BuildContext context) {
+    final isMobile = _isMobile;
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: Consumer<ProfileProvider_NEW>(
         builder: (context, prov, _) {
           if (prov.isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (isMobile) {
+            return Column(
+              children: [
+                _buildTopBar(),
+                Expanded(child: _buildMainContent(prov)),
+              ],
+            );
           }
           return Row(
             children: [
@@ -416,7 +474,6 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   border: Border(
                     left: BorderSide(color: Colors.grey.shade200, width: 1),
                   ),
-
                 ),
                 child: JSProfileSidebar(provider: prov),
               ),
@@ -431,59 +488,60 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     const Color kPrimaryBlue = Color(0xFF1E40AF);
     const Color kTextPrimary = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
+    final isMobile = _isMobile;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 24,
+        vertical: isMobile ? 10 : 16,
       ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: [
-          // Left Icon
+          if (isMobile)
+            IconButton(
+              icon: const Icon(Icons.menu_rounded, size: 24),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isMobile ? 6 : 10),
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.person_add_alt_outlined,
-              size: 24,
+              size: isMobile ? 18 : 24,
               color: kPrimaryBlue,
             ),
           ),
-
-          const SizedBox(width: 14),
-
-          // Title & Subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Profile',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
+          SizedBox(width: isMobile ? 8 : 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Profile',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 14 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: kTextPrimary,
+                    height: 1.2,
+                  ),
                 ),
-              ),
-              Text(
-                'One Click Profile Analyzer & CV Builder',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
-                ),
-              ),
-            ],
+                if (!isMobile)
+                  Text(
+                    'One Click Profile Analyzer & CV Builder',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: kTextSecondary,
+                      height: 1.2,
+                    ),
+                  ),
+              ],
+            ),
           ),
-
-          const Spacer(),
-
-          // ✅ Progress Indicator on Right
           _buildProgressIndicator(),
         ],
       ),
@@ -491,8 +549,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildProgressIndicator() {
+    final isMobile = _isMobile;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 16,
+        vertical: isMobile ? 6 : 10,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withOpacity(0.08),
         borderRadius: BorderRadius.circular(8),
@@ -505,64 +567,55 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Step ${_currentStep + 1} of ${_stepTitles.length}',
+            isMobile ? '${_currentStep + 1}/${_stepTitles.length}' : 'Step ${_currentStep + 1} of ${_stepTitles.length}',
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: isMobile ? 11 : 13,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF6366F1),
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            width: 100,
-            height: 6,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(3),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: (_currentStep + 1) / _stepTitles.length,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1),
-                  borderRadius: BorderRadius.circular(3),
+          if (!isMobile) ...[
+            const SizedBox(width: 12),
+            Container(
+              width: 100,
+              height: 6,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: (_currentStep + 1) / _stepTitles.length,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildMainContent(ProfileProvider_NEW prov) {
+    final isMobile = _isMobile;
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 10 : 20),
       child: Column(
         children: [
           _buildStepIndicators(),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 12 : 24),
           Expanded(
-            child: RepaintBoundary( child: Container(
-              key: ValueKey<int>(_currentStep),
-              child:
-
-
-              _buildCurrentStepContent(prov),
-            ),
-              // child: AnimatedSwitcher(
-              //   duration: const Duration(milliseconds: 550),
-              //   switchInCurve: Curves.easeInExpo,
-              //   switchOutCurve: Curves.easeInOutCubicEmphasized,
-              //   transitionBuilder: (child, animation) {
-              //     return FadeTransition(opacity: animation, child: child);
-              //   },
-              //
-              // ),
+            child: RepaintBoundary(
+              child: Container(
+                key: ValueKey<int>(_currentStep),
+                child: _buildCurrentStepContent(prov),
+              ),
             ),
           ),
-          // const SizedBox(height: 20),
           _buildNavigationButtons(prov),
         ],
       ),
@@ -570,8 +623,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildStepIndicators() {
+    final isMobile = _isMobile;
     return SizedBox(
-      height: 56,
+      height: isMobile ? 42 : 56,
       child: ListView.builder(
         controller: _stepScrollController,
         scrollDirection: Axis.horizontal,
@@ -584,16 +638,13 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               InkWell(
                 onTap: () {
                   setState(() => _currentStep = index);
-                  // ✅ REMOVED: Animation reset causes glitch
-                  // _animController.reset();
-                  // _animController.forward();
                   _scrollToCurrentStep();
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 8 : 16,
+                    vertical: isMobile ? 6 : 12,
                   ),
                   decoration: BoxDecoration(
                     color: isActive
@@ -621,13 +672,13 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                             : (isCompleted
                                   ? const Color(0xFF10B981)
                                   : const Color(0xFF64748B)),
-                        size: 18,
+                        size: isMobile ? 14 : 18,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: isMobile ? 4 : 8),
                       Text(
                         _stepTitles[index],
                         style: GoogleFonts.poppins(
-                          fontSize: 13,
+                          fontSize: isMobile ? 10 : 13,
                           fontWeight: isActive
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -644,9 +695,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               ),
               if (index < _stepTitles.length - 1)
                 Container(
-                  width: 24,
+                  width: isMobile ? 12 : 24,
                   height: 2,
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 8),
                   decoration: BoxDecoration(
                     color: index < _currentStep
                         ? const Color(0xFF10B981)
@@ -720,8 +771,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   child: Stack(
                     children: [
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: _isMobile ? 56 : 80,
+                        height: _isMobile ? 56 : 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.indigo),
@@ -741,9 +792,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               : null,
                         ),
                         child: prov.profilePicUrl.isEmpty
-                            ? const Icon(
+                            ? Icon(
                                 Icons.person,
-                                size: 40,
+                                size: _isMobile ? 28 : 40,
                                 color: Colors.white,
                               )
                             : null,
@@ -752,16 +803,16 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         bottom: 0,
                         right: 0,
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(_isMobile ? 5 : 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFF6366F1),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.camera_alt,
                             color: Colors.white,
-                            size: 14,
+                            size: _isMobile ? 10 : 14,
                           ),
                         ),
                       ),
@@ -769,20 +820,21 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                 ),
               ),
-              const SizedBox(width: 24),
+              SizedBox(width: _isMobile ? 12 : 24),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Upload Profile Photo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF64748B),
+                    if (!_isMobile)
+                      Text(
+                        'Upload Profile Photo',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                    if (!_isMobile) const SizedBox(height: 12),
                     _buildTextField(
                       label: 'Full Name',
                       controller: _nameCtrl,
@@ -795,101 +847,175 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             ],
           ),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  label: 'Email Address',
-                  controller: _emailCtrl,
-                  icon: Icons.email_outlined,
-                  onChanged: prov.updateEmail,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Secondary Email',
-                  controller: _secondaryEmailCtrl,
-                  icon: Icons.email_outlined,
-                  onChanged: prov.updateSecondaryEmail,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  label: 'Contact Number',
-                  controller: _contactCtrl,
-                  icon: Icons.phone_outlined,
-                  onChanged: prov.updateContactNumber,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Nationality',
-                  controller: _nationalityCtrl,
-                  icon: Icons.public,
-                  onChanged: prov.updateNationality,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () {
-                      print('[DOB] Date picker opened');
-                      _selectDate(
-                        context,
-                        _dobCtrl,
-                        initialDate: _dobCtrl.text.isNotEmpty
-                            ? DateTime.tryParse(_dobCtrl.text)
-                            : DateTime(1990),
-                        onDateSelected: (dateString) {
-                          print('[DOB] Date selected from picker: $dateString');
-                          prov.updateDob(dateString);
-                          print(
-                            '[DOB] Provider updated - dirty flag: ${prov.personalDirty}',
-                          );
-                        },
-                      );
-                    },
-                    child: AbsorbPointer(
+          _isMobile
+              ? Column(
+                  children: [
+                    _buildTextField(
+                      label: 'Email Address',
+                      controller: _emailCtrl,
+                      icon: Icons.email_outlined,
+                      onChanged: prov.updateEmail,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Secondary Email',
+                      controller: _secondaryEmailCtrl,
+                      icon: Icons.email_outlined,
+                      onChanged: prov.updateSecondaryEmail,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
                       child: _buildTextField(
-                        label: 'Date of Birth',
-                        controller: _dobCtrl,
-                        icon: Icons.calendar_today_outlined,
-                        onChanged: (v) {
-                          print(
-                            '[DOB] TextField onChanged called: $v (This should NOT happen for date picker)',
-                          );
-                          prov.updateDob(v);
-                        },
+                        label: 'Email Address',
+                        controller: _emailCtrl,
+                        icon: Icons.email_outlined,
+                        onChanged: prov.updateEmail,
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Secondary Email',
+                        controller: _secondaryEmailCtrl,
+                        icon: Icons.email_outlined,
+                        onChanged: prov.updateSecondaryEmail,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Career Objectives',
-                  controller: _objectivesCtrl,
-                  icon: Icons.lightbulb_outline,
-                  maxLines: 3,
-                  onChanged: prov.updateObjectives,
+          const SizedBox(height: 12),
+          _isMobile
+              ? Column(
+                  children: [
+                    _buildTextField(
+                      label: 'Contact Number',
+                      controller: _contactCtrl,
+                      icon: Icons.phone_outlined,
+                      onChanged: prov.updateContactNumber,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Nationality',
+                      controller: _nationalityCtrl,
+                      icon: Icons.public,
+                      onChanged: prov.updateNationality,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Contact Number',
+                        controller: _contactCtrl,
+                        icon: Icons.phone_outlined,
+                        onChanged: prov.updateContactNumber,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Nationality',
+                        controller: _nationalityCtrl,
+                        icon: Icons.public,
+                        onChanged: prov.updateNationality,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 12),
+          _isMobile
+              ? Column(
+                  children: [
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          _selectDate(
+                            context,
+                            _dobCtrl,
+                            initialDate: _dobCtrl.text.isNotEmpty
+                                ? DateTime.tryParse(_dobCtrl.text)
+                                : DateTime(1990),
+                            onDateSelected: (dateString) {
+                              prov.updateDob(dateString);
+                            },
+                          );
+                        },
+                        child: AbsorbPointer(
+                          child: _buildTextField(
+                            label: 'Date of Birth',
+                            controller: _dobCtrl,
+                            icon: Icons.calendar_today_outlined,
+                            onChanged: (v) => prov.updateDob(v),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Career Objectives',
+                      controller: _objectivesCtrl,
+                      icon: Icons.lightbulb_outline,
+                      maxLines: 3,
+                      onChanged: prov.updateObjectives,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            print('[DOB] Date picker opened');
+                            _selectDate(
+                              context,
+                              _dobCtrl,
+                              initialDate: _dobCtrl.text.isNotEmpty
+                                  ? DateTime.tryParse(_dobCtrl.text)
+                                  : DateTime(1990),
+                              onDateSelected: (dateString) {
+                                print('[DOB] Date selected from picker: $dateString');
+                                prov.updateDob(dateString);
+                                print(
+                                  '[DOB] Provider updated - dirty flag: ${prov.personalDirty}',
+                                );
+                              },
+                            );
+                          },
+                          child: AbsorbPointer(
+                            child: _buildTextField(
+                              label: 'Date of Birth',
+                              controller: _dobCtrl,
+                              icon: Icons.calendar_today_outlined,
+                              onChanged: (v) {
+                                print(
+                                  '[DOB] TextField onChanged called: $v (This should NOT happen for date picker)',
+                                );
+                                prov.updateDob(v);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Career Objectives',
+                        controller: _objectivesCtrl,
+                        icon: Icons.lightbulb_outline,
+                        maxLines: 3,
+                        onChanged: prov.updateObjectives,
+                      ),
+                    ),
+                  ],
+                ),
           // const SizedBox(height: 20),
           // _buildTextField(
           //   label: 'Professional Summary',
@@ -1051,27 +1177,44 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             controller: _institutionCtrl,
             icon: Icons.business_outlined,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  label: 'Duration',
-                  controller: _durationCtrl,
-                  icon: Icons.access_time,
-                  hint: 'e.g. 2016 - 2020',
+          const SizedBox(height: 12),
+          _isMobile
+              ? Column(
+                  children: [
+                    _buildTextField(
+                      label: 'Duration',
+                      controller: _durationCtrl,
+                      icon: Icons.access_time,
+                      hint: 'e.g. 2016 - 2020',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Major Subjects',
+                      controller: _majorCtrl,
+                      icon: Icons.menu_book_outlined,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Duration',
+                        controller: _durationCtrl,
+                        icon: Icons.access_time,
+                        hint: 'e.g. 2016 - 2020',
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Major Subjects',
+                        controller: _majorCtrl,
+                        icon: Icons.menu_book_outlined,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Major Subjects',
-                  controller: _majorCtrl,
-                  icon: Icons.menu_book_outlined,
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 16),
           _buildTextField(
             label: 'Marks / CGPA',
@@ -1096,23 +1239,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isMobile ? 16 : 20,
+                  vertical: _isMobile ? 10 : 12,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.add_circle_outline,
-                      size: 18,
+                      size: _isMobile ? 16 : 18,
                       color: Colors.white,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Education',
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -1123,18 +1266,18 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             ),
           ),
           if (prov.educationalProfile.isNotEmpty) ...[
-            const SizedBox(height: 32),
+            SizedBox(height: _isMobile ? 20 : 32),
             const Divider(height: 1),
-            const SizedBox(height: 24),
+            SizedBox(height: _isMobile ? 16 : 24),
             Text(
               'Added Education',
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: _isMobile ? 13 : 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: _isMobile ? 12 : 16),
             ...prov.educationalProfile.asMap().entries.map((e) {
               final item = e.value;
               return Container(
@@ -1429,119 +1572,215 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             hint: 'e.g., No. 9 Squadron, PAF Base Masroor',
             onChanged: (v) => prov.tempCompany = v,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  label: 'Rank / Position',
-                  controller: _expRankCtrl,
-                  icon: Icons.military_tech,
-                  hint: 'e.g., Squadron Leader',
-                  onChanged: (v) => prov.tempRank = v,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Role / Designation',
-                  controller: _expRoleCtrl,
-                  icon: Icons.badge_outlined,
-                  hint: 'e.g., Fighter Pilot',
-                  onChanged: (v) => prov.tempRole = v,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  label: 'Command / Base',
-                  controller: _expCommandCtrl,
-                  icon: Icons.location_city,
-                  hint: 'e.g., Central Air Command',
-                  onChanged: (v) => prov.tempCommand = v,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Location',
-                  controller: _expLocationCtrl,
-                  icon: Icons.place_outlined,
-                  hint: 'e.g., Karachi, Pakistan',
-                  onChanged: (v) => prov.tempLocation = v,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _selectMonthYear(context, _expStartDateCtrl);
-                      if (_expStartDateCtrl.text.isNotEmpty) {
-                        prov.tempExpStart = _expStartDateCtrl.text;
-                        prov.notifyListeners();
-                      }
-                    },
-                    child: AbsorbPointer(
+          _isMobile
+              ? Column(
+                  children: [
+                    _buildTextField(
+                      label: 'Rank / Position',
+                      controller: _expRankCtrl,
+                      icon: Icons.military_tech,
+                      hint: 'e.g., Squadron Leader',
+                      onChanged: (v) => prov.tempRank = v,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Role / Designation',
+                      controller: _expRoleCtrl,
+                      icon: Icons.badge_outlined,
+                      hint: 'e.g., Fighter Pilot',
+                      onChanged: (v) => prov.tempRole = v,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
                       child: _buildTextField(
-                        label: 'Start Date',
-                        controller: _expStartDateCtrl,
-                        icon: Icons.calendar_today_outlined,
-                        hint: 'e.g., Jan 2018',
-                        onChanged: (v) => prov.tempExpStart = v,
+                        label: 'Rank / Position',
+                        controller: _expRankCtrl,
+                        icon: Icons.military_tech,
+                        hint: 'e.g., Squadron Leader',
+                        onChanged: (v) => prov.tempRank = v,
                       ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _selectMonthYear(context, _expEndDateCtrl);
-                      if (_expEndDateCtrl.text.isNotEmpty) {
-                        prov.tempExpEnd = _expEndDateCtrl.text;
-                        prov.notifyListeners();
-                      }
-                    },
-                    child: AbsorbPointer(
+                    const SizedBox(width: 16),
+                    Expanded(
                       child: _buildTextField(
-                        label: 'End Date (or Present)',
-                        controller: _expEndDateCtrl,
-                        icon: Icons.calendar_today_outlined,
-                        hint: 'e.g., Dec 2022 or Present',
-                        onChanged: (v) => prov.tempExpEnd = v,
+                        label: 'Role / Designation',
+                        controller: _expRoleCtrl,
+                        icon: Icons.badge_outlined,
+                        hint: 'e.g., Fighter Pilot',
+                        onChanged: (v) => prov.tempRole = v,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTextField(
-                  label: 'Aircraft Type (if applicable)',
-                  controller: _expAircraftTypeCtrl,
-                  icon: Icons.flight,
-                  hint: 'e.g., F-16, JF-17, C-130',
-                  onChanged: (v) => prov.tempAircraftType = v,
+          const SizedBox(height: 12),
+
+          _isMobile
+              ? Column(
+                  children: [
+                    _buildTextField(
+                      label: 'Command / Base',
+                      controller: _expCommandCtrl,
+                      icon: Icons.location_city,
+                      hint: 'e.g., Central Air Command',
+                      onChanged: (v) => prov.tempCommand = v,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Location',
+                      controller: _expLocationCtrl,
+                      icon: Icons.place_outlined,
+                      hint: 'e.g., Karachi, Pakistan',
+                      onChanged: (v) => prov.tempLocation = v,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Command / Base',
+                        controller: _expCommandCtrl,
+                        icon: Icons.location_city,
+                        hint: 'e.g., Central Air Command',
+                        onChanged: (v) => prov.tempCommand = v,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Location',
+                        controller: _expLocationCtrl,
+                        icon: Icons.place_outlined,
+                        hint: 'e.g., Karachi, Pakistan',
+                        onChanged: (v) => prov.tempLocation = v,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 12),
+
+          _isMobile
+              ? Column(
+                  children: [
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _selectMonthYear(context, _expStartDateCtrl);
+                          if (_expStartDateCtrl.text.isNotEmpty) {
+                            prov.tempExpStart = _expStartDateCtrl.text;
+                            prov.notifyListeners();
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: _buildTextField(
+                            label: 'Start Date',
+                            controller: _expStartDateCtrl,
+                            icon: Icons.calendar_today_outlined,
+                            hint: 'e.g., Jan 2018',
+                            onChanged: (v) => prov.tempExpStart = v,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () async {
+                          await _selectMonthYear(context, _expEndDateCtrl);
+                          if (_expEndDateCtrl.text.isNotEmpty) {
+                            prov.tempExpEnd = _expEndDateCtrl.text;
+                            prov.notifyListeners();
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: _buildTextField(
+                            label: 'End Date (or Present)',
+                            controller: _expEndDateCtrl,
+                            icon: Icons.calendar_today_outlined,
+                            hint: 'e.g., Dec 2022 or Present',
+                            onChanged: (v) => prov.tempExpEnd = v,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      label: 'Aircraft Type (if applicable)',
+                      controller: _expAircraftTypeCtrl,
+                      icon: Icons.flight,
+                      hint: 'e.g., F-16, JF-17, C-130',
+                      onChanged: (v) => prov.tempAircraftType = v,
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () async {
+                            await _selectMonthYear(context, _expStartDateCtrl);
+                            if (_expStartDateCtrl.text.isNotEmpty) {
+                              prov.tempExpStart = _expStartDateCtrl.text;
+                              prov.notifyListeners();
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: _buildTextField(
+                              label: 'Start Date',
+                              controller: _expStartDateCtrl,
+                              icon: Icons.calendar_today_outlined,
+                              hint: 'e.g., Jan 2018',
+                              onChanged: (v) => prov.tempExpStart = v,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () async {
+                            await _selectMonthYear(context, _expEndDateCtrl);
+                            if (_expEndDateCtrl.text.isNotEmpty) {
+                              prov.tempExpEnd = _expEndDateCtrl.text;
+                              prov.notifyListeners();
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: _buildTextField(
+                              label: 'End Date (or Present)',
+                              controller: _expEndDateCtrl,
+                              icon: Icons.calendar_today_outlined,
+                              hint: 'e.g., Dec 2022 or Present',
+                              onChanged: (v) => prov.tempExpEnd = v,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Aircraft Type (if applicable)',
+                        controller: _expAircraftTypeCtrl,
+                        icon: Icons.flight,
+                        hint: 'e.g., F-16, JF-17, C-130',
+                        onChanged: (v) => prov.tempAircraftType = v,
+                      ),
+                    ),
+                  ],
+                ),
           const SizedBox(height: 16),
 
           _buildTextField(
@@ -1597,23 +1836,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isMobile ? 16 : 20,
+                  vertical: _isMobile ? 10 : 12,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.add_circle_outline,
-                      size: 18,
+                      size: _isMobile ? 16 : 18,
                       color: Colors.white,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Experience',
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -1660,23 +1899,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               onTap: () => _pickAndUploadExperienceDoc(prov),
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isMobile ? 12 : 16,
+                  vertical: _isMobile ? 10 : 12,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.upload_file,
-                      size: 18,
-                      color: Color(0xFF6366F1),
+                      size: _isMobile ? 16 : 18,
+                      color: const Color(0xFF6366F1),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Upload Document',
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
+                        fontSize: _isMobile ? 12 : 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6366F1),
                       ),
@@ -1758,11 +1997,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               final flightHours = item['flightHours']?.toString() ?? '';
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(18),
+                margin: EdgeInsets.only(bottom: _isMobile ? 12 : 16),
+                padding: EdgeInsets.all(_isMobile ? 14 : 18),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(_isMobile ? 8 : 12),
                   border: Border.all(
                     color: const Color(0xFFE2E8F0),
                     width: 1.5,
@@ -1782,18 +2021,18 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(_isMobile ? 8 : 12),
                           decoration: BoxDecoration(
                             color: const Color(0xFF6366F1).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(_isMobile ? 8 : 10),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.flight_takeoff,
-                            color: Color(0xFF6366F1),
-                            size: 24,
+                            color: const Color(0xFF6366F1),
+                            size: _isMobile ? 20 : 24,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        SizedBox(width: _isMobile ? 10 : 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1802,25 +2041,25 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 Text(
                                   role,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 16,
+                                    fontSize: _isMobile ? 14 : 16,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF0F172A),
                                   ),
                                 ),
                               if (rank.isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: _isMobile ? 2 : 4),
                                 Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.military_tech,
-                                      size: 14,
-                                      color: Color(0xFF6366F1),
+                                      size: _isMobile ? 12 : 14,
+                                      color: const Color(0xFF6366F1),
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
                                       rank,
                                       style: GoogleFonts.poppins(
-                                        fontSize: 13,
+                                        fontSize: _isMobile ? 11 : 13,
                                         fontWeight: FontWeight.w500,
                                         color: const Color(0xFF6366F1),
                                       ),
@@ -1829,20 +2068,20 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 ),
                               ],
                               if (organization.isNotEmpty) ...[
-                                const SizedBox(height: 6),
+                                SizedBox(height: _isMobile ? 4 : 6),
                                 Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.business_outlined,
-                                      size: 13,
-                                      color: Color(0xFF64748B),
+                                      size: _isMobile ? 11 : 13,
+                                      color: const Color(0xFF64748B),
                                     ),
                                     const SizedBox(width: 6),
                                     Flexible(
                                       child: Text(
                                         organization,
                                         style: GoogleFonts.poppins(
-                                          fontSize: 13,
+                                          fontSize: _isMobile ? 11 : 13,
                                           color: const Color(0xFF475569),
                                         ),
                                       ),
@@ -2057,23 +2296,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isMobile ? 16 : 20,
+                  vertical: _isMobile ? 10 : 12,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.add_circle_outline,
-                      size: 18,
+                      size: _isMobile ? 16 : 18,
                       color: Colors.white,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Certification',
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -2343,25 +2582,26 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     required Function(int) onRemove,
     required IconData itemIcon,
   }) {
+    final isMobile = _isMobile;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF6366F1), size: 24),
-              const SizedBox(width: 12),
+              Icon(icon, color: const Color(0xFF6366F1), size: isMobile ? 18 : 24),
+              SizedBox(width: isMobile ? 8 : 12),
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: isMobile ? 15 : 18,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 24),
           Row(
             children: [
               Expanded(
@@ -2370,13 +2610,14 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: GoogleFonts.poppins(
-                      fontSize: 13,
+                      fontSize: isMobile ? 12 : 13,
                       color: const Color(0xFF94A3B8),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
+                    contentPadding: EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 12,
+                      vertical: isMobile ? 10 : 12,
                     ),
+                    isDense: isMobile,
                     filled: false,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -2391,10 +2632,10 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       borderSide: const BorderSide(color: Color(0xFF6366F1)),
                     ),
                   ),
-                  style: GoogleFonts.poppins(fontSize: 14),
+                  style: GoogleFonts.poppins(fontSize: isMobile ? 13 : 14),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: isMobile ? 8 : 12),
               Material(
                 color: const Color(0xFF10B981),
                 borderRadius: BorderRadius.circular(8),
@@ -2402,30 +2643,30 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   onTap: onAdd,
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.all(12),
-                    child: const Icon(Icons.add, size: 20, color: Colors.white),
+                    padding: EdgeInsets.all(isMobile ? 10 : 12),
+                    child: Icon(Icons.add, size: isMobile ? 16 : 20, color: Colors.white),
                   ),
                 ),
               ),
             ],
           ),
           if (items.isNotEmpty) ...[
-            const SizedBox(height: 32),
+            SizedBox(height: isMobile ? 20 : 32),
             const Divider(height: 1),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 16 : 24),
             Text(
               'Added $title',
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: isMobile ? 13 : 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: isMobile ? 12 : 16),
             ...items.asMap().entries.map((e) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
+                padding: EdgeInsets.all(isMobile ? 12 : 16),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(8),
@@ -2434,7 +2675,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: EdgeInsets.all(isMobile ? 8 : 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFF6366F1).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -2442,26 +2683,28 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       child: Icon(
                         itemIcon,
                         color: const Color(0xFF6366F1),
-                        size: 20,
+                        size: isMobile ? 16 : 20,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: isMobile ? 10 : 12),
                     Expanded(
                       child: Text(
                         e.value,
                         style: GoogleFonts.poppins(
-                          fontSize: 13,
+                          fontSize: isMobile ? 11 : 13,
                           color: const Color(0xFF0F172A),
                         ),
                       ),
                     ),
                     IconButton(
                       onPressed: () => onRemove(e.key),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
-                        color: Color(0xFFEF4444),
-                        size: 20,
+                        color: const Color(0xFFEF4444),
+                        size: isMobile ? 18 : 20,
                       ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
@@ -2642,6 +2885,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         break;
     }
 
+    final isMobile = _isMobile;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -2655,9 +2899,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 12 : 24,
+                  vertical: isMobile ? 8 : 14,
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
@@ -2666,16 +2910,16 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.chevron_left,
-                      size: 20,
-                      color: Color(0xFF475569),
+                      size: isMobile ? 16 : 20,
+                      color: const Color(0xFF475569),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: isMobile ? 4 : 8),
                     Text(
-                      'Previous',
+                      isMobile ? 'Back' : 'Previous',
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF475569),
                       ),
@@ -2702,23 +2946,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 12 : 24,
+                    vertical: isMobile ? 8 : 14,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         isDirty ? Icons.warning_amber_rounded : Icons.check,
-                        size: 20,
+                        size: isMobile ? 16 : 20,
                         color: Colors.white,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: isMobile ? 4 : 8),
                       Text(
-                        isDirty ? 'Save Changes' : 'Saved',
+                        isDirty ? (isMobile ? 'Save' : 'Save Changes') : 'Saved',
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: isMobile ? 11 : 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -2816,9 +3060,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 14,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 12 : 24,
+                      vertical: isMobile ? 8 : 14,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2826,16 +3070,48 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         Text(
                           'Next',
                           style: GoogleFonts.poppins(
-                            fontSize: 14,
+                            fontSize: isMobile ? 11 : 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(
+                        SizedBox(width: isMobile ? 4 : 8),
+                        Icon(
                           Icons.chevron_right,
-                          size: 20,
+                          size: isMobile ? 16 : 20,
                           color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (isMobile) ...[
+              const SizedBox(width: 8),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _showSidebarSheet(prov),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.analytics_outlined, size: 16, color: Color(0xFF6366F1)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Stats',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6366F1),
+                          ),
                         ),
                       ],
                     ),
@@ -2894,37 +3170,42 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     int maxLines = 1,
     Function(String)? onChanged,
   }) {
+    final isMobile = _isMobile;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, color: const Color(0xFF64748B), size: 16),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF475569),
+            Icon(icon, color: const Color(0xFF64748B), size: isMobile ? 14 : 16),
+            SizedBox(width: isMobile ? 6 : 8),
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: isMobile ? 11 : 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF475569),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: isMobile ? 4 : 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint ?? label,
             hintStyle: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: isMobile ? 12 : 13,
               color: const Color(0xFF94A3B8),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 10 : 16,
+              vertical: isMobile ? 8 : 12,
             ),
+            isDense: isMobile,
             filled: false,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -2943,7 +3224,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             ),
           ),
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: isMobile ? 12 : 14,
             color: const Color(0xFF0F172A),
           ),
           onChanged: onChanged,
@@ -3070,11 +3351,13 @@ void showTopNotification(
 }) {
   final overlay = Overlay.of(context);
 
+  final isMobile = MediaQuery.of(context).size.width < 768;
+
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
       top: 30,
-      left: 400,
-      right: 380,
+      left: isMobile ? 20 : 400,
+      right: isMobile ? 20 : 380,
       child: Material(
         color: Colors.transparent,
         child: AnimatedContainer(

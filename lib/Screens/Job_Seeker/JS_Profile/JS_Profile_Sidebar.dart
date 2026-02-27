@@ -104,27 +104,30 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget build(BuildContext context) {
     final totalScore = computeTotalScore();
     final scoreColor = _getScoreColor(totalScore);
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      color: const Color(0xFFFFFFFF), // Very light grey background for sidebar
+      color: const Color(0xFFFFFFFF),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 20,
+          vertical: isMobile ? 12 : 24,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             //_buildModernHeader(),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 12 : 24),
 
             _buildCompletionCard(totalScore, scoreColor),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 14 : 24),
 
             _buildGridStats(),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 14 : 24),
 
             _buildSectionBreakdown(),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 14 : 24),
 
-            // Just add this widget wrapped in your existing Container:
             Container(
               decoration: BoxDecoration(
                 boxShadow: [
@@ -135,15 +138,15 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   ),
                 ],
               ),
-              child: const CVGeneratorButton(), // ← Changed from CVGeneratorButton(context)
+              child: const CVGeneratorButton(),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 14 : 24),
 
             _buildSkillsOverview(),
-            const SizedBox(height: 24),
+            SizedBox(height: isMobile ? 14 : 24),
 
             _buildPersonalDetailsCard(),
-            const SizedBox(height: 40), // Bottom padding
+            SizedBox(height: isMobile ? 20 : 40),
           ],
         ),
       ),
@@ -152,11 +155,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
 
   Widget _buildCompletionCard(int totalScore, Color scoreColor) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         border: Border.all(color: Colors.grey.withOpacity(0.08)),
         boxShadow: [
           BoxShadow(
@@ -177,7 +181,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   Text(
                     'Profile Strength',
                     style: GoogleFonts.poppins(
-                      fontSize: 14,
+                      fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
                     ),
@@ -186,17 +190,16 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   Text(
                     _getScoreLabel(totalScore),
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: isMobile ? 10 : 12,
                       fontWeight: FontWeight.w500,
                       color: scoreColor,
                     ),
                   ),
                 ],
               ),
-              // Circular percentage badge
               Container(
-                width: 50,
-                height: 50,
+                width: isMobile ? 40 : 50,
+                height: isMobile ? 40 : 50,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -206,7 +209,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 child: Text(
                   '$totalScore%',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: isMobile ? 11 : 14,
                     fontWeight: FontWeight.w700,
                     color: scoreColor,
                   ),
@@ -214,13 +217,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // Progress Bar
+          SizedBox(height: isMobile ? 10 : 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: totalScore / 100,
-              minHeight: 10,
+              minHeight: isMobile ? 8 : 10,
               backgroundColor: const Color(0xFFF3F4F6),
               valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
             ),
@@ -232,8 +234,8 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Widget _buildGridStats() {
     final provider = widget.provider;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
-    // Helper to create grid items data
     final stats = [
       {'icon': Icons.school_rounded, 'val': provider.educationalProfile.length.toString(), 'label': 'Education', 'col': const Color(0xFF3B82F6)},
       {'icon': Icons.work_rounded, 'val': provider.professionalExperience.length.toString(), 'label': 'Experience', 'col': const Color(0xFF8B5CF6)},
@@ -249,29 +251,32 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         Text(
           'Quick Stats',
           style: GoogleFonts.poppins(
-            fontSize: 15,
+            fontSize: isMobile ? 13 : 15,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF111827),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isMobile ? 8 : 12),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 2.2, // Wider cards
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isMobile ? 3 : 2,
+            crossAxisSpacing: isMobile ? 8 : 12,
+            mainAxisSpacing: isMobile ? 8 : 12,
+            childAspectRatio: isMobile ? 3 : 2.5,
           ),
           itemCount: stats.length,
           itemBuilder: (ctx, i) {
             final s = stats[i];
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 6 : 12,
+                vertical: isMobile ? 3 : 4,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                 border: Border.all(color: Colors.grey.withOpacity(0.1)),
                 boxShadow: [
                   BoxShadow(
@@ -282,36 +287,25 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 ],
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: (s['col'] as Color).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                  Icon(s['icon'] as IconData, color: s['col'] as Color, size: isMobile ? 16 : 18),
+                  SizedBox(height: isMobile ? 2 : 4),
+                  Text(
+                    s['val'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 13 : 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF111827),
                     ),
-                    child: Icon(s['icon'] as IconData, color: s['col'] as Color, size: 18),
                   ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        s['val'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF111827),
-                        ),
-                      ),
-                      Text(
-                        s['label'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    s['label'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 8 : 10,
+                      color: const Color(0xFF6B7280),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -323,11 +317,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Widget _buildSectionBreakdown() {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -341,19 +336,19 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.listCheck, color: Color(0xFF1E3A8A), size: 16),
-              const SizedBox(width: 10),
+              FaIcon(FontAwesomeIcons.listCheck, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Completeness Breakdown',
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
+                  fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMobile ? 12 : 20),
           _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, const Color(0xFF3B82F6)),
           _buildProgressRow('Education', _scoreEducation(), _wEducation, const Color(0xFF8B5CF6)),
           _buildProgressRow('Prof. Profile', _scoreProfessionalProfile(), _wProfessionalProfile, const Color(0xFF10B981)),
@@ -367,21 +362,21 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget _buildProgressRow(String label, int got, int max, Color color) {
     final percent = max == 0 ? 0.0 : (got / max);
     final isComplete = got == max && max > 0;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: isMobile ? 10 : 16),
       child: Row(
         children: [
-          // Circular status indicator
           Container(
-            width: 8,
-            height: 8,
+            width: isMobile ? 6 : 8,
+            height: isMobile ? 6 : 8,
             decoration: BoxDecoration(
               color: isComplete ? color : Colors.grey.withOpacity(0.3),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isMobile ? 8 : 12),
 
           Expanded(
             child: Column(
@@ -393,7 +388,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     Text(
                       label,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
+                        fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF374151),
                       ),
@@ -401,18 +396,18 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     Text(
                       '${(percent * 100).toInt()}%',
                       style: GoogleFonts.poppins(
-                        fontSize: 11,
+                        fontSize: isMobile ? 9 : 11,
                         fontWeight: FontWeight.w600,
                         color: isComplete ? color : const Color(0xFF9CA3AF),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: isMobile ? 4 : 6),
                 Stack(
                   children: [
                     Container(
-                      height: 6,
+                      height: isMobile ? 4 : 6,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(3),
@@ -421,7 +416,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     FractionallySizedBox(
                       widthFactor: percent.clamp(0.0, 1.0),
                       child: Container(
-                        height: 6,
+                        height: isMobile ? 4 : 6,
                         decoration: BoxDecoration(
                           color: color,
                           borderRadius: BorderRadius.circular(3),
@@ -441,12 +436,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget _buildSkillsOverview() {
     final provider = widget.provider;
     if (provider.skillsList.isEmpty) return const SizedBox();
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -460,34 +456,37 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.diamond, color: Color(0xFF1E3A8A), size: 16),
-              const SizedBox(width: 10),
+              FaIcon(FontAwesomeIcons.diamond, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Top Skills',
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
+                  fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 10 : 16),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: isMobile ? 6 : 8,
+            runSpacing: isMobile ? 6 : 8,
             children: widget.provider.skillsList.take(8).map((skill) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 8 : 12,
+                  vertical: isMobile ? 4 : 7,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF), // Light Blue bg
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                   border: Border.all(color: const Color(0xFFBFDBFE)),
                 ),
                 child: Text(
                   skill,
                   style: GoogleFonts.poppins(
-                    fontSize: 11,
+                    fontSize: isMobile ? 9 : 11,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1E40AF),
                   ),
@@ -497,11 +496,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
           ),
           if (widget.provider.skillsList.length > 8)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: EdgeInsets.only(top: isMobile ? 8 : 12),
               child: Text(
                 '+ ${widget.provider.skillsList.length - 8} more skills hidden',
                 style: GoogleFonts.poppins(
-                  fontSize: 11,
+                  fontSize: isMobile ? 9 : 11,
                   color: const Color(0xFF6B7280),
                   fontStyle: FontStyle.italic,
                 ),
@@ -514,12 +513,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Widget _buildPersonalDetailsCard() {
     final provider = widget.provider;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -533,19 +533,19 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              const FaIcon(FontAwesomeIcons.idCard, color: Color(0xFF1E3A8A), size: 16),
-              const SizedBox(width: 10),
+              FaIcon(FontAwesomeIcons.idCard, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Contact Info',
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
+                  fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMobile ? 12 : 20),
 
           _buildInfoRow(FontAwesomeIcons.envelope, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
           _buildInfoRow(FontAwesomeIcons.phoneFlip, 'Phone', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
@@ -558,7 +558,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             Text(
               'About Me',
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: isMobile ? 11 : 13,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151),
               ),
@@ -568,13 +568,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               duration: const Duration(milliseconds: 300),
               firstChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.poppins(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               secondChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.poppins(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
               ),
               crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             ),
@@ -588,7 +588,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     Text(
                       _isExpanded ? 'Show Less' : 'Read Full Bio',
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
+                        fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF3B82F6),
                       ),
@@ -596,7 +596,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     const SizedBox(width: 4),
                     Icon(
                       _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                      size: 16,
+                      size: isMobile ? 14 : 16,
                       color: const Color(0xFF3B82F6),
                     )
                   ],
@@ -610,20 +610,21 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: isMobile ? 10 : 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(isMobile ? 6 : 8),
             decoration: BoxDecoration(
               color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
             ),
-            child: FaIcon(icon, color: const Color(0xFF6B7280), size: 12),
+            child: FaIcon(icon, color: const Color(0xFF6B7280), size: isMobile ? 10 : 12),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: isMobile ? 8 : 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -631,7 +632,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 Text(
                   label,
                   style: GoogleFonts.poppins(
-                    fontSize: 10,
+                    fontSize: isMobile ? 9 : 10,
                     color: const Color(0xFF9CA3AF),
                     height: 1.0,
                   ),
@@ -640,7 +641,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 Text(
                   value,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: isMobile ? 10 : 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1F2937),
                   ),

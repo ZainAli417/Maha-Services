@@ -137,24 +137,21 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     final isWide = size.width > 900;
 
     return Scaffold(
-      body: Container(
-
-        child: Column(
-          children: [
-            const HeaderNav(),
-            Expanded(
-              child: Row(
-                children: [
-                  if (isWide) Expanded(flex: 5, child: leftPanel(context)),
-                  Expanded(
-                    flex: isWide ? 5 : 1,
-                    child: _buildFormPanel(isWide),
-                  ),
-                ],
-              ),
+      body: Column(
+        children: [
+          const HeaderNav(),
+          Expanded(
+            child: Row(
+              children: [
+                if (isWide) Expanded(flex: 5, child: leftPanel(context)),
+                Expanded(
+                  flex: isWide ? 5 : 1,
+                  child: _buildFormPanel(isWide),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

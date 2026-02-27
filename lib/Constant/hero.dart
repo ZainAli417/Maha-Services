@@ -205,7 +205,7 @@ class _HeroSectionState extends State<HeroSection>
     final spacing4 = isMobile ? 20.0 : 40.0;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         // Animated badge
         RepaintBoundary(
@@ -467,6 +467,7 @@ class _HeroSectionState extends State<HeroSection>
               ).createShader(bounds),
               child: Text(
                 headline,
+                textAlign: isMobile ? TextAlign.center : TextAlign.start,
                 style: headlineTextStyle.copyWith(color: Colors.white),
               ),
             ),
@@ -495,10 +496,11 @@ class _HeroSectionState extends State<HeroSection>
       child: Container(
         padding: EdgeInsets.only(left: isMobile ? 0 : 4),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
           children: [
             Text(
               'Revolutionize your talent acquisition with our cutting-edge platform that seamlessly connects exceptional candidates with forward-thinking recruiters.',
+              textAlign: isMobile ? TextAlign.center : TextAlign.start,
               style: descriptionTextStyle.copyWith(
                 color: widget.isDarkMode
                     ? const Color(0xFFCBD5E1)
@@ -507,7 +509,7 @@ class _HeroSectionState extends State<HeroSection>
             ),
             SizedBox(height: isMobile ? 10 : 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
               children: [
                 Icon(
                   Icons.verified_rounded,
@@ -574,7 +576,7 @@ class _HeroSectionState extends State<HeroSection>
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: features.asMap().entries.map((entry) {
             final feature = entry.value;
@@ -641,7 +643,7 @@ class _HeroSectionState extends State<HeroSection>
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
           children: [
             Expanded(
               child: _EnhancedButton(
