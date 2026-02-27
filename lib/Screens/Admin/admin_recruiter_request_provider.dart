@@ -64,7 +64,7 @@ class AdminProvider extends ChangeNotifier {
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
-          
+
           uid = userCredential.user!.uid;
           await tempAuth.signOut();
 
@@ -95,7 +95,7 @@ class AdminProvider extends ChangeNotifier {
         _message = _editingUserId == null
             ? 'User added successfully'
             : 'User updated successfully';
-        
+
         // Remove from cache if edited
         _candidateCache.remove(uid);
         _recruiterCache.remove(uid);
@@ -570,13 +570,13 @@ class AdminProvider extends ChangeNotifier {
           } else if (entry is DocumentReference) {
             rawUid = entry.id;
           }
-          
+
           if (rawUid.isEmpty || rawUid.toLowerCase() == 'null') continue;
-          
+
           // Normalize ID to extract UID from paths like "Job_Seeker/XYZ"
           final uid = _lastSegment(rawUid);
           if (uid.isEmpty || uid.toLowerCase() == 'null') continue;
-          
+
           final key = uid.toLowerCase();
           if (!uniqueCandidates.containsKey(key)) {
             uniqueCandidates[key] = uid;
@@ -635,15 +635,15 @@ class AdminProvider extends ChangeNotifier {
 
 
 
-    // ============================================================================
+  // ============================================================================
   // BATCH FETCH CANDIDATES (Parallel + Cached)
   // ============================================================================
 
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
-    List<String> candidateIds, {
-    Map<String, Map<String, dynamic>>? hints,
-    int batchSize = 10,
-  }) async {
+      List<String> candidateIds, {
+        Map<String, Map<String, dynamic>>? hints,
+        int batchSize = 10,
+      }) async {
     if (candidateIds.isEmpty) return [];
 
     final uncachedIds = <String>[];
@@ -700,11 +700,11 @@ class AdminProvider extends ChangeNotifier {
           final userData = _normalizeMap(jobSeekerData['user_data'] ?? {});
 
           final personalProfile = _normalizeMap(
-            jobSeekerData['personalProfile'] ??
-            jobSeekerData['personal_profile'] ??
-            userData['personalProfile'] ??
-            userData['personal_profile'] ??
-            {}
+              jobSeekerData['personalProfile'] ??
+                  jobSeekerData['personal_profile'] ??
+                  userData['personalProfile'] ??
+                  userData['personal_profile'] ??
+                  {}
           );
 
           final name = personalProfile['name']?.toString() ??
@@ -754,7 +754,7 @@ class AdminProvider extends ChangeNotifier {
           debugPrint('⚠️ Candidate $id not found in Job_Seeker collection. Creating fallback.');
           final hint = _normalizeMap(hints?[id]);
           final phone = (hint['phone'] ?? hint['contactNumber'] ?? hint['contact_number'] ?? '').toString();
-          
+
           final fallback = {
             'uid': id,
             'name': hint['name'] ?? hint['fullName'] ?? 'Unknown User',
@@ -1051,18 +1051,18 @@ class AdminProvider extends ChangeNotifier {
           final userData = _normalizeMap(data['user_data']);
 
           final personalProfile = _normalizeMap(
-            data['personalProfile'] ??
-            data['personal_profile'] ??
-            userData['personalProfile'] ??
-            userData['personal_profile'] ??
-            _normalizeMap(data['user_Account_Data'] ?? {})['personalProfile'] ??
-            {}
+              data['personalProfile'] ??
+                  data['personal_profile'] ??
+                  userData['personalProfile'] ??
+                  userData['personal_profile'] ??
+                  _normalizeMap(data['user_Account_Data'] ?? {})['personalProfile'] ??
+                  {}
           );
 
           final name = personalProfile['name']?.toString() ??
-                       data['name']?.toString() ??
-                       userData['name']?.toString() ??
-                       'Unknown Job Seeker';
+              data['name']?.toString() ??
+              userData['name']?.toString() ??
+              'Unknown Job Seeker';
 
           // Cache it
           _candidateCache[uid] = _CacheEntry({'name': name}, DateTime.now());
