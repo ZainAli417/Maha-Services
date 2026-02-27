@@ -231,10 +231,8 @@ class _LandingPageState extends State<LandingPage>
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [_buildEnhancedLogo(), _buildThemeToggle()],
+                    children: [_buildEnhancedLogo(),   _buildNavigation(), _buildThemeToggle()],
                   ),
-                  const SizedBox(height: 8),
-                  _buildNavigation(),
                 ],
               )
             : Row(
@@ -371,7 +369,7 @@ class _LandingPageState extends State<LandingPage>
             ),
             const SizedBox(width: 6),
 
-            _buildNavItem('Pricing', Icons.payments_rounded),
+            _buildNavItem(title: 'ViewPricing',icon: Icons.payments_outlined,route: '/pricing', isActive: false)
 
           ],
         ),
@@ -391,7 +389,8 @@ class _LandingPageState extends State<LandingPage>
         // SizedBox(width: navSpacing),
         // _buildNavItem('Workflow', Icons.account_tree_rounded),
         // SizedBox(width: navSpacing),
-        _buildNavItem('Pricing', Icons.payments_rounded),
+        _buildNavItem(title: 'View Pricing',icon: Icons.payments_outlined,route: '/pricing', isActive: false),
+
         SizedBox(width: isTablet ? 20 : 40),
         _AnimatedButton(
           onPressed: () => context.go('/login'),
@@ -478,42 +477,83 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
-  Widget _buildNavItem(String title, IconData icon) {
+
+
+  Widget _buildNavItem({
+    required String title,
+    required IconData icon,
+    required String route,
+    bool isActive = false,
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final iconSize = isTablet ? 14.0 : 18.0;
-    final fontSize = isTablet ? 13.0 : 15.0;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          context.go('/pricing');
-        },
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: iconSize,
-              color: isDarkMode
-                  ? const Color(0xFF94A3B8)
-                  : const Color(0xFF6B7280),
-            ),
-            SizedBox(width: isTablet ? 4 : 6),
-            Text(
-              title,
-              style: _navItemStyle.copyWith(
-                fontSize: fontSize,
-                color: isDarkMode
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF6B7280),
+    // Design Constants
+    final primaryColor = const Color(0xFF6366F1); // Modern Indigo
+    final inactiveColor = isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: StatefulBuilder( // Using StatefulBuilder for localized hover state
+        builder: (context, setItemState) {
+          bool isHovered = false;
+
+          return MouseRegion(
+            onEnter: (_) => setItemState(() => isHovered = true),
+            onExit: (_) => setItemState(() => isHovered = false),
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => context.go(route),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 10 : 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  // Sublte "Ghost" background on hover or active
+                  color: isActive
+                      ? primaryColor.withOpacity(0.08)
+                      : (isHovered ? primaryColor.withOpacity(0.04) : Colors.transparent),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Animated Icon
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        icon,
+                        key: ValueKey(isActive),
+                        size: isTablet ? 16.0 : 20.0,
+                        color: isActive || isHovered ? primaryColor : inactiveColor,
+                      ),
+                    ),
+                    SizedBox(width: isTablet ? 6 : 10),
+                    // Responsive Text
+                    Text(
+                      title,
+                      style: GoogleFonts.inter( // Using Inter for better web readability
+                        fontSize: isTablet ? 13.0 : 14.5,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                        color: isActive || isHovered
+                            ? (isDarkMode ? Colors.white : const Color(0xFF1E293B))
+                            : inactiveColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
+
+
+
 
   Widget _buildThemeToggle() {
     final screenWidth = MediaQuery.of(context).size.width;

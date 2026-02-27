@@ -108,7 +108,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                                 const SizedBox(height: 80),
                                 _buildFAQSection(isMobile),
                                 const SizedBox(height: 80),
-                                _buildFooter(isMobile),
+                                _buildFooter(),
                               ],
                             ),
                           ),
@@ -839,249 +839,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildFooter(bool isMobile) {
-    return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors:  [const Color(0xFF1F2937), const Color(0xFF111827)],
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildStatsShowcase(isMobile),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 24 : 50,
-                vertical: 40,
-              ),
-              child: Column(
-                children: [
-                  isMobile
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFooterBrand(),
-                            const SizedBox(height: 48),
-                            _buildFooterColumn('For Candidates', [
-                              'Create Profile',
-                              'Build CV',
-                              'Browse Jobs',
-                              'Career Resources',
-                            ]),
-                            const SizedBox(height: 32),
-                            _buildFooterColumn('For Recruiters', [
-                              'Find Talent',
-                              'Submit Requests',
-                              'Pricing Plans',
-                              'Success Stories',
-                            ]),
-                            const SizedBox(height: 32),
-                            _buildFooterColumn('Company', [
-                              'About Us',
-                              'Contact',
-                              'Careers',
-                              'Privacy Policy',
-                            ]),
-                          ],
-                        )
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 2, child: _buildFooterBrand()),
-                            const SizedBox(width: 80),
-                            Expanded(
-                              child: _buildFooterColumn('For Candidates', [
-                                'Create Profile',
-                                'Build CV',
-                                'Browse Jobs',
-                                'Career Resources',
-                              ]),
-                            ),
-                            const SizedBox(width: 60),
-                            Expanded(
-                              child: _buildFooterColumn('For Recruiters', [
-                                'Find Talent',
-                                'Submit Requests',
-                                'Pricing Plans',
-                                'Success Stories',
-                              ]),
-                            ),
-                            const SizedBox(width: 60),
-                            Expanded(
-                              child: _buildFooterColumn('Company', [
-                                'About Us',
-                                'Contact',
-                                'Careers',
-                                'Privacy Policy',
-                              ]),
-                            ),
-                          ],
-                        ),
-                ],
-              ),
-            ),
-            _buildFooterBottom(isMobile),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterBrand() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MAHA SERVICES',
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF9CA3AF),
-            fontSize: 14,
-            height: 1.8,
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2)),
-            const SizedBox(width: 12),
-            _buildSocialIcon(Icons.link, const Color(0xFF0A66C2)),
-            const SizedBox(width: 12),
-            _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon, Color color) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Icon(icon, color: color, size: 20),
-      ),
-    );
-  }
-
-  Widget _buildFooterColumn(String title, List<String> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 20),
-        ...items.map(
-              (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Row(
-                children: [
-                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF6366F1), size: 12),
-                  const SizedBox(width: 8),
-                  Text(
-                    item,
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFooterBottom(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 24 : 80,
-        vertical: 30,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFF374151), width: 1)),
-      ),
-      child: isMobile
-          ? Column(
-              children: [
-                Text(
-                  '© 2025 Maha Services. All rights reserved.',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 13,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                _buildAIBadge(),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '© 2025 Maha Services. All rights reserved.',
-                  style: GoogleFonts.poppins(color: const Color(0xFF6B7280), fontSize: 13),
-                ),
-                _buildAIBadge(),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildAIBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.psychology_rounded, color: Color(0xFF6366F1), size: 16),
-          const SizedBox(width: 6),
-          Text(
-            'Powered by AI',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFF6366F1),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFAQSection(bool isMobile) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 800),
@@ -1161,23 +918,192 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildStatsShowcase(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: 60,
-        horizontal: isMobile ? 24 : 80,
+  Widget _buildFooter() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+
+    return RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [const Color(0xFF1F2937), const Color(0xFF111827)],
+          ),
+        ),
+        child: Column(
+          children: [
+            _buildStatsShowcase(),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 20 : (isTablet ? 30 : 50),
+                vertical: 10,
+              ),
+              child: Column(
+                children: [
+                  isMobile
+                      ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFooterBrand(),
+                      // const SizedBox(height: 24),
+                      // _buildFooterColumn('For Candidates', [
+                      //   'Create Profile',
+                      //   'Build CV',
+                      //   'Browse Jobs',
+                      //   'Career Resources',
+                      // ]),
+                      // const SizedBox(height: 20),
+                      // _buildFooterColumn('For Recruiters', [
+                      //   'Find Talent',
+                      //   'Submit Requests',
+                      //   'Pricing Plans',
+                      //   'Success Stories',
+                      // ]),
+                      // const SizedBox(height: 20),
+                      // _buildFooterColumn('Company', [
+                      //   'About Us',
+                      //   'Contact',
+                      //   'Careers',
+                      //   'Privacy Policy',
+                      // ]),
+                    ],
+                  )
+                      : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: _buildFooterBrand()),
+                      // SizedBox(width: isTablet ? 30 : 80),
+                      // Expanded(
+                      //   child: _buildFooterColumn('For Candidates', [
+                      //     'Create Profile',
+                      //     'Build CV',
+                      //     'Browse Jobs',
+                      //     'Career Resources',
+                      //   ]),
+                      // ),
+                      // SizedBox(width: isTablet ? 20 : 60),
+                      // Expanded(
+                      //   child: _buildFooterColumn('For Recruiters', [
+                      //     'Find Talent',
+                      //     'Submit Requests',
+                      //     'Pricing Plans',
+                      //     'Success Stories',
+                      //   ]),
+                      // ),
+                      // SizedBox(width: isTablet ? 20 : 60),
+                      // Expanded(
+                      //   child: _buildFooterColumn('Company', [
+                      //     'About Us',
+                      //     'Contact',
+                      //     'Careers',
+                      //     'Privacy Policy',
+                      //   ]),
+                      // ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            _buildFooterBottom(),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildFooterBrand() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final titleFontSize = isMobile ? 20.0 : 28.0;
+    final descFontSize = isMobile ? 12.0 : 14.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'MAHA SERVICES',
+          style: GoogleFonts.poppins(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: isMobile ? 10 : 16),
+        Text(
+          'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
+          style: GoogleFonts.poppins(
+            color: const Color(0xFF9CA3AF),
+            fontSize: descFontSize,
+            height: 1.8,
+          ),
+        ),
+        SizedBox(height: isMobile ? 16 : 24),
+        Row(
+          children: [
+            _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2)),
+            const SizedBox(width: 12),
+            _buildSocialIcon(Icons.link, const Color(0xFF0A66C2)),
+            const SizedBox(width: 12),
+            _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialIcon(IconData icon, Color color) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final pad = isMobile ? 8.0 : 10.0;
+    final iconSize = isMobile ? 16.0 : 20.0;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Container(
+        padding: EdgeInsets.all(pad),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Icon(icon, color: color, size: iconSize),
+      ),
+    );
+  }
+
+  Widget _buildStatsShowcase() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final vPad = isMobile ? 24.0 : 50.0;
+    final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
+    final titleFontSize = isMobile ? 24.0 : (isTablet ? 32.0 : 42.0);
+    final subtitleFontSize = isMobile ? 13.0 : 18.0;
+    final provenFontSize = isMobile ? 10.0 : 12.0;
+    final statSpacing = isMobile ? 12.0 : (isTablet ? 20.0 : 50.0);
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: vPad, horizontal: hPad),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors:  [const Color(0x00f9fafb), const Color(0x00f9fafb), const Color(0x00f9fafb)],
+          colors: [
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+            const Color(0x00f9fafb),
+          ],
         ),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 12 : 20,
+              vertical: isMobile ? 5 : 8,
+            ),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(50),
@@ -1186,44 +1112,102 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             child: Text(
               '⚡ PROVEN SUCCESS',
               style: GoogleFonts.poppins(
-                fontSize: 12,
+                fontSize: provenFontSize,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
                 letterSpacing: 1.5,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: isMobile ? 12 : 20),
           Text(
             'Trusted by Industry Leaders',
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: isMobile ? 28 : 42,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: Colors.white,
-              height: 1.2,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isMobile ? 8 : 12),
           Text(
             'Real numbers, real impact - see how we transform hiring',
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: isMobile ? 14 : 18,
+              fontSize: subtitleFontSize,
               color: Colors.white.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 60),
-          Wrap(
-            spacing: 24,
-            runSpacing: 24,
+          SizedBox(height: isMobile ? 24 : 70),
+          isMobile
+              ? Wrap(
+            spacing: statSpacing,
+            runSpacing: statSpacing,
             alignment: WrapAlignment.center,
             children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded, isMobile),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded, isMobile),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded, isMobile),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded, isMobile),
+              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+            ],
+          )
+              : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildSuccessMetric(String value, String label, IconData icon) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final hPad = isMobile ? 14.0 : 24.0;
+    final vPad = isMobile ? 10.0 : 16.0;
+    final iconSize = isMobile ? 18.0 : 24.0;
+    final valueFontSize = isMobile ? 18.0 : 24.0;
+    final labelFontSize = isMobile ? 10.0 : 12.0;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white.withOpacity(0.6), size: iconSize),
+          SizedBox(width: isMobile ? 8 : 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: valueFontSize,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: labelFontSize,
+                  color: Colors.white.withOpacity(0.6),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ],
@@ -1231,40 +1215,96 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildSuccessMetric(String value, String label, IconData icon, bool isMobile) {
+  Widget _buildFooterBottom() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final hPad = isMobile ? 16.0 : (isTablet ? 40.0 : 80.0);
+    final vPad = isMobile ? 16.0 : 30.0;
+    final copyrightFontSize = isMobile ? 11.0 : 13.0;
+    final aiFontSize = isMobile ? 10.0 : 12.0;
+
     return Container(
-      width: isMobile ? (MediaQuery.of(context).size.width - 72) / 2 : null,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFF374151), width: 1)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: isMobile
+          ? Column(
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.6), size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Text(
+            '© 2026 Maha Services. All rights reserved.',
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF6B7280),
+              fontSize: copyrightFontSize,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
+                Icon(
+                  Icons.psychology_rounded,
+                  color: Color(0xFF6366F1),
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  value,
+                  'Powered by AI',
                   style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 20 : 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: const Color(0xFF6366F1),
+                    fontSize: aiFontSize,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      )
+          : Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '© 2025 Maha Services. All rights reserved.',
+            style: GoogleFonts.poppins(
+              color: const Color(0xFF6B7280),
+              fontSize: copyrightFontSize,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.psychology_rounded,
+                  color: Color(0xFF6366F1),
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  label,
+                  'Powered by AI',
                   style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: Colors.white.withOpacity(0.6),
-                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6366F1),
+                    fontSize: aiFontSize,
+                    fontWeight: FontWeight.w600,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -1273,6 +1313,8 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       ),
     );
   }
+
+
 
 }
 

@@ -23,6 +23,14 @@ class _HeroSectionState extends State<HeroSection>
   late Timer _lottieTimer;
   int _currentLottieIndex = 0;
 
+  // Cached text styles for performance
+  late TextStyle _badgeTextStyle;
+  late TextStyle _headlineTextStyle;
+  late TextStyle _descriptionTextStyle;
+  late TextStyle _subDescriptionTextStyle;
+  late TextStyle _featureTextStyle;
+  late TextStyle _buttonTextStyle;
+
   final List<Map<String, String>> _lottieData = const [
     {
       'title': 'Step 1: Candidates Apply for Jobs',
@@ -197,7 +205,7 @@ class _HeroSectionState extends State<HeroSection>
     final spacing4 = isMobile ? 20.0 : 40.0;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Animated badge
         RepaintBoundary(
@@ -499,6 +507,7 @@ class _HeroSectionState extends State<HeroSection>
             ),
             SizedBox(height: isMobile ? 10 : 16),
             Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Icon(
                   Icons.verified_rounded,
@@ -528,8 +537,8 @@ class _HeroSectionState extends State<HeroSection>
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     final featureTextStyle = _getFeatureTextStyle(isMobile);
-    final featureIconSize = isMobile ? 14.0 : 18.0;
-    final featureHPad = isMobile ? 10.0 : 16.0;
+    final featureIconSize = isMobile ? 13.0 : 18.0;
+    final featureHPad = isMobile ? 8.0 : 16.0;
     final featureVPad = isMobile ? 6.0 : 10.0;
 
     final slideAnimation = Tween<Offset>(
@@ -542,21 +551,21 @@ class _HeroSectionState extends State<HeroSection>
       ),
     );
 
-    const features = [
+    final features = [
       {
         'icon': Icons.psychology_rounded,
-        'text': 'AI-Powered Matching',
-        'color': Color(0xFF8B5CF6),
+        'text': 'AI-Powered',
+        'color': const Color(0xFF8B5CF6),
       },
       {
         'icon': Icons.speed_rounded,
         'text': '3x Faster Hiring',
-        'color': Color(0xFF10B981),
+        'color': const Color(0xFF10B981),
       },
       {
         'icon': Icons.security,
         'text': 'Enterprise Security',
-        'color': Color(0xFFF59E0B),
+        'color': const Color(0xFFF59E0B),
       },
     ];
 
@@ -564,37 +573,47 @@ class _HeroSectionState extends State<HeroSection>
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
-        child: Wrap(
-          spacing: isMobile ? 6 : 12,
-          runSpacing: isMobile ? 6 : 12,
-          children: features.map((feature) {
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: features.asMap().entries.map((entry) {
+            final feature = entry.value;
             final color = feature['color'] as Color;
-            return Container(
-              padding: EdgeInsets.symmetric(horizontal: featureHPad, vertical: featureVPad),
-              decoration: BoxDecoration(
-                color: color.withOpacity(widget.isDarkMode ? 0.15 : 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    feature['icon'] as IconData,
-                    size: featureIconSize,
-                    color: color,
+            final isLast = entry.key == features.length - 1;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: featureHPad, vertical: featureVPad),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(widget.isDarkMode ? 0.15 : 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.3)),
                   ),
-                  SizedBox(width: isMobile ? 4 : 8),
-                  Text(
-                    feature['text'] as String,
-                    style: featureTextStyle.copyWith(
-                      color: widget.isDarkMode
-                          ? Colors.white
-                          : const Color(0xFF1F2937),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        feature['icon'] as IconData,
+                        size: featureIconSize,
+                        color: color,
+                      ),
+                      SizedBox(width: isMobile ? 4 : 8),
+                      Text(
+                        feature['text'] as String,
+                        style: featureTextStyle.copyWith(
+                          fontSize: isMobile ? 10.0 : 14.0,
+                          color: widget.isDarkMode
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                if (!isLast) SizedBox(width: isMobile ? 6 : 12),
+              ],
             );
           }).toList(),
         ),
@@ -621,57 +640,34 @@ class _HeroSectionState extends State<HeroSection>
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
-        child: isMobile
-            ? Column(
-                children: [
-                  _EnhancedButton(
-                    onPressed: () => context.go('/register'),
-                    isPrimary: true,
-                    icon: Icons.person_add_rounded,
-                    label: 'Join as Candidate',
-                    isDarkMode: widget.isDarkMode,
-                    textStyle: buttonTextStyle,
-                    isMobile: true,
-                  ),
-                  const SizedBox(height: 10),
-                  _EnhancedButton(
-                    onPressed: () => context.go('/register'),
-                    isPrimary: false,
-                    icon: Icons.business_center_rounded,
-                    label: 'I\'m a Recruiter',
-                    isDarkMode: widget.isDarkMode,
-                    textStyle: buttonTextStyle,
-                    isMobile: true,
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Expanded(
-                    child: _EnhancedButton(
-                      onPressed: () => context.go('/register'),
-                      isPrimary: true,
-                      icon: Icons.person_add_rounded,
-                      label: 'Join as Candidate',
-                      isDarkMode: widget.isDarkMode,
-                      textStyle: buttonTextStyle,
-                      isMobile: false,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _EnhancedButton(
-                      onPressed: () => context.go('/register'),
-                      isPrimary: false,
-                      icon: Icons.business_center_rounded,
-                      label: 'I\'m a Recruiter',
-                      isDarkMode: widget.isDarkMode,
-                      textStyle: buttonTextStyle,
-                      isMobile: false,
-                    ),
-                  ),
-                ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: _EnhancedButton(
+                onPressed: () => context.go('/register'),
+                isPrimary: true,
+                icon: Icons.person_add_rounded,
+                label: 'I\'m a Candidate',
+                isDarkMode: widget.isDarkMode,
+                textStyle: buttonTextStyle,
+                isMobile: isMobile,
               ),
+            ),
+            SizedBox(width: isMobile ? 10 : 16),
+            Expanded(
+              child: _EnhancedButton(
+                onPressed: () => context.go('/register'),
+                isPrimary: false,
+                icon: Icons.business_center_rounded,
+                label: 'I\'m a Recruiter',
+                isDarkMode: widget.isDarkMode,
+                textStyle: buttonTextStyle,
+                isMobile: isMobile,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
