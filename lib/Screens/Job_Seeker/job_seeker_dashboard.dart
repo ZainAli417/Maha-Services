@@ -352,16 +352,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (prov.applications.isNotEmpty) ...[
-                                  _KpiStrip(
-                                    total: analytics['totalApplications'] as int,
-                                    stats: analytics['statusBreakdown']
-                                    as Map<String, dynamic>,
-                                    responseRate:
-                                    analytics['responseRate'] as double,
-                                    avgResponse:
-                                    analytics['averageResponseTime'] as int,
-                                    screenWidth: w,
-                                  ),
+
                                   SizedBox(height: isMobile ? 14 : 18),
                                   _SectionHead(
                                       icon: Icons.analytics_outlined,
@@ -1036,97 +1027,6 @@ class _AnalyticsCharts extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  KPI STRIP
 // ═══════════════════════════════════════════════════════════════════════════
-class _KpiStrip extends StatelessWidget {
-  final int total, avgResponse;
-  final Map<String, dynamic> stats;
-  final double responseRate, screenWidth;
-  const _KpiStrip({
-    required this.total, required this.stats,
-    required this.responseRate, required this.avgResponse,
-    required this.screenWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final items = [
-      _KD(Icons.inbox_rounded,         'Total',       total,                     _C.indigo,  _C.indigoLt),
-      _KD(Icons.check_circle_rounded,  'Accepted',    stats['accepted'] as int,  _C.emerald, _C.emeraldL),
-      _KD(Icons.star_rounded,          'Shortlisted', stats['shortlist'] as int, _C.violet,  _C.violetLt),
-      _KD(Icons.timelapse_rounded,     'Pending',     stats['pending']  as int,  _C.amber,   _C.amberLt),
-    ];
-
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: screenWidth < 500 ? 2 : 4,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio:  (screenWidth < 900 ? 1.6 : 1.8),
-      children: items.map((d) => _KpiCard(d: d)).toList(),
-    );
-  }
-}
-
-class _KD {
-  final IconData icon;
-  final String label;
-  final int value;
-  final Color accent, bg;
-  const _KD(this.icon, this.label, this.value, this.accent, this.bg);
-}
-
-class _KpiCard extends StatelessWidget {
-  final _KD d;
-  const _KpiCard({required this.d});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: _C.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _C.border),
-        boxShadow: const [
-          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                    color: d.bg, borderRadius: BorderRadius.circular(7)),
-                child: Icon(d.icon, color: d.accent, size: 15),
-              ),
-              Icon(Icons.trending_up_rounded,
-                  color: d.accent.withOpacity(0.3), size: 13),
-            ],
-          ),
-          TweenAnimationBuilder<int>(
-            tween: IntTween(begin: 0, end: d.value),
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.easeOutCubic,
-            builder: (_, v, __) =>
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('$v', style: _C.p(22, fw: FontWeight.w800)),
-                ),
-          ),
-          Text(d.label,
-              style: _C.p(10, color: _C.t2),
-              overflow: TextOverflow.ellipsis),
-        ],
-      ),
-    );
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  TREND CHART
