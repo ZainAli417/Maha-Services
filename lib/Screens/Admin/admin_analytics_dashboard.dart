@@ -105,13 +105,13 @@ class _AdminAnalyticsDashboardScreenState
     );
   }
   Widget _buildModernHeader(BuildContext context, AdminAnalyticsProvider prov) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
       height: 72,
       decoration: BoxDecoration(
         color: Colors.white,
-
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: Row(
         children: [
           Container(
@@ -127,29 +127,32 @@ class _AdminAnalyticsDashboardScreenState
             ),
           ),
           const SizedBox(width: 16),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Insights Dashboard',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0F172A),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Insights Dashboard',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 16 : 20,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
-              ),
-              Text(
-                'View Your Platform Performance at a Glance',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF64748B),
+                Text(
+                  'View Your Platform Performance at a Glance',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64748B),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           _BarBtn(
               icon: Icons.refresh_rounded,
               onTap: prov.refresh,
@@ -253,12 +256,12 @@ class _MainContent extends StatelessWidget {
             ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(flex: 3, child: _SkillsChart(prov: prov)),
           const SizedBox(width: 20),
-          Expanded(flex: 2, child: _TopRecruiters(prov: prov)),
+          // Expanded(flex: 2, child: _TopRecruiters(prov: prov)),
         ])
             : Column(children: [
           _SkillsChart(prov: prov),
-          const SizedBox(height: 20),
-          _TopRecruiters(prov: prov),
+          // const SizedBox(height: 20),
+          // _TopRecruiters(prov: prov),
         ]),
         const SizedBox(height: 28),
 
@@ -323,18 +326,24 @@ class _KpiGrid extends StatelessWidget {
         }).toList(),
       );
     }
-    return GridView.count(
+
+    // Grid for Mobile/Small Screens
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      childAspectRatio: 1.65,
-      children: items.map((d) => _KpiCard(d: d)).toList(),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        // Increased height ratio to accommodate content without overflow
+        // A lower number here (e.g., 1.1) makes the card taller.
+        childAspectRatio: 1.4,
+      ),
+      itemBuilder: (context, index) => _KpiCard(d: items[index]),
     );
   }
 }
-
 class _KD {
   final IconData icon;
   final String label, sub;
@@ -352,8 +361,12 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect if we are on a small screen to reduce vertical footprint
+    final bool isSmall = MediaQuery.of(context).size.width < 400;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      // Reduced padding for mobile (20 -> 12/16)
+      padding: EdgeInsets.all(isSmall ? 14 : 20),
       decoration: BoxDecoration(
         color: _C.surface,
         borderRadius: BorderRadius.circular(16),
@@ -365,40 +378,45 @@ class _KpiCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // Prevents the column from expanding
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(9),
+                // Scaled down icon container for mobile
+                padding: EdgeInsets.all(isSmall ? 7 : 9),
                 decoration: BoxDecoration(
                     color: d.bg, borderRadius: BorderRadius.circular(10)),
-                child: Icon(d.icon, color: d.accent, size: 18),
+                child: Icon(d.icon, color: d.accent, size: isSmall ? 16 : 18),
               ),
               Icon(Icons.trending_up_rounded,
                   color: d.accent.withOpacity(0.35), size: 16),
             ],
           ),
-          const SizedBox(height: 14),
+          // Reduced height spacing for mobile
+          SizedBox(height: isSmall ? 10 : 14),
           TweenAnimationBuilder<int>(
             tween: IntTween(begin: 0, end: d.value),
             duration: const Duration(milliseconds: 1400),
             curve: Curves.easeOutCubic,
             builder: (_, v, __) =>
-                Text(_fmt(v), style: _C.p(26, fw: FontWeight.w800)),
+                Text(_fmt(v), style: _C.p(isSmall ? 22 : 26, fw: FontWeight.w800)),
           ),
-          const SizedBox(height: 3),
-          Text(d.label, style: _C.p(12, color: _C.t2)),
           const SizedBox(height: 2),
-          Text(d.sub,
-              style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
-              overflow: TextOverflow.ellipsis),
+          Text(d.label, style: _C.p(11, color: _C.t2)),
+          const SizedBox(height: 1),
+          Text(
+            d.sub,
+            style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1, // Strict single line to prevent vertical overflow
+          ),
         ],
       ),
     );
   }
 }
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  USER BREAKDOWN ROW
 // ═══════════════════════════════════════════════════════════════════════════
@@ -480,16 +498,41 @@ class _UserBreakdown extends StatelessWidget {
     );
   }
 }
-
-class _UD {
-  final String label;
-  final int value, total;
-  final IconData icon;
-  final Color accent, bg;
-  const _UD(this.label, this.value, this.icon, this.accent, this.bg,
-      this.total);
+// 1. A wrapper to lay them out as compact cards
+Widget _buildUserStatsGrid(List<_UD> stats) {
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    // Using a tight cross-axis count to keep cards compact
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2, // Two cards per row
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      mainAxisExtent: 90, // Strict height for compactness
+    ),
+    itemCount: stats.length,
+    itemBuilder: (context, index) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: _UserTile(d: stats[index]),
+      );
+    },
+  );
 }
 
+// 2. Updated _UserTile (Kept exactly as requested, just minor spacing fix)
 class _UserTile extends StatelessWidget {
   final _UD d;
   const _UserTile({required this.d});
@@ -498,6 +541,7 @@ class _UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final pct = d.total > 0 ? (d.value / d.total).clamp(0.0, 1.0) : 0.0;
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center, // Added for compact vertical centering
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -515,30 +559,37 @@ class _UserTile extends StatelessWidget {
                 children: [
                   Text(d.label,
                       style: _C.p(11, fw: FontWeight.w500, color: _C.t2)),
-                  Text('${d.value}', style: _C.p(18, fw: FontWeight.w800)),
+                  Text('${d.value}', style: _C.p(16, fw: FontWeight.w800)), // Slightly smaller for compact
                 ],
               ),
             ),
             Text('${(pct * 100).toStringAsFixed(0)}%',
-                style: _C.p(11, color: d.accent)),
-            SizedBox(width: 20,),
-
+                style: _C.p(11, color: d.accent, fw: FontWeight.w700)),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10), // Spacing before progress bar
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: pct,
             backgroundColor: d.bg,
             valueColor: AlwaysStoppedAnimation(d.accent),
-            minHeight: 5,
+            minHeight: 4, // Slightly thinner for "Compact" look
           ),
         ),
       ],
     );
   }
 }
+class _UD {
+  final String label;
+  final int value, total;
+  final IconData icon;
+  final Color accent, bg;
+  const _UD(this.label, this.value, this.icon, this.accent, this.bg,
+      this.total);
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  SKILLS BAR CHART
@@ -671,90 +722,90 @@ class _SkillsChart extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  TOP RECRUITERS
 // ═══════════════════════════════════════════════════════════════════════════
-class _TopRecruiters extends StatelessWidget {
-  final AdminAnalyticsProvider prov;
-  const _TopRecruiters({required this.prov});
-
-  static const _ac = [_C.indigo, _C.teal, _C.emerald, _C.amber, _C.violet];
-
-  @override
-  Widget build(BuildContext context) {
-    final tops = prov.topRecruiters;
-    final keys = tops.keys.toList();
-    final maxV =
-    tops.values.isNotEmpty ? tops.values.reduce((a, b) => a > b ? a : b) : 1;
-
-    return _Card(
-      height: 370,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _CardHead(
-              icon: Icons.leaderboard_rounded,
-              title: 'Top Recruiters',
-              sub: 'By request volume'),
-          const SizedBox(height: 20),
-          Expanded(
-            child: tops.isEmpty
-                ? _Empty(
-                icon: Icons.person_search_rounded,
-                label: 'No recruiter activity yet')
-                : ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: keys.length,
-              itemBuilder: (_, i) {
-                final email = keys[i];
-                final count = tops[email]!;
-                final pct = count / maxV;
-                final col = _ac[i % _ac.length];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 26,
-                            height: 26,
-                            decoration: BoxDecoration(
-                                color: col.withOpacity(0.1),
-                                shape: BoxShape.circle),
-                            alignment: Alignment.center,
-                            child: Text('${i + 1}',
-                                style: _C.p(10, color: col)),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(email,
-                                style: _C.p(12, color: _C.t1),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                          const SizedBox(width: 8),
-                          _Chip(label: '$count req', color: col, tiny: true),
-                        ],
-                      ),
-                      const SizedBox(height: 7),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: pct,
-                          backgroundColor: col.withOpacity(0.08),
-                          valueColor: AlwaysStoppedAnimation(col),
-                          minHeight: 4,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// class _TopRecruiters extends StatelessWidget {
+//   final AdminAnalyticsProvider prov;
+//   const _TopRecruiters({required this.prov});
+//
+//   static const _ac = [_C.indigo, _C.teal, _C.emerald, _C.amber, _C.violet];
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final tops = prov.topRecruiters;
+//     final keys = tops.keys.toList();
+//     final maxV =
+//     tops.values.isNotEmpty ? tops.values.reduce((a, b) => a > b ? a : b) : 1;
+//
+//     return _Card(
+//       height: 370,
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           _CardHead(
+//               icon: Icons.leaderboard_rounded,
+//               title: 'Top Recruiters',
+//               sub: 'By request volume'),
+//           const SizedBox(height: 20),
+//           Expanded(
+//             child: tops.isEmpty
+//                 ? _Empty(
+//                 icon: Icons.person_search_rounded,
+//                 label: 'No recruiter activity yet')
+//                 : ListView.builder(
+//               physics: const NeverScrollableScrollPhysics(),
+//               itemCount: keys.length,
+//               itemBuilder: (_, i) {
+//                 final email = keys[i];
+//                 final count = tops[email]!;
+//                 final pct = count / maxV;
+//                 final col = _ac[i % _ac.length];
+//                 return Padding(
+//                   padding: const EdgeInsets.only(bottom: 16),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Row(
+//                         children: [
+//                           Container(
+//                             width: 26,
+//                             height: 26,
+//                             decoration: BoxDecoration(
+//                                 color: col.withOpacity(0.1),
+//                                 shape: BoxShape.circle),
+//                             alignment: Alignment.center,
+//                             child: Text('${i + 1}',
+//                                 style: _C.p(10, color: col)),
+//                           ),
+//                           const SizedBox(width: 10),
+//                           Expanded(
+//                             child: Text(email,
+//                                 style: _C.p(12, color: _C.t1),
+//                                 overflow: TextOverflow.ellipsis),
+//                           ),
+//                           const SizedBox(width: 8),
+//                           _Chip(label: '$count req', color: col, tiny: true),
+//                         ],
+//                       ),
+//                       const SizedBox(height: 7),
+//                       ClipRRect(
+//                         borderRadius: BorderRadius.circular(4),
+//                         child: LinearProgressIndicator(
+//                           value: pct,
+//                           backgroundColor: col.withOpacity(0.08),
+//                           valueColor: AlwaysStoppedAnimation(col),
+//                           minHeight: 4,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  REQUESTS LINE CHART  (replaces requests donut)

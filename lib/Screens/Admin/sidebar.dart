@@ -9,7 +9,7 @@ class AdminSidebar extends StatefulWidget {
   const AdminSidebar({
     super.key,
     required this.onMenuSelected,
-    required this.selectedMenu,
+    required this.selectedMenu, required bool isDrawer,
   });
 
   @override

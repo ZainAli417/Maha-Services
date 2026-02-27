@@ -14,6 +14,7 @@ class RequestBoxScreen extends StatefulWidget {
 }
 
 class _RequestBoxScreenState extends State<RequestBoxScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // ─── Colors ───────────────────────────────────────────────────────────────
   static const _primary       = Color(0xFF6366F1);
   static const _textPrimary   = Color(0xFF0F172A);
@@ -45,24 +46,62 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
   // ─── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile
+          ? Drawer(
+              child: RecruiterSidebar(activeIndex: 5, isDrawer: true),
+            )
+          : null,
       body: Row(
         children: [
-          const RecruiterSidebar(activeIndex: 5),
+          if (!isMobile) const RecruiterSidebar(activeIndex: 5),
           Expanded(
             child: Column(
               children: [
-                const SizedBox(height: 10),
-                _buildHeader(),
+                if (isMobile)
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.menu_rounded, size: 24),
+                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.all_inbox_outlined, size: 20, color: _primary),
+                        ),
+                        const SizedBox(width: 10),
+                        Text('Request Box',
+                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                        ),
+                      ],
+                    ),
+                  )
+                else ...[
+                  const SizedBox(height: 10),
+                  _buildHeader(),
+                ],
                 Expanded(
                   child: Consumer<ApplicantsProvider>(
-                    // ✅ child: null — nothing static to hoist here, keep it simple
                     builder: (context, provider, _) {
                       final requests = provider.recruiterRequests;
                       if (requests.isEmpty) return _buildEmptyState();
 
                       return ListView.builder(
-                        padding: const EdgeInsets.all(24),
+                        padding: EdgeInsets.all(isMobile ? 12 : 24),
                         itemCount: requests.length,
                         itemBuilder: (_, i) => _buildRequestCard(requests[i]),
                       );
@@ -98,26 +137,24 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
             child: const Icon(Icons.all_inbox_outlined, size: 24, color: _kPrimaryBlue),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Applicants Request Box',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: _kHeaderTextPri,
-                  height: 1.2,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Applicants Request Box',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18, fontWeight: FontWeight.w600, color: _kHeaderTextPri, height: 1.2),
                 ),
-              ),
-              Text(
-                'Manage & Onboard Applicants against Your Posted Jobs',
-                style: GoogleFonts.poppins(fontSize: 13, color: _kHeaderTextSec, height: 1.2),
-              ),
-            ],
+                Text(
+                  'Manage & Onboard Applicants against Your Posted Jobs',
+                  style: GoogleFonts.poppins(fontSize: 13, color: _kHeaderTextSec, height: 1.2),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
         ],
       ),
     );
@@ -268,8 +305,10 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
     final status   = ((candidate['status']   as String?) ?? 'pending').toLowerCase();
     final isFinal  = status == 'hired' || status == 'rejected';
 
-    return Container(
-      width: 320,
+    return LayoutBuilder(builder: (context, constraints) {
+      final cardWidth = constraints.maxWidth < 600 ? constraints.maxWidth - 24 : 320.0;
+      return Container(
+        width: cardWidth,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: _background,
@@ -348,6 +387,7 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
         ],
       ),
     );
+    });
   }
 
   // ✅ Callback extracted — avoids creating async closures inside build()

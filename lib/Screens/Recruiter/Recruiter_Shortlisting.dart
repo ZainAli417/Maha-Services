@@ -32,12 +32,13 @@ class Shortlisting extends StatefulWidget {
 class _ShortlistingState extends State<Shortlisting>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     )..forward();
   }
@@ -50,36 +51,75 @@ class _ShortlistingState extends State<Shortlisting>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: _background,
+      drawer: isMobile
+          ? Drawer(
+              child: RecruiterSidebar(activeIndex: 2, isDrawer: true),
+            )
+          : null,
       body: Row(
         children: [
-          RecruiterSidebar(activeIndex: 2),
+          if (!isMobile) RecruiterSidebar(activeIndex: 2),
           Expanded(
             child: FadeTransition(
               opacity: _controller,
-              child: Consumer<JobSeekerProvider>(
-                builder: (context, provider, _) =>
-                    StreamBuilder<List<Map<String, dynamic>>>(
-                      stream: provider.allJobsStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: _primary,
-                              strokeWidth: 2.5,
+              child: Column(
+                children: [
+                  if (isMobile)
+                    Container(
+                      height: 56,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+                      ),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.menu_rounded, size: 24),
+                            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        }
-                        if (snapshot.hasError) {
-                          return _ErrorWidget(error: snapshot.error.toString());
-                        }
-                        final jobs = snapshot.data ?? [];
-                        if (jobs.isEmpty) return _EmptyWidget();
-                        return ShortlistingDashboard(jobs: jobs);
-                      },
+                            child: Icon(Icons.star_rounded, size: 20, color: _primary),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('Shortlisting',
+                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                          ),
+                        ],
+                      ),
                     ),
+                  Expanded(
+                    child: Consumer<JobSeekerProvider>(
+                      builder: (context, provider, _) =>
+                          StreamBuilder<List<Map<String, dynamic>>>(
+                            stream: provider.allJobsStream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(color: _primary, strokeWidth: 2.5),
+                                );
+                              }
+                              if (snapshot.hasError) {
+                                return _ErrorWidget(error: snapshot.error.toString());
+                              }
+                              final jobs = snapshot.data ?? [];
+                              if (jobs.isEmpty) return _EmptyWidget();
+                              return ShortlistingDashboard(jobs: jobs);
+                            },
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -724,6 +724,7 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                     name: name,
                     email: email,
                     status: candidateStatus,
+                    onDismiss: () => Navigator.pop(context),
                     onTap: () => _showCandidateCV(context, c),
                     onMenuAction: (action) async {
                       // ✅ Capture before any await
@@ -1095,14 +1096,14 @@ class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
                         _buildSection(
                           'ATTACHED DOCUMENTS',
                           Icons.attachment,
-                          const Color(0xFFEF4444),
+                          const Color(0xFF099674),
                           [
                             Wrap(
                               spacing: 12,
                               runSpacing: 8,
                               children: experienceDocs
                                   .map((doc) => _buildClickableLink(
-                                  doc, const Color(0xFFEF4444),
+                                  doc, const Color(0xFF099674),
                                   isDoc: true))
                                   .toList(),
                             ),
@@ -2350,12 +2351,23 @@ class _RequestCard extends StatelessWidget {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 class _CandidateCard extends StatelessWidget {
-  final String name;
-  final String email;
-  final String status;
+  final String name, email, status;
   final Function(String) onMenuAction;
   final VoidCallback onTap;
+  final VoidCallback onDismiss; // Added for the Cross/Close action
 
   const _CandidateCard({
     required this.name,
@@ -2363,201 +2375,193 @@ class _CandidateCard extends StatelessWidget {
     required this.status,
     required this.onMenuAction,
     required this.onTap,
+    required this.onDismiss,
   });
 
   Color _getStatusColor() {
-    switch (status.toLowerCase()) {
-      case 'shortlist':
-      case 'shortlisted':
-        return const Color(0xFF6366F1);
-      case 'screening':
-        return const Color(0xFF3B82F6);
-      case 'interview':
-        return const Color(0xFF8B5CF6);
-      case 'technical':
-        return const Color(0xFF06B6D4);
-      case 'offer':
-        return const Color(0xFFF59E0B);
-      case 'handover':
-      case 'hired':
-        return const Color(0xFF10B981);
-      case 'rejected':
-        return const Color(0xFFEF4444);
-      default:
-        return const Color(0xFF64748B);
-    }
+    final s = status.toLowerCase();
+    if (s.contains('shortlist')) return const Color(0xFF6366F1);
+    if (s.contains('screening')) return const Color(0xFF3B82F6);
+    if (s.contains('interview')) return const Color(0xFF8B5CF6);
+    if (s.contains('hired') || s.contains('handover')) return const Color(0xFF10B981);
+    if (s.contains('rejected')) return const Color(0xFFEF4444);
+    return const Color(0xFF64748B);
   }
 
   @override
   Widget build(BuildContext context) {
-    final stages = ['Shortlist', 'Screening', 'Interview', 'Technical', 'Offer', 'Handover'];
-
-    // Normalize status for pipeline index
+    final stages = ['Shortlist', 'Screening', 'Interview', 'Technical', 'Offer', 'Hired'];
     final displayStatus = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
     final currentIdx = stages.map((e) => e.toLowerCase()).toList().indexOf(displayStatus);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: _getStatusColor().withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'C',
-                        style: GoogleFonts.poppins(
-                          color: _getStatusColor(),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          email,
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF64748B),
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
-                    onSelected: onMenuAction,
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'open_cv', child: Text('View Full Details')),
-                      const PopupMenuDivider(),
-                      ...stages.map((s) => PopupMenuItem(
-                        value: s.toLowerCase(),
-                        child: Text('Move to $s'),
-                      )),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Pipeline View
-              Row(
-                children: List.generate(stages.length, (index) {
-                  final isActive = index <= currentIdx;
-                  final isLast = index == stages.length - 1;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFF1F5F9)), // Ultra-light border
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Column(
+              children: [
+                // ───── COMPACT HEADER ─────
+                _buildCompactHeader(context),
 
-                  return Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: isActive ? _getStatusColor() : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(2),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          _buildSmallAvatar(),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(name,
+                                    style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: const Color(0xFF1E293B))),
+                                Text(email,
+                                    style: GoogleFonts.inter(
+                                        color: const Color(0xFF94A3B8), fontSize: 11)),
+                              ],
                             ),
                           ),
-                        ),
-                        if (!isLast) const SizedBox(width: 4),
-                      ],
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          status.toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: _getStatusColor(),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        Text(
-                          'Stage ${currentIdx + 1}/${stages.length}',
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (currentIdx < stages.length - 1)
-                    ElevatedButton(
-                      onPressed: () => onMenuAction(stages[currentIdx + 1].toLowerCase()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _getStatusColor().withOpacity(0.1),
-                        foregroundColor: _getStatusColor(),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Next', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                          SizedBox(width: 4),
-                          Icon(Icons.arrow_forward_ios, size: 10),
+                          _buildNextButton(stages, currentIdx),
                         ],
                       ),
-                    ),
-                ],
-              ),
-            ],
+                      const SizedBox(height: 12),
+                      _buildMiniPipeline(currentIdx, stages.length),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildCompactHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC), // Slight tint for the header
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: _getStatusColor(), shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                status.toUpperCase(),
+                style: GoogleFonts.inter(
+                    fontSize: 9, fontWeight: FontWeight.w800, color: _getStatusColor(), letterSpacing: 0.5),
+              ),
+            ],
+          ),
+          // THE CROSS ICON
+          GestureDetector(
+            onTap: onDismiss,
+            child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFF94A3B8)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallAvatar() {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(color: _getStatusColor().withOpacity(0.1), shape: BoxShape.circle),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name.substring(0, 1) : 'C',
+          style: GoogleFonts.inter(color: _getStatusColor(), fontWeight: FontWeight.w700, fontSize: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNextButton(List<String> stages, int currentIdx) {
+    if (currentIdx >= stages.length - 1) {
+      return PopupMenuButton<String>(
+        icon: const Icon(Icons.more_horiz, size: 18, color: Color(0xFF94A3B8)),
+        onSelected: onMenuAction,
+        itemBuilder: (context) => [const PopupMenuItem(value: 'open_cv', child: Text('Details'))],
+      );
+    }
+    return InkWell(
+      onTap: () => onMenuAction(stages[currentIdx + 1].toLowerCase()),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+            border: Border.all(color: _getStatusColor().withOpacity(0.2)),
+            borderRadius: BorderRadius.circular(6)),
+        child: Row(
+          children: [
+            Text('NEXT',
+                style: GoogleFonts.inter(
+                    fontSize: 10, fontWeight: FontWeight.w700, color: _getStatusColor())),
+            const SizedBox(width: 4),
+            Icon(Icons.chevron_right_rounded, size: 12, color: _getStatusColor()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniPipeline(int currentIdx, int total) {
+    return Row(
+      children: List.generate(total, (index) {
+        final isActive = index <= currentIdx;
+        return Expanded(
+          child: Container(
+            height: 3,
+            margin: EdgeInsets.only(right: index == total - 1 ? 0 : 3),
+            decoration: BoxDecoration(
+              color: isActive ? _getStatusColor() : const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        );
+      }),
+    );
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 class _ModernStatusDropdown extends StatelessWidget {
   final String currentStatus;

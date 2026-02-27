@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'widgets/custom_snackbars.dart';
 
 import 'Constant/Header_Nav.dart';
+import 'Constant/Forget Password.dart';
 import 'login_provider.dart';
 
 class JobSeekerLoginScreen extends StatefulWidget {
@@ -703,7 +704,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => context.go('/recover-password'),
+                                onPressed: () => ForgotPasswordModal.show(context),
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,

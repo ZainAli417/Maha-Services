@@ -410,13 +410,66 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   }
 
   Widget _buildHeader(ApplicantsProvider provider) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 24, 32, 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 32,
+        24,
+        isMobile ? 16 : 32,
+        20,
       ),
-      child: Row(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
+      ),
+      child: isMobile
+          ? Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Candidate Shortlisting',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manage applicants using AI',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildAIBadge(small: true),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Horizontal actions scroll for mobile to prevent overflow
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: _buildHeaderActions(provider, isMobile: true),
+          ),
+        ],
+      )
+          : Row(
         children: [
           Expanded(
             child: Column(
@@ -429,189 +482,205 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: const Color(0xFF0F172A),
                         letterSpacing: -0.5,
                       ),
                     ),
-                    SizedBox(width: 12),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF8B5CF6).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'AI Active',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF8B5CF6),
-                        ),
-                      ),
-                    ),
+                    const SizedBox(width: 12),
+                    _buildAIBadge(small: false),
                   ],
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Manage applicants Efficiently Using AI, Unlike Traditional Methods',
+                  'Manage applicants efficiently using AI, unlike traditional methods',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: const Color(0xFF64748B),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(width: 16),
-          OutlinedButton.icon(
-            onPressed: _selectedApplicants.isEmpty
-                ? null
-                : () => _shortlistSelected(provider),
-            icon: Icon(Icons.checklist_rounded, size: 18),
-            label: Text(
-              _selectedApplicants.isEmpty
-                  ? 'Select To Mark as Shortlist'
-                  : 'Shortlist Selected',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+          const SizedBox(width: 24),
+          _buildHeaderActions(provider, isMobile: false),
+        ],
+      ),
+    );
+  }
+
+// Helper widget for the AI Badge to keep the code DRY
+  Widget _buildAIBadge({required bool small}) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: small ? 8 : 12,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.auto_awesome, size: small ? 10 : 14, color: const Color(0xFF8B5CF6)),
+          const SizedBox(width: 4),
+          Text(
+            'AI Active',
+            style: GoogleFonts.poppins(
+              fontSize: small ? 10 : 12,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF8B5CF6),
             ),
-            style: _selectedApplicants.isEmpty
-                ? OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF475569),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  )
-                : OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFF8B5CF6),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
           ),
-          SizedBox(width: 12),
-          Consumer<AIMatchProvider>(
-            builder: (context, aiProvider, child) {
-              return ElevatedButton.icon(
-                onPressed: aiProvider.isAnalyzing
-                    ? null
-                    : () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => AIMatchScoreScreen(
-                            jobId: widget.jobId ?? '',
-                            jobTitle: provider.applicants.isNotEmpty
-                                ? (provider.applicants.first.jobData?.title ??
-                                      'Job Position')
-                                : 'Job Position',
-                          ),
-                        );
-                      },
-                icon: Icon(
-                  aiProvider.isAnalyzing
-                      ? Icons.hourglass_empty
-                      : Icons.psychology_outlined,
-                  size: 18,
-                ),
-                label: Text(
-                  aiProvider.isAnalyzing ? 'Analyzing...' : 'Run AI Analysis',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+        ],
+      ),
+    );
+  }
+  Widget _buildHeaderActions(ApplicantsProvider provider, {bool isMobile = false}) {
+    final buttonPadding = isMobile 
+        ? const EdgeInsets.symmetric(horizontal: 12, vertical: 12)
+        : const EdgeInsets.symmetric(horizontal: 16, vertical: 20);
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        OutlinedButton.icon(
+          onPressed: _selectedApplicants.isEmpty
+              ? null
+              : () => _shortlistSelected(provider),
+          icon: const Icon(Icons.checklist_rounded, size: 18),
+          label: Text(
+            _selectedApplicants.isEmpty
+                ? (isMobile ? 'Select' : 'Select To Mark as Shortlist')
+                : 'Shortlist Selected',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: _selectedApplicants.isEmpty
+              ? OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF475569),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  padding: buttonPadding,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF086F63),
+                )
+              : OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                  elevation: 0,
+                  backgroundColor: const Color(0xFF8B5CF6),
+                  padding: buttonPadding,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-              );
-            },
+        ),
+        const SizedBox(width: 12),
+        Consumer<AIMatchProvider>(
+          builder: (context, aiProvider, child) {
+            return ElevatedButton.icon(
+              onPressed: aiProvider.isAnalyzing
+                  ? null
+                  : () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => AIMatchScoreScreen(
+                          jobId: widget.jobId ?? '',
+                          jobTitle: provider.applicants.isNotEmpty
+                              ? (provider.applicants.first.jobData?.title ??
+                                    'Job Position')
+                              : 'Job Position',
+                        ),
+                      );
+                    },
+              icon: Icon(
+                aiProvider.isAnalyzing
+                    ? Icons.hourglass_empty
+                    : Icons.psychology_outlined,
+                size: 18,
+              ),
+              label: Text(
+                aiProvider.isAnalyzing ? 'Analyzing...' : 'Run AI Analysis',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF086F63),
+                foregroundColor: Colors.white,
+                padding: buttonPadding,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 12),
+        OutlinedButton.icon(
+          onPressed: () {
+            setState(() {
+              _isRankingByScore = !_isRankingByScore;
+            });
+            _rankCandidatesByScore(provider);
+          },
+          icon: Icon(
+            _isRankingByScore ? Icons.filter_list : Icons.sort,
+            size: 18,
           ),
-
-          SizedBox(width: 12),
-          OutlinedButton.icon(
-            onPressed: () {
-              setState(() {
-                _isRankingByScore = !_isRankingByScore;
-              });
-              _rankCandidatesByScore(provider);
-            },
-            icon: Icon(
-              _isRankingByScore ? Icons.filter_list : Icons.sort,
-              size: 18,
-            ),
-            label: Text(
-              _isRankingByScore ? 'Ranked' : 'Rank Now',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _isRankingByScore
-                  ? Color(0xFF8B5CF6)
-                  : Color(0xFF475569),
-              backgroundColor: _isRankingByScore
-                  ? Color(0xFF8B5CF6).withOpacity(0.1)
-                  : Colors.white,
-              side: BorderSide(
-                color: _isRankingByScore
-                    ? Color(0xFF8B5CF6)
-                    : Color(0xFFE2E8F0),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+          label: Text(
+            _isRankingByScore ? 'Ranked' : 'Rank Now',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(width: 12),
-          // Auto Shortlist Button
-          ElevatedButton.icon(
-            onPressed: () => _autoShortlistHighScorers(provider),
-            icon: Icon(Icons.auto_awesome, size: 18),
-            label: Text(
-              'Auto Shortlist (>65%)',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _isRankingByScore
+                ? const Color(0xFF8B5CF6)
+                : const Color(0xFF475569),
+            backgroundColor: _isRankingByScore
+                ? const Color(0xFF8B5CF6).withOpacity(0.1)
+                : Colors.white,
+            side: BorderSide(
+              color: _isRankingByScore
+                  ? const Color(0xFF8B5CF6)
+                  : const Color(0xFFE2E8F0),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+            padding: buttonPadding,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
-          SizedBox(width: 12),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        ElevatedButton.icon(
+          onPressed: () => _autoShortlistHighScorers(provider),
+          icon: const Icon(Icons.auto_awesome, size: 18),
+          label: Text(
+            isMobile ? '>65%' : 'Auto Shortlist (>65%)',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF10B981),
+            foregroundColor: Colors.white,
+            padding: buttonPadding,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -889,52 +958,124 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   }
 
   Widget _buildDataTable(ApplicantsProvider provider) {
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+    final filteredApplicants = _getFilteredApplicants(provider);
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
-      child: Column(
-        children: [
-          Center(
-            child: Padding(
-              padding: EdgeInsetsGeometry.fromLTRB(280, 0, 280, 0),
-              child: _buildSearchBar(),
+    if (filteredApplicants.isEmpty) {
+      return _buildEmptyResults();
+    }
+
+    final tableContent = Column(
+      children: [
+        _buildSearchBar(),
+        _buildTableHeader(provider),
+        Expanded(
+          child: ScrollConfiguration(
+            behavior: SmoothScrollBehavior(),
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: filteredApplicants.length,
+              itemBuilder: (context, index) {
+                final applicant = filteredApplicants[index];
+                final isSelected = _selectedApplicants.contains(applicant.userId);
+                return _buildTableRow(
+                  applicant,
+                  isSelected,
+                  provider,
+                  index,
+                );
+              },
             ),
           ),
-          _buildTableHeader(provider),
-          Expanded(
-            child: _getFilteredApplicants(provider).isEmpty
-                ? _buildEmptyState()
-                : ScrollConfiguration(
-                    behavior: SmoothScrollBehavior(),
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      itemCount: _getFilteredApplicants(provider).length,
-                      itemBuilder: (context, index) {
-                        final applicant = _getFilteredApplicants(
-                          provider,
-                        )[index];
-                        final isSelected = _selectedApplicants.contains(
-                          applicant.userId,
-                        );
-                        return _buildTableRow(
-                          applicant,
-                          isSelected,
-                          provider,
-                          index,
-                        );
-                      },
-                    ),
-                  ),
+        ),
+      ],
+    );
+
+    return isMobile 
+      ? SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: 1000,
+            child: tableContent,
           ),
-          //  if (provider.applicants.isNotEmpty) _buildPagination(provider),
-        ],
-      ),
+        )
+      : tableContent;
+  }
+  Widget _buildEmptyResults() {
+    return Center(
+      child:  Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 1. Minimalist Illustration/Icon
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC), // Slate 50
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person_search_rounded,
+                size: 64,
+                color: const Color(0xFF94A3B8), // Slate 300
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 2. Clear Messaging
+            Text(
+              'No applicants found',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E293B), // Slate 800
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 300,
+              child: Text(
+                'We couldn\'t find any candidates matching your current filters. Try adjusting your search or clearing the criteria.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: const Color(0xFF64748B), // Slate 500
+                  height: 1.5,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // 3. Action Button
+            OutlinedButton.icon(
+              onPressed: () {
+                // Call your provider method to reset filters
+                context.read<ApplicantsProvider>().clearAllFilters();
+              },
+              icon: const Icon(Icons.clear_rounded, size: 18),
+              label: Text(
+                'Clear all filters',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF6366F1), // Indigo 500
+                side: const BorderSide(color: Color(0xFFE2E8F0)), // Slate 200
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+
     );
   }
-
   Widget _buildSearchBar() {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
       ),

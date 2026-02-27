@@ -39,6 +39,7 @@ class _job_hubState extends State<job_hub>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
@@ -102,21 +103,59 @@ class _job_hubState extends State<job_hub>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return ScrollConfiguration(
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
+        key: _scaffoldKey,
+        drawer: isMobile
+            ? Drawer(
+                child: JobSeekerSidebar(activeIndex: 3, isDrawer: true),
+              )
+            : null,
         body: Row(
           children: [
-            // NEW SIDEBAR - Add this
-            JobSeekerSidebar(activeIndex: 3), // 3 = Job Hub index
-
-            // YOUR EXISTING CONTENT - Wrap in Expanded
+            if (!isMobile) JobSeekerSidebar(activeIndex: 3),
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: _buildDashboardContent(context),
+                  child: Column(
+                    children: [
+                      if (isMobile)
+                        Container(
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.menu_rounded, size: 24),
+                                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                              ),
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E40AF).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.screen_search_desktop_outlined, size: 20, color: Color(0xFF1E40AF)),
+                              ),
+                              const SizedBox(width: 10),
+                              Text('Job Hub',
+                                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      Expanded(child: _buildDashboardContent(context)),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -322,31 +361,32 @@ class _job_hubState extends State<job_hub>
           const SizedBox(width: 14),
 
           // Title & Subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Job Hub',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Job Hub',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: kTextPrimary,
+                    height: 1.2,
+                  ),
                 ),
-              ),
-              Text(
-                'Explore Jobs and Be a part of your Dream Company',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
+                Text(
+                  'Explore Jobs and Be a part of your Dream Company',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: kTextSecondary,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-
-          const Spacer(),
         ],
       ),
     );

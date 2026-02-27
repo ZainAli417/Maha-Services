@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../Constant/Header_Nav.dart';
+import '../../Constant/Forget Password.dart';
 import 'login_provider_Recruiter.dart';
 
 class Recruiter_LoginScreen extends StatefulWidget {
@@ -77,6 +78,11 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     }
 
   }
+  double _getResponsivePadding(double width) {
+    if (width > 1200) return 180;
+    if (width > 800) return 60;
+    return 16;
+  }
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
@@ -88,10 +94,14 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
           const HeaderNav(),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(180, 5, 180, 5),
+              // 1. Use MediaQuery here instead of constraints to avoid the "Undefined" error
+              padding: EdgeInsets.symmetric(
+                horizontal: _getResponsivePadding(MediaQuery.of(context).size.width),
+                vertical: 5,
+              ),
               child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWide = constraints.maxWidth > 800;
+                builder: (context, internalConstraints) { // 2. Renamed to avoid confusion
+                  final isWide = internalConstraints.maxWidth > 800;
 
                   return Row(
                     children: [
@@ -338,7 +348,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                       children: [
                                         TextButton(
                                           onPressed: () {
-                                            context.go('/recover-password');
+                                            ForgotPasswordModal.show(context);
                                           },
                                           style: TextButton.styleFrom(
                                               foregroundColor: primaryColor),

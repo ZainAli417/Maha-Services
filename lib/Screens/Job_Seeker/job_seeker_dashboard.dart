@@ -74,6 +74,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   late Animation<double> _fadeAnimation;
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _searchController = TextEditingController();
   String _selectedStatus  = 'All';
@@ -158,24 +159,73 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return ScrollConfiguration(
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: _C.canvas,
+        drawer: isMobile
+            ? Drawer(
+                child: JobSeekerSidebar(activeIndex: 0, isDrawer: true),
+              )
+            : null,
         body: Row(
           children: [
-            JobSeekerSidebar(activeIndex: 0),
+            if (!isMobile) JobSeekerSidebar(activeIndex: 0),
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: _buildContent(context),
+                  child: Column(
+                    children: [
+                      if (isMobile)
+                        _buildMobileAppBar('My Applications'),
+                      Expanded(child: _buildContent(context)),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMobileAppBar(String title) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: _C.surface,
+        border: const Border(bottom: BorderSide(color: _C.border, width: 1)),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.menu_rounded, size: 24),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            width: 32, height: 32,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.work_history_rounded, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: _C.p(15)),
+          const Spacer(),
+          _FilterToggleBtn(
+              active: _showFilters,
+              onTap: () => setState(() => _showFilters = !_showFilters)),
+        ],
       ),
     );
   }
@@ -243,14 +293,15 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           final sorted    = _sortApplications(filtered);
           final analytics = prov.getAnalytics(sorted);
           final w         = MediaQuery.of(context).size.width;
+          final isMobile  = w < 768;
           final isWide    = w > 1180;
 
           // ── ROOT LAYOUT: fixed top bar + scrollable body ──────────
           return Column(
             children: [
-              // Fixed top bar (never scrolls)
-              _buildTopBar(analytics, sorted.length),
-              if (_showFilters) _buildFilterBar(prov),
+              // Fixed top bar (never scrolls) — hide on mobile since we have the app bar
+              if (!isMobile) _buildTopBar(analytics, sorted.length),
+              if (_showFilters) _buildFilterBar(prov, isMobile),
 
               // Body: main scrollable content + optional right panel
               Expanded(
@@ -350,27 +401,38 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                 color: Colors.white, size: 18),
           ),
           const SizedBox(width: 12),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('My Applications', style: _C.p(16)),
-              Text('Trends & market insights',
-                  style: _C.p(10, fw: FontWeight.w500, color: _C.t3)),
-            ],
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('My Applications', style: _C.p(16)),
+                Text('Trends & market insights',
+                    style: _C.p(10, fw: FontWeight.w500, color: _C.t3)),
+              ],
+            ),
           ),
-          const SizedBox(width: 20),
-          _MiniStatChip(
-              icon: Icons.inbox_rounded, label: '$total Total', color: _C.indigo),
+          const SizedBox(width: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _MiniStatChip(
+                      icon: Icons.inbox_rounded, label: '$total Total', color: _C.indigo),
+                  const SizedBox(width: 8),
+                  _MiniStatChip(
+                      icon: Icons.check_circle_rounded,
+                      label: '$accepted Accepted', color: _C.emerald),
+                  const SizedBox(width: 8),
+                  _MiniStatChip(
+                      icon: Icons.timelapse_rounded,
+                      label: '$pending Pending', color: _C.amber),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
-          _MiniStatChip(
-              icon: Icons.check_circle_rounded,
-              label: '$accepted Accepted', color: _C.emerald),
-          const SizedBox(width: 8),
-          _MiniStatChip(
-              icon: Icons.timelapse_rounded,
-              label: '$pending Pending', color: _C.amber),
-          const Spacer(),
           _FilterToggleBtn(
               active: _showFilters,
               onTap: () => setState(() => _showFilters = !_showFilters)),
@@ -382,14 +444,94 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   //  FILTER BAR
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildFilterBar(ListAppliedJobsProvider prov) {
+  Widget _buildFilterBar(ListAppliedJobsProvider prov, [bool isMobile = false]) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 12),
       decoration: const BoxDecoration(
         color: _C.surface,
         border: Border(bottom: BorderSide(color: _C.border)),
       ),
-      child: Row(
+      child: isMobile
+          ? Column(
+              children: [
+                SizedBox(
+                  height: 42,
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    style: _C.p(13, fw: FontWeight.w500),
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: _C.p(13, fw: FontWeight.w400, color: _C.t3),
+                      prefixIcon: const Icon(Icons.search, size: 18, color: _C.t3),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 16),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {});
+                              })
+                          : null,
+                      filled: true,
+                      fillColor: _C.canvas,
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: _C.border)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: _C.border)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: _C.indigo, width: 2)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _FilterDropdown(
+                          label: 'Status',
+                          value: _selectedStatus,
+                          items: _statusOptions,
+                          onChanged: (v) => setState(() => _selectedStatus = v!)),
+                      const SizedBox(width: 8),
+                      _FilterDropdown(
+                          label: 'Unit',
+                          value: _selectedCompany,
+                          items: _companyOptions,
+                          onChanged: (v) => setState(() => _selectedCompany = v!)),
+                      const SizedBox(width: 8),
+                      _DateRangeBtn(range: _appliedRange, onTap: _showDatePicker),
+                      const SizedBox(width: 8),
+                      _SortDropdown(
+                          value: _getSortLabel(),
+                          onChanged: (val) => setState(() {
+                            switch (val) {
+                              case 'Latest':      _sortBy = 'applied_desc'; break;
+                              case 'Oldest':      _sortBy = 'applied_asc';  break;
+                              case 'Title':       _sortBy = 'title_asc';    break;
+                              case 'Unit / Base': _sortBy = 'company_asc';  break;
+                              case 'Status':      _sortBy = 'status';       break;
+                            }
+                          })),
+                      if (_hasActiveFilters()) ...[
+                        const SizedBox(width: 8),
+                        _OutlineBtn(
+                            label: 'Clear',
+                            icon: Icons.clear_all_rounded,
+                            color: _C.rose,
+                            onTap: _clearFilters),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Row(
         children: [
           Expanded(
             flex: 3,
@@ -932,17 +1074,30 @@ class _KpiStrip extends StatelessWidget {
       _KD(Icons.timelapse_rounded,     'Pending',       stats['pending']  as int,  _C.amber,   _C.amberLt),
     ];
 
-    return Row(
-      children: items.asMap().entries.map((e) {
-        return Expanded(
-          child: Padding(
-            padding:
-            EdgeInsets.only(right: e.key < items.length - 1 ? 16 : 0),
-            child: _KpiCard(d: e.value),
-          ),
+    return LayoutBuilder(builder: (_, constraints) {
+      if (constraints.maxWidth < 600) {
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.5,
+          children: items.map((d) => _KpiCard(d: d)).toList(),
         );
-      }).toList(),
-    );
+      }
+      return Row(
+        children: items.asMap().entries.map((e) {
+          return Expanded(
+            child: Padding(
+              padding:
+              EdgeInsets.only(right: e.key < items.length - 1 ? 16 : 0),
+              child: _KpiCard(d: e.value),
+            ),
+          );
+        }).toList(),
+      );
+    });
   }
 }
 

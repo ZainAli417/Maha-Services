@@ -32,6 +32,7 @@ class Job_Applicant_Tracker extends StatefulWidget {
 class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -50,47 +51,85 @@ class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: _background,
+      drawer: isMobile
+          ? Drawer(
+              child: RecruiterSidebar(activeIndex: 1, isDrawer: true),
+            )
+          : null,
       body: Row(
         children: [
-          RecruiterSidebar(activeIndex: 1),
+          if (!isMobile) RecruiterSidebar(activeIndex: 1),
           Expanded(
             child: FadeTransition(
               opacity: _controller,
-              child: Stack(
+              child: Column(
                 children: [
-                  // OPTIMIZED: Stream only job IDs, not full data
-                  StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('Posted_jobs_public')
-                        .orderBy('timestamp', descending: true)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: _primary,
-                          ),
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return _ErrorWidget(
-                          error: snapshot.error.toString(),
-                        );
-                      }
-
-                      // Extract only IDs - lightweight operation
-                      final jobIds = snapshot.data?.docs.map((doc) => doc.id).toList() ?? [];
-
-                      if (jobIds.isEmpty) return _EmptyWidget();
-
-                      return Job_Applicant_Wrapper(jobIds: jobIds);
-                    },
+                  if (isMobile)
+                    _buildMobileAppBar(),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('Posted_jobs_public')
+                              .orderBy('timestamp', descending: true)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(color: _primary),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              return _ErrorWidget(error: snapshot.error.toString());
+                            }
+                            final jobIds = snapshot.data?.docs.map((doc) => doc.id).toList() ?? [];
+                            if (jobIds.isEmpty) return _EmptyWidget();
+                            return Job_Applicant_Wrapper(jobIds: jobIds);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileAppBar() {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.menu_rounded, size: 24),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.track_changes_outlined, size: 20, color: _primary),
+          ),
+          const SizedBox(width: 10),
+          Text('Job Tracker',
+            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
           ),
         ],
       ),
@@ -407,6 +446,9 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Row(
@@ -420,9 +462,9 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
                   ? const NeverScrollableScrollPhysics()
                   : const BouncingScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
+                SliverToBoxAdapter(child: _buildHeader(isMobile)),
                 SliverToBoxAdapter(child: _buildCommandBar()),
-                _buildJobGrid(),
+                _buildJobGrid(w, isMobile),
               ],
             ),
           ),
@@ -431,60 +473,45 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isMobile) {
     const Color kPrimaryBlue = Color(0xFF1E40AF);
     const Color kTextPrimary = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
+      decoration: BoxDecoration(color: Colors.white),
       child: Row(
         children: [
-          // Left Icon
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.track_changes_outlined,
-              size: 24,
-              color: kPrimaryBlue,
+            child: Icon(Icons.track_changes_outlined, size: 24, color: kPrimaryBlue),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Job Application Tracker',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 16 : 18, 
+                    fontWeight: FontWeight.w600, 
+                    color: kTextPrimary, 
+                    height: 1.2
+                  ),
+                ),
+                Text('Manage & Analyze Applicants',
+                  style: GoogleFonts.poppins(fontSize: 12, color: kTextSecondary, height: 1.2),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(width: 14),
-
-          // Title & Subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Job Application Tracker',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
-                ),
-              ),
-              Text(
-                'Manage & Analyze Applicants against Your Posted Jobs',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
-                ),
-              ),
-            ],
-          ),
-
-          const Spacer(),
         ],
       ),
     );
@@ -587,82 +614,92 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
     final companies = _getUnique('company');
     final locations = _getUnique('location');
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(32, 20, 32, 20),
-      color: _background,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 3,
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
-                hintText: 'Search jobs...',
-                hintStyle: GoogleFonts.poppins(
-                  color: _textSecondary,
-                  fontSize: 13,
+    return LayoutBuilder(builder: (context, constraints) {
+      final isMobile = constraints.maxWidth < 600;
+      return Container(
+        padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 20, isMobile ? 16 : 32, 20),
+        color: _background,
+        child: isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
+                      hintText: 'Search jobs...',
+                      hintStyle: GoogleFonts.poppins(color: _textSecondary, fontSize: 13),
+                      fillColor: _surface,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: _border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: _primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      filled: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildQuickStat('${_filteredJobIds.length}', 'Jobs', Icons.local_airport, _primary),
+                        const SizedBox(width: 10),
+                        _buildFilterChip(label: 'Company', value: _selectedCompany, options: companies, icon: Icons.business, onSelected: (v) { setState(() => _selectedCompany = v); _applyFilters(); }),
+                        const SizedBox(width: 10),
+                        _buildFilterChip(label: 'Location', value: _selectedLocation, options: locations, icon: Icons.location_on, onSelected: (v) { setState(() => _selectedLocation = v); _applyFilters(); }),
+                        const SizedBox(width: 10),
+                        _buildSortDropdown(),
+                        const SizedBox(width: 10),
+                        _buildPostJobButton(),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 3,
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
+                  hintText: 'Search jobs...',
+                  hintStyle: GoogleFonts.poppins(color: _textSecondary, fontSize: 13),
+                  fillColor: _surface,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: _border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: _primary),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  filled: true,
                 ),
-                fillColor: _surface,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: _border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: _primary),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                filled: true,
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-
-          _buildQuickStat(
-            '${_filteredJobIds.length}',
-            'Jobs',
-            Icons.local_airport,
-            _primary,
-          ),
-          const SizedBox(width: 16),
-
-          _buildFilterChip(
-            label: 'Company',
-            value: _selectedCompany,
-            options: companies,
-            icon: Icons.business,
-            onSelected: (v) {
-              setState(() => _selectedCompany = v);
-              _applyFilters();
-            },
-          ),
-          const SizedBox(width: 12),
-
-          _buildFilterChip(
-            label: 'Location',
-            value: _selectedLocation,
-            options: locations,
-            icon: Icons.location_on,
-            onSelected: (v) {
-              setState(() => _selectedLocation = v);
-              _applyFilters();
-            },
-          ),
-
-          const SizedBox(width: 12),
-
-          _buildSortDropdown(),
-          const SizedBox(width: 16),
-
-          _buildPostJobButton(),
-        ],
-      ),
-    );
+            const SizedBox(width: 16),
+            _buildQuickStat('${_filteredJobIds.length}', 'Jobs', Icons.local_airport, _primary),
+            const SizedBox(width: 16),
+            _buildFilterChip(label: 'Company', value: _selectedCompany, options: companies, icon: Icons.business, onSelected: (v) { setState(() => _selectedCompany = v); _applyFilters(); }),
+            const SizedBox(width: 12),
+            _buildFilterChip(label: 'Location', value: _selectedLocation, options: locations, icon: Icons.location_on, onSelected: (v) { setState(() => _selectedLocation = v); _applyFilters(); }),
+            const SizedBox(width: 12),
+            _buildSortDropdown(),
+            const SizedBox(width: 16),
+            _buildPostJobButton(),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildFilterChip({
@@ -787,7 +824,7 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
 
 
 
-  Widget _buildJobGrid() {
+  Widget _buildJobGrid(double width, bool isMobile) {
     if (_isLoading) {
       return const SliverFillRemaining(
         child: Center(child: CircularProgressIndicator(color: _primary)),
@@ -824,7 +861,7 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
               ),
               const SizedBox(height: 8),
               Text(
-                'Try adjusting your search or filters',
+                'Try adjusting your filters',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   color: _textSecondary,
@@ -838,18 +875,17 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
       );
     }
 
-    // OPTIMIZED: Pass only job IDs to cards
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 32),
+      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 32, 0, isMobile ? 12 : 32, 24),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 3),
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
-          childAspectRatio: 1.4,
+          mainAxisExtent: isMobile ? 380 : 340,
         ),
         delegate: SliverChildBuilderDelegate(
-              (context, index) => Job_Cards(
+          (context, index) => Job_Cards(
             jobId: _filteredJobIds[index],
           ),
           childCount: _filteredJobIds.length,

@@ -117,13 +117,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
 
   Widget _buildModernHeader(BuildContext context, AdminProvider prov) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
       height: 72,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
       child: Row(
         children: [
           Container(
@@ -139,31 +139,34 @@ class _UserManagementSectionState extends State<UserManagementSection>
             ),
           ),
           const SizedBox(width: 16),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'User Management',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0F172A),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'User Management',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 16 : 20,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0F172A),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                'Add, Upgrade or Suspend Users from the portal',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF64748B),
+                Text(
+                  'Add, Upgrade or Suspend Users from the portal',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF64748B),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const Spacer(),
-          _buildAddUserButton(context, prov),
-
+          const SizedBox(width: 8),
+          _buildAddUserButton(context, prov, isMobile),
         ],
       ),
     );
@@ -172,12 +175,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
 
 
-  Widget _buildAddUserButton(BuildContext context, AdminProvider provider) {
+  Widget _buildAddUserButton(BuildContext context, AdminProvider provider, bool isMobile) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        child: ElevatedButton.icon(
+        child: isMobile 
+        ? IconButton(
+            onPressed: () => _showAddUserDialog(context, provider),
+            icon: const Icon(Icons.person_add_rounded, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          )
+        : ElevatedButton.icon(
           onPressed: () => _showAddUserDialog(context, provider),
           icon: const Icon(Icons.person_add_rounded, size: 18),
           label: Text(
@@ -213,9 +229,41 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildFilters() {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Row(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
+      child: isMobile 
+      ? Column(
+          children: [
+            _buildSearchBar(),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                   _buildFilterDropdown(
+                    'Role',
+                    _selectedRoleFilter,
+                    ['all', 'Job Seeker', 'Recruiter', 'Admin'],
+                        (value) => setState(() => _selectedRoleFilter = value!),
+                    Icons.work_outline,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterDropdown(
+                    'Status',
+                    _selectedStatusFilter,
+                    ['all', 'active', 'suspended'],
+                        (value) => setState(() => _selectedStatusFilter = value!),
+                    Icons.toggle_on_outlined,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildRefreshButton(),
+                ],
+              ),
+            ),
+          ],
+        )
+      : Row(
         children: [
           Expanded(flex: 3, child: _buildSearchBar()),
           const SizedBox(width: 16),
@@ -411,7 +459,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
               return _buildEmptyState();
             }
 
-            return Column(
+            final isMobile = MediaQuery.of(context).size.width < 768;
+            final tableWidth = isMobile ? 800.0 : MediaQuery.of(context).size.width;
+
+            final tableContent = Column(
               crossAxisAlignment:  CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -460,6 +511,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 _buildTableFooter(users.length),
               ],
             );
+
+            return isMobile 
+              ? SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: tableWidth,
+                    child: tableContent,
+                  ),
+                )
+              : tableContent;
           },
         ),
       ),

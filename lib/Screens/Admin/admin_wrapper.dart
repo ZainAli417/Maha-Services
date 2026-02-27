@@ -14,24 +14,81 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String _selectedMenu = 'Dashboard'; // Default selected menu
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: isMobile
+          ? Drawer(
+              child: AdminSidebar(
+                onMenuSelected: (menu) {
+                  setState(() {
+                    _selectedMenu = menu;
+                  });
+                  Navigator.of(context).pop(); // close drawer
+                },
+                selectedMenu: _selectedMenu,
+                isDrawer: true,
+              ),
+            )
+          : null,
       body: Row(
         children: [
-          // Sidebar
-          AdminSidebar(
-            onMenuSelected: (menu) {
-              setState(() {
-                _selectedMenu = menu;
-              });
-            },
-            selectedMenu: _selectedMenu,
-          ),
+          // Sidebar — hidden on mobile
+          if (!isMobile)
+            AdminSidebar(
+              onMenuSelected: (menu) {
+                setState(() {
+                  _selectedMenu = menu;
+                });
+              },
+              selectedMenu: _selectedMenu, isDrawer: true,
+            ),
           // Main Content Area
           Expanded(
-            child: Container(color: Colors.white, child: _buildContent()),
+            child: Column(
+              children: [
+                // Mobile top bar with hamburger
+                if (isMobile)
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        bottom:
+                            BorderSide(color: Colors.grey.shade200, width: 1),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.menu_rounded, size: 24),
+                          onPressed: () =>
+                              _scaffoldKey.currentState?.openDrawer(),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _selectedMenu,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: Container(
+                      color: Colors.white, child: _buildContent()),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -8,10 +8,12 @@ import '../../Web_routes.dart';
 
 class JobSeekerSidebar extends StatefulWidget {
   final int activeIndex;
+  final bool isDrawer;
 
   const JobSeekerSidebar({
     super.key,
     required this.activeIndex,
+    this.isDrawer = false,
   });
 
   @override
@@ -27,8 +29,11 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
     return Consumer<JS_TopNavProvider>(
         builder: (context, provider, child) {
           final initials = provider.initials;
+          final sidebarWidth = widget.isDrawer
+              ? (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 280.0)
+              : 260.0;
           return Container(
-            width: 260,
+            width: sidebarWidth,
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border(

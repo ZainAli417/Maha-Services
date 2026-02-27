@@ -135,8 +135,14 @@ class _PostJobDialogState extends State<PostJobDialog>
   Widget build(BuildContext context) {
     return Consumer<job_listing_provider>(
       builder: (context, provider, child) {
+        final w = MediaQuery.of(context).size.width;
+        final isMobile = w < 768;
+
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 8 : 24, 
+            vertical: isMobile ? 12 : 32
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -146,10 +152,10 @@ class _PostJobDialogState extends State<PostJobDialog>
             child: SlideTransition(
               position: _slideAnimation,
               child: Container(
-                constraints: const BoxConstraints(
+                constraints: BoxConstraints(
                   maxWidth: 1000,
-                  maxHeight: 850,
-                  minHeight: 600,
+                  maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.95 : 850,
+                  minHeight: isMobile ? 400 : 600,
                 ),
                 decoration: BoxDecoration(
                   color: white,
@@ -182,19 +188,24 @@ class _PostJobDialogState extends State<PostJobDialog>
                           ),
                           child: SingleChildScrollView(
                             controller: _scrollController,
-                            padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
+                            padding: EdgeInsets.fromLTRB(
+                              isMobile ? 16 : 32, 
+                              24, 
+                              isMobile ? 16 : 32, 
+                              32
+                            ),
                             child: Form(
                               key: _formKey,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildHeroSection(provider),
+                                  _buildHeroSection(provider, isMobile),
                                   const SizedBox(height: 32),
                                   _buildSection(
                                     title: 'Unit & Position Information',
                                     icon: Icons.military_tech_rounded,
                                     delay: 0,
-                                    child: _buildUnitInfoSection(provider),
+                                    child: _buildUnitInfoSection(provider, isMobile),
                                   ),
                                   const SizedBox(height: 24),
                                   _buildSection(
@@ -208,16 +219,16 @@ class _PostJobDialogState extends State<PostJobDialog>
                                     title: 'Compensation & Pay Information',
                                     icon: Icons.account_balance_wallet_outlined,
                                     delay: 2,
-                                    child: _buildCompensationSection(provider),
+                                    child: _buildCompensationSection(provider, isMobile),
                                   ),
                                   const SizedBox(height: 24),
-                                  _buildDeadlineAndContactRow(provider),
+                                  _buildDeadlineAndContactRow(provider, isMobile),
                                   const SizedBox(height: 24),
                                   _buildSection(
                                     title: 'Rank & Security Requirements',
                                     icon: Icons.security_rounded,
                                     delay: 3,
-                                    child: _buildSecuritySection(provider),
+                                    child: _buildSecuritySection(provider, isMobile),
                                   ),
                                   const SizedBox(height: 24),
                                   _buildSection(
@@ -290,7 +301,7 @@ class _PostJobDialogState extends State<PostJobDialog>
                 Text(
                   'Create Air Force Job Posting',
                   style: GoogleFonts.poppins(
-                    fontSize: 24,
+                    fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 24,
                     fontWeight: FontWeight.w700,
                     color: white,
                     letterSpacing: -0.5,
@@ -298,12 +309,14 @@ class _PostJobDialogState extends State<PostJobDialog>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Post aviation and support positions for Air Force personnel',
+                  'Post aviation positions for personnel',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: white.withOpacity(0.8),
                     fontWeight: FontWeight.w400,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -332,7 +345,37 @@ class _PostJobDialogState extends State<PostJobDialog>
     );
   }
 
-  Widget _buildHeroSection(job_listing_provider provider) {
+  Widget _buildHeroSection(job_listing_provider provider, bool isMobile) {
+    final logoAndInfo = [
+      _buildLogoUploader(provider),
+      SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 12 : 0),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Unit Identification',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Upload your unit emblem and fill in the position details below.',
+              textAlign: isMobile ? TextAlign.center : TextAlign.start,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: surfaceDark.withOpacity(0.7),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -347,36 +390,9 @@ class _PostJobDialogState extends State<PostJobDialog>
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: secondary.withOpacity(0.2), width: 1),
       ),
-      child: Row(
-        children: [
-          _buildLogoUploader(provider),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Unit Identification',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Upload your unit emblem and fill in the position details below. This helps candidates identify official Air Force postings.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: surfaceDark.withOpacity(0.7),
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: isMobile 
+        ? Column(children: logoAndInfo)
+        : Row(children: logoAndInfo),
     );
   }
 
@@ -444,7 +460,7 @@ class _PostJobDialogState extends State<PostJobDialog>
     );
   }
 
-  Widget _buildUnitInfoSection(job_listing_provider provider) {
+  Widget _buildUnitInfoSection(job_listing_provider provider, bool isMobile) {
     return Column(
       children: [
         _buildAnimatedTextField(
@@ -453,37 +469,52 @@ class _PostJobDialogState extends State<PostJobDialog>
           onChanged: provider.updateTempTitle,
           validator: (v) => v!.trim().isEmpty ? 'Position title is required' : null,
           icon: Icons.work_outline,
-          hintText: 'e.g., Aircraft Maintenance Technician, Pilot, Air Traffic Controller',
+          hintText: 'e.g., Aircraft Maintenance Technician, Pilot',
           focusNode: _focusNodes['title'],
         ),
         const SizedBox(height: 20),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _buildAnimatedTextField(
-                label: 'Air Force Unit/Base',
-                initialValue: provider.tempCompany ?? '',
-                onChanged: provider.updateTempCompany,
-                validator: (v) => v!.trim().isEmpty ? 'Unit/Base is required' : null,
-                icon: Icons.location_city_rounded,
-                hintText: 'e.g., 15th Wing, Edwards AFB',
-                focusNode: _focusNodes['company'],
-              ),
+        _buildResponsiveRow(
+          isMobile,
+          [
+            _buildAnimatedTextField(
+              label: 'Air Force Unit/Base',
+              initialValue: provider.tempCompany ?? '',
+              onChanged: provider.updateTempCompany,
+              validator: (v) => v!.trim().isEmpty ? 'Unit/Base is required' : null,
+              icon: Icons.location_city_rounded,
+              hintText: 'e.g., 15th Wing',
+              focusNode: _focusNodes['company'],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: _buildAnimatedDropdown(
-                label: 'Department/Squadron',
-                value: provider.tempDepartment ?? departmentOptions.first,
-                items: departmentOptions,
-                onChanged: (val) => provider.updateTempDepartment(val!),
-                icon: Icons.group_work_outlined,
-              ),
+            _buildAnimatedDropdown(
+              label: 'Department/Squadron',
+              value: provider.tempDepartment ?? departmentOptions.first,
+              items: departmentOptions,
+              onChanged: (val) => provider.updateTempDepartment(val!),
+              icon: Icons.group_work_outlined,
             ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildResponsiveRow(bool isMobile, List<Widget> children) {
+    if (isMobile) {
+      return Column(
+        children: children.map((c) => Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: c,
+        )).toList(),
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children.map((c) => Expanded(
+        child: Padding(
+          padding: EdgeInsets.only(right: c == children.last ? 0 : 20),
+          child: c,
+        ),
+      )).toList(),
     );
   }
 
@@ -525,31 +556,27 @@ class _PostJobDialogState extends State<PostJobDialog>
     );
   }
 
-  Widget _buildCompensationSection(job_listing_provider provider) {
+  Widget _buildCompensationSection(job_listing_provider provider, bool isMobile) {
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildAnimatedDropdown(
-                label: 'Compensation Type',
-                value: provider.tempSalaryType ?? salaryTypeOptions.first,
-                items: salaryTypeOptions,
-                onChanged: (val) => provider.updateTempSalaryType(val!),
-                icon: Icons.payments_outlined,
-              ),
+        _buildResponsiveRow(
+          isMobile,
+          [
+            _buildAnimatedDropdown(
+              label: 'Compensation Type',
+              value: provider.tempSalaryType ?? salaryTypeOptions.first,
+              items: salaryTypeOptions,
+              onChanged: (val) => provider.updateTempSalaryType(val!),
+              icon: Icons.payments_outlined,
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: _buildAnimatedTextField(
-                label: 'Salary Range',
-                initialValue: provider.tempSalary ?? '',
-                onChanged: provider.updateTempSalary,
-                validator: (v) => v!.trim().isEmpty ? 'Salary range is required' : null,
-                icon: Icons.monetization_on_outlined,
-                hintText: 'e.g., \$45,000 - \$65,000 or E-5 Base Pay + BAH',
-                focusNode: _focusNodes['salary'],
-              ),
+            _buildAnimatedTextField(
+              label: 'Salary Range',
+              initialValue: provider.tempSalary ?? '',
+              onChanged: provider.updateTempSalary,
+              validator: (v) => v!.trim().isEmpty ? 'Salary range is required' : null,
+              icon: Icons.monetization_on_outlined,
+              hintText: 'e.g., \$45,000 - \$65,000',
+              focusNode: _focusNodes['salary'],
             ),
           ],
         ),
@@ -560,96 +587,78 @@ class _PostJobDialogState extends State<PostJobDialog>
           onChanged: provider.updateTempPayDetails,
           maxLines: 2,
           icon: Icons.info_outline_rounded,
-          hintText: 'Special pay, hazard pay, flight pay, bonuses, or allowances included',
+          hintText: 'Special pay, hazard pay, flight pay...',
           focusNode: _focusNodes['payDetails'],
         ),
       ],
     );
   }
 
-  Widget _buildDeadlineAndContactRow(job_listing_provider provider) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          child: _buildAnimatedDatePicker(provider),
-        ),
-        const SizedBox(width: 20),
-        Expanded(
-          child: _buildAnimatedTextField(
-            label: 'Contact Email',
-            initialValue: provider.tempContactEmail ?? '',
-            onChanged: provider.updateTempContactEmail,
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) {
-                return 'Email is required';
-              }
-              final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-              if (!emailRegex.hasMatch(v.trim())) {
-                return 'Enter valid email';
-              }
-              return null;
-            },
-            icon: Icons.email_outlined,
-            hintText: 'e.g., hr@airforce.mil',
-            keyboardType: TextInputType.emailAddress,
-          ),
+  Widget _buildDeadlineAndContactRow(job_listing_provider provider, bool isMobile) {
+    return _buildResponsiveRow(
+      isMobile,
+      [
+        _buildAnimatedDatePicker(provider),
+        _buildAnimatedTextField(
+          label: 'Contact Email',
+          initialValue: provider.tempContactEmail ?? '',
+          onChanged: provider.updateTempContactEmail,
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'Email is required';
+            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) return 'Invalid email';
+            return null;
+          },
+          icon: Icons.email_outlined,
+          hintText: 'e.g., hr@airforce.mil',
+          keyboardType: TextInputType.emailAddress,
         ),
       ],
     );
   }
 
-  Widget _buildSecuritySection(job_listing_provider provider) {
+  Widget _buildSecuritySection(job_listing_provider provider, bool isMobile) {
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildAnimatedDropdown(
-                label: 'Minimum Rank Required',
-                value: provider.tempNature ?? rankRequirements.first,
-                items: rankRequirements,
-                onChanged: (val) => provider.updateTempNature(val!),
-                icon: Icons.stars_rounded,
-              ),
+        _buildResponsiveRow(
+          isMobile,
+          [
+            _buildAnimatedDropdown(
+              label: 'Rank Required',
+              value: provider.tempNature ?? rankRequirements.first,
+              items: rankRequirements,
+              onChanged: (val) => provider.updateTempNature(val!),
+              icon: Icons.stars_rounded,
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: _buildAnimatedDropdown(
-                label: 'Security Clearance',
-                value: provider.tempExperience ?? securityClearanceOptions.first,
-                items: securityClearanceOptions,
-                onChanged: (val) => provider.updateTempExperience(val!),
-                icon: Icons.verified_user_rounded,
-              ),
+            _buildAnimatedDropdown(
+              label: 'Security Clearance',
+              value: provider.tempExperience ?? securityClearanceOptions.first,
+              items: securityClearanceOptions,
+              onChanged: (val) => provider.updateTempExperience(val!),
+              icon: Icons.verified_user_rounded,
             ),
           ],
         ),
         const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: _buildAnimatedTextField(
-                label: 'Years of Service Required',
-                initialValue: provider.tempPay ?? '',
-                onChanged: provider.updateTempPay,
-                validator: (v) => v!.trim().isEmpty ? 'Years of service is required' : null,
-                icon: Icons.timeline_rounded,
-                hintText: 'e.g., 2-5 years, Entry Level, 10+ years',
-                focusNode: _focusNodes['yearsService'],
-              ),
+        _buildResponsiveRow(
+          isMobile,
+          [
+            _buildAnimatedTextField(
+              label: 'Years of Service',
+              initialValue: provider.tempPay ?? '',
+              onChanged: provider.updateTempPay,
+              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+              icon: Icons.timeline_rounded,
+              hintText: 'e.g., 2-5 years',
+              focusNode: _focusNodes['yearsService'],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: _buildAnimatedTextField(
-                label: 'Duty Location',
-                initialValue: provider.tempLocation ?? '',
-                onChanged: provider.updateTempLocation,
-                validator: (v) => v!.trim().isEmpty ? 'Location is required' : null,
-                icon: Icons.location_on_outlined,
-                hintText: 'e.g., Edwards AFB, CA or Worldwide Assignment',
-                focusNode: _focusNodes['location'],
-              ),
+            _buildAnimatedTextField(
+              label: 'Duty Location',
+              initialValue: provider.tempLocation ?? '',
+              onChanged: provider.updateTempLocation,
+              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+              icon: Icons.location_on_outlined,
+              hintText: 'e.g., Edwards AFB, CA',
+              focusNode: _focusNodes['location'],
             ),
           ],
         ),

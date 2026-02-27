@@ -44,6 +44,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _showAIChat = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -62,44 +63,95 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: _background,
+      drawer: isMobile
+          ? Drawer(
+              child: RecruiterSidebar(activeIndex: 0, isDrawer: true),
+            )
+          : null,
       body: Row(
         children: [
-          RecruiterSidebar(activeIndex: 0),
+          if (!isMobile) RecruiterSidebar(activeIndex: 0),
           Expanded(
             child: FadeTransition(
               opacity: _controller,
               child: Stack(
                 children: [
-                  Consumer<JobSeekerProvider>(
-                    builder: (context, provider, _) =>
-                        StreamBuilder<List<Map<String, dynamic>>>(
-                          stream: provider.allJobsStream,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: _primary,
-                                ),
-                              );
-                            }
-                            if (snapshot.hasError) {
-                              return _ErrorWidget(
-                                error: snapshot.error.toString(),
-                              );
-                            }
-                            final jobs = snapshot.data ?? [];
-                            if (jobs.isEmpty) return _EmptyWidget();
-                            return Recruiter_Analytics(jobs: jobs);
-                          },
+                  Column(
+                    children: [
+                      if (isMobile)
+                        _buildMobileAppBar('Recruiter Dashboard'),
+                      Expanded(
+                        child: Consumer<JobSeekerProvider>(
+                          builder: (context, provider, _) =>
+                              StreamBuilder<List<Map<String, dynamic>>>(
+                                stream: provider.allJobsStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color: _primary,
+                                      ),
+                                    );
+                                  }
+                                  if (snapshot.hasError) {
+                                    return _ErrorWidget(
+                                      error: snapshot.error.toString(),
+                                    );
+                                  }
+                                  final jobs = snapshot.data ?? [];
+                                  if (jobs.isEmpty) return _EmptyWidget();
+                                  return Recruiter_Analytics(jobs: jobs);
+                                },
+                              ),
                         ),
+                      ),
+                    ],
                   ),
                   // AI Chat with built-in toggle
                   const AIFloatingChat(),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileAppBar(String title) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.menu_rounded, size: 24),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E40AF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.recent_actors_outlined, size: 20, color: Color(0xFF1E40AF)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(title,
+              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
             ),
           ),
         ],
@@ -332,6 +384,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Row(
@@ -345,9 +400,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                   ? const NeverScrollableScrollPhysics()
                   : const BouncingScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
-                SliverToBoxAdapter(child: _buildStatsOverview()),
-                SliverToBoxAdapter(child: _buildAnalyticsSection()),
+                SliverToBoxAdapter(child: _buildHeader(isMobile)),
+                SliverToBoxAdapter(child: _buildStatsOverview(isMobile)),
+                SliverToBoxAdapter(child: _buildAnalyticsSection(isMobile)),
               ],
             ),
           ),
@@ -356,14 +411,13 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isMobile) {
     const Color kPrimaryBlue = Color(0xFF1E40AF);
     const Color kTextPrimary = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
       decoration: BoxDecoration(color: Colors.white),
       child: Row(
         children: [
@@ -384,32 +438,35 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           const SizedBox(width: 14),
 
           // Title & Subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Recruiter Dashboard',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Recruiter Dashboard',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 16 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: kTextPrimary,
+                    height: 1.2,
+                  ),
                 ),
-              ),
-              Text(
-                'Discover and Manage Jobs & Candidates Trends',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
+                Text(
+                  'Manage Trends',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: kTextSecondary,
+                    height: 1.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
 
-          const Spacer(),
-          _buildPostJobButton(),
+          const SizedBox(width: 12),
+          if (!isMobile) _buildPostJobButton(),
         ],
       ),
     );
@@ -463,9 +520,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   }
 
   // STATS OVERVIEW CARDS
-  Widget _buildStatsOverview() {
+  Widget _buildStatsOverview(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
+      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 24),
       color: _background,
       child: FutureBuilder<Map<String, dynamic>>(
         future: _fetchAllApplicantsData(),
@@ -484,59 +541,67 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           final rejected = data['rejected'] ?? 0;
           final shortlist = data['shortlist'] ?? 0;
 
-          return Row(
-            children: [
-              Expanded(
-                child: _buildStatCardEnhanced(
-                  title: 'Total Applications',
-                  value: totalApps.toString(),
-                  subtitle: 'Across all jobs Posted',
-                  icon: Icons.people_alt_outlined,
-                  color: _accent,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCardEnhanced(
-                  title: 'Pending Review',
-                  value: pending.toString(),
-                  subtitle: 'Awaiting recruiter action',
-                  icon: Icons.hourglass_empty,
-                  color: _warning,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCardEnhanced(
-                  title: 'Accepted',
-                  value: accepted.toString(),
-                  subtitle: 'Candidates Handover by Admin',
-                  icon: Icons.check_circle_outline,
-                  color: _success,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCardEnhanced(
-                  title: 'Rejected',
-                  value: rejected.toString(),
-                  subtitle: 'Rejected candidates',
-                  icon: Icons.group_remove_outlined,
-                  color: _error,
-                ),
-              ),
-              const SizedBox(width: 16),
+          final cards = [
+            _buildStatCardEnhanced(
+              title: 'Total Apps',
+              value: totalApps.toString(),
+              subtitle: 'Across jobs',
+              icon: Icons.people_alt_outlined,
+              color: _accent,
+            ),
+            _buildStatCardEnhanced(
+              title: 'Pending',
+              value: pending.toString(),
+              subtitle: 'Needs review',
+              icon: Icons.hourglass_empty,
+              color: _warning,
+            ),
+            _buildStatCardEnhanced(
+              title: 'Accepted',
+              value: accepted.toString(),
+              subtitle: 'By Admin',
+              icon: Icons.check_circle_outline,
+              color: _success,
+            ),
+            _buildStatCardEnhanced(
+              title: 'Rejected',
+              value: rejected.toString(),
+              subtitle: 'Candidates',
+              icon: Icons.group_remove_outlined,
+              color: _error,
+            ),
+            _buildStatCardEnhanced(
+              title: 'Shortlist',
+              value: shortlist.toString(),
+              subtitle: 'Interview',
+              icon: Icons.star_outline,
+              color: _primary,
+            ),
+          ];
 
-              Expanded(
-                child: _buildStatCardEnhanced(
-                  title: 'shortlist',
-                  value: shortlist.toString(),
-                  subtitle: 'In interview pipeline',
-                  icon: Icons.star_outline,
-                  color: _primary,
-                ),
+          if (isMobile) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: cards.map((c) => Container(
+                  width: 160,
+                  margin: const EdgeInsets.only(right: 12),
+                  child: c,
+                )).toList(),
               ),
-            ],
+            );
+          }
+
+          return Row(
+            children: cards.asMap().entries.map((e) {
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: e.key < cards.length - 1 ? 16 : 0),
+                  child: e.value,
+                ),
+              );
+            }).toList(),
           );
         },
       ),
@@ -623,9 +688,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   }
 
   // ANALYTICS SECTION
-  Widget _buildAnalyticsSection() {
+  Widget _buildAnalyticsSection(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
+      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 24),
       color: _background,
       child: FutureBuilder<Map<String, dynamic>>(
         future: _fetchAllApplicantsData(),
@@ -638,6 +703,20 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           }
 
           final data = snapshot.data!;
+
+          if (isMobile) {
+            return Column(
+              children: [
+                _buildApplicationsTrendChart(data),
+                const SizedBox(height: 16),
+                _buildStatusDistribution(data),
+                const SizedBox(height: 16),
+                _buildTopSkillsChart(data),
+                const SizedBox(height: 16),
+                _buildTopJobsList(data),
+              ],
+            );
+          }
 
           return Column(
             children: [

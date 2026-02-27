@@ -20,7 +20,8 @@ class LiveJobsForSeeker extends StatefulWidget {
 }
 
 class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // Controllers & animations
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -227,26 +228,35 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 1000;
+
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: const Color(0xFFFFFFFF),
+        endDrawer: isMobile ? Drawer(
+          width: 340,
+          child: _buildExpandedSidebar(isDrawer: true),
+        ) : null,
         body: Row(
           children: [
-            // Left Sidebar - Filters Panel
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: _isSidebarCollapsed ? 60 : 400,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  right: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+            // Left Sidebar - Filters Panel (Desktop only)
+            if (!isMobile)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: _isSidebarCollapsed ? 60 : 400,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    right: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                  ),
                 ),
+                child: _isSidebarCollapsed
+                    ? _buildCollapsedSidebar()
+                    : _buildExpandedSidebar(),
               ),
-              child: _isSidebarCollapsed
-                  ? _buildCollapsedSidebar()
-                  : _buildExpandedSidebar(),
-            ),
 
 // Main Content Area - A more robust layout
             Expanded(
@@ -254,7 +264,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // 1. The header takes its natural height
-                  _buildTopHeader(),
+                  _buildTopHeader(isMobile),
 
                   // 2. The list expands to fill the remaining space and handles its own scrolling
                   Expanded(
@@ -311,7 +321,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     );
   }
 
-  Widget _buildExpandedSidebar() {
+  Widget _buildExpandedSidebar({bool isDrawer = false}) {
     return Column(
       children: [
         // Sidebar Header
@@ -323,7 +333,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           ),
           child: Row(
             children: [
-              Icon(Icons.tune, size: 24, color: const Color(0xFF374151)),
+              const Icon(Icons.tune, size: 24, color: Color(0xFF374151)),
               const SizedBox(width: 12),
               Text('Filters & Search',
                   style: GoogleFonts.poppins(
@@ -347,11 +357,17 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 ),
                 const SizedBox(width: 8),
               ],
-              IconButton(
-                onPressed: () => setState(() => _isSidebarCollapsed = true),
-                icon: const Icon(Icons.chevron_left, color: Color(0xFF374151)),
-                tooltip: 'Collapse Filters',
-              ),
+              if (!isDrawer)
+                IconButton(
+                  onPressed: () => setState(() => _isSidebarCollapsed = true),
+                  icon: const Icon(Icons.chevron_left, color: Color(0xFF374151)),
+                  tooltip: 'Collapse Filters',
+                )
+              else 
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Color(0xFF374151)),
+                ),
             ],
           ),
         ),
@@ -448,12 +464,46 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     );
   }
 
-  Widget _buildTopHeader() {
+  Widget _buildTopHeader(bool isMobile) {
     return Container(
-      height: 70,
+      height: isMobile ? null : 70,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
 
-      child: Row(
+      child: isMobile 
+      ? Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'}',
+                    style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF374151)),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                  icon: const Icon(Icons.tune, color: Color(0xFF3B82F6)),
+                  tooltip: 'Show Filters',
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildSortDropdown(),
+                  const SizedBox(width: 12),
+                  _buildActiveBadge(),
+                ],
+              ),
+            ),
+          ],
+        )
+      : Row(
         children: [
           // Results count
           Text(
@@ -467,70 +517,78 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           const Spacer(),
 
           // Active jobs badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border:
-              Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text('${_filteredJobs.length} Active',
-                    style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF10B981))),
-              ],
-            ),
-          ),
+          _buildActiveBadge(),
 
           const SizedBox(width: 16),
 
           // Sort dropdown
+          _buildSortDropdown(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border:
+        Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFD1D5DB)),
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.sort, size: 16, color: Color(0xFF64748B)),
-                const SizedBox(width: 8),
-                DropdownButton<String>(
-                  value: _selectedSortOption,
-                  underline: const SizedBox(),
-                  style: GoogleFonts.poppins(
-                      fontSize: 14, color: const Color(0xFF64748B)),
-                  items: const [
-                    DropdownMenuItem(
-                        value: 'newest', child: Text('Newest First')),
-                    DropdownMenuItem(
-                        value: 'oldest', child: Text('Oldest First')),
-                    DropdownMenuItem(
-                        value: 'company', child: Text('Company A→Z')),
-                  ],
-                  onChanged: (val) {
-                    setState(() => _selectedSortOption = val!);
-                    _applyFilters();
-                  },
-                ),
-              ],
-            ),
+          ),
+          const SizedBox(width: 8),
+          Text('${_filteredJobs.length} Active',
+              style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF10B981))),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSortDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFD1D5DB)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sort, size: 16, color: Color(0xFF64748B)),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            value: _selectedSortOption,
+            underline: const SizedBox(),
+            style: GoogleFonts.poppins(
+                fontSize: 14, color: const Color(0xFF64748B)),
+            items: const [
+              DropdownMenuItem(
+                  value: 'newest', child: Text('Newest First')),
+              DropdownMenuItem(
+                  value: 'oldest', child: Text('Oldest First')),
+              DropdownMenuItem(
+                  value: 'company', child: Text('Company A→Z')),
+            ],
+            onChanged: (val) {
+              setState(() => _selectedSortOption = val!);
+              _applyFilters();
+            },
           ),
         ],
       ),

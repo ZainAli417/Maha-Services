@@ -21,6 +21,9 @@ class SignUp_Screen extends StatefulWidget {
 class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateMixin {
   final _formKeyAccount = GlobalKey<FormState>();
 
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -540,13 +543,25 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             label: 'Password',
             hint: 'Create a strong password (min. 8 characters)',
             icon: Icons.lock_outline_rounded,
-            obscureText: true,
+            obscureText: !_isPasswordVisible,
             errorText: p.passwordError,
             validator: (v) {
               if (v == null || v.isEmpty) return 'Password required';
               if (v.length < 8) return 'Minimum 8 characters';
               return null;
             },
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: const Color(0xFF6366F1),
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isPasswordVisible = !_isPasswordVisible;
+                });
+              },
+            ),
           ),
           const SizedBox(height: 18),
           _buildEnhancedTextField(
@@ -554,7 +569,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             label: 'Confirm Password',
             hint: 'Re-enter your password',
             icon: Icons.lock_outline_rounded,
-            obscureText: true,
+            obscureText: !_isConfirmPasswordVisible,
             errorText: p.passwordError,
             validator: (v) {
               if (v == null || v.isEmpty) return 'Confirm your password';
@@ -563,6 +578,18 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
               }
               return null;
             },
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isConfirmPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: const Color(0xFF6366F1),
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                });
+              },
+            ),
           ),
           const SizedBox(height: 32),
           _buildReCaptcha(p),
@@ -948,6 +975,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     String? Function(String?)? validator,
     void Function(String)? onChanged,
     int maxLines = 1,
+    Widget? suffixIcon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1016,6 +1044,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
               vertical: 18,
             ),
             errorText: errorText,
+            suffixIcon: suffixIcon,
           ),
         ),
       ],
@@ -1024,7 +1053,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return const _SignUp_ScreenInner();
+    return _SignUp_ScreenInner();
   }
 }
 

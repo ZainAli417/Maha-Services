@@ -180,26 +180,31 @@ class _ViewShortlistedState extends State<view_shortlisted>
     final overlayEntry = OverlayEntry(
       builder: (_) => Positioned(
         top: 30,
-        left: 400,
-        right: 380,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 4))],
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(message,
-                      style: GoogleFonts.poppins(fontSize: 13, color: Colors.white)),
+        left: 20,
+        right: 20,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Icon(icon, color: Colors.white, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(message,
+                          style: GoogleFonts.poppins(fontSize: 13, color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -207,7 +212,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
     );
 
     Overlay.of(context).insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 5), overlayEntry.remove);
+    Future.delayed(const Duration(seconds: 4), overlayEntry.remove);
   }
 
   // ─── Send to Admin ────────────────────────────────────────────────────────
@@ -326,10 +331,10 @@ class _ViewShortlistedState extends State<view_shortlisted>
               ),
               if (hasSelection)
                 Positioned(
-                  top: 20,
-                  left: 16,
-                  right: 16,
-                  child: _buildDynamicIslandBar(provider),
+                  top: 10,
+                  left: 8,
+                  right: 8,
+                  child: _buildDynamicIslandBar(provider, isMobile: MediaQuery.of(context).size.width < 600),
                 ),
             ],
           );
@@ -338,12 +343,12 @@ class _ViewShortlistedState extends State<view_shortlisted>
     );
   }
 
-  Widget _buildDynamicIslandBar(ApplicantsProvider provider) {
+  Widget _buildDynamicIslandBar(ApplicantsProvider provider, {bool isMobile = false}) {
     return Center(
       child: ScaleTransition(
         scale: _selectionBarAnimation,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 20, vertical: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [_textPrimary, _textPrimary.withOpacity(0.95)]),
             borderRadius: BorderRadius.circular(50),
@@ -353,7 +358,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -363,13 +368,14 @@ class _ViewShortlistedState extends State<view_shortlisted>
                   const SizedBox(width: 6),
                   Text(
                     '${provider.selectedApplicantIds.length}',
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                 ]),
               ),
-              const SizedBox(width: 12),
-              Text('Selected', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
+              if (!isMobile)
+                Text('Selected', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+              const SizedBox(width: 8),
               IconButton(
                 onPressed: provider.clearSelection,
                 icon: const Icon(Icons.close, size: 18),
@@ -382,13 +388,13 @@ class _ViewShortlistedState extends State<view_shortlisted>
               ElevatedButton.icon(
                 onPressed: () => _handleSendToAdmin(provider),
                 icon: const Icon(Icons.send_rounded, size: 16),
-                label: Text('Send to Admin',
+                label: Text(isMobile ? 'Send' : 'Send to Admin',
                     style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
               ),
@@ -400,45 +406,91 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   Widget _buildDataTable(ApplicantsProvider provider, List<ApplicantRecord> applicants) {
-    return Column(
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+
+    final controls = isMobile 
+    ? Column(
+        children: [
+          _buildSearchBar(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _toggleRanking(provider),
+                  icon: Icon(_isRankingByScore ? Icons.filter_list : Icons.sort, size: 18),
+                  label: Text(
+                    _isRankingByScore ? 'Ranked' : 'Rank Now',
+                    style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFF475569),
+                    backgroundColor: _isRankingByScore ? const Color(0xFF8B5CF6).withOpacity(0.1) : Colors.white,
+                    side: BorderSide(color: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => const ApplicantFilterWidget(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      )
+    : Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: _buildSearchBar(),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (_) => const ApplicantFilterWidget(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            OutlinedButton.icon(
-              onPressed: () => _toggleRanking(provider),
-              icon: Icon(_isRankingByScore ? Icons.filter_list : Icons.sort, size: 18),
-              label: Text(
-                _isRankingByScore ? 'Ranked' : 'Rank Now',
-                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFF475569),
-                backgroundColor: _isRankingByScore ? const Color(0xFF8B5CF6).withOpacity(0.1) : Colors.white,
-                side: BorderSide(color: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-          ],
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: _buildSearchBar(),
+          ),
         ),
-        const SizedBox(height: 16),
+        IconButton(
+          icon: const Icon(Icons.filter_list),
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => const ApplicantFilterWidget(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        OutlinedButton.icon(
+          onPressed: () => _toggleRanking(provider),
+          icon: Icon(_isRankingByScore ? Icons.filter_list : Icons.sort, size: 18),
+          label: Text(
+            _isRankingByScore ? 'Ranked' : 'Rank Now',
+            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFF475569),
+            backgroundColor: _isRankingByScore ? const Color(0xFF8B5CF6).withOpacity(0.1) : Colors.white,
+            side: BorderSide(color: _isRankingByScore ? const Color(0xFF8B5CF6) : const Color(0xFFE2E8F0)),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ],
+    );
+
+    final tableContent = Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          child: controls,
+        ),
+        const SizedBox(height: 8),
         _buildTableHeader(provider),
         Expanded(
           child: applicants.isEmpty
@@ -456,6 +508,16 @@ class _ViewShortlistedState extends State<view_shortlisted>
         ),
       ],
     );
+
+    return isMobile 
+      ? SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: 1000,
+            child: tableContent,
+          ),
+        )
+      : tableContent;
   }
 
   Widget _buildSearchBar() {

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,254 +9,144 @@ class HeaderNav extends StatefulWidget {
   State<HeaderNav> createState() => _HeaderNavState();
 }
 
-class _HeaderNavState extends State<HeaderNav> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-  static const Color pureWhite = Color(0xFFFFFFFF);
-  static Color charcoalGray = Colors.black87;
-  late AnimationController _rotationController;
-  late Animation<double> _rotationAnimation;
+class _HeaderNavState extends State<HeaderNav>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
-    // slow rotation controller (kept but visual won't have heavy gradients/shadows)
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 30),
-      vsync: this,
-    )..repeat();
-    _rotationAnimation =
-        Tween<double>(begin: 0, end: 2 * math.pi).animate(_rotationController);
-
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _controller.forward();
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    // dispose rotation controller too (important)
-    _rotationController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _animation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, -0.5),
-          end: Offset.zero,
-        ).animate(_animation),
-        child: Container(
-          // NOTE: removed outer boxShadow so header is flat (no bottom shadow)
-          color: Colors.white,
-          child: ClipRRect(
-            // keep clip but remove blur/backdrop to make header visually separate
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width < 900 ? 16 : 48,
-                vertical: 12,
-              ),
-              // solid white background (no transparent gradient)
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                // keep a subtle bottom border line for separation if desired
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color(0xFFE5E7EB),
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isNarrow = constraints.maxWidth < 900;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 900;
+    final isTablet = screenWidth > 600 && screenWidth <= 900;
 
-                  if (isNarrow) {
-                    return _buildMobileHeader(context);
-                  }
-                  return _buildDesktopHeader(context);
-                },
-              ),
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: Color(0xFFF1F1F4),
+              width: 1,
             ),
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop
+                  ? 40
+                  : isTablet
+                      ? 24
+                      : 16,
+              vertical: 10,
+            ),
+            child: isDesktop
+                ? _buildDesktopNav(context)
+                : _buildMobileNav(context),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDesktopHeader(BuildContext context) {
+  // ===== DESKTOP NAV =====
+  Widget _buildDesktopNav(BuildContext context) {
     return Row(
       children: [
-        // Logo with animation (simplified, no purple gradient or outer shadows)
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.8, end: 1.0),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.elasticOut,
-          builder: (context, scale, child) {
-            return Transform.scale(
-              scale: scale,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => context.go('/'),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    // simplified: flat white background, small colored icon, no boxShadow
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.transparent),
-                    ),
-                    child: _buildEnhancedLogo(),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+        // Logo
+        _buildLogo(context),
 
         const SizedBox(width: 48),
 
-        // Navigation Links
-        _NavLink(
-          label: "Home",
-          icon: Icons.home_rounded,
+        // Nav links
+        _HeaderNavLink(
+          label: 'Home',
           onTap: () => context.go('/'),
         ),
-        _NavLink(
-          label: "Create Profile",
-          icon: Icons.person_add_rounded,
+        _HeaderNavLink(
+          label: 'Create Profile',
           onTap: () => context.go('/register'),
         ),
-        _NavLink(
-          label: "Find Jobs",
-          icon: Icons.search_rounded,
+        _HeaderNavLink(
+          label: 'Find Jobs',
           onTap: () => context.go('/login'),
         ),
 
         const Spacer(),
 
-        // Recruiter CTA with gradient (kept visual interest but no header shadow)
-
-
-        // Login button (flat, no extra header shadow)
-        _AnimatedButton(
-          onPressed: () => context.go('/login'),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: const Color(0xFF6366F1),
-                width: 2,
-              ),
-            ),
-            child: Text(
-              "Login",
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: const Color(0xFF6366F1),
-              ),
-            ),
-          ),
+        // Login
+        _HeaderOutlineButton(
+          label: 'Login',
+          onTap: () => context.go('/login'),
         ),
 
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
 
-        // Register button with gradient
-        _AnimatedButton(
-          onPressed: () => context.go('/register'),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Get Started",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 16,
-                  color: Colors.white,
-                ),
-              ],
-            ),
-          ),
+        // Get Started
+        _HeaderFilledButton(
+          label: 'Get Started',
+          onTap: () => context.go('/register'),
         ),
       ],
     );
   }
 
-  Widget _buildMobileHeader(BuildContext context) {
+  // ===== MOBILE NAV =====
+  Widget _buildMobileNav(BuildContext context) {
     return Row(
       children: [
-        // Logo simplified for mobile as well
-        GestureDetector(
-          onTap: () => context.go('/'),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.asset(
-                'images/logo.png',
-                height: 32,
-                width: 32,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        ),
+        // Logo
+        _buildLogo(context, compact: true),
 
         const Spacer(),
 
-        // Mobile menu button
+        // Login text button
+        _HeaderTextLink(
+          label: 'Login',
+          onTap: () => context.go('/login'),
+        ),
+
+        const SizedBox(width: 8),
+
+        // Menu button
         Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (context) => _buildMobileMenu(context),
-              );
-            },
-            borderRadius: BorderRadius.circular(8),
+            onTap: () => _showMobileMenu(context),
+            borderRadius: BorderRadius.circular(10),
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFF5F5F7),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
                 Icons.menu_rounded,
-                color: Color(0xFF6366F1),
-                size: 24,
+                color: Color(0xFF1E293B),
+                size: 22,
               ),
             ),
           ),
@@ -265,170 +154,100 @@ class _HeaderNavState extends State<HeaderNav> with TickerProviderStateMixin {
       ],
     );
   }
-  Widget _buildEnhancedLogo() {
-    return Row(
-      children: [
-        // --- Replace shimmer container with your logo image
-        Image.asset(
-          'images/logo.png',
-          width: 70,
-          height: 70,
-          fit: BoxFit.contain,
-        ),
 
-        const SizedBox(width: 14),
-
-        // --- Brand title and subtitle
-      ],
-    );
-  }
-
-
-  Widget _buildMobileMenu(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5E7EB),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _MobileMenuItem(
-            icon: Icons.home_rounded,
-            label: 'Home',
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/');
-            },
-          ),
-          _MobileMenuItem(
-            icon: Icons.person_add_rounded,
-            label: 'Create Profile',
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/register');
-            },
-          ),
-          _MobileMenuItem(
-            icon: Icons.search_rounded,
-            label: 'Find Jobs',
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/login');
-            },
-          ),
-          _MobileMenuItem(
-            icon: Icons.business_center_rounded,
-            label: 'For Recruiters',
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/recruiter-signup');
-            },
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.go('/register');
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFF6366F1),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+  // ===== LOGO =====
+  Widget _buildLogo(BuildContext context, {bool compact = false}) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => context.go('/'),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'images/logo.png',
+                width: compact ? 36 : 44,
+                height: compact ? 36 : 44,
+                fit: BoxFit.contain,
               ),
-              child: Text(
-                'Get Started',
+            ),
+            if (!compact) ...[
+              const SizedBox(width: 12),
+              Text(
+                'Maha Services',
                 style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B),
+                  letterSpacing: -0.3,
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
+    );
+  }
+
+  // ===== MOBILE MENU =====
+  void _showMobileMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _MobileMenuSheet(parentContext: context),
     );
   }
 }
-class _NavLink extends StatefulWidget {
+
+// ─────────────────────────────────────────────
+// NAV LINK (Desktop)
+// ─────────────────────────────────────────────
+class _HeaderNavLink extends StatefulWidget {
   final String label;
-  final IconData icon;
   final VoidCallback onTap;
 
-  const _NavLink({
+  const _HeaderNavLink({
     required this.label,
-    required this.icon,
     required this.onTap,
   });
 
   @override
-  State<_NavLink> createState() => _NavLinkState();
+  State<_HeaderNavLink> createState() => _HeaderNavLinkState();
 }
 
-class _NavLinkState extends State<_NavLink> {
-  bool _isHovered = false;
+class _HeaderNavLinkState extends State<_HeaderNavLink> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: widget.onTap,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: _isHovered
-                  ? const Color(0xFF6366F1).withOpacity(0.08)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: _isHovered
-                    ? const Color(0xFF6366F1).withOpacity(0.2)
-                    : Colors.transparent,
-                width: 1,
-              ),
+              color:
+                  _hovered ? const Color(0xFFF5F5F7) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  widget.icon,
-                  size: 18,
-                  color: _isHovered
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF6B7280),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  widget.label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
-                    color: _isHovered
-                        ? const Color(0xFF1F2937)
-                        : const Color(0xFF6B7280),
-                  ),
-                ),
-              ],
+            child: Text(
+              widget.label,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: _hovered ? FontWeight.w600 : FontWeight.w500,
+                color: _hovered
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFF64748B),
+              ),
             ),
           ),
         ),
@@ -437,41 +256,271 @@ class _NavLinkState extends State<_NavLink> {
   }
 }
 
-class _AnimatedButton extends StatefulWidget {
-  final VoidCallback onPressed;
-  final Widget child;
+// ─────────────────────────────────────────────
+// OUTLINE BUTTON (Desktop - Login)
+// ─────────────────────────────────────────────
+class _HeaderOutlineButton extends StatefulWidget {
+  final String label;
+  final VoidCallback onTap;
 
-  const _AnimatedButton({
-    required this.onPressed,
-    required this.child,
+  const _HeaderOutlineButton({
+    required this.label,
+    required this.onTap,
   });
 
   @override
-  State<_AnimatedButton> createState() => _AnimatedButtonState();
+  State<_HeaderOutlineButton> createState() => _HeaderOutlineButtonState();
 }
 
-class _AnimatedButtonState extends State<_AnimatedButton> {
-  bool _isHovered = false;
+class _HeaderOutlineButtonState extends State<_HeaderOutlineButton> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: widget.onPressed,
-        child: AnimatedScale(
-          scale: _isHovered ? 1.05 : 1.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          child: widget.child,
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? const Color(0xFF6366F1).withOpacity(0.05)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _hovered
+                  ? const Color(0xFF6366F1)
+                  : const Color(0xFFD1D5DB),
+              width: 1.5,
+            ),
+          ),
+          child: Text(
+            widget.label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _hovered
+                  ? const Color(0xFF6366F1)
+                  : const Color(0xFF374151),
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────
+// FILLED BUTTON (Desktop - Get Started)
+// ─────────────────────────────────────────────
+class _HeaderFilledButton extends StatefulWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _HeaderFilledButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  State<_HeaderFilledButton> createState() => _HeaderFilledButtonState();
+}
+
+class _HeaderFilledButtonState extends State<_HeaderFilledButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? const Color(0xFF4F46E5)
+                : const Color(0xFF6366F1),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.label,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 6),
+              AnimatedSlide(
+                duration: const Duration(milliseconds: 180),
+                offset: _hovered ? const Offset(0.15, 0) : Offset.zero,
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// TEXT LINK (Mobile - Login)
+// ─────────────────────────────────────────────
+class _HeaderTextLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _HeaderTextLink({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF6366F1),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// MOBILE MENU BOTTOM SHEET
+// ─────────────────────────────────────────────
+class _MobileMenuSheet extends StatelessWidget {
+  final BuildContext parentContext;
+
+  const _MobileMenuSheet({required this.parentContext});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Menu items
+              _MobileMenuItem(
+                icon: Icons.home_outlined,
+                label: 'Home',
+                onTap: () {
+                  Navigator.pop(context);
+                  parentContext.go('/');
+                },
+              ),
+              _MobileMenuItem(
+                icon: Icons.person_add_outlined,
+                label: 'Create Profile',
+                onTap: () {
+                  Navigator.pop(context);
+                  parentContext.go('/register');
+                },
+              ),
+              _MobileMenuItem(
+                icon: Icons.search_rounded,
+                label: 'Find Jobs',
+                onTap: () {
+                  Navigator.pop(context);
+                  parentContext.go('/login');
+                },
+              ),
+              _MobileMenuItem(
+                icon: Icons.business_center_outlined,
+                label: 'For Recruiters',
+                onTap: () {
+                  Navigator.pop(context);
+                  parentContext.go('/recruiter-signup');
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Get Started CTA
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    parentContext.go('/register');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Get Started',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// MOBILE MENU ITEM
+// ─────────────────────────────────────────────
 class _MobileMenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -485,44 +534,48 @@ class _MobileMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F7),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(8),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: const Color(0xFF374151),
+                ),
               ),
-              child: Icon(icon, size: 20, color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1F2937),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
               ),
-            ),
-            const Spacer(),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Color(0xFF9CA3AF),
+              ),
+            ],
+          ),
         ),
       ),
     );
