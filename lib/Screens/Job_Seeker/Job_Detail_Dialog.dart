@@ -1,616 +1,600 @@
-// JobDetailModal_recruiter.dart
+// Job_Detail_Dialog.dart — Premium Job Detail Modal
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../Recruiter/Recruiter_provider_Job_listing.dart';
-
-
 class JobDetailModal extends StatelessWidget {
-  final String jobId; // now accept jobId and fetch from provider
-
+  final String jobId;
   const JobDetailModal({super.key, required this.jobId});
 
-  // --- Professional Color Palette (Slate & Indigo) ---
-  static const Color _bgSurface = Colors.white;
-  static const Color _bgBackground = Color(0xFFF8FAFC); // Slate 50
-  static const Color _textPrimary = Color(0xFF0F172A); // Slate 900
-  static const Color _textSecondary = Color(0xFF64748B); // Slate 500
-  static const Color _accentPrimary = Color(0xFF4F46E5); // Indigo 600
-  static const Color _borderColor = Color(0xFFE2E8F0); // Slate 200
-  static const Color _dangerColor = Color(0xFFEF4444); // Red 500
-  static const Color _successColor = Color(0xFF10B981); // Emerald 500
+  // ── Design tokens ──────────────────────────────────────────────────────
+  static const _navy       = Color(0xFF0F172A);
+  static const _navyLight  = Color(0xFF1E293B);
+  static const _slate500   = Color(0xFF64748B);
+  static const _slate400   = Color(0xFF94A3B8);
+  static const _slate200   = Color(0xFFE2E8F0);
+  static const _slate50    = Color(0xFFF8FAFC);
+  static const _indigo     = Color(0xFF4F46E5);
+  static const _indigoSoft = Color(0xFFEEF2FF);
+  static const _emerald    = Color(0xFF059669);
+  static const _emeraldBg  = Color(0xFFECFDF5);
+  static const _amber      = Color(0xFFD97706);
+  static const _amberBg    = Color(0xFFFFFBEB);
+  static const _red500     = Color(0xFFEF4444);
+  static const _white      = Colors.white;
 
-  // Helper to safely get job from provider
-  Map<String, dynamic>? _findJob(BuildContext context) {
-    final provider = Provider.of<job_listing_provider>(context, listen: true);
-    try {
-      final job = provider.jobList.firstWhere((j) {
-        final id = j['id']?.toString();
-        return id != null && id == jobId;
-      }, orElse: () => <String, dynamic>{});
-      if (job.isEmpty) return null;
-      return Map<String, dynamic>.from(job);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  // Safely parse a Firestore Timestamp or ISO string to readable string
+  // ── Date helper ────────────────────────────────────────────────────────
   String _fmtDate(dynamic ts) {
     if (ts == null) return '';
     if (ts is Timestamp) {
       final d = ts.toDate();
-      return '${d.year}-${_two(d.month)}-${_two(d.day)}';
+      return '${_monthName(d.month)} ${d.day}, ${d.year}';
     }
     if (ts is String) {
-      // try to parse ISO
       try {
         final d = DateTime.parse(ts);
-        return '${d.year}-${_two(d.month)}-${_two(d.day)}';
-      } catch (_) {
-        return ts;
-      }
+        return '${_monthName(d.month)} ${d.day}, ${d.year}';
+      } catch (_) { return ts; }
     }
-    if (ts is DateTime) {
-      final d = ts;
-      return '${d.year}-${_two(d.month)}-${_two(d.day)}';
-    }
+    if (ts is DateTime) return '${_monthName(ts.month)} ${ts.day}, ${ts.year}';
     return ts.toString();
   }
 
-  String _two(int n) => n.toString().padLeft(2, '0');
+  String _monthName(int m) =>
+      ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1];
 
+  String _timeAgo(dynamic ts) {
+    if (ts == null) return '';
+    DateTime date;
+    if (ts is Timestamp) { date = ts.toDate(); }
+    else if (ts is DateTime) { date = ts; }
+    else { return ''; }
+    final diff = DateTime.now().difference(date);
+    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()}mo ago';
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    return 'Just now';
+  }
+
+  Future<Map<String, dynamic>?> _fetchJob() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Posted_jobs_public').doc(jobId).get();
+    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    final isMobile = screenW < 700;
+
     return FutureBuilder<Map<String, dynamic>?>(
-        future: _fetchJobFromFirestore(),
-        builder: (context, snapshot) {
-          // Show loading state
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                height: 200,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Loading job details...',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: _textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          // Show error state
-          if (snapshot.hasError || snapshot.data == null) {
-            return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                height: 200,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: _dangerColor,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Job not found',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'This job may have been removed or archived.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: _textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Close',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          // ✅ Job data loaded successfully
-          final jobData = snapshot.data!;
-    // --- Extract fields (use same keys your listing uses) ---
-    final title = jobData['title'] as String? ?? 'Untitled Position';
-    final company = jobData['company'] as String? ?? 'Unknown Company';
-    final logoUrl = jobData['logoUrl'] as String? ?? '';
-    final description =
-        jobData['description'] as String? ?? 'No description provided.';
-    final responsibilities =
-        jobData['responsibilities'] as String? ??
-            jobData['responsibilitiesHtml'] ??
-            'Not specified.';
-    final qualifications =
-        jobData['qualifications'] as String? ?? 'Not specified.';
-    final skills =
-        (jobData['skills'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final workModes =
-        (jobData['workModes'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final benefits =
-        (jobData['benefits'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final department = jobData['department'] as String? ?? '';
-    final experience = jobData['experience'] as String? ?? '';
-    final deadline = _fmtDate(
-      jobData['deadline'] ?? jobData['applicationDeadline'],
+      future: _fetchJob(),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) return _buildLoading(isMobile);
+        if (snap.hasError || snap.data == null)              return _buildError(context, isMobile);
+        return _buildContent(context, snap.data!, isMobile);
+      },
     );
-    final contact =
-        jobData['contactEmail'] as String? ??
-            jobData['contact'] as String? ??
-            '';
-    final status = (jobData['status'] as String?)?.toLowerCase() ?? 'active';
-    final jobIdField = jobData['id']?.toString() ?? jobId;
-    final salary = jobData['salary'] ?? jobData['pay'] ?? 'Not disclosed';
-    final nature = jobData['nature'] ?? jobData['type'] ?? 'Full-time';
-    final timestampRaw = jobData['timestamp'];
+  }
 
-    // Extract view count and application count
-    final viewCount = jobData['viewCount'] ?? 0;
-    final applicationCount = jobData['applicationCount'] ?? 0;
-print(applicationCount);
-    // Build UI (keeps your original widgets + wiring to provider functions)
-    return Dialog(
-      backgroundColor: _bgSurface,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 0,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _borderColor),
-          color: _bgSurface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+  // ── Loading state ──────────────────────────────────────────────────────
+  Widget _buildLoading(bool isMobile) {
+    final body = Container(
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: isMobile
+            ? const BorderRadius.vertical(top: Radius.circular(28))
+            : BorderRadius.circular(16),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(
+          width: 40, height: 40,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: const AlwaysStoppedAnimation(_indigo),
+            backgroundColor: _slate200,
+          ),
         ),
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _borderColor),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: logoUrl.isNotEmpty
-                          ? Image.network(
-                        logoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(
-                            Icons.business,
-                            color: _textSecondary,
-                          ),
-                        ),
-                      )
-                          : const Center(
-                        child: Icon(
-                          Icons.business,
-                          color: _textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Title & Company
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: _textPrimary,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          company,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: _textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: _textSecondary),
-                    tooltip: 'Close',
-                  ),
-                ],
-              ),
+        const SizedBox(height: 20),
+        Text('Loading job details…',
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: _slate500)),
+      ]),
+    );
+
+    if (isMobile) return body;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: body),
+    );
+  }
+
+  // ── Error state ────────────────────────────────────────────────────────
+  Widget _buildError(BuildContext context, bool isMobile) {
+    final body = Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: isMobile
+            ? const BorderRadius.vertical(top: Radius.circular(28))
+            : BorderRadius.circular(16),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF2F2),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.work_off_outlined, size: 32, color: _red500),
+        ),
+        const SizedBox(height: 20),
+        Text('Position Unavailable',
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: _navy)),
+        const SizedBox(height: 8),
+        Text('This job may have been filled or removed by the recruiter.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 14, color: _slate500, height: 1.5)),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              side: const BorderSide(color: _slate200),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
+            child: Text('Go Back', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _navy)),
+          ),
+        ),
+      ]),
+    );
 
-            const Divider(height: 1, color: _borderColor),
+    if (isMobile) return body;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: body),
+    );
+  }
 
-            // Meta Row
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor),
-              ),
-              child: IntrinsicHeight(
-                child: Row(
-                  children: [
-                    _buildMetaItem(
-                      Icons.payments_outlined,
-                      'Salary',
-                      salary.toString(),
-                    ),
-                    const VerticalDivider(color: _borderColor, width: 32),
-                    _buildMetaItem(
-                      Icons.work_outline,
-                      'Job Type',
-                      nature.toString(),
-                    ),
-                    const VerticalDivider(color: _borderColor, width: 32),
-                    _buildMetaItem(
-                      Icons.location_on_outlined,
-                      'Location',
-                      jobData['location']?.toString() ?? 'Remote',
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  // ── Main content ───────────────────────────────────────────────────────
+  Widget _buildContent(BuildContext ctx, Map<String, dynamic> job, bool isMobile) {
+    final title            = job['title']            as String? ?? 'Untitled Position';
+    final company          = job['company']          as String? ?? 'Unknown Company';
+    final logoUrl          = job['logoUrl']          as String? ?? '';
+    final description      = job['description']      as String? ?? 'No description provided.';
+    final responsibilities = job['responsibilities'] as String? ?? job['responsibilitiesHtml'] ?? '';
+    final qualifications   = job['qualifications']   as String? ?? '';
+    final skills           = (job['skills']    as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final workModes        = (job['workModes'] as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final benefits         = (job['benefits']  as List<dynamic>?)?.cast<String>() ?? <String>[];
+    final department       = job['department'] as String? ?? '';
+    final experience       = job['experience'] as String? ?? '';
+    final deadline         = _fmtDate(job['deadline'] ?? job['applicationDeadline']);
+    final salary           = job['salary']  ?? job['pay']  ?? 'Not disclosed';
+    final nature           = job['nature']  ?? job['type'] ?? 'Full-time';
+    final location         = job['location']?.toString() ?? 'Remote';
+    final tsRaw            = job['timestamp'];
+    final viewCount        = job['viewCount'] ?? 0;
+    final appCount         = job['applicationCount'] ?? 0;
 
+    final body = Container(
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: isMobile
+            ? const BorderRadius.vertical(top: Radius.circular(28))
+            : BorderRadius.circular(16),
+        boxShadow: isMobile ? null : [
+          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 40, offset: const Offset(0, 16)),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: isMobile ? MainAxisSize.min : MainAxisSize.max,
+        children: [
+
+          // ── Drag handle (mobile) ──
+          if (isMobile) ...[
             const SizedBox(height: 12),
+            Center(child: Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(color: _slate200, borderRadius: BorderRadius.circular(2)),
+            )),
+            const SizedBox(height: 8),
+          ],
 
-            // Content area
-            Expanded(
-              child: Container(
-                color: _bgBackground,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Top Meta Row (deadline, dept, posted date)
-                      Row(
-                        children: [
-                          _infoBadge('Department', department),
-                          const SizedBox(width: 5),
-                          // _infoBadge('Experience', experience),
-                          //  const SizedBox(width: 5),
-                          if (deadline.isNotEmpty)
-                            _infoBadge('Deadline', deadline),
-                          const SizedBox(width: 5),
-
-                          if (timestampRaw != null)
-                            Text(
-                              'Posted: ${_fmtDate(timestampRaw)}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: _textSecondary,
-                              ),
-                            ),
+          // ── Premium Header ──
+          Container(
+            padding: EdgeInsets.fromLTRB(
+              isMobile ? 20 : 28,
+              isMobile ? 16 : 24,
+              isMobile ? 12 : 20,
+              isMobile ? 16 : 24,
+            ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [Color(0xFFF8FAFF), Color(0xFFF1F5F9)],
+              ),
+              borderRadius: isMobile
+                  ? BorderRadius.zero
+                  : const BorderRadius.vertical(top: Radius.circular(16)),
+              border: const Border(bottom: BorderSide(color: _slate200, width: 1)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Company logo
+                    Container(
+                      width: isMobile ? 52 : 60,
+                      height: isMobile ? 52 : 60,
+                      decoration: BoxDecoration(
+                        color: _white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _slate200, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
-                      // About the Role
-                      _buildSectionTitle('About the Role'),
-                      _buildRichText(description),
-                      const SizedBox(height: 24),
-
-                      // Key Responsibilities
-                      _buildSectionTitle('Key Responsibilities'),
-                      _buildRichText(responsibilities),
-                      const SizedBox(height: 24),
-
-                      // Qualifications
-                      _buildSectionTitle('Qualifications'),
-                      _buildRichText(qualifications),
-                      const SizedBox(height: 32),
-
-                      // Sidebar Cards row (skills, work mode, benefits)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 550,
-                              child: _buildSidebarDetails(
-                                  skills,
-                                  workModes,
-                                  benefits,
-                                  department,
-                                  experience,
-                                  deadline,
-                                  contact,
-                                  applicationCount.toString(),
-                                  viewCount.toString()
-                              ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(13),
+                        child: logoUrl.isNotEmpty
+                            ? Image.network(logoUrl, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _logoPlaceholder())
+                            : _logoPlaceholder(),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Title / Company
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: isMobile ? 18 : 22,
+                                fontWeight: FontWeight.w700,
+                                color: _navy,
+                                height: 1.25,
+                                letterSpacing: -0.3,
+                              )),
+                          const SizedBox(height: 6),
+                          Row(children: [
+                            Icon(Icons.business_rounded, size: 14, color: _slate400),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(company, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: _slate500)),
                             ),
-                          ],
+                            if (tsRaw != null) ...[
+                              const SizedBox(width: 10),
+                              Container(width: 4, height: 4,
+                                  decoration: const BoxDecoration(color: _slate400, shape: BoxShape.circle)),
+                              const SizedBox(width: 6),
+                              Text(_timeAgo(tsRaw),
+                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: _slate400)),
+                            ],
+                          ]),
+                        ],
+                      ),
+                    ),
+                    // Close
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: _white.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: _slate200),
+                          ),
+                          child: const Icon(Icons.close_rounded, size: 18, color: _slate500),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── Quick-info pills ──
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
+                    _quickPill(Icons.payments_outlined, salary.toString(), _indigo, _indigoSoft),
+                    const SizedBox(width: 8),
+                    _quickPill(Icons.schedule_rounded, nature.toString(), _amber, _amberBg),
+                    const SizedBox(width: 8),
+                    _quickPill(Icons.location_on_outlined, location, _emerald, _emeraldBg),
+                  ]),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── Stats row ──
+                Row(children: [
+                  _statBadge(Icons.visibility_outlined, '$viewCount views', _slate500),
+                  const Spacer(),
+                  if (department.isNotEmpty)
+                    _tagChip(department, _navyLight),
+                ]),
+              ],
+            ),
+          ),
+
+          // ── Scrollable body ──
+          Expanded(
+            child: Container(
+              color: _slate50,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMobile ? 20 : 28,
+                  vertical: isMobile ? 20 : 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Timeline badges
+                    if (deadline.isNotEmpty || experience.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Wrap(spacing: 10, runSpacing: 8, children: [
+                          if (experience.isNotEmpty)
+                            _timelineBadge(Icons.trending_up_rounded, 'Experience', experience),
+                          if (deadline.isNotEmpty)
+                            _timelineBadge(Icons.event_rounded, 'Deadline', deadline),
+                          if (tsRaw != null)
+                            _timelineBadge(Icons.calendar_today_rounded, 'Posted', _fmtDate(tsRaw)),
+                        ]),
+                      ),
+
+                    // About
+                    if (description.isNotEmpty) ...[
+                      _sectionHeader(Icons.article_outlined, 'About the Role'),
+                      const SizedBox(height: 10),
+                      _bodyText(description, isMobile),
+                      const SizedBox(height: 28),
+                    ],
+
+                    // Responsibilities
+                    if (responsibilities.isNotEmpty) ...[
+                      _sectionHeader(Icons.checklist_rounded, 'Key Responsibilities'),
+                      const SizedBox(height: 10),
+                      _bodyText(responsibilities, isMobile),
+                      const SizedBox(height: 28),
+                    ],
+
+                    // Qualifications
+                    if (qualifications.isNotEmpty) ...[
+                      _sectionHeader(Icons.school_outlined, 'Qualifications'),
+                      const SizedBox(height: 10),
+                      _bodyText(qualifications, isMobile),
+                      const SizedBox(height: 28),
+                    ],
+
+                    // Skills
+                    if (skills.isNotEmpty) ...[
+                      _detailCard(
+                        icon: Icons.code_rounded,
+                        title: 'Required Skills',
+                        child: Wrap(spacing: 8, runSpacing: 8,
+                            children: skills.map((s) => _skillChip(s)).toList()),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Work modes
+                    if (workModes.isNotEmpty) ...[
+                      _detailCard(
+                        icon: Icons.devices_rounded,
+                        title: 'Work Mode',
+                        child: Wrap(spacing: 8, runSpacing: 8,
+                            children: workModes.map((w) => _modeChip(w)).toList()),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Benefits
+                    if (benefits.isNotEmpty) ...[
+                      _detailCard(
+                        icon: Icons.card_giftcard_rounded,
+                        title: 'Perks & Benefits',
+                        child: Column(
+                          children: benefits.map((b) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 4),
+                                width: 20, height: 20,
+                                decoration: const BoxDecoration(color: _emeraldBg, shape: BoxShape.circle),
+                                child: const Icon(Icons.check_rounded, size: 12, color: _emerald),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(child: Text(b,
+                                  style: GoogleFonts.inter(fontSize: 14, color: _navyLight, height: 1.5))),
+                            ]),
+                          )).toList(),
                         ),
                       ),
                     ],
-                  ),
+
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-            ),
-
-
-          ],
-        ),
-      ),
-    );
-
-        }
-    );
-  }
-  // Reusable small widgets
-
-  Widget _buildMetaItem(IconData icon, String label, String value) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: _textSecondary),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: _textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
             ),
           ),
         ],
       ),
     );
-  }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: _textPrimary,
-        ),
+    // ── Return ──
+    if (isMobile) return body;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      elevation: 0,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 780),
+        child: body,
       ),
     );
   }
 
-  Widget _buildRichText(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        height: 1.6,
-        color: const Color(0xFF334155),
-      ),
-    );
-  }
+  // ── Reusable components ────────────────────────────────────────────────
 
-  Widget _buildChip(String label, Color color) {
+  Widget _logoPlaceholder() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      color: _indigoSoft,
+      child: const Center(child: Icon(Icons.business_rounded, color: _indigo, size: 26)),
+    );
+  }
+
+  Widget _quickPill(IconData icon, String text, Color accent, Color bg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: accent.withOpacity(0.15)),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 15, color: accent),
+        const SizedBox(width: 6),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 160),
+          child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: accent)),
+        ),
+      ]),
+    );
+  }
+
+  Widget _statBadge(IconData icon, String text, Color color) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, size: 14, color: color.withOpacity(0.7)),
+      const SizedBox(width: 4),
+      Text(text, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: color)),
+    ]);
+  }
+
+  Widget _tagChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.2)),
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
-      ),
+      child: Text(label,
+          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: color, letterSpacing: 0.2)),
     );
   }
 
-
-  Widget _buildSidebarDetails(
-      List<String> skills,
-      List<String> workModes,
-      List<String> benefits,
-      String department,
-      String experience,
-      String deadline,
-      String contact,
-      String applicationCount,
-      String viewCount,
-      ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSidebarCard(
-          title: 'Required Skills',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((e) => _buildChip(e, _accentPrimary)).toList(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildSidebarCard(
-          title: 'Work Arrangements',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: workModes
-                .map((e) => _buildChip(e, Colors.orange.shade700))
-                .toList(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildSidebarCard(
-          title: 'Perks & Benefits',
-          child: Column(
-            children: benefits
-                .map(
-                  (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check, size: 16, color: _successColor),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        e,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: _textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-                .toList(),
-          ),
-        ),
-
-      ],
+  Widget _timelineBadge(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _slate200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 1))],
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icon, size: 15, color: _slate400),
+        const SizedBox(width: 8),
+        Text('$label: ', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: _slate400)),
+        Text(value, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _navyLight)),
+      ]),
     );
   }
 
-  Widget _buildSidebarCard({required String title, required Widget child}) {
+  Widget _sectionHeader(IconData icon, String title) {
+    return Row(children: [
+      Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: _indigoSoft,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 16, color: _indigo),
+      ),
+      const SizedBox(width: 10),
+      Text(title, style: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w700, color: _navy, letterSpacing: -0.2)),
+    ]);
+  }
+
+  Widget _bodyText(String text, bool isMobile) {
+    return Text(text,
+        style: GoogleFonts.inter(
+          fontSize: isMobile ? 14 : 15,
+          height: 1.7,
+          color: const Color(0xFF475569),
+          letterSpacing: -0.1,
+        ));
+  }
+
+  Widget _detailCard({required IconData icon, required String title, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _borderColor),
+        color: _white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _slate200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: _textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(icon, size: 16, color: _slate400),
+          const SizedBox(width: 8),
+          Text(title.toUpperCase(),
+              style: GoogleFonts.inter(
+                  fontSize: 11, fontWeight: FontWeight.w700, color: _slate400,
+                  letterSpacing: 0.8)),
+        ]),
+        const SizedBox(height: 14),
+        child,
+      ]),
     );
   }
 
-
-
-  Widget _infoBadge(String label, String value) {
+  Widget _skillChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        gradient: LinearGradient(colors: [_indigoSoft, _indigoSoft.withOpacity(0.6)]),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _borderColor),
+        border: Border.all(color: _indigo.withOpacity(0.12)),
       ),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _textSecondary,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
-            ),
-          ),
-        ],
-      ),
+      child: Text(label,
+          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _indigo)),
     );
   }
 
-  Future<Map<String, dynamic>?> _fetchJobFromFirestore() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Posted_jobs_public')
-        .doc(jobId)
-        .get();
-    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
+  Widget _modeChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: _amberBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _amber.withOpacity(0.15)),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.laptop_mac_rounded, size: 13, color: _amber),
+        const SizedBox(width: 5),
+        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _amber)),
+      ]),
+    );
   }
 }

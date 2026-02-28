@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io' as io;
 
@@ -186,15 +187,13 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
       ) async {
     _animateProgress(from: _progress, to: 0.25, durationMs: 1000);
     final fileBytes = await _getFileBytes(file);
-    final base64Data = base64Encode(fileBytes);
-    final mimeType = _getMimeType(file.name);
 
     _setProgress(0.30);
 
     _animateProgress(from: 0.30, to: 0.85, durationMs: 4000);
     final result = await _callServerWithRetry(
-      fileData: base64Data,
-      mimeType: mimeType,
+      fileBytes: fileBytes,
+      fileName: file.name,
       roleName: roleName,
       jobDescription: jobDescription,
     );
@@ -209,8 +208,8 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> _callServerWithRetry({
-    required String fileData,
-    required String mimeType,
+    required Uint8List fileBytes,
+    required String fileName,
     required String roleName,
     required String jobDescription,
   }) async {
@@ -222,8 +221,8 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
 
       try {
         return await _callServerAPI(
-          fileData: fileData,
-          mimeType: mimeType,
+          fileBytes: fileBytes,
+          fileName: fileName,
           roleName: roleName,
           jobDescription: jobDescription,
         );
@@ -243,29 +242,32 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> _callServerAPI({
-    required String fileData,
-    required String mimeType,
+    required Uint8List fileBytes,
+    required String fileName,
     required String roleName,
     required String jobDescription,
   }) async {
     final uri = Uri.parse('${Env.backendUrl}/cv-analysis');
 
-    final payload = {
-      'fileData': fileData,
-      'mimeType': mimeType,
-      'roleName': roleName,
-      'jobDescription': jobDescription,
-    };
+    // Determine MIME type from extension
+    final ext = fileName.toLowerCase().split('.').last;
+    final mimeType = ext == 'pdf' ? 'application/pdf' : 'application/octet-stream';
 
-    final response = await http
-        .post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(payload),
-    )
-        .timeout(requestTimeout);
+    // Build a multipart request (no base64 bloat)
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['roleName'] = roleName
+      ..fields['jobDescription'] = jobDescription
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType.parse(mimeType),
+        ),
+      );
+
+    final streamed = await request.send().timeout(requestTimeout);
+    final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final jsonResponse = json.decode(response.body);

@@ -92,7 +92,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                       _buildMenuItem(
                         icon: Icons.auto_awesome_outlined,
                         activeIcon: Icons.auto_awesome,
-                        label: 'AI Tools',
+                        label: 'ATS Cv Analyzer',
                         index: 2,
                         isActive: widget.activeIndex == 2,
                         onTap: () => context.go('/ai-tools'),
@@ -109,70 +109,41 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                         isActive: widget.activeIndex == 3,
                         onTap: () => context.go('/job-hub'),
                       ),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.bookmark_outline,
-                        activeIcon: Icons.bookmark,
                         label: 'Saved Jobs',
-                        index: 4,
-                        isActive: widget.activeIndex == 4,
-                        onTap: () => context.go('/saved-jobs'),
                       ),
-                      _buildMenuItem(
-                        icon: Icons.send_outlined,
-                        activeIcon: Icons.send,
-                        label: 'Applications',
-                        index: 5,
-                        isActive: widget.activeIndex == 5,
-                        onTap: () => context.go('/applications'),
-                      ),
+                      // _buildProMenuItem(
+                      //   icon: Icons.send_outlined,
+                      //   label: 'Applications',
+                      // ),
 
                       const SizedBox(height: 20),
                       _buildSectionLabel('COMMUNICATION'),
                       const SizedBox(height: 8),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.video_call_outlined,
-                        activeIcon: Icons.video_call,
                         label: 'Interviews',
-                        index: 6,
-                        isActive: widget.activeIndex == 6,
-                        onTap: () => context.go('/alerts'),
                       ),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.chat_bubble_outline,
-                        activeIcon: Icons.chat_bubble,
                         label: 'Messages',
-                        index: 7,
-                        isActive: widget.activeIndex == 7,
-                        onTap: () => context.go('/messages'),
                       ),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.notifications_outlined,
-                        activeIcon: Icons.notifications,
                         label: 'Notifications',
-                        index: 8,
-                        isActive: widget.activeIndex == 8,
-                        badge: _notificationCount > 0 ? _notificationCount.toString() : null,
-                        onTap: () => context.go('/notifications'),
                       ),
 
                       const SizedBox(height: 20),
                       _buildSectionLabel('ACCOUNT'),
                       const SizedBox(height: 8),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.settings_outlined,
-                        activeIcon: Icons.settings,
                         label: 'Settings',
-                        index: 9,
-                        isActive: widget.activeIndex == 9,
-                        onTap: () => context.go('/settings'),
                       ),
-                      _buildMenuItem(
+                      _buildProMenuItem(
                         icon: Icons.help_outline,
-                        activeIcon: Icons.help,
                         label: 'Help & Support',
-                        index: 10,
-                        isActive: widget.activeIndex == 10,
-                        onTap: () => context.go('/help'),
                       ),
                     ],
                   ),
@@ -328,6 +299,64 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
           fontWeight: FontWeight.w700,
           color: const Color(0xFF94A3B8),
           letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProMenuItem({
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            // Greyed icon
+            Icon(icon, size: 20, color: const Color(0xFFCBD5E1)),
+            const SizedBox(width: 12),
+            // Label (greyed)
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFFCBD5E1),
+                ),
+              ),
+            ),
+            // Lock icon
+            const Icon(Icons.lock_outline_rounded,
+                size: 14, color: Color(0xFFCBD5E1)),
+            const SizedBox(width: 6),
+            // PRO badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFD97706), Color(0xFFF59E0B)],
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'PRO',
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

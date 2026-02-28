@@ -768,29 +768,7 @@ class _LoginFormCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Checkbox(
-                        value: false,
-                        onChanged: (val) {},
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Remember me',
-                      style: GoogleFonts.roboto(
-                        fontSize: 13,
-                        color: const Color(0xFF546E7A),
-                      ),
-                    ),
-                  ],
-                ),
+
                 _HoverTextButton(
                   text: 'Forgot Password?',
                   onPressed: () {

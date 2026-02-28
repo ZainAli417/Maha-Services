@@ -274,7 +274,8 @@ class _job_hubState extends State<job_hub>
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildWelcomeSection(),
+              // On mobile the hamburger bar already shows the title, skip duplicate header
+              if (!isMobile) _buildWelcomeSection(),
               Expanded(
                 child: Consumer<JobSeekerProvider>(
                   builder: (context, provider, _) {

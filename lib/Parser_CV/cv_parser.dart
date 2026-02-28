@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../main.dart';
 
@@ -129,10 +130,7 @@ class CvExtractor {
         required String filename,
       }) async {
     try {
-      final mimeType = _getMimeType(filename);
-      final base64Data = base64Encode(bytes);
-
-      final response = await _callServerParser(base64Data, mimeType, filename);
+      final response = await _callServerParser(bytes, filename);
       return response;
     } catch (e) {
       return CvExtractionResult.empty();
@@ -140,28 +138,25 @@ class CvExtractor {
   }
 
   Future<CvExtractionResult> _callServerParser(
-      String fileData,
-      String mimeType,
+      Uint8List fileBytes,
       String filename,
       ) async {
     final uri = Uri.parse('${Env.backendUrl}/cv-parser');
 
-    final payload = {
-      'fileData': fileData,
-      'mimeType': mimeType,
-      'filename': filename,
-    };
-
     try {
-      final response = await http
-          .post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(payload),
-      )
-          .timeout(timeout);
+      final mimeType = _getMimeType(filename);
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            fileBytes,
+            filename: filename,
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
+
+      final streamed = await request.send().timeout(timeout);
+      final response = await http.Response.fromStream(streamed);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final jsonResponse = json.decode(response.body);

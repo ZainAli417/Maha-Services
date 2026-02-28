@@ -80,7 +80,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   Future<void> _pickFile() async {
     final res = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'rtf'],
+      allowedExtensions: ['pdf'],
       withData: true,
     );
     if (res != null && res.files.isNotEmpty) {
@@ -659,7 +659,7 @@ class _FileUploadZone extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             Text(
-              'PDF, DOC, DOCX, TXT supported',
+              'PDF files only',
               style: GoogleFonts.poppins(fontSize: 11, color: kTextSecondary),
             ),
           ],
