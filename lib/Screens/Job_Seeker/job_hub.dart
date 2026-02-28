@@ -125,8 +125,8 @@ class _job_hubState extends State<job_hub>
                     children: [
                       if (isMobile)
                         Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          height: 50,
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
@@ -134,21 +134,23 @@ class _job_hubState extends State<job_hub>
                           child: Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.menu_rounded, size: 24),
+                                icon: const Icon(Icons.menu_rounded, size: 22),
                                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                               ),
                               const SizedBox(width: 4),
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1E40AF).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(7),
                                 ),
-                                child: const Icon(Icons.screen_search_desktop_outlined, size: 20, color: Color(0xFF1E40AF)),
+                                child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF1E40AF)),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 8),
                               Text('Job Hub',
-                                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
                               ),
                             ],
                           ),
@@ -268,62 +270,45 @@ class _job_hubState extends State<job_hub>
         }
 
         else {
-          // Mobile: single column stacked top-to-bottom
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeSection(),
-                const SizedBox(height: 12),
-                // Filters collapsed into a compact horizontal chips row
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+          // Tablet / Mobile: single column, jobs list fills all remaining space
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeSection(),
+              Expanded(
+                child: Consumer<JobSeekerProvider>(
+                  builder: (context, provider, _) {
+                    if (provider.isLoadingActiveJobs) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final jobs = provider.filteredJobs;
+
+                    if (jobs.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.work_outline_rounded,
+                                size: 56, color: Colors.grey.shade400),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No jobs available right now.',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade600),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return LiveJobsForSeeker(jobs: jobs);
+                  },
                 ),
-                const SizedBox(height: 8),
-                // Jobs list
-                SizedBox(
-                  height: 600,
-                  child: Consumer<JobSeekerProvider>(
-                    builder: (context, provider, _) {
-                      if (provider.isLoadingActiveJobs) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      final jobs = provider.filteredJobs;
-
-                      if (jobs.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.work_outline_rounded,
-                                  size: 80, color: Colors.grey.shade400),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'No jobs available right now.\nPlease check back later.',
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                      return LiveJobsForSeeker(jobs: jobs);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-                /* _EnhancedAIAssistant(
-                  messageController: _messageController,
-                  messageFocusNode: _messageFocusNode,
-                  isMessageFocused: _isMessageFocused,
-                ),
-                const SizedBox(height: 12),
-
-                */
-              ],
-            ),
+              ),
+            ],
           );
         }
 
@@ -332,35 +317,40 @@ class _job_hubState extends State<job_hub>
     );
   }
   Widget _buildWelcomeSection() {
-    const Color kPrimaryBlue = Color(0xFF1E40AF);
-    const Color kTextPrimary = Color(0xFF0F172A);
+    const Color kPrimaryBlue   = Color(0xFF1E40AF);
+    const Color kTextPrimary   = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
+    const Color kBorderLight   = Color(0xFFE2E8F0);
+
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+    final hPad   = isMobile ? 12.0 : 24.0;
+    final vPad   = isMobile ? 10.0 : 16.0;
+    final iconSz = isMobile ? 18.0 : 24.0;
+    final titleSz = isMobile ? 15.0 : 18.0;
+    final subSz   = isMobile ? 11.0 : 13.0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      decoration: const BoxDecoration(
         color: Colors.white,
+        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [
-          // Left Icon
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isMobile ? 8 : 10),
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.screen_search_desktop_outlined,
-              size: 24,
+              size: iconSz,
               color: kPrimaryBlue,
             ),
           ),
-
-          const SizedBox(width: 14),
-
-          // Title & Subtitle
+          SizedBox(width: isMobile ? 10 : 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,21 +359,22 @@ class _job_hubState extends State<job_hub>
                 Text(
                   'Job Hub',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
+                    fontSize: titleSz,
                     fontWeight: FontWeight.w600,
                     color: kTextPrimary,
                     height: 1.2,
                   ),
                 ),
-                Text(
-                  'Explore Jobs and Be a part of your Dream Company',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: kTextSecondary,
-                    height: 1.2,
+                if (!isMobile)
+                  Text(
+                    'Explore Jobs and Be a part of your Dream Company',
+                    style: GoogleFonts.poppins(
+                      fontSize: subSz,
+                      color: kTextSecondary,
+                      height: 1.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
               ],
             ),
           ),

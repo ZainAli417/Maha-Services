@@ -123,7 +123,7 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
-    final bottomOffset = MediaQuery.of(context).viewPadding.bottom + (isMobile ? 40 : 50);
+    final bottomOffset = MediaQuery.of(context).viewPadding.bottom + (isMobile ? 120 : 120);
     final sideOffset = isMobile ? 15.0 : 20.0;
 
     return Positioned.fill(

@@ -246,7 +246,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             if (!isMobile)
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                width: _isSidebarCollapsed ? 60 : 400,
+                width: _isSidebarCollapsed ? 60 : 380,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
@@ -466,92 +466,94 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
 
   Widget _buildTopHeader(bool isMobile) {
     return Container(
-      height: isMobile ? null : 70,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-
-      child: isMobile 
-      ? Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'}',
-                    style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF374151)),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                  icon: const Icon(Icons.tune, color: Color(0xFF3B82F6)),
-                  tooltip: 'Show Filters',
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 20,
+        vertical: isMobile ? 8 : 10,
+      ),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+      ),
+      child: isMobile
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  _buildSortDropdown(),
-                  const SizedBox(width: 12),
-                  _buildActiveBadge(),
+                  Expanded(
+                    child: Text(
+                      '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF374151)),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+                    icon: Badge(
+                      isLabelVisible: _activeFiltersCount > 0,
+                      label: Text('$_activeFiltersCount'),
+                      child: const Icon(Icons.tune, color: Color(0xFF3B82F6), size: 20),
+                    ),
+                    tooltip: 'Show Filters',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  ),
                 ],
               ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildSortDropdown(),
+                    const SizedBox(width: 10),
+                    _buildActiveBadge(),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : Row(
+          children: [
+            Text(
+              '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
+              style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF374151)),
             ),
+            const Spacer(),
+            _buildActiveBadge(),
+            const SizedBox(width: 16),
+            _buildSortDropdown(),
           ],
-        )
-      : Row(
-        children: [
-          // Results count
-          Text(
-            '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
-            style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF374151)),
-          ),
-
-          const Spacer(),
-
-          // Active jobs badge
-          _buildActiveBadge(),
-
-          const SizedBox(width: 16),
-
-          // Sort dropdown
-          _buildSortDropdown(),
-        ],
-      ),
+        ),
     );
   }
 
   Widget _buildActiveBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border:
-        Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 8,
-            height: 8,
+            width: 7, height: 7,
             decoration: const BoxDecoration(
               color: Color(0xFF10B981),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text('${_filteredJobs.length} Active',
               style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF10B981))),
         ],
@@ -596,24 +598,30 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
   }
 
   Widget _buildJobsList() {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 1000;
+    final hPad = isMobile ? 12.0 : 24.0;
+    final vPad = isMobile ? 12.0 : 24.0;
+
     if (_filteredJobs.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Icon(Icons.search_off, size: isMobile ? 48 : 64, color: Colors.grey[400]),
+            const SizedBox(height: 14),
             Text(
               'No jobs found',
               style: GoogleFonts.poppins(
-                  fontSize: 20,
+                  fontSize: isMobile ? 16 : 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[600]),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Try adjusting your filters or search terms',
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+              style: GoogleFonts.poppins(fontSize: isMobile ? 12 : 14, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -621,11 +629,11 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       itemCount: _filteredJobs.length,
       itemBuilder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.only(bottom: isMobile ? 10 : 16),
           child: CompactJobCard(jobData: _filteredJobs[index]),
         );
       },
@@ -918,17 +926,23 @@ class _CompactJobCardState extends State<CompactJobCard>
   @override
   Widget build(BuildContext context) {
     final job = widget.jobData;
-    final isActive = (job['status'] as String? ?? 'active') == 'active';
-    final title = job['title'] as String? ?? 'No Title';
-    final department = job['department'] as String? ?? 'N/A';
-    final company = job['company'] as String? ?? 'Unknown Company';
-    final location = job['location'] as String? ?? 'Unknown Location';
-    final description = job['description'] as String? ?? '';
+    final isActive    = (job['status'] as String? ?? 'active') == 'active';
+    final title       = job['title']          as String? ?? 'No Title';
+    final department  = job['department']      as String? ?? 'N/A';
+    final company     = job['company']         as String? ?? 'Unknown Company';
+    final location    = job['location']        as String? ?? 'Unknown Location';
+    final description = job['description']     as String? ?? '';
     final responsibilities = job['responsibilities'] as String? ?? '';
-    final skills = (job['skills'] as List<dynamic>?)?.cast<String>() ?? [];
-    final logoUrl = job['logoUrl'] as String?;
-    final postedAgo = _getRelativeTime(job['timestamp'] as Timestamp?);
+    final skills      = (job['skills'] as List<dynamic>?)?.cast<String>() ?? [];
+    final logoUrl     = job['logoUrl']         as String?;
+    final postedAgo   = _getRelativeTime(job['timestamp'] as Timestamp?);
     final primaryColor = Theme.of(context).primaryColor;
+    final w           = MediaQuery.of(context).size.width;
+    final isMobile    = w < 1000;
+    final cardPad     = isMobile ? 10.0 : 16.0;
+    final titleSize   = isMobile ? 14.0 : 16.0;
+    final subSize     = isMobile ? 11.0 : 13.0;
+    final logoSize    = isMobile ? 38.0 : 50.0;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -983,13 +997,13 @@ class _CompactJobCardState extends State<CompactJobCard>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(cardPad),
                     decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
                     child: Row(
                       children: [
                         Container(
-                          width: 50,
-                          height: 50,
+                          width: logoSize,
+                          height: logoSize,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
@@ -1012,11 +1026,11 @@ class _CompactJobCardState extends State<CompactJobCard>
                           )
                               : Icon(
                             Icons.business_center,
-                            color: Color(0xFF64748B),
-                            size: 24,
+                            color: const Color(0xFF64748B),
+                            size: isMobile ? 18 : 24,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1024,7 +1038,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               Text(
                                 title,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                  fontSize: titleSize,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                   height: 1.2,
@@ -1036,9 +1050,9 @@ class _CompactJobCardState extends State<CompactJobCard>
                               Text(
                                 '$company • $department',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 13,
+                                  fontSize: subSize,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF64748B),
+                                  color: const Color(0xFF64748B),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1046,51 +1060,51 @@ class _CompactJobCardState extends State<CompactJobCard>
                               Text(
                                 location,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 12,
+                                  fontSize: isMobile ? 10 : 12,
                                   color: const Color(0xFF64748B),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(Icons.visibility_outlined,
-                                      size: 14, color: Color(0xFF64748B)),
-                                  const SizedBox(width: 4),
-                                  Text('${job['viewCount'] ?? 0} views',
-                                      style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          color: const Color(0xFF64748B))),
-                                  const SizedBox(width: 12),
-                                  const Icon(Icons.people_outline,
-                                      size: 14, color: Color(0xFF64748B)),
-                                  const SizedBox(width: 4),
-                                  Text('${job['applicationCount'] ?? 0} applications',
-                                      style: GoogleFonts.poppins(
-                                          fontSize: 11,
-                                          color: const Color(0xFF64748B))),
-                                ],
-                              ),
+                              // const SizedBox(height: 4),
+                              // Row(
+                              //   children: [
+                              //     const Icon(Icons.visibility_outlined,
+                              //         size: 12, color: Color(0xFF64748B)),
+                              //     const SizedBox(width: 3),
+                              //     Text('${job['viewCount'] ?? 0} views',
+                              //         style: GoogleFonts.poppins(
+                              //             fontSize: 10,
+                              //             color: const Color(0xFF64748B))),
+                              //     const SizedBox(width: 10),
+                              //     const Icon(Icons.people_outline,
+                              //         size: 12, color: Color(0xFF64748B)),
+                              //     const SizedBox(width: 3),
+                              //     Text('${job['applicationCount'] ?? 0} apps',
+                              //         style: GoogleFonts.poppins(
+                              //             fontSize: 10,
+                              //             color: const Color(0xFF64748B))),
+                              //   ],
+                              // ),
                             ],
                           ),
                         ),
                         if (postedAgo.isNotEmpty)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                                horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Color(0xFF003366).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFF003366).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                  color: Color(0xFF003366).withOpacity(0.3)),
+                                  color: const Color(0xFF003366).withOpacity(0.3)),
                             ),
                             child: Text(
                               '$postedAgo ago',
                               style: GoogleFonts.poppins(
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF003366),
+                                color: const Color(0xFF003366),
                               ),
                             ),
                           ),
@@ -1194,7 +1208,8 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   child: GestureDetector(
                                     onTap: _showDetails,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: isMobile ? 10 : 12),
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
@@ -1217,15 +1232,15 @@ class _CompactJobCardState extends State<CompactJobCard>
                                           Text(
                                             'View Details',
                                             style: GoogleFonts.poppins(
-                                              fontSize: 16,
+                                              fontSize: isMobile ? 13 : 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.white,
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
+                                          const SizedBox(width: 5),
                                           const Icon(
                                             Icons.arrow_forward_ios,
-                                            size: 12,
+                                            size: 11,
                                             color: Colors.white,
                                           ),
                                         ],
@@ -1234,18 +1249,19 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   ),
                                 ),
 
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 10),
 
-                                // 2. Apply Now button (with loading, disabled, gradient + error handling)
+                                // 2. Apply Now button
                                 Expanded(
                                   child: () {
                                     final jobId   = widget.jobData['id'] as String;
                                     final already = appProv.hasApplied(jobId);
-                                    final loading = appProv.isApplyingTo(jobId); // ✅ NEW - only this card
+                                    final loading = appProv.isApplyingTo(jobId);
                                     return GestureDetector(
                                       onTap: (already || loading) ? null : () => _applyForJob(),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: isMobile ? 10 : 12),
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: already
@@ -1268,8 +1284,8 @@ class _CompactJobCardState extends State<CompactJobCard>
                                         child: loading
                                             ? const Center(
                                           child: SizedBox(
-                                            width: 20,
-                                            height: 20,
+                                            width: 18,
+                                            height: 18,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
                                               valueColor: AlwaysStoppedAnimation(Colors.white),
@@ -1281,18 +1297,19 @@ class _CompactJobCardState extends State<CompactJobCard>
                                           children: [
                                             Icon(
                                               already ? Icons.hourglass_top : Icons.send,
-                                              size: 20,
+                                              size: isMobile ? 14 : 18,
                                               color: already ? Colors.grey[700] : Colors.white,
                                             ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              already
-                                                  ? 'Application Under Consideration'
-                                                  : 'Apply Now',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: already ? Colors.grey[700] : Colors.white,
+                                            const SizedBox(width: 6),
+                                            Flexible(
+                                              child: Text(
+                                                already ? 'Applied' : 'Apply Now',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: isMobile ? 12 : 15,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: already ? Colors.grey[700] : Colors.white,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ],

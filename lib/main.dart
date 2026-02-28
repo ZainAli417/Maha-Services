@@ -267,5 +267,5 @@ class RoleProvider extends ChangeNotifier {
 }
 
 class Env {
-  static const String backendUrl = 'http://localhost:3000';
+  static const String backendUrl = 'https://backend.taasgrid.com';
 }

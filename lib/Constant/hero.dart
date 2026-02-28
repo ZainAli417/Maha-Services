@@ -182,7 +182,7 @@ class _HeroSectionState extends State<HeroSection>
                       child: _buildLeftContent(),
                     ),
                   ),
-                  SizedBox(width: isTablet ? 20 : 40),
+                  SizedBox(width: isTablet ? 20 : 20),
                   // Right panel - Lottie animations with capsules
                   Expanded(
                     flex: 4,
@@ -247,9 +247,9 @@ class _HeroSectionState extends State<HeroSection>
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
     final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final panelHeight = isMobile ? 320.0 : (isTablet ? 500.0 : 700.0);
-    final lottieWidth = isMobile ? 300.0 : (isTablet ? 500.0 : 750.0);
-    final lottieHeight = isMobile ? 250.0 : (isTablet ? 400.0 : 600.0);
+    final panelHeight = isMobile ? 360.0 : (isTablet ? 500.0 : 700.0);
+    final lottieWidth = isMobile ? 400.0 : (isTablet ? 500.0 : 750.0);
+    final lottieHeight = isMobile ? 300.0 : (isTablet ? 400.0 : 600.0);
     final capsuleTop = isMobile ? 10.0 : 35.0;
     final lottieTop = isMobile ? 30.0 : 60.0;
 

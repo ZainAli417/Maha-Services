@@ -1,6 +1,7 @@
 // file: cv_analysis_screen.dart
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/widget/blocks/leaf/paragraph.dart';
@@ -13,16 +14,36 @@ import '../Screens/Job_Seeker/job_hub.dart';
 import '../Screens/Job_Seeker/JS_Top_Bar.dart';
 import 'cv_analysis_provider.dart';
 
-const Color kPrimaryBlue = Color(0xFF1E40AF);
-const Color kAccentBlue = Color(0xFF3B82F6);
-const Color kTextPrimary = Color(0xFF0F172A);
-const Color kTextSecondary = Color(0xFF475569);
-const Color kBorderLight = Color(0xFFE2E8F0);
+// ─── Colours ────────────────────────────────────────────────────────────────
+const Color kPrimaryBlue    = Color(0xFF1E40AF);
+const Color kAccentBlue     = Color(0xFF3B82F6);
+const Color kTextPrimary    = Color(0xFF0F172A);
+const Color kTextSecondary  = Color(0xFF475569);
+const Color kBorderLight    = Color(0xFFE2E8F0);
 const Color kBackgroundGray = Color(0xFFF8FAFC);
-const Color kSuccessGreen = Color(0xFF059669);
-const Color kWarningOrange = Color(0xFFEA580C);
-const Color kErrorRed = Color(0xFFDC2626);
+const Color kSuccessGreen   = Color(0xFF059669);
+const Color kWarningOrange  = Color(0xFFEA580C);
+const Color kErrorRed       = Color(0xFFDC2626);
 
+// ─── Breakpoints ────────────────────────────────────────────────────────────
+class _BP {
+  static const mobile  = 600.0;
+  static const desktop = 1100.0;
+
+  static bool isMobile(double w)  => w < mobile;
+  static bool isDesktop(double w) => w >= desktop;
+
+  static EdgeInsets hPad(double w) => EdgeInsets.symmetric(
+    horizontal: w < mobile ? 12 : w < desktop ? 20 : 28,
+    vertical:   w < mobile ? 10 : 14,
+  );
+
+  static double contentPad(double w) => w < mobile ? 14 : 20;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SCREEN
+// ════════════════════════════════════════════════════════════════════════════
 class CVAnalysisScreen extends StatefulWidget {
   const CVAnalysisScreen({super.key});
 
@@ -34,9 +55,10 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     with TickerProviderStateMixin {
   PlatformFile? _pickedFile;
   final _roleController = TextEditingController();
-  final _jdController = TextEditingController();
+  final _jdController   = TextEditingController();
   late AnimationController _animController;
   bool _isAiDialogVisible = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -75,7 +97,6 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
       _showSnackBar(ctx, 'Please enter the target role', isError: true);
       return;
     }
-
     final provider = Provider.of<CVAnalyzerBackendProvider>(ctx, listen: false);
     provider.reset();
     provider.analyzeCV(
@@ -99,15 +120,22 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = _BP.isMobile(w);
+
     return ScrollConfiguration(
-      behavior: SmoothScrollBehavior(),
+      behavior: _SmoothScrollBehavior(),
       child: ChangeNotifierProvider(
         create: (_) => CVAnalyzerBackendProvider(),
         child: Scaffold(
+          key: _scaffoldKey,
           backgroundColor: Colors.white,
+          drawer: isMobile
+              ? Drawer(child: JobSeekerSidebar(activeIndex: 2, isDrawer: true))
+              : null,
           body: Row(
             children: [
-              JobSeekerSidebar(activeIndex: 2),
+              if (!isMobile) JobSeekerSidebar(activeIndex: 2),
               Expanded(
                 child: FadeTransition(
                   opacity: _animController,
@@ -133,27 +161,36 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
         return SafeArea(
           child: Column(
             children: [
-              _CompactHeader(provider: prov),
-
+              _CompactHeader(
+                provider: prov,
+                scaffoldKey: _scaffoldKey,
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                  child: _ContentLayout(
-                    pickedFile: _pickedFile,
-                    roleController: _roleController,
-                    jdController: _jdController,
-                    onPickFile: _pickFile,
-                    onAnalyze: () => _startAnalysis(context),
-                    onReset: () {
-                      setState(() {
-                        _pickedFile = null;
-                        _roleController.clear();
-                        _jdController.clear();
-                      });
-                      prov.reset();
+                  child: LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      final pad = _BP.contentPad(constraints.maxWidth);
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(pad, pad * 0.8, pad, pad),
+                        child: _ContentLayout(
+                          pickedFile: _pickedFile,
+                          roleController: _roleController,
+                          jdController: _jdController,
+                          onPickFile: _pickFile,
+                          onAnalyze: () => _startAnalysis(context),
+                          onReset: () {
+                            setState(() {
+                              _pickedFile = null;
+                              _roleController.clear();
+                              _jdController.clear();
+                            });
+                            prov.reset();
+                          },
+                          provider: prov,
+                        ),
+                      );
                     },
-                    provider: prov,
                   ),
                 ),
               ),
@@ -170,9 +207,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
 
     void listener() {
       if (!prov.isLoading && _isAiDialogVisible && Navigator.of(context).canPop()) {
-        try {
-          Navigator.of(context).pop();
-        } catch (_) {}
+        try { Navigator.of(context).pop(); } catch (_) {}
       }
     }
 
@@ -184,68 +219,91 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
       barrierColor: Colors.black.withOpacity(0.2),
       builder: (ctx) => _AIProcessingDialog(provider: prov),
     ).then((_) {
-      try {
-        prov.removeListener(listener);
-      } catch (_) {}
+      try { prov.removeListener(listener); } catch (_) {}
       _isAiDialogVisible = false;
     });
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  COMPACT HEADER
+// ════════════════════════════════════════════════════════════════════════════
 class _CompactHeader extends StatelessWidget {
   final CVAnalyzerBackendProvider provider;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
-  const _CompactHeader({required this.provider});
+  const _CompactHeader({required this.provider, required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = _BP.isMobile(w);
+    final hPad = isMobile ? 10.0 : 20.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 10 : 14),
+      decoration: const BoxDecoration(
         color: Colors.white,
+        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [
+          // Hamburger on mobile
+          if (isMobile) ...[
+            IconButton(
+              icon: const Icon(Icons.menu_rounded, size: 22),
+              onPressed: () => scaffoldKey.currentState?.openDrawer(),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              color: kTextPrimary,
+            ),
+            const SizedBox(width: 6),
+          ],
+          // Icon
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isMobile ? 8 : 10),
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.analytics_outlined, size: 24, color: kPrimaryBlue),
+            child: Icon(Icons.analytics_outlined,
+                size: isMobile ? 20 : 24, color: kPrimaryBlue),
           ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'CV Analysis',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
+          SizedBox(width: isMobile ? 10 : 14),
+          // Title column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'CV Analysis',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 15 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: kTextPrimary,
+                    height: 1.2,
+                  ),
                 ),
-              ),
-              Text(
-                'AI-powered matching and insights',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
-                ),
-              ),
-            ],
+                if (!isMobile)
+                  Text(
+                    'AI-powered matching and insights',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: kTextSecondary,
+                      height: 1.2,
+                    ),
+                  ),
+              ],
+            ),
           ),
-          const Spacer(),
           if (provider.isLoading)
             SizedBox(
-              width: 20,
-              height: 20,
+              width: 18,
+              height: 18,
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
-                strokeWidth: 2.5,
+                strokeWidth: 2,
               ),
             ),
         ],
@@ -254,6 +312,9 @@ class _CompactHeader extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  CONTENT LAYOUT (input + results)
+// ════════════════════════════════════════════════════════════════════════════
 class _ContentLayout extends StatelessWidget {
   final PlatformFile? pickedFile;
   final TextEditingController roleController;
@@ -281,31 +342,47 @@ class _ContentLayout extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 1100;
+        final w = constraints.maxWidth;
+        final isDesktop = _BP.isDesktop(w);
 
-        return Row(
+        // ── DESKTOP: side-by-side ────────────────────────────────────────
+        if (isDesktop) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 360,
+                child: _InputPanel(
+                  pickedFile: pickedFile,
+                  roleController: roleController,
+                  jdController: jdController,
+                  onPickFile: onPickFile,
+                  onAnalyze: onAnalyze,
+                  onReset: onReset,
+                  isLoading: provider.isLoading,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(child: _ResultsPanel(provider: provider)),
+            ],
+          );
+        }
+
+        // ── TABLET / MOBILE: stacked ─────────────────────────────────────
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: isWide ? 380 : constraints.maxWidth,
-              child: _InputPanel(
-                pickedFile: pickedFile,
-                roleController: roleController,
-                jdController: jdController,
-                onPickFile: onPickFile,
-                onAnalyze: onAnalyze,
-                onReset: onReset,
-                isLoading: provider.isLoading,
-              ),
+            _InputPanel(
+              pickedFile: pickedFile,
+              roleController: roleController,
+              jdController: jdController,
+              onPickFile: onPickFile,
+              onAnalyze: onAnalyze,
+              onReset: onReset,
+              isLoading: provider.isLoading,
             ),
-
-            if (isWide) ...[
-              const SizedBox(width: 20),
-              Expanded(
-                child: _ResultsPanel(provider: provider),
-              ),
-            ] else if (hasResults) ...[
-              const SizedBox(height: 20),
+            if (hasResults || provider.error != null) ...[
+              const SizedBox(height: 16),
               _ResultsPanel(provider: provider),
             ],
           ],
@@ -315,6 +392,9 @@ class _ContentLayout extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  INPUT PANEL
+// ════════════════════════════════════════════════════════════════════════════
 class _InputPanel extends StatelessWidget {
   final PlatformFile? pickedFile;
   final TextEditingController roleController;
@@ -336,62 +416,81 @@ class _InputPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = _BP.isMobile(w);
+    final pad = isMobile ? 14.0 : 20.0;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: kBorderLight, width: 1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kBorderLight),
+        boxShadow: const [
+          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           _SectionLabel(text: 'Upload CV', icon: Icons.upload_file),
-          const SizedBox(height: 12),
+          SizedBox(height: isMobile ? 8 : 12),
           _FileUploadZone(pickedFile: pickedFile, onPickFile: onPickFile),
 
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 16 : 22),
           _SectionLabel(text: 'Target Role', icon: Icons.work_outline),
-          const SizedBox(height: 10),
-          _buildTextField(roleController, 'e.g., Senior Flutter Developer'),
+          SizedBox(height: isMobile ? 8 : 10),
+          _buildTextField(roleController, 'e.g., Senior Flutter Developer',
+              isMobile: isMobile),
 
-          const SizedBox(height: 20),
-          _SectionLabel(text: 'Job Description (Optional)', icon: Icons.description_outlined),
-          const SizedBox(height: 10),
-          _buildTextField(jdController, 'Paste job requirements here...', maxLines: 6),
+          SizedBox(height: isMobile ? 14 : 20),
+          _SectionLabel(
+              text: 'Job Description (Optional)',
+              icon: Icons.description_outlined),
+          SizedBox(height: isMobile ? 8 : 10),
+          _buildTextField(jdController, 'Paste job requirements here...',
+              maxLines: isMobile ? 4 : 6, isMobile: isMobile),
 
-          const SizedBox(height: 24),
+          SizedBox(height: isMobile ? 18 : 24),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: isLoading ? null : onAnalyze,
-                  icon: Icon(isLoading ? Icons.hourglass_empty : Icons.auto_awesome, size: 18),
+                  icon: Icon(
+                    isLoading ? Icons.hourglass_empty : Icons.auto_awesome,
+                    size: 16,
+                  ),
                   label: Text(
-                    isLoading ? 'Analyzing' : 'Analyze',
-                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+                    isLoading ? 'Analyzing…' : 'Analyze CV',
+                    style: GoogleFonts.poppins(
+                        fontSize: isMobile ? 13 : 14,
+                        fontWeight: FontWeight.w600),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimaryBlue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    padding: EdgeInsets.symmetric(
+                        vertical: isMobile ? 14 : 18),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                     elevation: 0,
                   ),
                 ),
               ),
-              const SizedBox(width: 30),
+              const SizedBox(width: 10),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: kBorderLight),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
                   onPressed: isLoading ? null : onReset,
-                  icon: const Icon(Icons.refresh, size: 20),
+                  icon: const Icon(Icons.refresh_rounded, size: 20),
                   color: kTextSecondary,
-                  padding: const EdgeInsets.all(12),
+                  tooltip: 'Reset',
+                  padding: EdgeInsets.all(isMobile ? 10 : 12),
                 ),
               ),
             ],
@@ -401,34 +500,42 @@ class _InputPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, {int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController controller, String hint,
+      {int maxLines = 1, bool isMobile = false}) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: GoogleFonts.poppins(fontSize: 14, color: kTextPrimary),
+      style: GoogleFonts.poppins(
+          fontSize: isMobile ? 13 : 14, color: kTextPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(color: kTextSecondary.withOpacity(0.6), fontSize: 14),
+        hintStyle: GoogleFonts.poppins(
+            color: kTextSecondary.withOpacity(0.6),
+            fontSize: isMobile ? 12 : 14),
         filled: true,
         fillColor: kBackgroundGray,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: kBorderLight),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: kBorderLight),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: kAccentBlue, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: 12, vertical: isMobile ? 10 : 12),
       ),
     );
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  SECTION LABEL
+// ════════════════════════════════════════════════════════════════════════════
 class _SectionLabel extends StatelessWidget {
   final String text;
   final IconData icon;
@@ -439,14 +546,17 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: kTextSecondary),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: kTextPrimary,
+        Icon(icon, size: 15, color: kTextSecondary),
+        const SizedBox(width: 7),
+        Flexible(
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: kTextPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -454,6 +564,9 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  FILE UPLOAD ZONE
+// ════════════════════════════════════════════════════════════════════════════
 class _FileUploadZone extends StatelessWidget {
   final PlatformFile? pickedFile;
   final VoidCallback onPickFile;
@@ -462,67 +575,92 @@ class _FileUploadZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ── File already picked ──────────────────────────────────────────────
     if (pickedFile != null) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: kBackgroundGray,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: kBorderLight),
+          color: kAccentBlue.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: kAccentBlue.withOpacity(0.25)),
         ),
         child: Row(
           children: [
-            Icon(_getFileIcon(pickedFile!), color: kAccentBlue, size: 22),
-            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: kAccentBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(_getFileIcon(pickedFile!),
+                  color: kAccentBlue, size: 20),
+            ),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                pickedFile!.name,
-                style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pickedFile!.name,
+                    style: GoogleFonts.poppins(
+                        fontSize: 13, fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (pickedFile!.size > 0)
+                    Text(
+                      _formatSize(pickedFile!.size),
+                      style: GoogleFonts.poppins(
+                          fontSize: 11, color: kTextSecondary),
+                    ),
+                ],
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.close, size: 18),
+              icon: const Icon(Icons.close_rounded, size: 18),
               onPressed: onPickFile,
               color: kTextSecondary,
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.all(4),
               constraints: const BoxConstraints(),
+              tooltip: 'Remove file',
             ),
           ],
         ),
       );
     }
 
+    // ── Drop zone ────────────────────────────────────────────────────────
     return InkWell(
       onTap: onPickFile,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 80),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
           color: kBackgroundGray,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: kBorderLight, width: 1.5, style: BorderStyle.solid),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: kAccentBlue.withOpacity(0.3),
+              width: 1.5,
+              style: BorderStyle.solid),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_upload_outlined, size: 32, color: kAccentBlue),
+            Icon(Icons.cloud_upload_outlined, size: 34, color: kAccentBlue),
             const SizedBox(height: 8),
             Text(
-              'Click to browse',
+              'Tap to browse files',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: kAccentBlue,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
-              'PDF, DOC, DOCX supported',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: kTextSecondary,
-              ),
+              'PDF, DOC, DOCX, TXT supported',
+              style: GoogleFonts.poppins(fontSize: 11, color: kTextSecondary),
             ),
           ],
         ),
@@ -531,19 +669,24 @@ class _FileUploadZone extends StatelessWidget {
   }
 
   IconData _getFileIcon(PlatformFile file) {
-    final ext = file.extension?.toLowerCase() ?? '';
-    switch (ext) {
-      case 'pdf':
-        return Icons.picture_as_pdf;
+    switch (file.extension?.toLowerCase() ?? '') {
+      case 'pdf':  return Icons.picture_as_pdf;
       case 'doc':
-      case 'docx':
-        return Icons.description;
-      default:
-        return Icons.insert_drive_file;
+      case 'docx': return Icons.description;
+      default:     return Icons.insert_drive_file;
     }
+  }
+
+  String _formatSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  RESULTS PANEL
+// ════════════════════════════════════════════════════════════════════════════
 class _ResultsPanel extends StatelessWidget {
   final CVAnalyzerBackendProvider provider;
 
@@ -551,72 +694,84 @@ class _ResultsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = _BP.isMobile(w);
+    final pad = isMobile ? 14.0 : 20.0;
+
     if (provider.isLoading) return const SizedBox.shrink();
-
-    if (provider.error != null) {
-      return _ErrorDisplay(error: provider.error!);
-    }
-
-    if (provider.score == null && provider.advisory == null && provider.highlights.isEmpty) {
+    if (provider.error != null) return _ErrorDisplay(error: provider.error!);
+    if (provider.score == null &&
+        provider.advisory == null &&
+        provider.highlights.isEmpty) {
       return _EmptyState();
     }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: kBorderLight, width: 1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kBorderLight),
+        boxShadow: const [
+          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          // Header row
+          Wrap(
+            spacing: 10,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'Analysis Results',
                 style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: isMobile ? 14 : 16,
                   fontWeight: FontWeight.w600,
                   color: kTextPrimary,
                 ),
               ),
-              if (provider.score != null) ...[
-                const SizedBox(width: 12),
+              if (provider.score != null)
                 _CompactScoreBadge(score: provider.score!),
-              ],
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Divider(color: kBorderLight, height: 1),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           if (provider.advisory != null) ...[
-            _InsightsSection(advisory: provider.advisory!),
-            if (provider.highlights.isNotEmpty) const SizedBox(height: 24),
+            _InsightsSection(advisory: provider.advisory!,
+                isMobile: isMobile),
+            if (provider.highlights.isNotEmpty)
+              SizedBox(height: isMobile ? 18 : 24),
           ],
 
           if (provider.highlights.isNotEmpty)
-            _HighlightsSection(highlights: provider.highlights),
+            _HighlightsSection(
+                highlights: provider.highlights, isMobile: isMobile),
         ],
       ),
     );
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  SCORE BADGE
+// ════════════════════════════════════════════════════════════════════════════
 class _CompactScoreBadge extends StatelessWidget {
   final double score;
-
   const _CompactScoreBadge({required this.score});
 
   @override
   Widget build(BuildContext context) {
-    final color = _getScoreColor(score);
-    final label = _getScoreLabel(score);
+    final color = score >= 80 ? kSuccessGreen : score >= 60 ? kWarningOrange : kErrorRed;
+    final label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : 'Needs Work';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
@@ -628,51 +783,31 @@ class _CompactScoreBadge extends StatelessWidget {
           Text(
             '${score.toStringAsFixed(0)}%',
             style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: color,
-            ),
+                fontSize: 13, fontWeight: FontWeight.w700, color: color),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 5),
           Container(
-            width: 4,
-            height: 4,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 6),
+              width: 3, height: 3,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          const SizedBox(width: 5),
           Text(
             label,
             style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
+                fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
     );
   }
-
-  Color _getScoreColor(double score) {
-    if (score >= 80) return kSuccessGreen;
-    if (score >= 60) return kWarningOrange;
-    return kErrorRed;
-  }
-
-  String _getScoreLabel(double score) {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    return 'Needs Work';
-  }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  AI INSIGHTS SECTION
+// ════════════════════════════════════════════════════════════════════════════
 class _InsightsSection extends StatelessWidget {
   final String advisory;
-
-  const _InsightsSection({required this.advisory});
+  final bool isMobile;
+  const _InsightsSection({required this.advisory, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -681,19 +816,19 @@ class _InsightsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.lightbulb_outline, size: 18, color: kAccentBlue),
-            const SizedBox(width: 8),
+            Icon(Icons.lightbulb_outline, size: 16, color: kAccentBlue),
+            const SizedBox(width: 7),
             Text(
               'AI Insights',
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: isMobile ? 13 : 14,
                 fontWeight: FontWeight.w600,
                 color: kTextPrimary,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         MarkdownWidget(
           data: _formatAdvisory(advisory),
           shrinkWrap: true,
@@ -701,7 +836,7 @@ class _InsightsSection extends StatelessWidget {
             configs: [
               PConfig(
                 textStyle: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: isMobile ? 12 : 13,
                   fontWeight: FontWeight.w400,
                   color: kTextSecondary,
                   height: 1.6,
@@ -724,10 +859,15 @@ class _InsightsSection extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  HIGHLIGHTS SECTION
+// ════════════════════════════════════════════════════════════════════════════
 class _HighlightsSection extends StatelessWidget {
   final List<Map<String, dynamic>> highlights;
+  final bool isMobile;
 
-  const _HighlightsSection({required this.highlights});
+  const _HighlightsSection(
+      {required this.highlights, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -736,66 +876,70 @@ class _HighlightsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.stars_outlined, size: 18, color: kWarningOrange),
-            const SizedBox(width: 8),
+            Icon(Icons.stars_outlined,
+                size: 16, color: kWarningOrange),
+            const SizedBox(width: 7),
             Text(
               'Key Highlights',
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: isMobile ? 13 : 14,
                 fontWeight: FontWeight.w600,
                 color: kTextPrimary,
               ),
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                color: kBackgroundGray,
-                borderRadius: BorderRadius.circular(10),
-              ),
+                  color: kBackgroundGray,
+                  borderRadius: BorderRadius.circular(10)),
               child: Text(
                 '${highlights.length}',
                 style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: kTextSecondary,
-                ),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: kTextSecondary),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 14),
-        ...highlights.map((h) => _HighlightRow(highlight: h)),
+        const SizedBox(height: 12),
+        ...highlights.map((h) =>
+            _HighlightRow(highlight: h, isMobile: isMobile)),
       ],
     );
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  HIGHLIGHT ROW
+// ════════════════════════════════════════════════════════════════════════════
 class _HighlightRow extends StatelessWidget {
   final Map<String, dynamic> highlight;
+  final bool isMobile;
 
-  const _HighlightRow({required this.highlight});
+  const _HighlightRow({required this.highlight, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
-    final type = highlight['type']?.toString().toLowerCase() ?? 'info';
+    final type   = highlight['type']?.toString().toLowerCase() ?? 'info';
     final config = _getConfig(type);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: isMobile ? 10 : 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             margin: const EdgeInsets.only(top: 2),
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(isMobile ? 5 : 6),
             decoration: BoxDecoration(
-              color: config['bgColor'],
-              shape: BoxShape.circle,
-            ),
-            child: Icon(config['icon'], color: config['iconColor'], size: 14),
+                color: config['bgColor'], shape: BoxShape.circle),
+            child: Icon(config['icon'],
+                color: config['iconColor'], size: isMobile ? 12 : 14),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -803,7 +947,7 @@ class _HighlightRow extends StatelessWidget {
                 Text(
                   highlight['text'] ?? '',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: isMobile ? 12 : 13,
                     fontWeight: FontWeight.w500,
                     color: kTextPrimary,
                     height: 1.4,
@@ -814,7 +958,7 @@ class _HighlightRow extends StatelessWidget {
                   Text(
                     highlight['detail'],
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: isMobile ? 11 : 12,
                       color: kTextSecondary,
                       height: 1.4,
                     ),
@@ -852,37 +996,42 @@ class _HighlightRow extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  EMPTY STATE
+// ════════════════════════════════════════════════════════════════════════════
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isMobile = _BP.isMobile(MediaQuery.of(context).size.width);
     return Container(
-      padding: const EdgeInsets.all(48),
+      padding: EdgeInsets.all(isMobile ? 28 : 48),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: kBorderLight),
       ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.analytics_outlined, size: 48, color: kTextSecondary.withOpacity(0.5)),
-            const SizedBox(height: 16),
+            Icon(Icons.analytics_outlined,
+                size: isMobile ? 38 : 48,
+                color: kTextSecondary.withOpacity(0.4)),
+            SizedBox(height: isMobile ? 12 : 16),
             Text(
               'No analysis yet',
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: isMobile ? 14 : 15,
                 fontWeight: FontWeight.w500,
                 color: kTextSecondary,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              'Upload a CV and start analyzing',
+              'Upload a CV and tap Analyze',
               style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: kTextSecondary.withOpacity(0.7),
-              ),
+                  fontSize: isMobile ? 12 : 13,
+                  color: kTextSecondary.withOpacity(0.7)),
             ),
           ],
         ),
@@ -891,25 +1040,28 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  ERROR DISPLAY
+// ════════════════════════════════════════════════════════════════════════════
 class _ErrorDisplay extends StatelessWidget {
   final String error;
-
   const _ErrorDisplay({required this.error});
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = _BP.isMobile(MediaQuery.of(context).size.width);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: kErrorRed.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: kErrorRed.withOpacity(0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: kErrorRed, size: 22),
-          const SizedBox(width: 12),
+          Icon(Icons.error_outline, color: kErrorRed, size: 20),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -917,19 +1069,14 @@ class _ErrorDisplay extends StatelessWidget {
                 Text(
                   'Analysis Failed',
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: kErrorRed,
-                  ),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: kErrorRed),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  error,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: kTextSecondary,
-                  ),
-                ),
+                Text(error,
+                    style: GoogleFonts.poppins(
+                        fontSize: 12, color: kTextSecondary)),
               ],
             ),
           ),
@@ -939,63 +1086,74 @@ class _ErrorDisplay extends StatelessWidget {
   }
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+//  AI PROCESSING DIALOG
+// ════════════════════════════════════════════════════════════════════════════
 class _AIProcessingDialog extends StatelessWidget {
   final CVAnalyzerBackendProvider provider;
-
   const _AIProcessingDialog({required this.provider});
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = _BP.isMobile(w);
+
     return AnimatedBuilder(
       animation: provider,
       builder: (context, _) {
-        final progress = provider.progress.clamp(0.0, 1.0);
+        final progress  = provider.progress.clamp(0.0, 1.0);
         final stageText = _getStageText(progress);
 
         return Center(
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
               child: Dialog(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
+                insetPadding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 20 : 40),
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 380),
-                  padding: const EdgeInsets.all(28),
+                  padding: EdgeInsets.all(isMobile ? 22 : 28),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: kBorderLight),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x14000000),
+                        blurRadius: 24,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: kPrimaryBlue.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
-                          Icons.auto_awesome_outlined,
-                          size: 36,
-                          color: kPrimaryBlue,
-                        ),
+                        child: Icon(Icons.auto_awesome_outlined,
+                            size: 32, color: kPrimaryBlue),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
                       Text(
                         stageText,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
-                          fontSize: 15,
+                          fontSize: isMobile ? 13 : 15,
                           fontWeight: FontWeight.w600,
                           color: kTextPrimary,
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 16),
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(6),
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 6,
@@ -1003,14 +1161,13 @@ class _AIProcessingDialog extends StatelessWidget {
                           valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         '${(progress * 100).toStringAsFixed(0)}%',
                         style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: kTextSecondary,
-                        ),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: kTextSecondary),
                       ),
                     ],
                   ),
@@ -1024,18 +1181,29 @@ class _AIProcessingDialog extends StatelessWidget {
   }
 
   String _getStageText(double progress) {
-    if (progress < 0.15) return 'Initializing analysis...';
-    if (progress < 0.35) return 'Reading document...';
-    if (progress < 0.60) return 'Extracting information...';
-    if (progress < 0.85) return 'Comparing requirements...';
-    if (progress < 0.95) return 'Generating insights...';
-    return 'Finalizing...';
+    if (progress < 0.15) return 'Initializing analysis…';
+    if (progress < 0.35) return 'Reading document…';
+    if (progress < 0.60) return 'Extracting information…';
+    if (progress < 0.85) return 'Comparing requirements…';
+    if (progress < 0.95) return 'Generating insights…';
+    return 'Finalizing…';
   }
 }
 
-class SmoothScrollBehavior extends ScrollBehavior {
+// ════════════════════════════════════════════════════════════════════════════
+//  SCROLL BEHAVIOUR
+// ════════════════════════════════════════════════════════════════════════════
+class _SmoothScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+  Widget buildScrollbar(
+      BuildContext context, Widget child, ScrollableDetails details) {
     return child;
   }
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+  };
 }

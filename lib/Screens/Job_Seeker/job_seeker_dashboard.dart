@@ -352,7 +352,16 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (prov.applications.isNotEmpty) ...[
-
+                                  _KpiStrip(
+                                    total: analytics['totalApplications'] as int,
+                                    stats: analytics['statusBreakdown']
+                                    as Map<String, dynamic>,
+                                    responseRate:
+                                    analytics['responseRate'] as double,
+                                    avgResponse:
+                                    analytics['averageResponseTime'] as int,
+                                    screenWidth: w,
+                                  ),
                                   SizedBox(height: isMobile ? 14 : 18),
                                   _SectionHead(
                                       icon: Icons.analytics_outlined,
@@ -1027,6 +1036,118 @@ class _AnalyticsCharts extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  KPI STRIP
 // ═══════════════════════════════════════════════════════════════════════════
+class _KpiCard extends StatelessWidget {
+  final _KD d;
+  const _KpiCard({required this.d});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border),
+        boxShadow: const [
+          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3))
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Icon bubble
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+                color: d.bg, borderRadius: BorderRadius.circular(9)),
+            child: Icon(d.icon, color: d.accent, size: 16),
+          ),
+          const SizedBox(width: 10),
+          // Number + label stacked
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: d.value),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutExpo,
+                  builder: (_, v, __) => Text(
+                    '$v',
+                    style: _C.p(20, fw: FontWeight.w800),
+                  ),
+                ),
+                Text(d.label,
+                    style: _C.p(10, color: _C.t2, fw: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          // Subtle trend icon
+          Icon(Icons.trending_up_rounded,
+              color: d.accent.withOpacity(0.25), size: 14),
+        ],
+      ),
+    );
+  }
+}
+
+class _KpiStrip extends StatelessWidget {
+  final int total, avgResponse;
+  final Map<String, dynamic> stats;
+  final double responseRate, screenWidth;
+  const _KpiStrip({
+    required this.total,
+    required this.stats,
+    required this.responseRate,
+    required this.avgResponse,
+    required this.screenWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _KD(Icons.inbox_rounded,        'Total',       total,                    _C.indigo,  _C.indigoLt),
+      _KD(Icons.check_circle_rounded, 'Accepted',    stats['accepted'] as int, _C.emerald, _C.emeraldL),
+      _KD(Icons.star_rounded,         'Shortlisted', stats['shortlist'] as int,_C.violet,  _C.violetLt),
+      _KD(Icons.timelapse_rounded,    'Pending',     stats['pending']  as int, _C.amber,   _C.amberLt),
+    ];
+
+    // On very small screens: 2-col grid; otherwise single horizontal row
+    if (screenWidth < 500) {
+      return GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 2.4,          // wide + short = compact
+        children: items.map((d) => _KpiCard(d: d)).toList(),
+      );
+    }
+
+    // Tablet / desktop: single row, equal flex columns
+    return Row(
+      children: items.asMap().entries.map((e) {
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: e.key < items.length - 1 ? 10 : 0),
+            child: _KpiCard(d: e.value),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+class _KD {
+  final IconData icon;
+  final String label;
+  final int value;
+  final Color accent, bg;
+  const _KD(this.icon, this.label, this.value, this.accent, this.bg);
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  TREND CHART
@@ -1037,53 +1158,152 @@ class _TrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pre-process: only keep points where count > 0 OR they're needed for shape
+    final spots = data.asMap().entries.map((e) {
+      return FlSpot(e.key.toDouble(), (e.value['count'] as int).toDouble());
+    }).toList();
+
+    final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final safeMax = (maxY < 1 ? 4 : (maxY * 1.35)).ceilToDouble();
+
+    // X-axis labels — only show every 5th date to avoid clutter
+    final dates = data.map((d) => d['date'] as DateTime).toList();
+
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _CardHead(
-              icon: Icons.show_chart_rounded,
-              title: '30-Day Trend',
-              sub: 'Activity over time'),
-          const SizedBox(height: 12),
+            icon: Icons.show_chart_rounded,
+            title: '30-Day Trend',
+            sub: 'Application activity',
+          ),
+          const SizedBox(height: 16),
           Expanded(
-            child: SfCartesianChart(
-              plotAreaBorderWidth: 0,
-              margin: EdgeInsets.zero,
-              primaryXAxis: DateTimeAxis(
-                intervalType: DateTimeIntervalType.days,
-                interval: 5,
-                dateFormat: DateFormat.MMMd(),
-                majorGridLines: const MajorGridLines(width: 0),
-                axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.poppins(
-                    fontSize: 9, fontWeight: FontWeight.w500, color: _C.t3),
-              ),
-              primaryYAxis: NumericAxis(
-                majorGridLines: MajorGridLines(
-                  color: _C.border, width: 1, dashArray: const [4, 4],
-                ),
-                axisLine: const AxisLine(width: 0),
-                labelStyle: GoogleFonts.poppins(
-                    fontSize: 9, fontWeight: FontWeight.w500, color: _C.t3),
-              ),
-              series: [
-                SplineAreaSeries<Map<String, dynamic>, DateTime>(
-                  dataSource: data,
-                  xValueMapper: (d, _) => d['date'] as DateTime,
-                  yValueMapper: (d, _) => d['count'] as int,
-                  gradient: LinearGradient(
-                    colors: [_C.indigo.withOpacity(0.18), _C.indigo.withOpacity(0.02)],
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                  ),
-                  borderColor: _C.indigo,
-                  borderWidth: 2,
-                  markerSettings: const MarkerSettings(
-                    isVisible: true, height: 5, width: 5,
-                    color: _C.indigo, borderColor: Colors.white, borderWidth: 2,
+            child: LineChart(
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              LineChartData(
+                minY: 0,
+                maxY: safeMax,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: safeMax / 4,
+                  getDrawingHorizontalLine: (_) => const FlLine(
+                    color: Color(0xFFF0F3FA),
+                    strokeWidth: 1,
                   ),
                 ),
-              ],
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: safeMax / 4,
+                      getTitlesWidget: (v, _) => Text(
+                        v.toInt().toString(),
+                        style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                      ),
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 26,
+                      interval: 1,
+                      getTitlesWidget: (v, meta) {
+                        final i = v.toInt();
+                        // Only show label every 5th point
+                        if (i % 5 != 0 || i >= dates.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            DateFormat.MMMd().format(dates[i]),
+                            style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => _C.t1,
+                    tooltipBorderRadius: BorderRadius.circular(4),
+                    tooltipPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    getTooltipItems: (spots) => spots.map((s) {
+                      final i = s.x.toInt();
+                      final date = i < dates.length
+                          ? DateFormat.MMMd().format(dates[i])
+                          : '';
+                      return LineTooltipItem(
+                        '$date\n',
+                        _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                        children: [
+                          TextSpan(
+                            text: '${s.y.toInt()} applied',
+                            style: _C.p(11,
+                                fw: FontWeight.w700, color: Colors.white),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                  // Only show dot on touch, not permanently
+                  getTouchedSpotIndicator: (_, indices) =>
+                      indices.map((_) => TouchedSpotIndicatorData(
+                        FlLine(
+                          color: _C.indigo.withOpacity(0.3),
+                          strokeWidth: 1.5,
+                          dashArray: [4, 4],
+                        ),
+                        FlDotData(
+                          getDotPainter: (_, __, ___, ____) =>
+                              FlDotCirclePainter(
+                                radius: 5,
+                                color: Colors.white,
+                                strokeColor: _C.indigo,
+                                strokeWidth: 2.5,
+                              ),
+                        ),
+                      )).toList(),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    curveSmoothness: 0.35,
+                    color: _C.indigo,
+                    barWidth: 2.5,
+                    isStrokeCapRound: true,
+                    // NO dots rendered at all times
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          _C.indigo.withOpacity(0.18),
+                          _C.indigo.withOpacity(0.05),
+                          _C.indigo.withOpacity(0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -1091,7 +1311,6 @@ class _TrendChart extends StatelessWidget {
     );
   }
 }
-
 // ═══════════════════════════════════════════════════════════════════════════
 //  DEPT SUCCESS CARD
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1108,8 +1327,8 @@ class _DeptCard extends StatelessWidget {
         children: [
           _CardHead(
               icon: Icons.donut_small_rounded,
-              title: 'Dept Success Rate',
-              sub: 'Acceptance by department'),
+              title: 'Success Rate',
+              sub: 'Acceptance by Unit/Bases'),
           const SizedBox(height: 12),
           ...deptData.take(5).map((d) {
             final rate  = d['rate'] as double;
