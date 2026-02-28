@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,7 +18,6 @@ class AdminSidebar extends StatefulWidget {
 }
 
 class _AdminSidebarState extends State<AdminSidebar> {
-  int? _hoveredIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -25,37 +25,21 @@ class _AdminSidebarState extends State<AdminSidebar> {
       width: 260,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
-        ),
+        border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(2, 0),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(2, 0)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo Section
           _buildLogoSection(),
-
           const Divider(height: 1, thickness: 1),
-
-          // Admin Profile Card (Compact)
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: AdminProfile(),
+            child: const AdminProfile(),
           ),
-
           const Divider(height: 1, thickness: 1),
-
-          // Scrollable Menu Section
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -63,88 +47,190 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 _buildSectionLabel('MAIN'),
                 const SizedBox(height: 8),
                 _buildMenuItem(
-                  context,
                   icon: Icons.dashboard_outlined,
                   activeIcon: Icons.dashboard,
                   label: 'Dashboard',
                   menuKey: 'Dashboard',
-                  index: 0,
                 ),
-
                 const SizedBox(height: 20),
                 _buildSectionLabel('MANAGEMENT'),
                 const SizedBox(height: 8),
                 _buildMenuItem(
-                  context,
                   icon: Icons.people_outline,
                   activeIcon: Icons.people,
                   label: 'User Management',
                   menuKey: 'User Management',
-                  index: 1,
                 ),
-                _buildMenuItem(
-                  context,
-                  icon: Icons.business_center_outlined,
-                  activeIcon: Icons.business_center,
-                  label: 'Recruiter Requests',
-                  menuKey: 'Recruiter Requests',
-                  index: 2,
-                  badge: '12',
-                ),
-                _buildMenuItem(
-                  context,
+                // Recruiter Requests — LIVE BADGE from Firestore
+                _buildRecruiterRequestItem(),
+                // Locked items below Recruiter Requests
+                _buildLockedItem(
                   icon: Icons.person_search_outlined,
-                  activeIcon: Icons.person_search,
                   label: 'Candidate Vetting',
-                  menuKey: 'Candidate Vetting',
-                  index: 3,
-                  badge: '8',
                 ),
-                _buildMenuItem(
-                  context,
+                _buildLockedItem(
                   icon: Icons.calendar_today_outlined,
-                  activeIcon: Icons.calendar_today,
                   label: 'Interview Schedule',
-                  menuKey: 'Interview Schedule',
-                  index: 4,
                 ),
-
                 const SizedBox(height: 20),
                 _buildSectionLabel('SYSTEM'),
                 const SizedBox(height: 8),
-                _buildMenuItem(
-                  context,
+                _buildLockedItem(
                   icon: Icons.verified_user_outlined,
-                  activeIcon: Icons.verified_user,
                   label: 'Verification',
-                  menuKey: 'Verification',
-                  index: 5,
                 ),
-                _buildMenuItem(
-                  context,
+                _buildLockedItem(
                   icon: Icons.report_outlined,
-                  activeIcon: Icons.report,
                   label: 'Reports',
-                  menuKey: 'Reports',
-                  index: 6,
                 ),
-                _buildMenuItem(
-                  context,
+                _buildLockedItem(
                   icon: Icons.settings_outlined,
-                  activeIcon: Icons.settings,
                   label: 'Settings',
-                  menuKey: 'Settings',
-                  index: 7,
                 ),
               ],
             ),
           ),
-
           const Divider(height: 1, thickness: 1),
-
-          // Footer Section (Compact)
           _buildFooter(),
         ],
+      ),
+    );
+  }
+
+  // ── Recruiter Requests with LIVE Firestore badge ──
+  Widget _buildRecruiterRequestItem() {
+    final isSelected = widget.selectedMenu == 'Recruiter Requests';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? const Color(0xFF6366F1).withOpacity(0.08)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.transparent,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => widget.onMenuSelected('Recruiter Requests'),
+          borderRadius: BorderRadius.circular(8),
+          splashColor: const Color(0xFF6366F1).withOpacity(0.1),
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? Icons.business_center : Icons.business_center_outlined,
+                  size: 20,
+                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text('Recruiter Requests',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+                // Live badge from Firestore
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('recruiter_requests')
+                      .where('status', isEqualTo: 'pending')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                    if (count == 0) return const SizedBox.shrink();
+                    return TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.elasticOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEF4444).withOpacity(0.35),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          '$count',
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Locked "Coming Soon" item ──
+  Widget _buildLockedItem({required IconData icon, required String label}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      child: Opacity(
+        opacity: 0.7,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4D5FFC), Color(0xFF170BF5)],
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text('Soon',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -154,43 +240,25 @@ class _AdminSidebarState extends State<AdminSidebar> {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          // Logo
           Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image: const DecorationImage(
-                image: AssetImage('images/logo.png'),
-                fit: BoxFit.cover,
-              ),
-
+              image: const DecorationImage(image: AssetImage('images/logo.png'), fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: 12),
-          // Brand Text
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'MAHA SERVICES',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
-                    letterSpacing: 0.3,
-                  ),
-                ),
+                Text('MAHA SERVICES',
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A), letterSpacing: 0.3)),
                 const SizedBox(height: 2),
-                Text(
-                  'Admin Portal',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
+                Text('Admin Portal',
+                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B))),
               ],
             ),
           ),
@@ -202,100 +270,58 @@ class _AdminSidebarState extends State<AdminSidebar> {
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 12, bottom: 4),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF94A3B8),
-          letterSpacing: 1,
-        ),
-      ),
+      child: Text(label,
+        style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700,
+            color: const Color(0xFF94A3B8), letterSpacing: 1)),
     );
   }
 
-  Widget _buildMenuItem(
-      BuildContext context, {
-        required IconData icon,
-        required IconData activeIcon,
-        required String label,
-        required String menuKey,
-        required int index,
-        String? badge,
-      }) {
+  Widget _buildMenuItem({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required String menuKey,
+  }) {
     final isSelected = widget.selectedMenu == menuKey;
-    final isHovered = _hoveredIndex == index;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredIndex = index),
-      onExit: (_) => setState(() => _hoveredIndex = null),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 4),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF6366F1).withOpacity(0.08)
-              : (isHovered ? Colors.grey.shade50 : Colors.transparent),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6366F1).withOpacity(0.3)
-                : Colors.transparent,
-            width: 1,
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? const Color(0xFF6366F1).withOpacity(0.08)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.transparent,
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => widget.onMenuSelected(menuKey),
-            borderRadius: BorderRadius.circular(8),
-            splashColor: const Color(0xFF6366F1).withOpacity(0.1),
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  // Icon
-                  Icon(
-                    isSelected ? activeIcon : icon,
-                    size: 20,
-                    color: isSelected
-                        ? const Color(0xFF6366F1)
-                        : const Color(0xFF64748B),
-                  ),
-                  const SizedBox(width: 12),
-                  // Label
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFF475569),
-                      ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => widget.onMenuSelected(menuKey),
+          borderRadius: BorderRadius.circular(8),
+          splashColor: const Color(0xFF6366F1).withOpacity(0.1),
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? activeIcon : icon,
+                  size: 20,
+                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
                     ),
                   ),
-                  // Badge
-                  if (badge != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        badge,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -308,7 +334,6 @@ class _AdminSidebarState extends State<AdminSidebar> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Logout Button
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -316,42 +341,23 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 final shouldLogout = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    title: Text(
-                      'Confirm Logout',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
-                    content: Text(
-                      'Are you sure you want to logout?',
-                      style: GoogleFonts.poppins(),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    title: Text('Confirm Logout', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    content: Text('Are you sure you want to logout?', style: GoogleFonts.poppins()),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.poppins(color: Colors.grey.shade600),
-                        ),
+                        child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.red.shade50,
-                        ),
-                        child: Text(
-                          'Logout',
-                          style: GoogleFonts.poppins(
-                            color: Colors.red.shade600,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        style: TextButton.styleFrom(backgroundColor: Colors.red.shade50),
+                        child: Text('Logout',
+                          style: GoogleFonts.poppins(color: Colors.red.shade600, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
                 );
-
                 if (shouldLogout == true) {
                   await FirebaseAuth.instance.signOut();
                 }
@@ -366,35 +372,19 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.logout_rounded,
-                      size: 16,
-                      color: Colors.red.shade600,
-                    ),
+                    Icon(Icons.logout_rounded, size: 16, color: Colors.red.shade600),
                     const SizedBox(width: 8),
-                    Text(
-                      'Logout',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.red.shade600,
-                      ),
-                    ),
+                    Text('Logout',
+                      style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
                   ],
                 ),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          // Copyright
-          Text(
-            '© 2025 Maha Services',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              color: Colors.grey.shade500,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          Text('© 2025 Maha Services',
+            style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey.shade500),
+            textAlign: TextAlign.center),
         ],
       ),
     );
@@ -420,29 +410,18 @@ class AdminProfile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
           Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
+            width: 40, height: 40,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
+              gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
             ),
             child: Center(
-              child: Text(
-                name.substring(0, 1).toUpperCase(),
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
+              child: Text(name.substring(0, 1).toUpperCase(),
+                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ),
           const SizedBox(width: 12),
-          // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,33 +429,19 @@ class AdminProfile extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        name.capitalize(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF0F172A),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      child: Text(name.capitalize(),
+                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0F172A)),
+                        overflow: TextOverflow.ellipsis),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
-                      Icons.verified,
-                      size: 14,
-                      color: const Color(0xFF6366F1),
-                    ),
+                    const Icon(Icons.verified, size: 14, color: Color(0xFF6366F1)),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'Super Admin',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF64748B),
-                  ),
-                ),
+                Text('Super Admin',
+                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B))),
               ],
             ),
           ),

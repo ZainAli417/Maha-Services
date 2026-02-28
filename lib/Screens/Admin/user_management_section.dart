@@ -90,6 +90,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Consumer<AdminProvider>(
         builder: (context, provider, child) {
           return FadeTransition(
@@ -101,10 +102,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildModernHeader(context, provider),
-                    const SizedBox(height: 28),
+                    // Skip header on mobile — wrapper already shows it
+                    if (!isMobile) _buildModernHeader(context, provider),
+                    if (!isMobile) const SizedBox(height: 28),
                     _buildFilters(),
-                    const SizedBox(height: 24),
+                    SizedBox(height: isMobile ? 12 : 24),
                     Expanded(child: _buildUsersTable(provider)),
                   ],
                 ),
@@ -235,6 +237,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
       child: isMobile 
       ? Column(
           children: [
+            const SizedBox(height: 12),
+
             _buildSearchBar(),
             const SizedBox(height: 12),
             SingleChildScrollView(
@@ -324,13 +328,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
@@ -346,6 +344,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             fontSize: 14,
             fontWeight: FontWeight.w400,
           ),
+          filled: false,
           prefixIcon: const Icon(
             Icons.search_rounded,
             color: Color(0xFF94A3B8),
@@ -425,8 +424,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildUsersTable(AdminProvider provider) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      margin: EdgeInsets.fromLTRB(isMobile ? 8 : 10, 0, isMobile ? 8 : 10, 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -444,7 +445,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance.collection('users').snapshots(),
           builder: (context, snapshot) {
-            if (!mounted) return const SizedBox.shrink(); // ADD THIS LINE
+            if (!mounted) return const SizedBox.shrink();
 
             if (snapshot.hasError) {
               return _buildErrorState(snapshot.error.toString());
@@ -459,11 +460,47 @@ class _UserManagementSectionState extends State<UserManagementSection>
               return _buildEmptyState();
             }
 
-            final isMobile = MediaQuery.of(context).size.width < 768;
-            final tableWidth = isMobile ? 800.0 : MediaQuery.of(context).size.width;
+            // ── MOBILE: Card-based layout (no horizontal scrolling) ──
+            if (isMobile) {
+              return Column(
+                children: [
+                  // Compact count header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.people_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
+                        const SizedBox(width: 8),
+                        Text('${users.length} user${users.length != 1 ? 's' : ''}',
+                          style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B))),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      itemCount: users.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final doc = users[index];
+                        final data = doc.data() as Map<String, dynamic>;
+                        return _buildMobileUserCard(context, provider, doc.id, data);
+                      },
+                    ),
+                  ),
+                ],
+              );
+            }
 
-            final tableContent = Column(
-              crossAxisAlignment:  CrossAxisAlignment.start,
+            // ── DESKTOP: Table layout ──
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildTableHeader(),
@@ -477,7 +514,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       final doc = users[index];
                       final data = doc.data() as Map<String, dynamic>;
 
-                      // Staggered animation for each row
                       return AnimatedBuilder(
                         animation: _staggerController,
                         builder: (context, child) {
@@ -498,7 +534,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 children: [
                                   _buildUserRow(context, provider, doc.id, data, index),
                                   if (index < users.length - 1)
-                                    Divider(height: 1, thickness: 1, color: const Color(0xFFF1F5F9)),
+                                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
                                 ],
                               ),
                             ),
@@ -511,19 +547,104 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 _buildTableFooter(users.length),
               ],
             );
-
-            return isMobile 
-              ? SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: tableWidth,
-                    child: tableContent,
-                  ),
-                )
-              : tableContent;
           },
         ),
       ),
+    );
+  }
+
+  // ── Mobile user card — replaces horizontal scrolling table ──
+  Widget _buildMobileUserCard(BuildContext ctx, AdminProvider provider, String docId, Map<String, dynamic> data) {
+    final status    = data['account_status'] ?? 'active';
+    final name      = data['name'] ?? 'Unknown';
+    final email     = data['email'] ?? 'No email';
+    final role      = data['role'] ?? 'N/A';
+    final userLevel = data['user_lvl'] ?? 'basic';
+
+    return FutureBuilder<String>(
+      future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
+      builder: (context, snapshot) {
+        if (!mounted) return const SizedBox.shrink();
+        final displayName = (snapshot.data != null && snapshot.data != 'Unknown User')
+            ? snapshot.data!
+            : (data['name']?.toString() ?? 'Unknown');
+
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: avatar + name + status
+              Row(
+                children: [
+                  Container(
+                    width: 38, height: 38,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayName,
+                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600,
+                              color: const Color(0xFF0F172A)),
+                          overflow: TextOverflow.ellipsis, maxLines: 1),
+                        Text(email,
+                          style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                          overflow: TextOverflow.ellipsis, maxLines: 1),
+                      ],
+                    ),
+                  ),
+                  _buildStatusBadge(status),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Bottom row: role + level + actions
+              Row(
+                children: [
+                  _buildRoleBadge(role),
+                  const SizedBox(width: 8),
+                  _buildLevelBadge(userLevel),
+                  const Spacer(),
+                  // Compact actions
+                  _buildActionButton(
+                    Icons.edit_note_rounded, 'Edit', const Color(0xFF4F46E5),
+                    () => _showEditUserDialog(context, provider, data, docId, displayName),
+                  ),
+                  const SizedBox(width: 4),
+                  _buildActionButton(
+                    status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
+                    status == 'active' ? 'Suspend' : 'Activate',
+                    status == 'active' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                    () async => await provider.suspendUser(docId, status),
+                  ),
+                  const SizedBox(width: 4),
+                  _buildActionButton(
+                    Icons.lock_reset_rounded, 'Reset', const Color(0xFF8B5CF6),
+                    () => _showResetPasswordDialog(context, provider, email),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

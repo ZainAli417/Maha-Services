@@ -70,7 +70,7 @@ class _AdminAnalyticsDashboardScreenState
 
           return Column(
             children: [
-              _buildModernHeader(context, prov),
+              if (isMid) _buildModernHeader(context, prov),
               Expanded(
                 child: prov.loading && prov.totalUsers == 0
                     ? const Center(
