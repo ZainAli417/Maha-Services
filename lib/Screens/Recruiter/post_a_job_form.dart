@@ -1,1054 +1,1116 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'R_Top_Bar.dart';
 import 'Recruiter_provider_Job_listing.dart';
+import '../../Widgets/quill_editor.dart';
+import '../../Constant/recruiter_AI.dart';
 
-class PostJobDialog extends StatefulWidget {
-  const PostJobDialog({super.key});
+// ─── Colors (mirrors Dashboard_Recruiter) ────────────────────────────────────
+const Color _primary = Color(0xFF1E3A5F);
+const Color _accent = Color(0xFF3B82F6);
+const Color _background = Color(0xFFF8FAFC);
+const Color _surface = Color(0xFFFFFFFF);
+const Color _textDark = Color(0xFF0F172A);
+const Color _textMid = Color(0xFF64748B);
+const Color _border = Color(0xFFE2E8F0);
+const Color _paleBlue = Color(0xFFEFF6FF);
+const Color _secondary = Color(0xFF4A90A4);
+const Color _surfaceDark = Color(0xFF2C3E50);
+const Color _paleWhite = Color(0xFFF0F4F8);
+
+class PostJobScreen extends StatefulWidget {
+  const PostJobScreen({super.key});
 
   @override
-  _PostJobDialogState createState() => _PostJobDialogState();
+  State<PostJobScreen> createState() => _PostJobScreenState();
 }
 
-class _PostJobDialogState extends State<PostJobDialog>
-    with TickerProviderStateMixin {
+class _PostJobScreenState extends State<PostJobScreen>
+    with SingleTickerProviderStateMixin {
+  // ─── form + scroll ────────────────────────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
+  final _scrollCtrl = ScrollController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // Color scheme - Air Force Professional Theme
-  static const Color primary = Color(0xFF1E3A5F); // Deep Air Force Blue
-  static const Color secondary = Color(0xFF4A90A4); // Steel Blue
-  static const Color accent = Color(0xFFFFFFFF); // Gold accent
-  static const Color white = Color(0xFFFAFBFC);
-  static const Color paleWhite = Color(0xFFF0F4F8);
-  static const Color surfaceDark = Color(0xFF2C3E50);
+  // ─── animation ────────────────────────────────────────────────────────────
+  late AnimationController _fadeCtrl;
+  late Animation<double> _fadeAnim;
 
-  // Animation controllers
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  // ─── focus nodes ──────────────────────────────────────────────────────────
+  final Map<String, FocusNode> _fn = {};
 
-  // Scroll controller for web optimization
-  final ScrollController _scrollController = ScrollController();
+  // ─── responsive ───────────────────────────────────────────────────────────
+  bool _isMobile = false;
 
-  // Focus nodes for keyboard navigation
-  final Map<String, FocusNode> _focusNodes = {};
-
-  final List<String> skillOptions = [
-    'Aircraft Maintenance','Avionics Systems','Flight Operations','Radar Systems',
-    'Navigation Systems','Aircraft Engines','Hydraulic Systems','Electrical Systems',
-    'Flight Planning','Air Traffic Control','Weather Analysis','Mission Planning',
-    'Safety Protocols','Emergency Procedures','Quality Assurance','Technical Documentation',
-    'Pilot Training','Crew Resource Management','Aircraft Inspection','Ground Support Equipment'
+  // ─── option lists ─────────────────────────────────────────────────────────
+  static const _skills = [
+    'Aircraft Maintenance',
+    'Avionics Systems',
+    'Flight Operations',
+    'Radar Systems',
+    'Navigation Systems',
+    'Aircraft Engines',
+    'Hydraulic Systems',
+    'Electrical Systems',
+    'Flight Planning',
+    'Air Traffic Control',
+    'Weather Analysis',
+    'Mission Planning',
+    'Safety Protocols',
+    'Emergency Procedures',
+    'Quality Assurance',
+    'Technical Documentation',
+    'Pilot Training',
+    'Crew Resource Management',
+    'Aircraft Inspection',
+    'Ground Support Equipment',
+  ];
+  static const _benefits = [
+    'Military Health Insurance',
+    'Dental Coverage',
+    'Vision Coverage',
+    'Military Retirement Plan',
+    'Base Housing',
+    'Family Support Services',
+    'Educational Benefits',
+    'Professional Training',
+    'Commissary Privileges',
+    'Base Recreational Facilities',
+    'Travel Allowances',
+    'Hazard Pay',
+    'Flight Pay',
+    'Technical Certification Support',
+    'Career Development Programs',
+  ];
+  static const _workModes = [
+    'On-Base',
+    'Field Operations',
+    'Deployed Missions',
+    'Training Facilities',
+  ];
+  static const _rankOptions = [
+    'Enlisted Personnel',
+    'Non-Commissioned Officer (NCO)',
+    'Senior NCO',
+    'Warrant Officer',
+    'Commissioned Officer',
+    'Senior Officer',
+    'Any Rank',
+  ];
+  static const _clearanceOpts = [
+    'None Required',
+    'Confidential',
+    'Secret',
+    'Top Secret',
+    'Top Secret/SCI',
+  ];
+  static const _departmentOpts = [
+    'Flight Operations',
+    'Aircraft Maintenance',
+    'Avionics',
+    'Ground Support',
+    'Air Traffic Control',
+    'Weather Squadron',
+    'Security Forces',
+    'Logistics',
+    'Intelligence',
+    'Communications',
+    'Medical',
+    'Administration',
+    'Training Command',
+  ];
+  static const _salaryTypeOpts = [
+    'Base Pay + Allowances',
+    'Hourly Rate',
+    'Annual Salary',
+    'Per Diem',
+    'Contract Rate',
   ];
 
-  final List<String> benefitOptions = [
-    'Military Health Insurance','Dental Coverage','Vision Coverage',
-    'Military Retirement Plan','Base Housing','Family Support Services',
-    'Educational Benefits','Professional Training','Commissary Privileges',
-    'Base Recreational Facilities','Travel Allowances','Hazard Pay',
-    'Flight Pay','Technical Certification Support','Career Development Programs'
-  ];
-
-  final List<String> workModeOptions = [
-    'On-Base','Field Operations','Deployed Missions','Training Facilities'
-  ];
-
-  final List<String> rankRequirements = [
-    'Enlisted Personnel','Non-Commissioned Officer (NCO)','Senior NCO',
-    'Warrant Officer','Commissioned Officer','Senior Officer','Any Rank'
-  ];
-
-  final List<String> securityClearanceOptions = [
-    'None Required','Confidential','Secret','Top Secret','Top Secret/SCI'
-  ];
-
-  final List<String> departmentOptions = [
-    'Flight Operations','Aircraft Maintenance','Avionics','Ground Support',
-    'Air Traffic Control','Weather Squadron','Security Forces','Logistics',
-    'Intelligence','Communications','Medical','Administration','Training Command'
-  ];
-
-  final List<String> salaryTypeOptions = [
-    'Base Pay + Allowances','Hourly Rate','Annual Salary','Per Diem','Contract Rate'
-  ];
-
+  // ─── lifecycle ────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
-    _initializeFocusNodes();
-  }
-
-  void _initializeAnimations() {
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+    _fadeCtrl = AnimationController(
       vsync: this,
-    );
-    _slideController = AnimationController(
       duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOutCubic,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutQuart,
-    ));
-
-    _fadeController.forward();
-    _slideController.forward();
-  }
-
-  void _initializeFocusNodes() {
-    final fields = [
-      'title', 'company', 'description', 'responsibilities',
-      'qualifications', 'salary', 'payDetails', 'yearsService', 'location'
-    ];
-    for (var field in fields) {
-      _focusNodes[field] = FocusNode();
+    )..forward();
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    for (final f in [
+      'title',
+      'company',
+      'salary',
+      'payDetails',
+      'yearsService',
+      'location',
+      'email',
+    ]) {
+      _fn[f] = FocusNode();
     }
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    _scrollController.dispose();
-    for (var node in _focusNodes.values) {
-      node.dispose();
-    }
+    _fadeCtrl.dispose();
+    _scrollCtrl.dispose();
+    for (final n in _fn.values) n.dispose();
     super.dispose();
   }
 
+  // ─── build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Consumer<job_listing_provider>(
-      builder: (context, provider, child) {
-        final w = MediaQuery.of(context).size.width;
-        final isMobile = w < 768;
+    _isMobile = MediaQuery.of(context).size.width < 768;
 
-        return Dialog(
-          insetPadding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 8 : 24, 
-            vertical: isMobile ? 12 : 32
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          backgroundColor: Colors.transparent,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: 1000,
-                  maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.95 : 850,
-                  minHeight: isMobile ? 400 : 600,
-                ),
-                decoration: BoxDecoration(
-                  color: white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primary.withOpacity(0.15),
-                      blurRadius: 40,
-                      offset: const Offset(0, 20),
-                      spreadRadius: -10,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 60,
-                      offset: const Offset(0, 30),
-                      spreadRadius: -20,
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Colors.white,
+      drawer: _isMobile
+          ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
+          : null,
+      body: Stack(
+        children: [
+          Row(
+            children: [
+              if (!_isMobile) const RecruiterSidebar(activeIndex: 1),
+              Expanded(
+                flex: 7,
+                child: FadeTransition(
+                  opacity: _fadeAnim,
                   child: Column(
                     children: [
-                      _buildHeader(),
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            scrollbars: true,
-                            physics: const BouncingScrollPhysics(),
-                          ),
-                          child: SingleChildScrollView(
-                            controller: _scrollController,
-                            padding: EdgeInsets.fromLTRB(
-                              isMobile ? 16 : 32, 
-                              24, 
-                              isMobile ? 16 : 32, 
-                              32
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildHeroSection(provider, isMobile),
-                                  const SizedBox(height: 32),
-                                  _buildSection(
-                                    title: 'Unit & Position Information',
-                                    icon: Icons.military_tech_rounded,
-                                    delay: 0,
-                                    child: _buildUnitInfoSection(provider, isMobile),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildSection(
-                                    title: 'Position Description & Requirements',
-                                    icon: Icons.description_outlined,
-                                    delay: 1,
-                                    child: _buildDescriptionSection(provider),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildSection(
-                                    title: 'Compensation & Pay Information',
-                                    icon: Icons.account_balance_wallet_outlined,
-                                    delay: 2,
-                                    child: _buildCompensationSection(provider, isMobile),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildDeadlineAndContactRow(provider, isMobile),
-                                  const SizedBox(height: 24),
-                                  _buildSection(
-                                    title: 'Rank & Security Requirements',
-                                    icon: Icons.security_rounded,
-                                    delay: 3,
-                                    child: _buildSecuritySection(provider, isMobile),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildSection(
-                                    title: 'Duty Type & Required Skills',
-                                    icon: Icons.precision_manufacturing_rounded,
-                                    delay: 4,
-                                    child: _buildSkillsSection(provider),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildSection(
-                                    title: 'Military Benefits & Incentives',
-                                    icon: Icons.card_giftcard_rounded,
-                                    delay: 5,
-                                    child: _buildBenefitsSection(provider),
-                                  ),
-                                  const SizedBox(height: 40),
-                                  _buildSubmitButton(provider),
-                                  const SizedBox(height: 16),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      _buildAppBar(),
+                      Expanded(child: _buildBody()),
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(32, 24, 24, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primary, primary.withOpacity(0.95)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: accent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: accent.withOpacity(0.3), width: 1),
-            ),
-            child: const Icon(
-              Icons.flight_takeoff_rounded,
-              color: accent,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create Air Force Job Posting',
-                  style: GoogleFonts.poppins(
-                    fontSize: MediaQuery.of(context).size.width < 600 ? 18 : 24,
-                    fontWeight: FontWeight.w700,
-                    color: white,
-                    letterSpacing: -0.5,
+              if (!_isMobile)
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      border: Border(left: BorderSide(color: _border)),
+                    ),
+                    child: AIJDBuilderWidget(onClose: () {}),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Post aviation positions for personnel',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: white.withOpacity(0.8),
-                    fontWeight: FontWeight.w400,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+            ],
           ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => Navigator.of(context).pop(),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: white.withOpacity(0.9),
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
+          if (_isMobile) const _PostJobAIFloatingChat(),
         ],
       ),
     );
   }
 
-  Widget _buildHeroSection(job_listing_provider provider, bool isMobile) {
-    final logoAndInfo = [
-      _buildLogoUploader(provider),
-      SizedBox(width: isMobile ? 0 : 24, height: isMobile ? 12 : 0),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Unit Identification',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: primary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Upload your unit emblem and fill in the position details below.',
-              textAlign: isMobile ? TextAlign.center : TextAlign.start,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: surfaceDark.withOpacity(0.7),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ];
-
+  // ─── APP BAR (mirrors dashboard _buildMobileAppBar style for all sizes) ──
+  Widget _buildAppBar() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            secondary.withOpacity(0.1),
-            primary.withOpacity(0.05),
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+
+      child: Row(
+        children: [
+          if (_isMobile) ...[
+            IconButton(
+              icon: const Icon(Icons.menu_rounded, size: 24, color: _textDark),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+            const SizedBox(width: 4),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: secondary.withOpacity(0.2), width: 1),
+          // Icon badge — matches dashboard style
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E40AF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.flight_takeoff_outlined,
+              size: 20,
+              color: Color(0xFF1E40AF),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Post a Position',
+                  style: GoogleFonts.poppins(
+                    fontSize: _isMobile ? 15 : 18,
+                    fontWeight: FontWeight.w600,
+                    color: _textDark,
+                  ),
+                ),
+                if (!_isMobile)
+                  Text(
+                    'Fill in the details below to publish a new listing',
+                    style: GoogleFonts.poppins(fontSize: 12, color: _textMid),
+                  ),
+              ],
+            ),
+          ),
+          // Back button
+          // GestureDetector(
+          //   onTap: () => Navigator.of(context).maybePop(),
+          //   child: Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          //     decoration: BoxDecoration(
+          //       color: _paleBlue,
+          //       borderRadius: BorderRadius.circular(8),
+          //       border: Border.all(color: _accent.withOpacity(0.3)),
+          //     ),
+          //     child: Row(
+          //       mainAxisSize: MainAxisSize.min,
+          //       children: [
+          //         const Icon(Icons.arrow_back_ios_new_rounded, size: 13, color: _accent),
+          //         const SizedBox(width: 4),
+          //         Text('Back', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _accent)),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+        ],
       ),
-      child: isMobile 
-        ? Column(children: logoAndInfo)
-        : Row(children: logoAndInfo),
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Widget child,
-    required int delay,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: Duration(milliseconds: 600 + (delay * 100)),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, childWidget) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 20 * (1 - value)),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade200, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(icon, color: primary, size: 22),
-                      ),
-                      const SizedBox(width: 16),
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  child,
-                ],
-              ),
-            ),
+  // ─── BODY ─────────────────────────────────────────────────────────────────
+  Widget _buildBody() {
+    return Consumer<job_listing_provider>(
+      builder: (context, provider, _) {
+        final hPad = _isMobile ? 16.0 : 40.0;
+        return SingleChildScrollView(
+          controller: _scrollCtrl,
+          padding: EdgeInsets.fromLTRB(hPad, 24, hPad, 40),
+          child: Form(
+            key: _formKey,
+            child: _isMobile
+                ? _buildMobileLayout(provider)
+                : _buildDesktopLayout(provider),
           ),
         );
       },
     );
   }
 
-  Widget _buildUnitInfoSection(job_listing_provider provider, bool isMobile) {
+  // ─── DESKTOP: two-column grid ─────────────────────────────────────────────
+  Widget _buildDesktopLayout(job_listing_provider provider) {
     return Column(
-      children: [
-        _buildAnimatedTextField(
-          label: 'Position Title',
-          initialValue: provider.tempTitle,
-          onChanged: provider.updateTempTitle,
-          validator: (v) => v!.trim().isEmpty ? 'Position title is required' : null,
-          icon: Icons.work_outline,
-          hintText: 'e.g., Aircraft Maintenance Technician, Pilot',
-          focusNode: _focusNodes['title'],
-        ),
-        const SizedBox(height: 20),
-        _buildResponsiveRow(
-          isMobile,
-          [
-            _buildAnimatedTextField(
-              label: 'Air Force Unit/Base',
-              initialValue: provider.tempCompany ?? '',
-              onChanged: provider.updateTempCompany,
-              validator: (v) => v!.trim().isEmpty ? 'Unit/Base is required' : null,
-              icon: Icons.location_city_rounded,
-              hintText: 'e.g., 15th Wing',
-              focusNode: _focusNodes['company'],
-            ),
-            _buildAnimatedDropdown(
-              label: 'Department/Squadron',
-              value: provider.tempDepartment ?? departmentOptions.first,
-              items: departmentOptions,
-              onChanged: (val) => provider.updateTempDepartment(val!),
-              icon: Icons.group_work_outlined,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResponsiveRow(bool isMobile, List<Widget> children) {
-    if (isMobile) {
-      return Column(
-        children: children.map((c) => Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: c,
-        )).toList(),
-      );
-    }
-    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: children.map((c) => Expanded(
-        child: Padding(
-          padding: EdgeInsets.only(right: c == children.last ? 0 : 20),
-          child: c,
-        ),
-      )).toList(),
-    );
-  }
-
-  Widget _buildDescriptionSection(job_listing_provider provider) {
-    return Column(
       children: [
-        _buildAnimatedTextField(
+        // Logo + unit header row
+        _buildUnitHeader(provider),
+        const SizedBox(height: 32),
+        _sectionLabel('Position Details', Icons.work_outline_rounded),
+        const SizedBox(height: 14),
+        _buildTwoCol(
+          _field(
+            label: 'Position Title',
+            initial: provider.tempTitle,
+            onChange: provider.updateTempTitle,
+            validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+            icon: Icons.badge_outlined,
+            hint: 'e.g., Aircraft Maintenance Technician',
+            fn: _fn['title'],
+          ),
+          _field(
+            label: 'Air Force Unit / Base',
+            initial: provider.tempCompany ?? '',
+            onChange: provider.updateTempCompany,
+            validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+            icon: Icons.location_city_rounded,
+            hint: 'e.g., 15th Wing',
+            fn: _fn['company'],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildTwoCol(
+          _dropdown(
+            label: 'Department / Squadron',
+            value: provider.tempDepartment ?? _departmentOpts.first,
+            items: _departmentOpts,
+            onChange: (v) => provider.updateTempDepartment(v!),
+            icon: Icons.group_work_outlined,
+          ),
+          _dropdown(
+            label: 'Compensation Type',
+            value: provider.tempSalaryType ?? _salaryTypeOpts.first,
+            items: _salaryTypeOpts,
+            onChange: (v) => provider.updateTempSalaryType(v!),
+            icon: Icons.payments_outlined,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildTwoCol(
+          _field(
+            label: 'Salary Range',
+            initial: provider.tempSalary ?? '',
+            onChange: provider.updateTempSalary,
+            validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+            icon: Icons.monetization_on_outlined,
+            hint: 'e.g., \$45,000 – \$65,000',
+            fn: _fn['salary'],
+          ),
+          _field(
+            label: 'Additional Pay Details',
+            initial: provider.tempPayDetails ?? '',
+            onChange: provider.updateTempPayDetails,
+            icon: Icons.info_outline_rounded,
+            hint: 'Hazard pay, flight pay…',
+            fn: _fn['payDetails'],
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        _sectionLabel('Description & Requirements', Icons.description_outlined),
+        const SizedBox(height: 14),
+        AppRichTextEditor(
           label: 'Position Description',
-          initialValue: provider.tempDescription,
+          initialDelta: provider.tempDescription,
           onChanged: provider.updateTempDescription,
-          validator: (v) => v!.trim().isEmpty ? 'Description is required' : null,
-          maxLines: 4,
-          icon: Icons.edit_note_rounded,
-          hintText: 'Describe the role, mission support requirements, and operational responsibilities',
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'Describe the role and mission support…',
+          minLines: 5,
+          isMobile: false,
         ),
-        const SizedBox(height: 20),
-        _buildAnimatedTextField(
+        const SizedBox(height: 16),
+        AppRichTextEditor(
           label: 'Primary Duties & Responsibilities',
-          initialValue: provider.tempResponsibilities ?? '',
+          initialDelta: provider.tempResponsibilities,
           onChanged: provider.updateTempResponsibilities,
-          validator: (v) => v!.trim().isEmpty ? 'Responsibilities are required' : null,
-          maxLines: 3,
-          icon: Icons.checklist_rounded,
-          hintText: 'List key operational duties, maintenance tasks, or administrative responsibilities',
-          focusNode: _focusNodes['responsibilities'],
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'List key duties — use bullets for clarity…',
+          minLines: 5,
+          isMobile: false,
         ),
-        const SizedBox(height: 20),
-        _buildAnimatedTextField(
+        const SizedBox(height: 16),
+        AppRichTextEditor(
           label: 'Required Qualifications & Training',
-          initialValue: provider.tempQualifications ?? '',
+          initialDelta: provider.tempQualifications,
           onChanged: provider.updateTempQualifications,
-          validator: (v) => v!.trim().isEmpty ? 'Qualifications are required' : null,
-          maxLines: 3,
-          icon: Icons.school_outlined,
-          hintText: 'Military training, certifications, technical schools, or civilian education required',
-          focusNode: _focusNodes['qualifications'],
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'Training, certifications, years of service…',
+          minLines: 5,
+          isMobile: false,
         ),
-      ],
-    );
-  }
+        const SizedBox(height: 32),
 
-  Widget _buildCompensationSection(job_listing_provider provider, bool isMobile) {
-    return Column(
-      children: [
-        _buildResponsiveRow(
-          isMobile,
-          [
-            _buildAnimatedDropdown(
-              label: 'Compensation Type',
-              value: provider.tempSalaryType ?? salaryTypeOptions.first,
-              items: salaryTypeOptions,
-              onChanged: (val) => provider.updateTempSalaryType(val!),
-              icon: Icons.payments_outlined,
-            ),
-            _buildAnimatedTextField(
-              label: 'Salary Range',
-              initialValue: provider.tempSalary ?? '',
-              onChanged: provider.updateTempSalary,
-              validator: (v) => v!.trim().isEmpty ? 'Salary range is required' : null,
-              icon: Icons.monetization_on_outlined,
-              hintText: 'e.g., \$45,000 - \$65,000',
-              focusNode: _focusNodes['salary'],
-            ),
-          ],
+        _sectionLabel('Rank, Security & Location', Icons.security_rounded),
+        const SizedBox(height: 14),
+        _buildTwoCol(
+          _dropdown(
+            label: 'Rank Required',
+            value: provider.tempNature ?? _rankOptions.first,
+            items: _rankOptions,
+            onChange: (v) => provider.updateTempNature(v!),
+            icon: Icons.stars_rounded,
+          ),
+          _dropdown(
+            label: 'Security Clearance',
+            value: provider.tempExperience ?? _clearanceOpts.first,
+            items: _clearanceOpts,
+            onChange: (v) => provider.updateTempExperience(v!),
+            icon: Icons.verified_user_rounded,
+          ),
         ),
-        const SizedBox(height: 20),
-        _buildAnimatedTextField(
-          label: 'Additional Pay Details',
-          initialValue: provider.tempPayDetails ?? '',
-          onChanged: provider.updateTempPayDetails,
-          maxLines: 2,
-          icon: Icons.info_outline_rounded,
-          hintText: 'Special pay, hazard pay, flight pay...',
-          focusNode: _focusNodes['payDetails'],
+        const SizedBox(height: 16),
+        _buildTwoCol(
+          _field(
+            label: 'Years of Service',
+            initial: provider.tempPay ?? '',
+            onChange: provider.updateTempPay,
+            validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+            icon: Icons.timeline_rounded,
+            hint: 'e.g., 2–5 years',
+            fn: _fn['yearsService'],
+          ),
+          _field(
+            label: 'Duty Location',
+            initial: provider.tempLocation ?? '',
+            onChange: provider.updateTempLocation,
+            validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+            icon: Icons.location_on_outlined,
+            hint: 'e.g., Edwards AFB, CA',
+            fn: _fn['location'],
+          ),
         ),
-      ],
-    );
-  }
+        const SizedBox(height: 32),
 
-  Widget _buildDeadlineAndContactRow(job_listing_provider provider, bool isMobile) {
-    return _buildResponsiveRow(
-      isMobile,
-      [
-        _buildAnimatedDatePicker(provider),
-        _buildAnimatedTextField(
-          label: 'Contact Email',
-          initialValue: provider.tempContactEmail ?? '',
-          onChanged: provider.updateTempContactEmail,
-          validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Email is required';
-            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) return 'Invalid email';
-            return null;
-          },
-          icon: Icons.email_outlined,
-          hintText: 'e.g., hr@airforce.mil',
-          keyboardType: TextInputType.emailAddress,
+        _sectionLabel('Deadline & Contact', Icons.calendar_today_outlined),
+        const SizedBox(height: 14),
+        _buildTwoCol(
+          _datePicker(provider),
+          _field(
+            label: 'Contact Email',
+            initial: provider.tempContactEmail ?? '',
+            onChange: provider.updateTempContactEmail,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Required';
+              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim()))
+                return 'Invalid email';
+              return null;
+            },
+            icon: Icons.email_outlined,
+            hint: 'e.g., hr@airforce.mil',
+            keyboard: TextInputType.emailAddress,
+            fn: _fn['email'],
+          ),
         ),
-      ],
-    );
-  }
+        const SizedBox(height: 32),
 
-  Widget _buildSecuritySection(job_listing_provider provider, bool isMobile) {
-    return Column(
-      children: [
-        _buildResponsiveRow(
-          isMobile,
-          [
-            _buildAnimatedDropdown(
-              label: 'Rank Required',
-              value: provider.tempNature ?? rankRequirements.first,
-              items: rankRequirements,
-              onChanged: (val) => provider.updateTempNature(val!),
-              icon: Icons.stars_rounded,
-            ),
-            _buildAnimatedDropdown(
-              label: 'Security Clearance',
-              value: provider.tempExperience ?? securityClearanceOptions.first,
-              items: securityClearanceOptions,
-              onChanged: (val) => provider.updateTempExperience(val!),
-              icon: Icons.verified_user_rounded,
-            ),
-          ],
+        _sectionLabel(
+          'Duty Type & Skills',
+          Icons.precision_manufacturing_rounded,
         ),
-        const SizedBox(height: 20),
-        _buildResponsiveRow(
-          isMobile,
-          [
-            _buildAnimatedTextField(
-              label: 'Years of Service',
-              initialValue: provider.tempPay ?? '',
-              onChanged: provider.updateTempPay,
-              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-              icon: Icons.timeline_rounded,
-              hintText: 'e.g., 2-5 years',
-              focusNode: _focusNodes['yearsService'],
-            ),
-            _buildAnimatedTextField(
-              label: 'Duty Location',
-              initialValue: provider.tempLocation ?? '',
-              onChanged: provider.updateTempLocation,
-              validator: (v) => v!.trim().isEmpty ? 'Required' : null,
-              icon: Icons.location_on_outlined,
-              hintText: 'e.g., Edwards AFB, CA',
-              focusNode: _focusNodes['location'],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSkillsSection(job_listing_provider provider) {
-    return Column(
-      children: [
-        _buildEnhancedPillSelector(
+        const SizedBox(height: 14),
+        _pillSelector(
           title: 'Duty Assignment Type',
-          selectedItems: provider.tempWorkModes,
-          availableItems: workModeOptions,
-          color: secondary,
+          selected: provider.tempWorkModes,
+          all: _workModes,
+          color: _secondary,
           onToggle: provider.toggleWorkMode,
           icon: Icons.business_center_outlined,
         ),
-        const SizedBox(height: 24),
-        _buildEnhancedPillSelector(
+        const SizedBox(height: 20),
+        _pillSelector(
           title: 'Required Technical Skills',
-          selectedItems: provider.tempSkills,
-          availableItems: skillOptions,
+          selected: provider.tempSkills,
+          all: _skills,
           color: const Color(0xFF2E7D32),
           onToggle: provider.toggleSkill,
           icon: Icons.engineering_outlined,
         ),
+        const SizedBox(height: 32),
+
+        _sectionLabel('Benefits & Incentives', Icons.card_giftcard_outlined),
+        const SizedBox(height: 14),
+        _pillSelector(
+          title: 'Available Benefits & Allowances',
+          selected: provider.tempBenefits,
+          all: _benefits,
+          color: const Color(0xFF1565C0),
+          onToggle: provider.toggleBenefit,
+          icon: Icons.card_giftcard_outlined,
+        ),
+        const SizedBox(height: 40),
+
+        _buildSubmit(provider),
       ],
     );
   }
 
-  Widget _buildBenefitsSection(job_listing_provider provider) {
-    return _buildEnhancedPillSelector(
-      title: 'Available Benefits & Allowances',
-      selectedItems: provider.tempBenefits,
-      availableItems: benefitOptions,
-      color: const Color(0xFF1565C0),
-      onToggle: provider.toggleBenefit,
-      icon: Icons.card_giftcard_outlined,
+  // ─── MOBILE: single-column ────────────────────────────────────────────────
+  Widget _buildMobileLayout(job_listing_provider provider) {
+    const gap = SizedBox(height: 14);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildUnitHeader(provider),
+        const SizedBox(height: 24),
+
+        _sectionLabel('Position Details', Icons.work_outline_rounded),
+        gap,
+        _field(
+          label: 'Position Title',
+          initial: provider.tempTitle,
+          onChange: provider.updateTempTitle,
+          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+          icon: Icons.badge_outlined,
+          hint: 'e.g., Aircraft Maintenance Technician',
+          fn: _fn['title'],
+        ),
+        gap,
+        _field(
+          label: 'Air Force Unit / Base',
+          initial: provider.tempCompany ?? '',
+          onChange: provider.updateTempCompany,
+          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+          icon: Icons.location_city_rounded,
+          hint: 'e.g., 15th Wing',
+          fn: _fn['company'],
+        ),
+        gap,
+        _dropdown(
+          label: 'Department / Squadron',
+          value: provider.tempDepartment ?? _departmentOpts.first,
+          items: _departmentOpts,
+          onChange: (v) => provider.updateTempDepartment(v!),
+          icon: Icons.group_work_outlined,
+        ),
+        gap,
+        _dropdown(
+          label: 'Compensation Type',
+          value: provider.tempSalaryType ?? _salaryTypeOpts.first,
+          items: _salaryTypeOpts,
+          onChange: (v) => provider.updateTempSalaryType(v!),
+          icon: Icons.payments_outlined,
+        ),
+        gap,
+        _field(
+          label: 'Salary Range',
+          initial: provider.tempSalary ?? '',
+          onChange: provider.updateTempSalary,
+          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+          icon: Icons.monetization_on_outlined,
+          hint: 'e.g., \$45,000 – \$65,000',
+          fn: _fn['salary'],
+        ),
+        gap,
+        _field(
+          label: 'Additional Pay Details',
+          initial: provider.tempPayDetails ?? '',
+          onChange: provider.updateTempPayDetails,
+          icon: Icons.info_outline_rounded,
+          hint: 'Hazard pay, flight pay…',
+          fn: _fn['payDetails'],
+        ),
+        const SizedBox(height: 24),
+
+        _sectionLabel('Description & Requirements', Icons.description_outlined),
+        gap,
+        AppRichTextEditor(
+          label: 'Position Description',
+          initialDelta: provider.tempDescription,
+          onChanged: provider.updateTempDescription,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'Describe the role and mission support…',
+          minLines: 4,
+          isMobile: true,
+        ),
+        gap,
+        AppRichTextEditor(
+          label: 'Primary Duties & Responsibilities',
+          initialDelta: provider.tempResponsibilities,
+          onChanged: provider.updateTempResponsibilities,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'List key duties — use bullets for clarity…',
+          minLines: 4,
+          isMobile: true,
+        ),
+        gap,
+        AppRichTextEditor(
+          label: 'Required Qualifications & Training',
+          initialDelta: provider.tempQualifications,
+          onChanged: provider.updateTempQualifications,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          hintText: 'Training, certifications, years of service…',
+          minLines: 4,
+          isMobile: true,
+        ),
+        const SizedBox(height: 24),
+
+        _sectionLabel('Rank, Security & Location', Icons.security_rounded),
+        gap,
+        _dropdown(
+          label: 'Rank Required',
+          value: provider.tempNature ?? _rankOptions.first,
+          items: _rankOptions,
+          onChange: (v) => provider.updateTempNature(v!),
+          icon: Icons.stars_rounded,
+        ),
+        gap,
+        _dropdown(
+          label: 'Security Clearance',
+          value: provider.tempExperience ?? _clearanceOpts.first,
+          items: _clearanceOpts,
+          onChange: (v) => provider.updateTempExperience(v!),
+          icon: Icons.verified_user_rounded,
+        ),
+        gap,
+        _field(
+          label: 'Years of Service',
+          initial: provider.tempPay ?? '',
+          onChange: provider.updateTempPay,
+          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+          icon: Icons.timeline_rounded,
+          hint: 'e.g., 2–5 years',
+          fn: _fn['yearsService'],
+        ),
+        gap,
+        _field(
+          label: 'Duty Location',
+          initial: provider.tempLocation ?? '',
+          onChange: provider.updateTempLocation,
+          validator: (v) => v!.trim().isEmpty ? 'Required' : null,
+          icon: Icons.location_on_outlined,
+          hint: 'e.g., Edwards AFB, CA',
+          fn: _fn['location'],
+        ),
+        const SizedBox(height: 24),
+
+        _sectionLabel('Deadline & Contact', Icons.calendar_today_outlined),
+        gap,
+        _datePicker(provider),
+        gap,
+        _field(
+          label: 'Contact Email',
+          initial: provider.tempContactEmail ?? '',
+          onChange: provider.updateTempContactEmail,
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'Required';
+            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim()))
+              return 'Invalid email';
+            return null;
+          },
+          icon: Icons.email_outlined,
+          hint: 'e.g., hr@airforce.mil',
+          keyboard: TextInputType.emailAddress,
+          fn: _fn['email'],
+        ),
+        const SizedBox(height: 24),
+
+        _sectionLabel(
+          'Duty Type & Skills',
+          Icons.precision_manufacturing_rounded,
+        ),
+        gap,
+        _pillSelector(
+          title: 'Duty Assignment Type',
+          selected: provider.tempWorkModes,
+          all: _workModes,
+          color: _secondary,
+          onToggle: provider.toggleWorkMode,
+          icon: Icons.business_center_outlined,
+        ),
+        const SizedBox(height: 16),
+        _pillSelector(
+          title: 'Required Technical Skills',
+          selected: provider.tempSkills,
+          all: _skills,
+          color: const Color(0xFF2E7D32),
+          onToggle: provider.toggleSkill,
+          icon: Icons.engineering_outlined,
+        ),
+        const SizedBox(height: 24),
+
+        _sectionLabel('Benefits & Incentives', Icons.card_giftcard_outlined),
+        gap,
+        _pillSelector(
+          title: 'Available Benefits & Allowances',
+          selected: provider.tempBenefits,
+          all: _benefits,
+          color: const Color(0xFF1565C0),
+          onToggle: provider.toggleBenefit,
+          icon: Icons.card_giftcard_outlined,
+        ),
+        const SizedBox(height: 32),
+
+        _buildSubmit(provider),
+      ],
     );
   }
 
-  Widget _buildLogoUploader(job_listing_provider provider) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () async {
-          final result = await FilePicker.platform.pickFiles(
-            type: FileType.image,
-            withData: true,
-          );
-          if (result != null && result.files.isNotEmpty) {
-            final file = result.files.first;
-            if (file.bytes != null) {
-              provider.updateTempLogo(file.bytes!, file.name);
-            }
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: paleWhite,
-            borderRadius: BorderRadius.circular(60),
-            border: Border.all(
-              color: provider.tempLogoBytes != null ? accent : primary.withOpacity(0.3),
-              width: provider.tempLogoBytes != null ? 3 : 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+  // ─── UNIT HEADER (logo + emblem row, flat — no card) ─────────────────────
+  Widget _buildUnitHeader(job_listing_provider provider) {
+    Future<void> pick() async {
+      final r = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withData: true,
+      );
+      if (r != null && r.files.isNotEmpty) {
+        final f = r.files.first;
+        if (f.bytes != null) provider.updateTempLogo(f.bytes!, f.name);
+      }
+    }
+
+    final avatar = GestureDetector(
+      onTap: () => Future.microtask(pick),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: _isMobile ? 64 : 80,
+        height: _isMobile ? 64 : 80,
+        decoration: BoxDecoration(
+          color: _paleWhite,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: provider.tempLogoBytes != null ? _accent : _border,
+            width: provider.tempLogoBytes != null ? 2.5 : 1.5,
+          ),
+        ),
+        child: ClipOval(
+          child: provider.tempLogoBytes != null
+              ? Image.memory(provider.tempLogoBytes!, fit: BoxFit.cover)
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_photo_alternate_rounded,
+                      size: _isMobile ? 22 : 26,
+                      color: _textMid,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Emblem',
+                      style: GoogleFonts.poppins(
+                        fontSize: 9,
+                        color: _textMid,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        avatar,
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Unit Identification',
+                style: GoogleFonts.poppins(
+                  fontSize: _isMobile ? 14 : 16,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Tap the circle to upload your unit emblem',
+                style: GoogleFonts.poppins(
+                  fontSize: _isMobile ? 11 : 12,
+                  color: _textMid,
+                ),
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(60),
-            child: provider.tempLogoBytes != null
-                ? Image.memory(
-              provider.tempLogoBytes!,
-              fit: BoxFit.cover,
-            )
-                : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_photo_alternate_rounded,
-                  size: 32,
-                  color: primary.withOpacity(0.6),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Upload\nEmblem',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: primary.withOpacity(0.6),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+        ),
+        if (provider.tempLogoBytes != null)
+          TextButton.icon(
+            onPressed: () => Future.microtask(pick),
+            icon: const Icon(Icons.edit_rounded, size: 14, color: _accent),
+            label: Text(
+              'Change',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: _accent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              backgroundColor: _paleBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
-        ),
-      ),
+      ],
     );
   }
 
-  Widget _buildAnimatedTextField({
-    required String label,
-    required String initialValue,
-    required Function(String) onChanged,
-    String? Function(String?)? validator,
-    int maxLines = 1,
-    IconData? icon,
-    String? hintText,
-    FocusNode? focusNode,
-    TextInputType? keyboardType,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      child: TextFormField(
-        initialValue: initialValue,
-        maxLines: maxLines,
-        onChanged: onChanged,
-        validator: validator,
-        focusNode: focusNode,
-        keyboardType: keyboardType,
-        style: GoogleFonts.poppins(
-          fontSize: 15,
-          color: surfaceDark,
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          prefixIcon: icon != null
-              ? Icon(icon, color: primary.withOpacity(0.6), size: 20)
-              : null,
-          filled: false,
-          fillColor: paleWhite,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: primary, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 1),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 2),
-          ),
-          labelStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          hintStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w400,
-            fontSize: 13,
-          ),
-          errorStyle: GoogleFonts.poppins(
-            color: Colors.redAccent,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+  // ─── SECTION LABEL (flat divider style, no card) ──────────────────────────
+  Widget _sectionLabel(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 20,
+          decoration: BoxDecoration(
+            color: _primary,
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required Function(String?) onChanged,
-    IconData? icon,
-  }) {
-    final validValue = items.contains(value) ? value : items.first;
-
-    return DropdownButtonFormField<String>(
-      value: validValue,
-      items: items.map((item) => DropdownMenuItem(
-        value: item,
-        child: Text(
-          item,
+        const SizedBox(width: 10),
+        Icon(icon, size: _isMobile ? 17 : 18, color: _primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
           style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontSize: _isMobile ? 13 : 15,
+            fontWeight: FontWeight.w600,
+            color: _textDark,
           ),
         ),
-      )).toList(),
-      onChanged: onChanged,
+        const SizedBox(width: 12),
+        Expanded(child: Divider(color: _border, thickness: 1)),
+      ],
+    );
+  }
+
+  // ─── TWO-COL HELPER ───────────────────────────────────────────────────────
+  Widget _buildTwoCol(Widget left, Widget right) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: left),
+        const SizedBox(width: 16),
+        Expanded(child: right),
+      ],
+    );
+  }
+
+  // ─── TEXT FIELD ───────────────────────────────────────────────────────────
+  Widget _field({
+    required String label,
+    required String initial,
+    required Function(String) onChange,
+    String? Function(String?)? validator,
+    IconData? icon,
+    String? hint,
+    int maxLines = 1,
+    TextInputType? keyboard,
+    FocusNode? fn,
+  }) {
+    final radius = _isMobile ? 10.0 : 12.0;
+    final fs = _isMobile ? 13.0 : 14.0;
+    final ls = _isMobile ? 12.0 : 13.0;
+
+    return TextFormField(
+      initialValue: initial,
+      maxLines: maxLines,
+      onChanged: onChange,
+      validator: validator,
+      focusNode: fn,
+      keyboardType: keyboard,
       style: GoogleFonts.poppins(
-        fontSize: 15,
-        color: surfaceDark,
+        fontSize: fs,
+        color: _surfaceDark,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
+        hintText: hint,
         prefixIcon: icon != null
-            ? Icon(icon, color: primary.withOpacity(0.6), size: 20)
+            ? Icon(
+                icon,
+                size: _isMobile ? 18 : 20,
+                color: _primary.withOpacity(0.55),
+              )
             : null,
         filled: true,
-        fillColor: paleWhite,
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        fillColor: _surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primary, width: 2),
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _primary, width: 1.8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.8),
         ),
         labelStyle: GoogleFonts.poppins(
-          color: Colors.grey.shade600,
-          fontSize: 14,
+          fontSize: ls,
+          color: _textMid,
+          fontWeight: FontWeight.w500,
+        ),
+        hintStyle: GoogleFonts.poppins(
+          fontSize: ls,
+          color: _textMid.withOpacity(0.7),
+        ),
+        errorStyle: GoogleFonts.poppins(
+          fontSize: 11,
+          color: Colors.redAccent,
           fontWeight: FontWeight.w500,
         ),
       ),
-      icon: Icon(Icons.keyboard_arrow_down_rounded, color: primary),
-      dropdownColor: white,
-      borderRadius: BorderRadius.circular(12),
     );
   }
 
-  Widget _buildAnimatedDatePicker(job_listing_provider provider) {
-    return FormField<String>(
-      initialValue: provider.tempDeadline,
-      validator: (v) => provider.tempDeadline.isEmpty ? 'Deadline is required' : null,
-      builder: (state) {
-        String displayText = _formatDeadlineForDisplay(provider.tempDeadline);
+  // ─── DROPDOWN ─────────────────────────────────────────────────────────────
+  Widget _dropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChange,
+    IconData? icon,
+  }) {
+    final valid = items.contains(value) ? value : items.first;
+    final radius = _isMobile ? 10.0 : 12.0;
+    final fs = _isMobile ? 13.0 : 14.0;
+    final ls = _isMobile ? 12.0 : 13.0;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Application Deadline',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Colors.grey.shade700,
+    return DropdownButtonFormField<String>(
+      value: valid,
+      isExpanded: true,
+      items: items
+          .map(
+            (i) => DropdownMenuItem(
+              value: i,
+              child: Text(
+                i,
+                style: GoogleFonts.poppins(
+                  fontSize: _isMobile ? 12 : 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 8),
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () async {
-                  DateTime initialDate;
-                  try {
-                    initialDate = provider.tempDeadline.isNotEmpty
-                        ? DateTime.parse(provider.tempDeadline)
-                        : DateTime.now();
-                  } catch (_) {
-                    initialDate = DateTime.now();
-                  }
+          )
+          .toList(),
+      onChanged: onChange,
+      style: GoogleFonts.poppins(
+        fontSize: fs,
+        color: _surfaceDark,
+        fontWeight: FontWeight.w500,
+      ),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _primary),
+      dropdownColor: _surface,
+      borderRadius: BorderRadius.circular(radius),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: icon != null
+            ? Icon(
+                icon,
+                size: _isMobile ? 18 : 20,
+                color: _primary.withOpacity(0.55),
+              )
+            : null,
+        filled: true,
+        fillColor: _surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _primary, width: 1.8),
+        ),
+        labelStyle: GoogleFonts.poppins(
+          fontSize: ls,
+          color: _textMid,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
 
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: initialDate,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 3650)),
-                    helpText: 'Select application deadline',
-                    confirmText: 'Set deadline',
-                    initialEntryMode: DatePickerEntryMode.calendar,
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: ColorScheme.light(
-                            primary: primary,
-                            onPrimary: white,
-                            surface: white,
-                            onSurface: surfaceDark,
-                          ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
+  // ─── DATE PICKER ──────────────────────────────────────────────────────────
+  Widget _datePicker(job_listing_provider provider) {
+    final display = _fmtDate(provider.tempDeadline);
+    final radius = _isMobile ? 10.0 : 12.0;
+    final fs = _isMobile ? 13.0 : 14.0;
+    final ls = _isMobile ? 12.0 : 13.0;
 
-                  if (picked != null) {
-                    provider.updateTempDeadline(picked.toIso8601String());
-                    state.didChange(provider.tempDeadline);
-                  }
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 56,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: paleWhite,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: state.hasError
-                          ? Colors.redAccent
-                          : Colors.grey.shade200,
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        size: 20,
-                        color: primary.withOpacity(0.6),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          displayText.isEmpty ? 'Select deadline' : displayText,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: displayText.isEmpty
-                                ? Colors.grey.shade500
-                                : surfaceDark,
-                            fontWeight: displayText.isEmpty
-                                ? FontWeight.w400
-                                : FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      if (provider.tempDeadline.isNotEmpty)
-                        AnimatedOpacity(
-                          opacity: 1,
-                          duration: const Duration(milliseconds: 200),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(8),
-                              onTap: () {
-                                provider.updateTempDeadline('');
-                                state.didChange(provider.tempDeadline);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.clear,
-                                  size: 18,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+    return TextFormField(
+      readOnly: true,
+      initialValue: display,
+      key: ValueKey('dl_${provider.tempDeadline}'),
+      validator: (_) =>
+          provider.tempDeadline.isEmpty ? 'Deadline required' : null,
+      style: GoogleFonts.poppins(
+        fontSize: fs,
+        color: _surfaceDark,
+        fontWeight: FontWeight.w500,
+      ),
+      onTap: () async {
+        DateTime init;
+        try {
+          init = provider.tempDeadline.isNotEmpty
+              ? DateTime.parse(provider.tempDeadline)
+              : DateTime.now();
+        } catch (_) {
+          init = DateTime.now();
+        }
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: init,
+          firstDate: DateTime.now(),
+          lastDate: DateTime.now().add(const Duration(days: 3650)),
+          helpText: 'Select application deadline',
+          confirmText: 'Set deadline',
+          builder: (ctx, child) => Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: _primary,
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: _surfaceDark,
               ),
             ),
-            if (state.hasError)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-                child: Text(
-                  state.errorText ?? '',
-                  style: GoogleFonts.poppins(
-                    color: Colors.redAccent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-          ],
+            child: child!,
+          ),
         );
+        if (picked != null)
+          provider.updateTempDeadline(picked.toIso8601String());
       },
+      decoration: InputDecoration(
+        labelText: 'Application Deadline',
+        hintText: 'Select date',
+        prefixIcon: Icon(
+          Icons.calendar_today_outlined,
+          size: _isMobile ? 18 : 20,
+          color: _primary.withOpacity(0.55),
+        ),
+        suffixIcon: provider.tempDeadline.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, size: 16, color: _textMid),
+                onPressed: () => provider.updateTempDeadline(''),
+              )
+            : null,
+        filled: true,
+        fillColor: _surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: const BorderSide(color: _primary, width: 1.8),
+        ),
+        labelStyle: GoogleFonts.poppins(
+          fontSize: ls,
+          color: _textMid,
+          fontWeight: FontWeight.w500,
+        ),
+        errorStyle: GoogleFonts.poppins(
+          fontSize: 11,
+          color: Colors.redAccent,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 
-  Widget _buildEnhancedPillSelector({
+  // ─── PILL SELECTOR ────────────────────────────────────────────────────────
+  Widget _pillSelector({
     required String title,
-    required List<String> selectedItems,
-    required List<String> availableItems,
+    required List<String> selected,
+    required List<String> all,
     required Color color,
     required void Function(String) onToggle,
     required IconData icon,
@@ -1058,77 +1120,60 @@ class _PostJobDialogState extends State<PostJobDialog>
       children: [
         Row(
           children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 8),
+            Icon(icon, size: _isMobile ? 15 : 17, color: color),
+            const SizedBox(width: 6),
             Text(
               title,
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: _isMobile ? 12 : 13,
                 fontWeight: FontWeight.w600,
-                color: surfaceDark,
+                color: _textDark,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: availableItems.map((item) {
-            final isSelected = selectedItems.contains(item);
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => onToggle(item),
-                  borderRadius: BorderRadius.circular(25),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected ? color.withOpacity(0.15) : paleWhite,
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: isSelected ? color : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                        BoxShadow(
-                          color: color.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedScale(
-                          scale: isSelected ? 1 : 0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            Icons.check_rounded,
-                            size: 16,
-                            color: color,
-                          ),
-                        ),
-                        if (isSelected) const SizedBox(width: 6),
-                        Text(
-                          item,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected ? color : Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
+          spacing: _isMobile ? 6 : 8,
+          runSpacing: _isMobile ? 6 : 8,
+          children: all.map((item) {
+            final on = selected.contains(item);
+            return GestureDetector(
+              onTap: () => Future.microtask(() => onToggle(item)),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isMobile ? 11 : 14,
+                  vertical: _isMobile ? 6 : 8,
+                ),
+                decoration: BoxDecoration(
+                  color: on ? color.withOpacity(0.12) : _surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: on ? color : _border,
+                    width: on ? 1.5 : 1,
                   ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (on) ...[
+                      Icon(
+                        Icons.check_rounded,
+                        size: _isMobile ? 12 : 14,
+                        color: color,
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      item,
+                      style: GoogleFonts.poppins(
+                        fontSize: _isMobile ? 11 : 12,
+                        fontWeight: on ? FontWeight.w600 : FontWeight.w500,
+                        color: on ? color : _textMid,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -1138,79 +1183,188 @@ class _PostJobDialogState extends State<PostJobDialog>
     );
   }
 
-  Widget _buildSubmitButton(job_listing_provider provider) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: double.infinity,
-        height: 60,
+  // ─── SUBMIT BUTTON (mirrors dashboard gradient button) ────────────────────
+  Widget _buildSubmit(job_listing_provider provider) {
+    return SizedBox(
+      width: double.infinity,
+      height: _isMobile ? 50 : 56,
+      child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: provider.isPosting
-                ? [Colors.grey.shade400, Colors.grey.shade500]
-                : [primary, primary.withOpacity(0.9)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          gradient: provider.isPosting
+              ? LinearGradient(
+                  colors: [Colors.grey.shade400, Colors.grey.shade500],
+                )
+              : const LinearGradient(colors: [_primary, _accent]),
+          borderRadius: BorderRadius.circular(_isMobile ? 12 : 14),
           boxShadow: provider.isPosting
               ? []
               : [
-            BoxShadow(
-              color: primary.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-              spreadRadius: -5,
-            ),
-          ],
+                  BoxShadow(
+                    color: _primary.withOpacity(0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: provider.isPosting
-                ? null
-                : () async {
-              if (_formKey.currentState!.validate()) {
-                final error = await provider.addJob();
-                if (!context.mounted) return;
-                if (error != null) {
-                  _showErrorSnackBar(context, error);
-                } else {
-                  _showSuccessSnackBar(context);
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: provider.isPosting
-                    ? const SizedBox(
-                  height: 24,
-                  width: 24,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(_isMobile ? 12 : 14),
+            ),
+          ),
+          onPressed: provider.isPosting
+              ? null
+              : () async {
+                  FocusScope.of(context).unfocus();
+                  if ((provider.tempDepartment ?? '').isEmpty)
+                    provider.updateTempDepartment(_departmentOpts.first);
+                  if ((provider.tempNature ?? '').isEmpty)
+                    provider.updateTempNature(_rankOptions.first);
+                  if ((provider.tempExperience ?? '').isEmpty)
+                    provider.updateTempExperience(_clearanceOpts.first);
+                  if ((provider.tempSalaryType ?? '').isEmpty)
+                    provider.updateTempSalaryType(_salaryTypeOpts.first);
+                  if (_formKey.currentState!.validate()) {
+                    final err = await provider.addJob();
+                    if (!context.mounted) return;
+                    if (err != null) {
+                      _snack(context, err, isError: true);
+                    } else {
+                      _snack(context, 'Position posted successfully!');
+                      Future.delayed(Duration.zero, () {
+                        if (context.mounted) Navigator.of(context).maybePop();
+                      });
+                    }
+                  }
+                },
+          child: provider.isPosting
+              ? const SizedBox(
+                  height: 22,
+                  width: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     color: Colors.white,
                   ),
                 )
-                    : Row(
+              : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
                       Icons.flight_takeoff_rounded,
-                      color: white,
-                      size: 22,
+                      color: Colors.white,
+                      size: 20,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Text(
-                      'Post Position Now',
+                      _isMobile ? 'Post Position' : 'Post Position Now',
                       style: GoogleFonts.poppins(
-                        fontSize: 17,
+                        fontSize: _isMobile ? 14 : 16,
                         fontWeight: FontWeight.w600,
-                        color: white,
-                        letterSpacing: 0.5,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  // ─── SNACKBAR ─────────────────────────────────────────────────────────────
+  void _snack(BuildContext ctx, String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : Icons.check_circle_outline,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                msg,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isError ? Colors.redAccent : const Color(0xFF2E7D32),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(14),
+        duration: Duration(seconds: isError ? 4 : 3),
+      ),
+    );
+  }
+
+  // ─── DATE FORMAT ──────────────────────────────────────────────────────────
+  String _fmtDate(String iso) {
+    if (iso.isEmpty) return '';
+    try {
+      return DateFormat.yMMMMd().format(DateTime.parse(iso));
+    } catch (_) {
+      return iso;
+    }
+  }
+}
+
+// ─── Post Job Floating AI Chat (Mobile) ──────────────────────────────────
+class _PostJobAIFloatingChat extends StatefulWidget {
+  const _PostJobAIFloatingChat();
+
+  @override
+  State<_PostJobAIFloatingChat> createState() => _PostJobAIFloatingChatState();
+}
+
+class _PostJobAIFloatingChatState extends State<_PostJobAIFloatingChat> {
+  bool _showChat = false;
+
+  void _toggleChat() => setState(() => _showChat = !_showChat);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        if (_showChat)
+          Positioned(
+            right: 16,
+            bottom: 80,
+            child: AIJDBuilderWidget(onClose: _toggleChat),
+          ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFF4F46E5),
+            child: InkWell(
+              onTap: _toggleChat,
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _showChat ? Icons.close : Icons.smart_toy,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Recruite.AI',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -1219,67 +1373,7 @@ class _PostJobDialogState extends State<PostJobDialog>
             ),
           ),
         ),
-      ),
+      ],
     );
-  }
-
-  void _showErrorSnackBar(BuildContext context, String error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                error,
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Text(
-              'Position posted successfully!',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF2E7D32),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  String _formatDeadlineForDisplay(String iso) {
-    if (iso.isEmpty) return '';
-    try {
-      final dt = DateTime.parse(iso);
-      return DateFormat.yMMMMd().format(dt);
-    } catch (_) {
-      return iso;
-    }
   }
 }

@@ -1,35 +1,44 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:job_portal/Screens/Recruiter/post_a_job_form.dart';
+import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
 
+import '../../Constant/cv_analysis.dart';
 import 'LIst_of_Applicants.dart';
 import 'Recruiter_provider_Job_listing.dart';
 import 'job_detail_dialog_recrutier.dart';
-
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:provider/provider.dart';
 import '../Job_Seeker/job_seeker_provider.dart';
 
-// CONSTANTS
-const _primary = Color(0xFF6366F1);
-const _background = Color(0xFFF8FAFC);
+// ─── Shared color tokens ──────────────────────────────────────────────────────
+const _kPrimary    = Color(0xFF1E3A5F);
+const _kAccent     = Color(0xFF3B82F6);
+const _kSuccess    = Color(0xFF10B981);
+const _kSurface    = Color(0xFFFFFFFF);
+const _kBg         = Color(0xFFF8FAFC);
+const _kTxtPrimary = Color(0xFF0F172A);
+const _kTxtSec     = Color(0xFF64748B);
+const _kTxtTert    = Color(0xFF94A3B8);
+const _kBorder     = Color(0xFFE2E8F0);
+const _kBorderLt   = Color(0xFFF1F5F9);
+const _kSurfaceEl  = Color(0xFFF8FAFC);
 
-// MAIN DASHBOARD
+// ─────────────────────────────────────────────────────────────────────────────
+// TOP-LEVEL SCAFFOLD  (sidebar + appbar, no duplicate header)
+// ─────────────────────────────────────────────────────────────────────────────
 class Job_Applicant_Tracker extends StatefulWidget {
   const Job_Applicant_Tracker({super.key});
   @override
-  State<Job_Applicant_Tracker> createState() => _Dashboard_RecruiterState();
+  State<Job_Applicant_Tracker> createState() => _Job_Applicant_TrackerState();
 }
 
-class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
+class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -52,47 +61,41 @@ class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: _background,
+      backgroundColor: _kBg,
       drawer: isMobile
-          ? Drawer(
-              child: RecruiterSidebar(activeIndex: 1, isDrawer: true),
-            )
+          ? Drawer(child: RecruiterSidebar(activeIndex: 2, isDrawer: true))
           : null,
       body: Row(
         children: [
-          if (!isMobile) RecruiterSidebar(activeIndex: 1),
+          if (!isMobile) const RecruiterSidebar(activeIndex: 2),
           Expanded(
             child: FadeTransition(
               opacity: _controller,
               child: Column(
                 children: [
-                  if (isMobile)
-                    _buildMobileAppBar(),
+                  // ── Single AppBar (mobile AND desktop) ─────────────────
+                  _AppBar(scaffoldKey: _scaffoldKey, isMobile: isMobile),
+                  // ── Content ────────────────────────────────────────────
                   Expanded(
-                    child: Stack(
-                      children: [
-                        StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('Posted_jobs_public')
-                              .orderBy('timestamp', descending: true)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Center(
-                                child: CircularProgressIndicator(color: _primary),
-                              );
-                            }
-                            if (snapshot.hasError) {
-                              return _ErrorWidget(error: snapshot.error.toString());
-                            }
-                            final jobIds = snapshot.data?.docs.map((doc) => doc.id).toList() ?? [];
-                            if (jobIds.isEmpty) return _EmptyWidget();
-                            return Job_Applicant_Wrapper(jobIds: jobIds);
-                          },
-                        ),
-                      ],
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('Posted_jobs_public')
+                          .orderBy('timestamp', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator(color: _kPrimary));
+                        }
+                        if (snapshot.hasError) {
+                          return _ErrorWidget(error: snapshot.error.toString());
+                        }
+                        final jobIds = snapshot.data?.docs.map((d) => d.id).toList() ?? [];
+                        if (jobIds.isEmpty) return const _EmptyWidget();
+                        return Job_Applicant_Wrapper(jobIds: jobIds);
+                      },
                     ),
                   ),
                 ],
@@ -103,33 +106,91 @@ class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
       ),
     );
   }
+}
 
-  Widget _buildMobileAppBar() {
+// ─── Unified AppBar (replaces both _buildMobileAppBar + _buildHeader) ─────────
+class _AppBar extends StatelessWidget {
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final bool isMobile;
+  const _AppBar({required this.scaffoldKey, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
+      decoration: const BoxDecoration(
+        color: _kSurface,
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, size: 24),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          const SizedBox(width: 4),
+          if (isMobile) ...[
+            IconButton(
+              icon: const Icon(Icons.menu_rounded, size: 24, color: _kTxtPrimary),
+              onPressed: () => scaffoldKey.currentState?.openDrawer(),
+            ),
+            const SizedBox(width: 2),
+          ],
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.1),
+              color: const Color(0xFF1E40AF).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.track_changes_outlined, size: 20, color: _primary),
+            child: const Icon(
+              Icons.track_changes_outlined,
+              size: 20,
+              color: Color(0xFF1E40AF),
+            ),
           ),
           const SizedBox(width: 10),
-          Text('Job Tracker',
-            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Job Application Tracker',
+                  style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 14 : 16,
+                    fontWeight: FontWeight.w600,
+                    color: _kTxtPrimary,
+                    height: 1.2,
+                  ),
+                ),
+                if (!isMobile)
+                  Text(
+                    'Manage & Analyse Applicants',
+                    style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec, height: 1.2),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+          // Post Job button in appbar
+          GestureDetector(
+            onTap: () => context.go('/post-job'),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal:  16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_kPrimary, _kAccent]),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, color: Colors.white, size: 16),
+                    const SizedBox(width: 6),
+                    Text('Post Job',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -137,7 +198,1244 @@ class _Dashboard_RecruiterState extends State<Job_Applicant_Tracker>
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WRAPPER  (search, filters, grid)
+// ─────────────────────────────────────────────────────────────────────────────
+class Job_Applicant_Wrapper extends StatefulWidget {
+  final List<String> jobIds;
+  const Job_Applicant_Wrapper({super.key, required this.jobIds});
+
+  @override
+  State<Job_Applicant_Wrapper> createState() => _Job_Applicant_WrapperState();
+}
+
+class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
+    with TickerProviderStateMixin {
+
+  final TextEditingController _searchCtrl = TextEditingController();
+  final ScrollController _scrollCtrl      = ScrollController();
+  Timer? _debounce;
+
+  List<String> _filteredIds = [];
+  String _selCompany   = '';
+  String _selLocation  = '';
+  String _selJobType   = '';
+  String _selSort      = 'newest';
+  bool   _isLoading    = false;
+
+  final Map<String, Map<String, dynamic>> _cache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredIds = List.from(widget.jobIds);
+    _searchCtrl.addListener(_onSearch);
+    _loadMetadata();
+  }
+
+  @override
+  void didUpdateWidget(covariant Job_Applicant_Wrapper old) {
+    super.didUpdateWidget(old);
+    if (!_listEq(old.jobIds, widget.jobIds)) _loadMetadata();
+  }
+
+  Future<void> _loadMetadata() async {
+    setState(() => _isLoading = true);
+    try {
+      await Future.wait(widget.jobIds.map((id) async {
+        if (_cache.containsKey(id)) return;
+        final doc = await FirebaseFirestore.instance
+            .collection('Posted_jobs_public').doc(id).get();
+        if (doc.exists) {
+          final d = doc.data()!;
+          _cache[id] = {
+            'title':            d['title'] ?? '',
+            'company':          d['company'] ?? '',
+            'location':         d['location'] ?? '',
+            'nature':           d['nature'] ?? '',
+            'description':      d['description'] ?? '',
+            'skills':           (d['skills'] as List?)?.cast<String>() ?? [],
+            'benefits':         (d['benefits'] as List?)?.cast<String>() ?? [],
+            'timestamp':        d['timestamp'],
+            'applicationCount': d['applicationCount'] ?? 0,
+          };
+        }
+      }));
+      _applyFilters();
+    } catch (e) {
+      debugPrint('Error loading metadata: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _onSearch() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 280), _applyFilters);
+  }
+
+  void _applyFilters() {
+    final q = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filteredIds = widget.jobIds.where((id) {
+        final m = _cache[id];
+        if (m == null) return false;
+        if (q.isNotEmpty) {
+          final txt = '${m['title']} ${m['company']} ${m['description']} ${(m['skills'] as List).join(' ')}'.toLowerCase();
+          if (!txt.contains(q)) return false;
+        }
+        if (_selCompany.isNotEmpty  && m['company']  != _selCompany)  return false;
+        if (_selLocation.isNotEmpty && m['location'] != _selLocation) return false;
+        if (_selJobType.isNotEmpty  && m['nature']   != _selJobType)  return false;
+        return true;
+      }).toList();
+      _sortIds();
+    });
+  }
+
+  void _sortIds() {
+    _filteredIds.sort((a, b) {
+      final ma = _cache[a]; final mb = _cache[b];
+      if (ma == null || mb == null) return 0;
+      switch (_selSort) {
+        case 'newest':
+          final ta = (ma['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+          final tb = (mb['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+          return tb.compareTo(ta);
+        case 'oldest':
+          final ta = (ma['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+          final tb = (mb['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
+          return ta.compareTo(tb);
+        case 'company':
+          return (ma['company'] as String).compareTo(mb['company'] as String);
+        case 'applications':
+          return (mb['applicationCount'] as int).compareTo(ma['applicationCount'] as int);
+        default: return 0;
+      }
+    });
+  }
+
+  List<String> _unique(String field) =>
+      _cache.values.map((m) => m[field] as String? ?? '').where((s) => s.isNotEmpty).toSet().toList()..sort();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _scrollCtrl.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final w        = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+
+    return Scaffold(
+      backgroundColor: _kSurface,
+      body: CustomScrollView(
+        controller: _scrollCtrl,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(child: _buildCommandBar(isMobile)),
+          _buildGrid(w, isMobile),
+        ],
+      ),
+    );
+  }
+
+  // ── Command bar ─────────────────────────────────────────────────────────────
+  Widget _buildCommandBar(bool isMobile) {
+    return Container(
+      color: _kSurface,
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 12 : 24, isMobile ? 12 : 16,
+        isMobile ? 12 : 24, isMobile ? 10 : 16,
+      ),
+      child: isMobile ? _mobileBar() : _desktopBar(),
+    );
+  }
+
+  // Mobile: search + filter button row
+  Widget _mobileBar() {
+    final hasFilter = _selCompany.isNotEmpty || _selLocation.isNotEmpty ||
+        _selJobType.isNotEmpty || _selSort != 'newest';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _searchField(true)),
+            const SizedBox(width: 8),
+            // Filter icon button
+            GestureDetector(
+              onTap: _showMobileFilters,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 42, height: 42,
+                decoration: BoxDecoration(
+                  color: hasFilter ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: hasFilter ? _kPrimary : _kBorder,
+                      width: hasFilter ? 1.5 : 1),
+                ),
+                child: Stack(
+                  children: [
+                    Center(child: Icon(Icons.tune_rounded,
+                        size: 20, color: hasFilter ? _kPrimary : _kTxtSec)),
+                    if (hasFilter)
+                      Positioned(
+                        right: 6, top: 6,
+                        child: Container(
+                          width: 8, height: 8,
+                          decoration: const BoxDecoration(
+                              color: _kAccent, shape: BoxShape.circle),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Active filter chips (compact)
+        if (hasFilter)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                if (_selCompany.isNotEmpty)   _activeChip(_selCompany,   () { setState(() => _selCompany   = ''); _applyFilters(); }),
+                if (_selLocation.isNotEmpty)  _activeChip(_selLocation,  () { setState(() => _selLocation  = ''); _applyFilters(); }),
+                if (_selJobType.isNotEmpty)   _activeChip(_selJobType,   () { setState(() => _selJobType   = ''); _applyFilters(); }),
+                if (_selSort != 'newest')     _activeChip(_sortLabel(_selSort), () { setState(() => _selSort = 'newest'); _applyFilters(); }),
+              ],
+            ),
+          ),
+        // Count pill
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text('${_filteredIds.length} position${_filteredIds.length == 1 ? '' : 's'}',
+              style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec, fontWeight: FontWeight.w500)),
+        ),
+      ],
+    );
+  }
+
+  // Desktop: full inline filter row
+  Widget _desktopBar() {
+    final companies = _unique('company');
+    final locations = _unique('location');
+    return Row(
+      children: [
+        Expanded(flex: 3, child: _searchField(false)),
+        const SizedBox(width: 12),
+        _statBadge('${_filteredIds.length}', 'Jobs'),
+        const SizedBox(width: 12),
+        _filterChip('Company',  _selCompany,  companies, Icons.business,     (v) { setState(() => _selCompany  = v); _applyFilters(); }),
+        const SizedBox(width: 8),
+        _filterChip('Location', _selLocation, locations, Icons.location_on,  (v) { setState(() => _selLocation = v); _applyFilters(); }),
+        const SizedBox(width: 8),
+        _sortChip(),
+      ],
+    );
+  }
+
+  // ── Search field ──────────────────────────────────────────────────────────
+  Widget _searchField(bool isMobile) {
+    return TextField(
+      controller: _searchCtrl,
+      style: GoogleFonts.poppins(fontSize: isMobile ? 13 : 14, color: _kTxtPrimary),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.search, color: _kTxtSec, size: 18),
+        hintText: 'Search positions…',
+        hintStyle: GoogleFonts.poppins(color: _kTxtTert, fontSize: isMobile ? 12 : 13),
+        filled: true,
+        fillColor: _kSurfaceEl,
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: 12, vertical: isMobile ? 10 : 11),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _kBorder)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _kPrimary, width: 1.5)),
+      ),
+    );
+  }
+
+  // ── Desktop filter chip ───────────────────────────────────────────────────
+  Widget _filterChip(String label, String value, List<String> opts,
+      IconData icon, void Function(String) onSel) {
+    final active = value.isNotEmpty;
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 44),
+      onSelected: onSel,
+      itemBuilder: (_) => [
+        PopupMenuItem(value: '', child: Text('All $label', style: GoogleFonts.poppins(fontSize: 13))),
+        ...opts.map((o) => PopupMenuItem(value: o,
+            child: Text(o, style: GoogleFonts.poppins(fontSize: 13)))),
+      ],
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: active ? _kPrimary.withOpacity(0.08) : _kSurfaceEl,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: active ? _kPrimary : _kBorder,
+              width: active ? 1.5 : 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: active ? _kPrimary : _kTxtSec),
+            const SizedBox(width: 6),
+            Text(active ? value : label,
+                style: GoogleFonts.poppins(
+                    fontSize: 12, fontWeight: FontWeight.w500,
+                    color: active ? _kPrimary : _kTxtSec)),
+            const SizedBox(width: 2),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 16,
+                color: active ? _kPrimary : _kTxtSec),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Desktop sort chip ─────────────────────────────────────────────────────
+  Widget _sortChip() {
+    return PopupMenuButton<String>(
+      initialValue: _selSort,
+      offset: const Offset(0, 44),
+      onSelected: (v) { setState(() => _selSort = v); _applyFilters(); },
+      itemBuilder: (_) => [
+        _sortItem('newest',       'Newest First'),
+        _sortItem('oldest',       'Oldest First'),
+        _sortItem('company',      'Company A–Z'),
+        _sortItem('applications', 'Most Applications'),
+      ],
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: _kSurfaceEl,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _kBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.sort_rounded, size: 16, color: _kTxtSec),
+            const SizedBox(width: 6),
+            Text('Sort', style: GoogleFonts.poppins(
+                fontSize: 12, fontWeight: FontWeight.w500, color: _kTxtSec)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _sortItem(String val, String lbl) {
+    final sel = _selSort == val;
+    return PopupMenuItem(
+      value: val,
+      child: Row(children: [
+        if (sel) ...[const Icon(Icons.check, size: 16, color: _kPrimary), const SizedBox(width: 8)],
+        Text(lbl, style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+            color: sel ? _kPrimary : _kTxtPrimary)),
+      ]),
+    );
+  }
+
+  // ── Stat badge ────────────────────────────────────────────────────────────
+  Widget _statBadge(String value, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _kSurfaceEl,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _kBorder),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.local_airport_rounded, size: 16, color: _kPrimary),
+        const SizedBox(width: 6),
+        Text(value, style: GoogleFonts.poppins(
+            fontSize: 13, fontWeight: FontWeight.w700, color: _kTxtPrimary)),
+        const SizedBox(width: 4),
+        Text(label, style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec)),
+      ]),
+    );
+  }
+
+  // ── Active filter chip (mobile) ───────────────────────────────────────────
+  Widget _activeChip(String label, VoidCallback onRemove) {
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: _kPrimary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _kPrimary.withOpacity(0.3)),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(label,
+            style: GoogleFonts.poppins(
+                fontSize: 11, fontWeight: FontWeight.w600, color: _kPrimary)),
+        const SizedBox(width: 4),
+        GestureDetector(
+          onTap: onRemove,
+          child: const Icon(Icons.close_rounded, size: 13, color: _kPrimary),
+        ),
+      ]),
+    );
+  }
+
+  // ── Mobile filter bottom sheet ────────────────────────────────────────────
+  void _showMobileFilters() {
+    final companies = _unique('company');
+    final locations = _unique('location');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setS) {
+          // local copies so user can "Apply" or "Cancel"
+          String lComp = _selCompany;
+          String lLoc  = _selLocation;
+          String lType = _selJobType;
+          String lSort = _selSort;
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: _kSurface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+                20, 12, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+            child: StatefulBuilder(
+              builder: (ctx2, setS2) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                          color: _kBorder, borderRadius: BorderRadius.circular(2)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filters',
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.w700,
+                              color: _kTxtPrimary)),
+                      TextButton(
+                        onPressed: () {
+                          setS2(() { lComp = ''; lLoc = ''; lType = ''; lSort = 'newest'; });
+                        },
+                        child: Text('Clear all',
+                            style: GoogleFonts.poppins(
+                                fontSize: 13, color: _kAccent,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Company
+                  _sheetSection('Company', companies, lComp, (v) => setS2(() => lComp = v)),
+                  const SizedBox(height: 14),
+
+                  // Location
+                  _sheetSection('Location', locations, lLoc, (v) => setS2(() => lLoc = v)),
+                  const SizedBox(height: 14),
+
+                  // Sort
+                  Text('Sort by', style: GoogleFonts.poppins(
+                      fontSize: 12, fontWeight: FontWeight.w600, color: _kTxtSec)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8, runSpacing: 8,
+                    children: {
+                      'newest': 'Newest',
+                      'oldest': 'Oldest',
+                      'company': 'Company A–Z',
+                      'applications': 'Most Applied',
+                    }.entries.map((e) {
+                      final sel = lSort == e.key;
+                      return GestureDetector(
+                        onTap: () => setS2(() => lSort = e.key),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: sel ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: sel ? _kPrimary : _kBorder,
+                                width: sel ? 1.5 : 1),
+                          ),
+                          child: Text(e.value,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
+                                  color: sel ? _kPrimary : _kTxtSec)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Apply button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _kPrimary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _selCompany  = lComp;
+                          _selLocation = lLoc;
+                          _selJobType  = lType;
+                          _selSort     = lSort;
+                        });
+                        _applyFilters();
+                        Navigator.of(ctx).pop();
+                      },
+                      child: Text('Apply Filters',
+                          style: GoogleFonts.poppins(
+                              fontSize: 14, fontWeight: FontWeight.w600,
+                              color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _sheetSection(String label, List<String> opts, String current,
+      void Function(String) onTap) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.poppins(
+            fontSize: 12, fontWeight: FontWeight.w600, color: _kTxtSec)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8, runSpacing: 8,
+          children: [
+            // "All" pill
+            GestureDetector(
+              onTap: () => onTap(''),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: current.isEmpty ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: current.isEmpty ? _kPrimary : _kBorder,
+                      width: current.isEmpty ? 1.5 : 1),
+                ),
+                child: Text('All',
+                    style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: current.isEmpty ? FontWeight.w600 : FontWeight.w500,
+                        color: current.isEmpty ? _kPrimary : _kTxtSec)),
+              ),
+            ),
+            ...opts.map((o) {
+              final sel = current == o;
+              return GestureDetector(
+                onTap: () => onTap(o),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: sel ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                        color: sel ? _kPrimary : _kBorder,
+                        width: sel ? 1.5 : 1),
+                  ),
+                  child: Text(o,
+                      style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
+                          color: sel ? _kPrimary : _kTxtSec)),
+                ),
+              );
+            }),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ── Grid ─────────────────────────────────────────────────────────────────
+  Widget _buildGrid(double w, bool isMobile) {
+    if (_isLoading) {
+      return const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator(color: _kPrimary)));
+    }
+    if (_filteredIds.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100, height: 100,
+                decoration: BoxDecoration(
+                    color: _kPrimary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20)),
+                child: const Icon(Icons.search_off_rounded,
+                    size: 52, color: _kTxtSec),
+              ),
+              const SizedBox(height: 20),
+              Text('No jobs found',
+                  style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.w600,
+                      color: _kTxtPrimary)),
+              const SizedBox(height: 6),
+              Text('Adjust your filters or post a new position',
+                  style: GoogleFonts.poppins(fontSize: 14, color: _kTxtSec)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Responsive column count & card height
+    final cols = isMobile ? 1 : (w < 1100 ? 2 : 3);
+    // Card height: mobile needs more room since items stack differently
+    final cardH = isMobile ? 360.0 : 340.0;
+
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+          isMobile ? 10 : 24, 0, isMobile ? 10 : 24, 24),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: cols,
+          crossAxisSpacing: isMobile ? 10 : 16,
+          mainAxisSpacing:  isMobile ? 10 : 16,
+          mainAxisExtent:   cardH,
+        ),
+        delegate: SliverChildBuilderDelegate(
+              (ctx, i) => Job_Cards(jobId: _filteredIds[i]),
+          childCount: _filteredIds.length,
+        ),
+      ),
+    );
+  }
+
+  String _sortLabel(String s) {
+    switch (s) {
+      case 'oldest':       return 'Oldest';
+      case 'company':      return 'Company A–Z';
+      case 'applications': return 'Most Applied';
+      default:             return 'Newest';
+    }
+  }
+
+  bool _listEq<T>(List<T>? a, List<T>? b) {
+    if (a == null) return b == null;
+    if (b == null || a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) if (a[i] != b[i]) return false;
+    return true;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JOB CARD  (overflow-safe, responsive padding)
+// ─────────────────────────────────────────────────────────────────────────────
+class Job_Cards extends StatefulWidget {
+  final String jobId;
+  const Job_Cards({super.key, required this.jobId});
+
+  @override
+  State<Job_Cards> createState() => _Job_CardsState();
+}
+
+class _Job_CardsState extends State<Job_Cards>
+    with SingleTickerProviderStateMixin {
+  bool _hovered  = false;
+  bool _pressed  = false;
+  late AnimationController _scaleCtrl;
+  late Animation<double>   _scaleAnim;
+
+  Map<String, dynamic>? _cachedJob;
+  String? _cachedKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 140));
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.975)
+        .animate(CurvedAnimation(parent: _scaleCtrl, curve: Curves.easeOutCubic));
+  }
+
+  @override
+  void dispose() {
+    _scaleCtrl.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> _process(DocumentSnapshot doc) {
+    if (!doc.exists) return _empty();
+    final d = doc.data() as Map<String, dynamic>? ?? {};
+    final appCount  = d['applicationCount'] ?? 0;
+    final ts        = d['timestamp'];
+    final key       = '${doc.id}_${ts}_$appCount';
+    if (_cachedKey == key && _cachedJob != null) return _cachedJob!;
+
+    _cachedJob = {
+      'id':               doc.id,
+      'title':            d['title']?.toString()     ?? 'Untitled Position',
+      'company':          d['company']?.toString()   ?? 'Unknown Unit',
+      'location':         d['location']?.toString()  ?? 'Remote',
+      'description':      d['description']?.toString() ?? '',
+      'salary':           d['salary'],
+      'nature':           d['nature']?.toString()    ?? 'Full-time',
+      'experience':       d['experience']?.toString() ?? 'Not specified',
+      'logoUrl':          d['logoUrl']?.toString(),
+      'skills':           (d['skills']  as List<dynamic>?)?.cast<String>() ?? <String>[],
+      'timestamp':        ts,
+      'applicationCount': appCount is int ? appCount : (int.tryParse(appCount.toString()) ?? 0),
+    };
+    _cachedKey = key;
+    return _cachedJob!;
+  }
+
+  Map<String, dynamic> _empty() => {
+    'id': widget.jobId, 'title': 'Untitled Position',
+    'company': 'Unknown Unit', 'location': 'Remote',
+    'description': '', 'salary': null, 'nature': 'Full-time',
+    'experience': 'Not specified', 'logoUrl': null,
+    'skills': <String>[], 'timestamp': null, 'applicationCount': 0,
+  };
+
+  String _ago(Timestamp? ts) =>
+      ts == null ? '' : timeago.format(ts.toDate(), locale: 'en_short');
+
+  String _sal(dynamic s) {
+    if (s == null) return 'Not specified';
+    if (s is num) return '\$${NumberFormat.compact().format(s)}';
+    return s.toString();
+  }
+
+  void _details() {
+    _scaleCtrl.forward().then((_) => _scaleCtrl.reverse());
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.55),
+      transitionAnimationController: AnimationController(
+          vsync: Navigator.of(context),
+          duration: const Duration(milliseconds: 380)),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: JobDetailModal_recruiter(jobId: widget.jobId),
+      ),
+    );
+  }
+
+  void _applicants() {
+    Navigator.of(context).push(PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black.withOpacity(0.55),
+      transitionDuration: const Duration(milliseconds: 380),
+      reverseTransitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (ctx, anim, _) => FadeTransition(
+        opacity: anim,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Center(
+            child: AnimatedBuilder(
+              animation: anim,
+              builder: (_, child) => Transform.scale(
+                scale: Tween(begin: 0.92, end: 1.0)
+                    .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic))
+                    .value,
+                child: child,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth:  MediaQuery.of(ctx).size.width  * 0.88,
+                  maxHeight: MediaQuery.of(ctx).size.height * 0.92,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: Material(
+                    color: _kSurface,
+                    elevation: 20,
+                    shadowColor: Colors.black.withOpacity(0.35),
+                    child: Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          width: 44, height: 4,
+                          decoration: BoxDecoration(
+                              color: _kTxtTert.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(2)),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 14),
+                            child: GestureDetector(
+                              onTap: () => Navigator.of(ctx).pop(),
+                              child: Container(
+                                width: 34, height: 34,
+                                decoration: BoxDecoration(
+                                    color: _kSurfaceEl, shape: BoxShape.circle,
+                                    border: Border.all(color: _kBorder)),
+                                child: const Icon(Icons.close_rounded,
+                                    size: 18, color: _kTxtSec),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(child: ApplicantsScreen(jobId: widget.jobId)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Posted_jobs_public')
+          .doc(widget.jobId)
+          .snapshots(),
+      builder: (ctx, snap) {
+        if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+          return _loadingCard();
+        }
+        if (snap.hasError) return _errorCard();
+        return _card(_process(snap.data!));
+      },
+    );
+  }
+
+  Widget _loadingCard() => Container(
+      decoration: BoxDecoration(
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: _kBorderLt)),
+      child: const Center(
+          child: CircularProgressIndicator(
+              strokeWidth: 2, color: _kPrimary)));
+
+  Widget _errorCard() => Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: _kSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.red.shade200)),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.error_outline, color: Colors.red.shade400, size: 28),
+        const SizedBox(height: 6),
+        Text('Failed to load',
+            style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec)),
+      ]));
+
+  Widget _card(Map<String, dynamic> job) {
+    final title    = job['title']  as String;
+    final company  = job['company'] as String;
+    final location = job['location'] as String;
+    final desc     = job['description'] as String;
+    final skills   = job['skills'] as List<String>;
+    final logoUrl  = job['logoUrl'] as String?;
+    final ago      = _ago(job['timestamp'] as Timestamp?);
+    final salary   = _sal(job['salary']);
+    final nature   = job['nature'] as String;
+    final exp      = job['experience'] as String;
+    final appCount = job['applicationCount'] as int;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown:   (_) { setState(() => _pressed = true);  _scaleCtrl.forward(); },
+        onTapUp:     (_) { setState(() => _pressed = false); _scaleCtrl.reverse(); },
+        onTapCancel: ()  { setState(() => _pressed = false); _scaleCtrl.reverse(); },
+        child: AnimatedBuilder(
+          animation: _scaleAnim,
+          builder: (_, child) =>
+              Transform.scale(scale: _scaleAnim.value, child: child),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 260),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: _kSurface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: _hovered ? _kPrimary.withOpacity(0.28) : _kBorderLt,
+                  width: _hovered ? 1.5 : 1),
+              boxShadow: _hovered
+                  ? [
+                BoxShadow(color: _kPrimary.withOpacity(0.1),
+                    blurRadius: 20, offset: const Offset(0, 6),
+                    spreadRadius: -4),
+              ]
+                  : [
+                BoxShadow(color: Colors.black.withOpacity(0.03),
+                    blurRadius: 6, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  // ── Header ─────────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [_kPrimary.withOpacity(0.03), _kAccent.withOpacity(0.02)],
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Logo
+                            Hero(
+                              tag: 'logo-${job['id']}',
+                              child: Container(
+                                width: 46, height: 46,
+                                decoration: BoxDecoration(
+                                  color: _kSurfaceEl,
+                                  borderRadius: BorderRadius.circular(11),
+                                  border: Border.all(color: _kBorder, width: 1.5),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(9),
+                                  child: logoUrl != null && logoUrl.isNotEmpty
+                                      ? CachedNetworkImage(
+                                    imageUrl: logoUrl, fit: BoxFit.cover,
+                                    placeholder: (_, __) =>
+                                    const Center(child: CircularProgressIndicator(strokeWidth: 1.5, color: _kPrimary)),
+                                    errorWidget: (_, __, ___) =>
+                                        _logoFallback(company),
+                                  )
+                                      : _logoFallback(company),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // Title + company
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(title,
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 13, fontWeight: FontWeight.w700,
+                                          color: _kTxtPrimary, height: 1.3),
+                                      maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: _kPrimary.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(company,
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 10, fontWeight: FontWeight.w600,
+                                            color: _kPrimary),
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Time badge
+                            if (ago.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _kSuccess.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: _kSuccess.withOpacity(0.2)),
+                                ),
+                                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                  Icon(Icons.schedule_rounded,
+                                      size: 10, color: _kSuccess),
+                                  const SizedBox(width: 3),
+                                  Text(ago,
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 9, fontWeight: FontWeight.w700,
+                                          color: _kSuccess)),
+                                ]),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Meta chips row — scrollable to prevent overflow
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _meta(Icons.location_on_outlined, location),
+                              const SizedBox(width: 6),
+                              _meta(Icons.work_outline, nature),
+                              const SizedBox(width: 6),
+                              _meta(Icons.attach_money, salary),
+                              const SizedBox(width: 6),
+                              _meta(Icons.trending_up, exp),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Description ────────────────────────────────────────
+                  if (desc.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+                      child: Text(desc,
+                          style: GoogleFonts.poppins(
+                              fontSize: 11, color: _kTxtSec, height: 1.55),
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                    ),
+
+                  // ── Skills ─────────────────────────────────────────────
+                  if (skills.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                      child: Text('Skills',
+                          style: GoogleFonts.poppins(
+                              fontSize: 10, fontWeight: FontWeight.w600,
+                              color: _kTxtTert, letterSpacing: 0.4)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 5, 14, 0),
+                      child: Wrap(
+                        spacing: 5, runSpacing: 5,
+                        children: [
+                          ...skills.take(4).map((s) => Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: _kSurfaceEl,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: _kBorder)),
+                            child: Text(s,
+                                style: GoogleFonts.poppins(
+                                    fontSize: 10, fontWeight: FontWeight.w600,
+                                    color: _kTxtSec)),
+                          )),
+                          if (skills.length > 4)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 9, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color: _kAccent.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                      color: _kAccent.withOpacity(0.2))),
+                              child: Text('+${skills.length - 4}',
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 10, fontWeight: FontWeight.w700,
+                                      color: _kAccent)),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const Spacer(),
+
+                  // ── Footer ─────────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                    decoration: const BoxDecoration(
+                      color: _kSurfaceEl,
+                      border: Border(top: BorderSide(color: _kBorderLt)),
+                    ),
+                    child: Row(
+                      children: [
+                        // Applicants count button
+                        Expanded(
+                          flex: 2,
+                          child: GestureDetector(
+                            onTap: _applicants,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              decoration: BoxDecoration(
+                                color: appCount > 0
+                                    ? _kAccent.withOpacity(0.08)
+                                    : _kSurface,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: appCount > 0
+                                        ? _kAccent.withOpacity(0.25)
+                                        : _kBorder),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.group_outlined,
+                                      size: 16,
+                                      color: appCount > 0 ? _kAccent : _kTxtTert),
+                                  const SizedBox(width: 5),
+
+                                  Text('$appCount',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12, fontWeight: FontWeight.w700,
+                                          color: appCount > 0 ? _kAccent : _kTxtTert)),
+                                  const SizedBox(width: 2),
+
+                                  Text('Applicant(s)',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12, fontWeight: FontWeight.w700,
+                                          color: _kAccent, letterSpacing: 0.3)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // View details button
+                        Expanded(
+                          flex: 2,
+                          child: GestureDetector(
+                            onTap: _details,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: _hovered
+                                      ? [const Color(0xFF2E4A6F), _kAccent]
+                                      : [_kPrimary, const Color(0xFF2E4A6F)],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: _kPrimary.withOpacity(0.25),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3)),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.visibility_rounded,
+                                      size: 15, color: Colors.white),
+                                  const SizedBox(width: 6),
+                                  Text('View Job',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12, fontWeight: FontWeight.w700,
+                                          color: Colors.white, letterSpacing: 0.3)),
+                                  const SizedBox(width: 4),
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    transform: Matrix4.translationValues(
+                                        _hovered ? 3 : 0, 0, 0),
+                                    child: const Icon(Icons.arrow_forward_rounded,
+                                        size: 14, color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _logoFallback(String company) => Container(
+    color: _kSurfaceEl,
+    child: Center(
+      child: Text(
+        company.isNotEmpty ? company[0].toUpperCase() : 'C',
+        style: GoogleFonts.poppins(
+            fontSize: 20, fontWeight: FontWeight.w700, color: _kPrimary),
+      ),
+    ),
+  );
+
+  Widget _meta(IconData icon, String label) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+    decoration: BoxDecoration(
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: _kBorder)),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, size: 11, color: _kTxtTert),
+      const SizedBox(width: 4),
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 90),
+        child: Text(label,
+            style: GoogleFonts.poppins(
+                fontSize: 10, fontWeight: FontWeight.w600, color: _kTxtSec),
+            overflow: TextOverflow.ellipsis),
+      ),
+    ]),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMPTY / ERROR WIDGETS
+// ─────────────────────────────────────────────────────────────────────────────
 class _EmptyWidget extends StatelessWidget {
+  const _EmptyWidget();
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -147,24 +1445,15 @@ class _EmptyWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.work_outline_rounded,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+                color: Colors.grey.shade100, shape: BoxShape.circle),
+            child: Icon(Icons.work_outline_rounded,
+                size: 60, color: Colors.grey.shade400),
           ),
-          const SizedBox(height: 24),
-          Text(
-            'No Positions Available',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-          ),
+          const SizedBox(height: 20),
+          Text('No Positions Available',
+              style: GoogleFonts.poppins(
+                  fontSize: 18, fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700)),
         ],
       ),
     );
@@ -174,1624 +1463,33 @@ class _EmptyWidget extends StatelessWidget {
 class _ErrorWidget extends StatelessWidget {
   final String error;
   const _ErrorWidget({required this.error});
-
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.shade200),
-        ),
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.red.shade200)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Oops! Something went wrong',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.red.shade700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.red.shade600,
-              ),
-            ),
+            Icon(Icons.error_outline_rounded,
+                size: 48, color: Colors.red.shade400),
+            const SizedBox(height: 12),
+            Text('Something went wrong',
+                style: GoogleFonts.poppins(
+                    fontSize: 16, fontWeight: FontWeight.w600,
+                    color: Colors.red.shade700)),
+            const SizedBox(height: 6),
+            Text(error,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                    fontSize: 13, color: Colors.red.shade600)),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// OPTIMIZED: Now accepts list of job IDs instead of full job data
-class Job_Applicant_Wrapper extends StatefulWidget {
-  final List<String> jobIds;
-
-  const Job_Applicant_Wrapper({
-    super.key,
-    required this.jobIds,
-  });
-
-  @override
-  State<Job_Applicant_Wrapper> createState() => _Job_Applicant_TrackerState();
-}
-
-class _Job_Applicant_TrackerState extends State<Job_Applicant_Wrapper>
-    with TickerProviderStateMixin {
-
-  // Controllers
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  Timer? _debounceTimer;
-
-  // State - OPTIMIZED: Store only IDs
-  List<String> _filteredJobIds = [];
-  String _selectedCompany = '';
-  String _selectedLocation = '';
-  String _selectedJobType = '';
-  final Set<String> _selectedBenefits = {};
-  String _selectedSortOption = 'newest';
-  bool _lockOuterScroll = false;
-  bool _isLoading = false;
-
-  // Cache for minimal job metadata (for filtering)
-  final Map<String, Map<String, dynamic>> _jobMetadataCache = {};
-
-  // Animation controllers
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-
-  // Professional color scheme - Corporate Navy
-  static const Color _primary = Color(0xFF1E3A5F);
-  static const Color _primaryLight = Color(0xFF2E4A6F);
-  static const Color _accent = Color(0xFF3B82F6);
-  static const Color _success = Color(0xFF10B981);
-  static const Color _warning = Color(0xFFF59E0B);
-  static const Color _error = Color(0xFFEF4444);
-  static const Color _surface = Color(0xFFF8FAFC);
-  static const Color _background = Color(0xFFFFFFFF);
-  static const Color _textPrimary = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _border = Color(0xFFE2E8F0);
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredJobIds = List.from(widget.jobIds);
-    _searchController.addListener(_onSearchChanged);
-    _initializeAnimations();
-    _loadJobMetadata();
-  }
-
-  void _initializeAnimations() {
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _fadeController.forward();
-    _slideController.forward();
-  }
-
-  @override
-  void didUpdateWidget(covariant Job_Applicant_Wrapper oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!_listEquals(oldWidget.jobIds, widget.jobIds)) {
-      _loadJobMetadata();
-    }
-  }
-
-  /// OPTIMIZED: Load minimal metadata for filtering only
-  /// This is much lighter than loading full job data
-  Future<void> _loadJobMetadata() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final futures = widget.jobIds.map((jobId) async {
-        // Check cache first
-        if (_jobMetadataCache.containsKey(jobId)) {
-          return;
-        }
-
-        final doc = await FirebaseFirestore.instance
-            .collection('Posted_jobs_public')
-            .doc(jobId)
-            .get();
-        if (doc.exists) {
-          final data = doc.data()!;
-          // Store only fields needed for filtering/sorting
-          _jobMetadataCache[jobId] = {
-            'title': data['title'] ?? '',
-            'company': data['company'] ?? '',
-            'location': data['location'] ?? '',
-            'nature': data['nature'] ?? '',
-            'description': data['description'] ?? '',
-            'skills': (data['skills'] as List?)?.cast<String>() ?? [],
-            'benefits': (data['benefits'] as List?)?.cast<String>() ?? [],
-            'timestamp': data['timestamp'],
-            'applicationCount': data['applicationCount'] ?? 0,
-          };
-          print(data);
-
-        }
-      });
-
-      await Future.wait(futures);
-      _applyFilters();
-    } catch (e) {
-      debugPrint('Error loading job metadata: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _onSearchChanged() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), _applyFilters);
-  }
-
-  void _applyFilters() {
-    final query = _searchController.text.toLowerCase();
-
-    setState(() {
-      _filteredJobIds = widget.jobIds.where((jobId) {
-        final metadata = _jobMetadataCache[jobId];
-        if (metadata == null) return false;
-
-        // Search filter
-        if (query.isNotEmpty) {
-          final searchText = '${metadata['title']} ${metadata['company']} ${metadata['description']} ${(metadata['skills'] as List).join(' ')}'
-              .toLowerCase();
-          if (!searchText.contains(query)) return false;
-        }
-
-        // Company filter
-        if (_selectedCompany.isNotEmpty && metadata['company'] != _selectedCompany) {
-          return false;
-        }
-
-        // Location filter
-        if (_selectedLocation.isNotEmpty && metadata['location'] != _selectedLocation) {
-          return false;
-        }
-
-        // Job type filter
-        if (_selectedJobType.isNotEmpty && metadata['nature'] != _selectedJobType) {
-          return false;
-        }
-
-        // Benefits filter
-        if (_selectedBenefits.isNotEmpty) {
-          final benefits = (metadata['benefits'] as List).cast<String>().toSet();
-          if (!_selectedBenefits.any(benefits.contains)) return false;
-        }
-
-        return true;
-      }).toList();
-
-      _sortResults();
-    });
-  }
-
-  void _sortResults() {
-    _filteredJobIds.sort((a, b) {
-      final metadataA = _jobMetadataCache[a];
-      final metadataB = _jobMetadataCache[b];
-
-      if (metadataA == null || metadataB == null) return 0;
-
-      switch (_selectedSortOption) {
-        case 'newest':
-          final timeA = (metadataA['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
-          final timeB = (metadataB['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
-          return timeB.compareTo(timeA);
-
-        case 'oldest':
-          final timeA = (metadataA['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
-          final timeB = (metadataB['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0);
-          return timeA.compareTo(timeB);
-
-        case 'company':
-          return (metadataA['company'] as String).compareTo(metadataB['company'] as String);
-
-        case 'applications':
-          return (metadataB['applicationCount'] as int).compareTo(metadataA['applicationCount'] as int);
-
-        default:
-          return 0;
-      }
-    });
-  }
-
-  List<String> _getUnique(String field) {
-    final values = _jobMetadataCache.values
-        .map((m) => m[field] as String? ?? '')
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-    values.sort();
-    return values;
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _scrollController.dispose();
-    _jobMetadataCache.clear();
-    _debounceTimer?.cancel();
-    _fadeController.dispose();
-    _slideController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    final isMobile = w < 768;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: _lockOuterScroll
-                  ? const NeverScrollableScrollPhysics()
-                  : const BouncingScrollPhysics(),
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader(isMobile)),
-                SliverToBoxAdapter(child: _buildCommandBar()),
-                _buildJobGrid(w, isMobile),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isMobile) {
-    const Color kPrimaryBlue = Color(0xFF1E40AF);
-    const Color kTextPrimary = Color(0xFF0F172A);
-    const Color kTextSecondary = Color(0xFF475569);
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
-      decoration: BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: kPrimaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.track_changes_outlined, size: 24, color: kPrimaryBlue),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Job Application Tracker',
-                  style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 16 : 18, 
-                    fontWeight: FontWeight.w600, 
-                    color: kTextPrimary, 
-                    height: 1.2
-                  ),
-                ),
-                Text('Manage & Analyze Applicants',
-                  style: GoogleFonts.poppins(fontSize: 12, color: kTextSecondary, height: 1.2),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStat(String value, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: _textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPostJobButton() {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => const PostJobDialog(),
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [_primary, _accent],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: _primary.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.add, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Post Job',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCommandBar() {
-    final companies = _getUnique('company');
-    final locations = _getUnique('location');
-
-    return LayoutBuilder(builder: (context, constraints) {
-      final isMobile = constraints.maxWidth < 600;
-      return Container(
-        padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 20, isMobile ? 16 : 32, 20),
-        color: _background,
-        child: isMobile
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
-                      hintText: 'Search jobs...',
-                      hintStyle: GoogleFonts.poppins(color: _textSecondary, fontSize: 13),
-                      fillColor: _surface,
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: _border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: _primary),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      filled: true,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildQuickStat('${_filteredJobIds.length}', 'Jobs', Icons.local_airport, _primary),
-                        const SizedBox(width: 10),
-                        _buildFilterChip(label: 'Company', value: _selectedCompany, options: companies, icon: Icons.business, onSelected: (v) { setState(() => _selectedCompany = v); _applyFilters(); }),
-                        const SizedBox(width: 10),
-                        _buildFilterChip(label: 'Location', value: _selectedLocation, options: locations, icon: Icons.location_on, onSelected: (v) { setState(() => _selectedLocation = v); _applyFilters(); }),
-                        const SizedBox(width: 10),
-                        _buildSortDropdown(),
-                        const SizedBox(width: 10),
-                        _buildPostJobButton(),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              flex: 3,
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search, color: _textSecondary, size: 18),
-                  hintText: 'Search jobs...',
-                  hintStyle: GoogleFonts.poppins(color: _textSecondary, fontSize: 13),
-                  fillColor: _surface,
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: _border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: _primary),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  filled: true,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            _buildQuickStat('${_filteredJobIds.length}', 'Jobs', Icons.local_airport, _primary),
-            const SizedBox(width: 16),
-            _buildFilterChip(label: 'Company', value: _selectedCompany, options: companies, icon: Icons.business, onSelected: (v) { setState(() => _selectedCompany = v); _applyFilters(); }),
-            const SizedBox(width: 12),
-            _buildFilterChip(label: 'Location', value: _selectedLocation, options: locations, icon: Icons.location_on, onSelected: (v) { setState(() => _selectedLocation = v); _applyFilters(); }),
-            const SizedBox(width: 12),
-            _buildSortDropdown(),
-            const SizedBox(width: 16),
-            _buildPostJobButton(),
-          ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required String value,
-    required List<String> options,
-    required IconData icon,
-    required Function(String) onSelected,
-  }) {
-    final isActive = value.isNotEmpty;
-
-    return PopupMenuButton<String>(
-      offset: const Offset(0, 40),
-      onSelected: onSelected,
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: '',
-          child: Text('All $label', style: GoogleFonts.poppins(fontSize: 13)),
-        ),
-        ...options.map((o) => PopupMenuItem(
-          value: o,
-          child: Text(o, style: GoogleFonts.poppins(fontSize: 13)),
-        )),
-      ],
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: isActive ? _primary.withOpacity(0.1) : _surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isActive ? _primary : _border,
-            width: isActive ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: isActive ? _primary : _textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              isActive ? value : label,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isActive ? _primary : _textSecondary,
-              ),
-            ),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 18,
-              color: isActive ? _primary : _textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSortDropdown() {
-    return PopupMenuButton<String>(
-      initialValue: _selectedSortOption,
-      offset: const Offset(0, 40),
-      child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _border),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.sort, size: 18, color: _textSecondary),
-            const SizedBox(width: 8),
-            Text(
-              'Sort',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: _textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-      onSelected: (val) {
-        setState(() => _selectedSortOption = val);
-        _applyFilters();
-      },
-      itemBuilder: (context) => [
-        _buildSortItem('newest', 'Newest First'),
-        _buildSortItem('oldest', 'Oldest First'),
-        _buildSortItem('company', 'Company A-Z'),
-        _buildSortItem('applications', 'Most Applications'),
-      ],
-    );
-  }
-
-  PopupMenuItem<String> _buildSortItem(String value, String label) {
-    final isSelected = _selectedSortOption == value;
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          if (isSelected) Icon(Icons.check, size: 18, color: _primary),
-          if (isSelected) const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? _primary : _textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  Widget _buildJobGrid(double width, bool isMobile) {
-    if (_isLoading) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator(color: _primary)),
-      );
-    }
-
-    if (_filteredJobIds.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: _primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Icon(
-                  Icons.search_off_rounded,
-                  size: 60,
-                  color: _textSecondary.withOpacity(0.5),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'No jobs found',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Try adjusting your filters',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: _textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildPostJobButton(),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SliverPadding(
-      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 32, 0, isMobile ? 12 : 32, 24),
-      sliver: SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isMobile ? 1 : (width < 1200 ? 2 : 3),
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          mainAxisExtent: isMobile ? 380 : 340,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => Job_Cards(
-            jobId: _filteredJobIds[index],
-          ),
-          childCount: _filteredJobIds.length,
-        ),
-      ),
-    );
-  }
-
-  bool _listEquals<T>(List<T>? a, List<T>? b) {
-    if (a == null) return b == null;
-    if (b == null || a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/// Optimized Job Card that fetches data by ID
-/// - Uses StreamBuilder for real-time updates
-/// - Caches parsed data to prevent redundant processing
-/// - Only rebuilds when job data actually changes
-class Job_Cards extends StatefulWidget {
-  final String jobId;
-
-  const Job_Cards({
-    super.key,
-    required this.jobId,
-  });
-
-  @override
-  State<Job_Cards> createState() => Job_Cards_State();
-}
-
-class Job_Cards_State extends State<Job_Cards> with SingleTickerProviderStateMixin {
-  bool _isHovered = false;
-  bool _isPressed = false;
-  late AnimationController _scaleController;
-  late Animation<double> _scaleAnimation;
-
-  // Cache for parsed job data to prevent redundant parsing
-  Map<String, dynamic>? _cachedJobData;
-  String? _cachedDataKey;
-
-  // Professional color scheme
-  static const Color _primary = Color(0xFF1E3A5F);
-  static const Color _primaryLight = Color(0xFF2E4A6F);
-  static const Color _accent = Color(0xFF3B82F6);
-  static const Color _success = Color(0xFF10B981);
-  static const Color _warning = Color(0xFFF59E0B);
-  static const Color _error = Color(0xFFEF4444);
-  static const Color _surface = Color(0xFFFFFFFF);
-  static const Color _surfaceElevated = Color(0xFFF8FAFC);
-  static const Color _textPrimary = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _textTertiary = Color(0xFF94A3B8);
-  static const Color _border = Color(0xFFE2E8F0);
-  static const Color _borderLight = Color(0xFFF1F5F9);
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    super.dispose();
-  }
-
-  /// Process raw Firestore data into normalized format
-  /// Uses caching to prevent reprocessing unchanged data
-  Map<String, dynamic> _processJobData(DocumentSnapshot doc) {
-    if (!doc.exists) {
-      return _getEmptyJobData();
-    }
-
-    final rawData = doc.data() as Map<String, dynamic>?;
-    if (rawData == null) {
-      return _getEmptyJobData();
-    }
-
-    // Create cache key based on data hash
-    final timestamp = rawData['timestamp'];
-    final applicationCount = rawData['applicationCount'] ?? 0;
-    final cacheKey = '${doc.id}_${timestamp}_$applicationCount';
-
-    // Return cached data if unchanged
-    if (_cachedDataKey == cacheKey && _cachedJobData != null) {
-      return _cachedJobData!;
-    }
-
-    // Process new data
-    final processedData = {
-      'id': doc.id,
-      'title': rawData['title']?.toString() ?? 'Untitled Position',
-      'company': rawData['company']?.toString() ?? 'Unknown Company',
-      'location': rawData['location']?.toString() ?? 'Remote',
-      'description': rawData['description']?.toString() ?? '',
-      'salary': rawData['salary'],
-      'nature': rawData['nature']?.toString() ?? 'Full-time',
-      'experience': rawData['experience']?.toString() ?? 'Not specified',
-      'logoUrl': rawData['logoUrl']?.toString(),
-      'skills': (rawData['skills'] as List<dynamic>?)?.cast<String>() ?? <String>[],
-      'timestamp': rawData['timestamp'],
-      'applicationCount': applicationCount is int
-          ? applicationCount
-          : (int.tryParse(applicationCount.toString()) ?? 0),
-    };
-
-    // Update cache
-    _cachedDataKey = cacheKey;
-    _cachedJobData = processedData;
-
-    return processedData;
-  }
-
-  Map<String, dynamic> _getEmptyJobData() {
-    return {
-      'id': widget.jobId,
-      'title': 'Untitled Position',
-      'company': 'Unknown Company',
-      'location': 'Remote',
-      'description': '',
-      'salary': null,
-      'nature': 'Full-time',
-      'experience': 'Not specified',
-      'logoUrl': null,
-      'skills': <String>[],
-      'timestamp': null,
-      'applicationCount': 0,
-    };
-  }
-
-  String _getRelativeTime(Timestamp? ts) {
-    if (ts == null) return '';
-    return timeago.format(ts.toDate(), locale: 'en_short');
-  }
-
-  String _formatSalary(dynamic salary) {
-    if (salary == null) return 'Salary not specified';
-    if (salary is num) {
-      return '\$${NumberFormat.compact().format(salary)}';
-    }
-    return salary.toString();
-  }
-
-  void _showJobDetails() {
-    _scaleController.forward().then((_) => _scaleController.reverse());
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.6),
-      transitionAnimationController: AnimationController(
-        vsync: Navigator.of(context),
-        duration: const Duration(milliseconds: 400),
-      ),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: JobDetailModal_recruiter(jobId: widget.jobId),
-      ),
-    );
-  }
-
-  void _showApplicants() {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: Colors.black.withOpacity(0.6),
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return FadeTransition(
-            opacity: animation,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Center(
-                child: AnimatedBuilder(
-                  animation: animation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: Tween<double>(begin: 0.9, end: 1.0)
-                          .animate(CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ))
-                          .value,
-                      child: child,
-                    );
-                  },
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.85,
-                      maxHeight: MediaQuery.of(context).size.height * 0.92,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: Material(
-                        color: _surface,
-                        elevation: 24,
-                        shadowColor: Colors.black.withOpacity(0.4),
-                        child: Column(
-                          children: [
-                            // Drag Handle
-                            Container(
-                              margin: const EdgeInsets.only(top: 12),
-                              width: 48,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: _textTertiary.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Close Button
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 16),
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: GestureDetector(
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: _surfaceElevated,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: _border),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.05),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Icon(
-                                        Icons.close_rounded,
-                                        size: 20,
-                                        color: _textSecondary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(child: ApplicantsScreen(jobId: widget.jobId)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Stream job data directly from Firestore
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('Posted_jobs_public')
-          .doc(widget.jobId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        // Handle loading state
-        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-          return _buildLoadingCard();
-        }
-
-        // Handle error state
-        if (snapshot.hasError) {
-          return _buildErrorCard();
-        }
-
-        // Process job data with caching
-        final job = _processJobData(snapshot.data!);
-
-        return _buildJobCard(job);
-      },
-    );
-  }
-
-  Widget _buildLoadingCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _borderLight),
-      ),
-      child: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation(_primary),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _error.withOpacity(0.3)),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, color: _error, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            'Failed to load job',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: _textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJobCard(Map<String, dynamic> job) {
-    final title = job['title'] as String;
-    final company = job['company'] as String;
-    final location = job['location'] as String;
-    final description = job['description'] as String;
-    final skills = job['skills'] as List<String>;
-    final logoUrl = job['logoUrl'] as String?;
-    final postedAgo = _getRelativeTime(job['timestamp'] as Timestamp?);
-    final salary = _formatSalary(job['salary']);
-    final nature = job['nature'] as String;
-    final experience = job['experience'] as String;
-    final applicationCount = job['applicationCount'] as int;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTapDown: (_) {
-          setState(() => _isPressed = true);
-          _scaleController.forward();
-        },
-        onTapUp: (_) {
-          setState(() => _isPressed = false);
-          _scaleController.reverse();
-        },
-        onTapCancel: () {
-          setState(() => _isPressed = false);
-          _scaleController.reverse();
-        },
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: child,
-            );
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            decoration: BoxDecoration(
-              color: _surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _isHovered ? _primary.withOpacity(0.3) : _borderLight,
-                width: _isHovered ? 2 : 1,
-              ),
-              boxShadow: _isHovered
-                  ? [
-                BoxShadow(
-                  color: _primary.withOpacity(0.12),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                  spreadRadius: -4,
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-                  : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Section with Gradient
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          _primary.withOpacity(0.03),
-                          _accent.withOpacity(0.02),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Company Logo
-                              Hero(
-                                tag: 'job-logo-${job['id']}',
-                                child: Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        _primary.withOpacity(0.1),
-                                        _accent.withOpacity(0.05),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: _border,
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: _primary.withOpacity(0.08),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: logoUrl != null && logoUrl.isNotEmpty
-                                        ? CachedNetworkImage(
-                                      imageUrl: logoUrl,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        color: _surfaceElevated,
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation(_primary),
-                                          ),
-                                        ),
-                                      ),
-                                      errorWidget: (_, __, ___) => _buildLogoFallback(company),
-                                    )
-                                        : _buildLogoFallback(company),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              // Title and Company Info
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            title,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: _textPrimary,
-                                              height: 1.3,
-                                              letterSpacing: -0.3,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: _primary.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            company,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color: _primary,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Time Badge
-                              if (postedAgo.isNotEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _success.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: _success.withOpacity(0.2),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.schedule_rounded,
-                                        size: 12,
-                                        color: _success,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        postedAgo,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: _success,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          // Meta Info Row
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 8,
-                            children: [
-                              _buildMetaChip(
-                                icon: Icons.location_on_outlined,
-                                label: location,
-                              ),
-                              _buildMetaChip(
-                                icon: Icons.work_outline,
-                                label: nature,
-                              ),
-                              _buildMetaChip(
-                                icon: Icons.attach_money,
-                                label: salary,
-                              ),
-                              _buildMetaChip(
-                                icon: Icons.trending_up,
-                                label: experience,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Description Section
-                  if (description.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: Text(
-                        description,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: _textSecondary,
-                          height: 1.6,
-                          letterSpacing: 0.2,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-
-                  // Skills Section
-                  if (skills.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Required Skills',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: _textTertiary,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: skills.take(6).map((skill) {
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _surfaceElevated,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: _border),
-                                ),
-                                child: Text(
-                                  skill,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: _textSecondary,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          if (skills.length > 6)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                '+${skills.length - 6} more skills',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: _accent,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  const Spacer(),
-
-                  // Footer with Actions
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: _surfaceElevated,
-                      border: Border(
-                        top: BorderSide(color: _borderLight),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        // Applicants Count
-                        Expanded(
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: _showApplicants,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                  horizontal: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: applicationCount > 0
-                                      ? _accent.withOpacity(0.1)
-                                      : _surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: applicationCount > 0
-                                        ? _accent.withOpacity(0.3)
-                                        : _border,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        Icon(
-                                          Icons.group_outlined,
-                                          size: 20,
-                                          color: applicationCount > 0 ? _accent : _textTertiary,
-                                        ),
-                                        if (applicationCount > 0)
-                                          Positioned(
-                                            right: -2,
-                                            top: -2,
-                                            child: Container(
-                                              width: 8,
-                                              height: 8,
-                                              decoration: BoxDecoration(
-                                                color: _success,
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: _surface,
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '$applicationCount',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: applicationCount > 0 ? _accent : _textTertiary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'ViewApplicants',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: applicationCount > 0 ? _accent.withOpacity(0.8) : _textTertiary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // View Details Button
-                        Expanded(
-                          flex: 2,
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: _showJobDetails,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: _isHovered
-                                        ? [_primaryLight, _accent]
-                                        : [_primary, _primaryLight],
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: _primary.withOpacity(0.3),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.visibility_rounded,
-                                      size: 18,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'View Details',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      transform: Matrix4.translationValues(
-                                        _isHovered ? 4 : 0,
-                                        0,
-                                        0,
-                                      ),
-                                      child: Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLogoFallback(String company) {
-    return Container(
-      color: _surfaceElevated,
-      child: Center(
-        child: Text(
-          company.isNotEmpty ? company.substring(0, 1).toUpperCase() : 'C',
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: _primary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetaChip({required IconData icon, required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: _textTertiary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: _textSecondary,
-            ),
-          ),
-        ],
       ),
     );
   }

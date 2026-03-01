@@ -3,10 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'Constant/Forget Password Provider.dart';
 import 'Constant/cv_analysis_provider.dart';
 import 'Screens/Admin/admin_analytics_dashboard_Provider.dart';
@@ -170,10 +171,6 @@ void main() async {
     debugPrint('⚠️ Google Fonts pre-load failed – using fallback fonts.');
   }
 
-  // ── Fix: Suppress LegacyJavaScriptObject crash in Flutter Web debug mode ──
-  // Flutter's widget_inspector.dart has a bug on web where error diagnostics
-  // crash with "LegacyJavaScriptObject is not a subtype of DiagnosticsNode".
-  // This custom handler prints errors cleanly without the buggy debug renderer.
   if (kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) {
       debugPrint('═══ Flutter Error ═══');
@@ -224,6 +221,17 @@ class JobPortalApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Maha Services',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        FlutterQuillLocalizations.delegate,   // ⭐ REQUIRED
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
+      supportedLocales: const [
+        Locale('en'),  // Add more if needed
+      ],
+
       routerConfig: router,
       theme: ThemeData(
         primaryColor: const Color(0xFF6366F1),

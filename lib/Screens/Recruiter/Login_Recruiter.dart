@@ -1,4 +1,3 @@
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -43,40 +42,120 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     super.dispose();
   }
 
-  void _showFlushbar(BuildContext context, String message, bool isError) {
-    Flushbar(
-      message: message,
-      duration: const Duration(seconds: 3),
-      backgroundColor: isError ? Colors.red : Colors.green,
-      flushbarPosition: FlushbarPosition.TOP,
-      margin: const EdgeInsets.all(12),
-      borderRadius: BorderRadius.circular(8),
-    ).show(context);
-  }
 
+  void showCustomSnackBar(BuildContext context, String message, {required bool isError}) {
+    // Define colors and icons based on the type
+    final bgColor = isError ? const Color(0xFFC72C41) : const Color(0xFF2E7D32); // Red or Green
+    final title = isError ? "Oh Snap!" : "Success!";
+    final icon = isError ? Icons.error_outline : Icons.check_circle_outline;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              height: 90,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, color: Colors.white, size: 40),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          message,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Decorative bubble logic
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                ),
+                child: Transform.translate(
+                  offset: const Offset(-10, 20),
+                  child: Container(
+                    height: 80,
+                    width: 80,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        margin: const EdgeInsets.all(20),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
   Future<void> _onLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = Provider.of<LoginProvider_Recruiter>(context, listen: false);
+
+    // Assuming provider.login returns String? (null if success, string if error)
     final error = await provider.login(
       email: _email.text.trim(),
       password: _password.text,
       expectedRole: 'Recruiter',
     );
 
+    if (!mounted) return; // Safety check
 
     if (error != null) {
-      _showFlushbar(context, error, true);
-    }
-    else {
-      _showFlushbar(context, "Login Successful!", false);
-      Future.delayed(const Duration(seconds: 1), () {
+      // Show Error (Red)
+      showCustomSnackBar(context, error, isError: true);
+    } else {
+      // Show Success (Green)
+      showCustomSnackBar(context, "Login Successful!", isError: false);
 
-        context.pushReplacement('/recruiter-dashboard');
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          context.pushReplacement('/recruiter-dashboard');
+        }
       });
     }
-
   }
   double _getResponsivePadding(double width) {
     if (width > 1200) return 180;

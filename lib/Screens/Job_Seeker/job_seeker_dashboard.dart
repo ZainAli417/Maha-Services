@@ -4,9 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import '../../Constant/profile_Completeness.dart';
-import 'JS_Profile/JS_Profile_Provider.dart';
 import 'JS_Top_Bar.dart';
 import 'List_applied_jobs_provider.dart';
 

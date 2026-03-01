@@ -10,19 +10,56 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../Job_Seeker/job_seeker_provider.dart';
 import 'View_Shortlisted.dart';
 
-// PROFESSIONAL COLOR SCHEME
-const _primary = Color(0xFF2563EB);
-const _primaryLight = Color(0xFFDEEBFF);
-const _accent = Color(0xFF0EA5E9);
-const _background = Color(0xFFF8FAFC);
-const _surface = Color(0xFFFFFFFF);
-const _textPrimary = Color(0xFF0F172A);
-const _textSecondary = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
-const _success = Color(0xFF10B981);
-const _warning = Color(0xFFF59E0B);
+// ─── Design tokens ─────────────────────────────────────────────────────────
+class _T {
+  static const primary      = Color(0xFF2563EB);
+  static const primaryLight = Color(0xFFEFF6FF);
+  static const textPri      = Color(0xFF0D1117);
+  static const textSec      = Color(0xFF57606A);
+  static const textTert     = Color(0xFF8B949E);
+  static const bg           = Color(0xFFF6F8FA);
+  static const white        = Color(0xFFFFFFFF);
+  static const border       = Color(0xFFD0D7DE);
+  static const success      = Color(0xFF1A7F37);
+  static const warning      = Color(0xFFBF8700);
+  static const red          = Color(0xFFCF222E);
 
-// MAIN DASHBOARD
+  static TextStyle label({double fs = 11, Color? c, FontWeight fw = FontWeight.w500}) =>
+      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: fw, color: c ?? textSec);
+  static TextStyle head({double fs = 14, Color? c}) =>
+      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
+  static TextStyle body({double fs = 13, Color? c}) =>
+      GoogleFonts.ibmPlexSans(fontSize: fs, color: c ?? textPri, height: 1.5);
+}
+
+// ─── Layout InheritedWidget (computed once at root, no MediaQuery per child) ─
+enum _Layout { mobile, tablet, desktop }
+
+class _LD extends InheritedWidget {
+  final _Layout layout;
+  final double width;
+  const _LD({required this.layout, required this.width, required super.child});
+
+  static _LD of(BuildContext ctx) =>
+      ctx.dependOnInheritedWidgetOfExactType<_LD>()!;
+  static bool isMobile(BuildContext ctx)  => of(ctx).layout == _Layout.mobile;
+  static bool isDesktop(BuildContext ctx) => of(ctx).layout == _Layout.desktop;
+
+  @override
+  bool updateShouldNotify(_LD old) => old.layout != layout;
+}
+
+// ─── Safe Timestamp parser ─────────────────────────────────────────────────
+DateTime _tsToDate(dynamic raw) {
+  if (raw == null) return DateTime(0);
+  if (raw is DateTime) return raw;
+  if (raw is Timestamp) return raw.toDate();
+  return DateTime(0);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// ROOT SCREEN
+// ═════════════════════════════════════════════════════════════════════════════
 class Shortlisting extends StatefulWidget {
   const Shortlisting({super.key});
   @override
@@ -31,749 +68,781 @@ class Shortlisting extends StatefulWidget {
 
 class _ShortlistingState extends State<Shortlisting>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    )..forward();
-  }
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  late final AnimationController _fadeCtrl = AnimationController(
+    duration: const Duration(milliseconds: 600),
+    vsync: this,
+  )..forward();
 
   @override
   void dispose() {
-    _controller.dispose();
+    _fadeCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: _background,
-      drawer: isMobile
-          ? Drawer(
-              child: RecruiterSidebar(activeIndex: 2, isDrawer: true),
-            )
-          : null,
-      body: Row(
-        children: [
-          if (!isMobile) RecruiterSidebar(activeIndex: 2),
-          Expanded(
-            child: FadeTransition(
-              opacity: _controller,
-              child: Column(
-                children: [
-                  if (isMobile)
-                    Container(
-                      height: 56,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.menu_rounded, size: 24),
-                            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                          ),
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: _primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(Icons.star_rounded, size: 20, color: _primary),
-                          ),
-                          const SizedBox(width: 10),
-                          Text('Shortlisting',
-                            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                          ),
-                        ],
-                      ),
-                    ),
+    // Single LayoutBuilder drives _LD — no MediaQuery in children
+    return LayoutBuilder(builder: (ctx, bc) {
+      final w = bc.maxWidth;
+      final _Layout layout;
+      if (w < 600)       layout = _Layout.mobile;
+      else if (w < 960)  layout = _Layout.tablet;
+      else               layout = _Layout.desktop;
+
+      return _LD(
+        layout: layout,
+        width: w,
+        child: Scaffold(
+          key: _scaffoldKey,
+          backgroundColor:Colors.white,
+          drawer: layout == _Layout.mobile
+              ? Drawer(child: RecruiterSidebar(activeIndex: 3, isDrawer: true))
+              : null,
+          body: Row(children: [
+            if (layout != _Layout.mobile)
+              const RecruiterSidebar(activeIndex: 3),
+            Expanded(
+              child: FadeTransition(
+                opacity: _fadeCtrl,
+                child: Column(children: [
+                  // Top bar
+                  RepaintBoundary(
+                    child: layout == _Layout.mobile
+                        ? _MobileTopBar(
+                        onMenu: () =>
+                            _scaffoldKey.currentState?.openDrawer())
+                        : const _DesktopHeader(),
+                  ),
+                  // Stream content
                   Expanded(
                     child: Consumer<JobSeekerProvider>(
-                      builder: (context, provider, _) =>
+                      builder: (_, provider, __) =>
                           StreamBuilder<List<Map<String, dynamic>>>(
                             stream: provider.allJobsStream,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Center(
-                                  child: CircularProgressIndicator(color: _primary, strokeWidth: 2.5),
+                            builder: (_, snap) {
+                              if (snap.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(
+                                      color: _T.primary, strokeWidth: 2),
                                 );
                               }
-                              if (snapshot.hasError) {
-                                return _ErrorWidget(error: snapshot.error.toString());
+                              if (snap.hasError) {
+                                return _ErrorState(
+                                    error: snap.error.toString());
                               }
-                              final jobs = snapshot.data ?? [];
-                              if (jobs.isEmpty) return _EmptyWidget();
-                              return ShortlistingDashboard(jobs: jobs);
+                              final jobs = snap.data ?? [];
+                              if (jobs.isEmpty) return const _EmptyJobsState();
+                              return _ShortlistingDashboard(jobs: jobs);
                             },
                           ),
                     ),
                   ),
-                ],
+                ]),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ]),
+        ),
+      );
+    });
   }
 }
 
-// MAIN SHORTLISTING DASHBOARD
-class ShortlistingDashboard extends StatefulWidget {
-  final List<Map<String, dynamic>> jobs;
-  const ShortlistingDashboard({super.key, required this.jobs});
+// ═════════════════════════════════════════════════════════════════════════════
+// TOP BARS
+// ═════════════════════════════════════════════════════════════════════════════
+class _MobileTopBar extends StatelessWidget {
+  final VoidCallback onMenu;
+  const _MobileTopBar({required this.onMenu});
 
   @override
-  State<ShortlistingDashboard> createState() => _ShortlistingDashboardState();
+  Widget build(BuildContext context) => Container(
+    height: 54,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    decoration: const BoxDecoration(
+        color: _T.white,
+        border: Border(bottom: BorderSide(color: _T.border))),
+    child: Row(children: [
+      IconButton(
+          icon: const Icon(Icons.menu_rounded, size: 22, color: _T.textSec),
+          onPressed: onMenu),
+      const SizedBox(width: 4),
+      const _HeaderIconBox(),
+      const SizedBox(width: 10),
+      Text('Shortlisting Dashboard', style: _T.head(fs: 15)),
+    ]),
+  );
 }
 
-class _ShortlistingDashboardState extends State<ShortlistingDashboard> {
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  Timer? _debounceTimer;
-  List<Map<String, dynamic>> _filteredJobs = [];
+class _DesktopHeader extends StatelessWidget {
+  const _DesktopHeader();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+    color: _T.white,
+    child: Row(children: [
+      const _HeaderIconBox(size: 22),
+      const SizedBox(width: 14),
+      Expanded(child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Shortlisting Dashboard', style: _T.head(fs: 17)),
+          Text('Review & Manage Shortlisted Candidates',
+              style: _T.label(c: _T.textSec),
+              overflow: TextOverflow.ellipsis),
+        ],
+      )),
+    ]),
+  );
+}
+
+class _HeaderIconBox extends StatelessWidget {
+  final double size;
+  const _HeaderIconBox({this.size = 18});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(9),
+    decoration: BoxDecoration(
+      color: _T.primary.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(Icons.recent_actors_outlined, size: size, color: _T.primary),
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// DASHBOARD (filter state lives here, isolated from root)
+// ═════════════════════════════════════════════════════════════════════════════
+class _ShortlistingDashboard extends StatefulWidget {
+  final List<Map<String, dynamic>> jobs;
+  const _ShortlistingDashboard({required this.jobs});
+
+  @override
+  State<_ShortlistingDashboard> createState() => _ShortlistingDashboardState();
+}
+
+class _ShortlistingDashboardState extends State<_ShortlistingDashboard> {
+  final _searchCtrl   = TextEditingController();
+  final _scrollCtrl   = ScrollController();
+  Timer? _debounce;
+
+  List<Map<String, dynamic>> _filtered = [];
   String? _selectedJobId;
-  String _selectedCompany = '';
-  String _selectedLocation = '';
-  String _selectedJobType = '';
-  String _selectedSortOption = 'newest';
+
+  // Filter state
+  String _company  = '';
+  String _location = '';
+  String _jobType  = '';
+  String _sort     = 'newest';
+
+  // Mobile: show detail panel over list
+  bool _showDetail = false;
 
   @override
   void initState() {
     super.initState();
-    _filteredJobs = List.from(widget.jobs);
+    _filtered = List.from(widget.jobs);
     _applyFilters();
-    if (_filteredJobs.isNotEmpty) {
-      _selectedJobId = _filteredJobs.first['id'] as String?;
-    }
-    _searchController.addListener(_onSearchChanged);
+    if (_filtered.isNotEmpty) _selectedJobId = _filtered.first['id'] as String?;
+    _searchCtrl.addListener(_onSearch);
   }
 
   @override
-  void didUpdateWidget(covariant ShortlistingDashboard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!listEquals(oldWidget.jobs, widget.jobs)) {
+  void didUpdateWidget(_ShortlistingDashboard old) {
+    super.didUpdateWidget(old);
+    if (!listEquals(old.jobs, widget.jobs)) {
       _applyFilters();
-      if (_selectedJobId == null && _filteredJobs.isNotEmpty) {
-        setState(() {
-          _selectedJobId = _filteredJobs.first['id'] as String?;
-        });
+      if (_selectedJobId == null && _filtered.isNotEmpty) {
+        setState(() => _selectedJobId = _filtered.first['id'] as String?);
       }
     }
   }
 
-  void _onSearchChanged() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), _applyFilters);
-  }
-
-  void _applyFilters() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredJobs = widget.jobs.where((job) {
-        if (query.isNotEmpty) {
-          final searchText =
-              '${job['title']} ${job['company']} ${job['description']} ${(job['skills'] as List?)?.join(' ') ?? ''}'
-                  .toLowerCase();
-          if (!searchText.contains(query)) return false;
-        }
-        if (_selectedCompany.isNotEmpty && job['company'] != _selectedCompany)
-          return false;
-        if (_selectedLocation.isNotEmpty &&
-            job['location'] != _selectedLocation)
-          return false;
-        if (_selectedJobType.isNotEmpty && job['nature'] != _selectedJobType)
-          return false;
-        return true;
-      }).toList();
-      _sortResults();
-    });
-  }
-
-  void _sortResults() {
-    switch (_selectedSortOption) {
-      case 'newest':
-        _filteredJobs.sort(
-          (a, b) => ((b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0))
-              .compareTo(
-                (a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0),
-              ),
-        );
-        break;
-      case 'oldest':
-        _filteredJobs.sort(
-          (a, b) => ((a['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0))
-              .compareTo(
-                (b['timestamp'] as Timestamp?)?.toDate() ?? DateTime(0),
-              ),
-        );
-        break;
-      case 'company':
-        _filteredJobs.sort(
-          (a, b) => (a['company'] ?? '').compareTo(b['company'] ?? ''),
-        );
-        break;
-    }
-  }
-
-  List<String> _getUnique(String field) =>
-      widget.jobs
-          .map((j) => j[field] as String? ?? '')
-          .where((s) => s.isNotEmpty)
-          .toSet()
-          .toList()
-        ..sort();
-
   @override
   void dispose() {
-    _searchController.dispose();
-    _scrollController.dispose();
-    _debounceTimer?.cancel();
+    _searchCtrl.dispose();
+    _scrollCtrl.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
+  void _onSearch() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 280), _applyFilters);
+  }
+
+  void _applyFilters() {
+    final q = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filtered = widget.jobs.where((job) {
+        if (q.isNotEmpty) {
+          final hay =
+          '${job['title']} ${job['company']} ${job['description']} '
+              '${(job['skills'] as List?)?.join(' ') ?? ''}'
+              .toLowerCase();
+          if (!hay.contains(q)) return false;
+        }
+        if (_company.isNotEmpty  && job['company']  != _company)  return false;
+        if (_location.isNotEmpty && job['location'] != _location) return false;
+        if (_jobType.isNotEmpty  && job['nature']   != _jobType)  return false;
+        return true;
+      }).toList();
+      _sortList();
+    });
+  }
+
+  void _sortList() {
+    switch (_sort) {
+      case 'newest':
+        _filtered.sort((a, b) =>
+            _tsToDate(b['timestamp']).compareTo(_tsToDate(a['timestamp'])));
+        break;
+      case 'oldest':
+        _filtered.sort((a, b) =>
+            _tsToDate(a['timestamp']).compareTo(_tsToDate(b['timestamp'])));
+        break;
+      case 'company':
+        _filtered.sort((a, b) =>
+            (a['company'] ?? '').compareTo(b['company'] ?? ''));
+        break;
+    }
+  }
+
+  List<String> _unique(String field) => widget.jobs
+      .map((j) => j[field] as String? ?? '')
+      .where((s) => s.isNotEmpty)
+      .toSet()
+      .toList()
+    ..sort();
+
+  void _selectJob(String? jobId) {
+    setState(() {
+      _selectedJobId = jobId;
+      _showDetail    = true;  // on mobile, slide to detail
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader(),
-          _buildFilters(),
-          Expanded(child: _buildMainContent()),
-        ],
-      ),
-    );
+    final isMobile = _LD.isMobile(context);
+
+    if (_filtered.isEmpty) return _NoResultsState(onClear: _clearFilters);
+
+    if (isMobile) return _buildMobileLayout();
+    return _buildDesktopLayout();
   }
 
-  Widget _buildHeader() {
-    const Color kPrimaryBlue = Color(0xFF1E40AF);
-    const Color kTextPrimary = Color(0xFF0F172A);
-    const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
+  void _clearFilters() => setState(() {
+    _company = _location = _jobType = '';
+    _searchCtrl.clear();
+    _applyFilters();
+  });
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
-      child: Row(
-        children: [
-          // Left Icon
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: kPrimaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.recent_actors_outlined,
-              size: 24,
-              color: kPrimaryBlue,
-            ),
+  // ── MOBILE: stack-based back/forward navigation between list and detail ──
+  Widget _buildMobileLayout() {
+    return Column(children: [
+      // Filter bar always visible
+      RepaintBoundary(child: _FilterBar(
+        searchCtrl: _searchCtrl,
+        companies: _unique('company'),
+        locations: _unique('location'),
+        types:     _unique('nature'),
+        company:   _company,  location: _location,  jobType: _jobType,
+        sort:      _sort,
+        onCompany:  (v) { setState(() => _company  = v); _applyFilters(); },
+        onLocation: (v) { setState(() => _location = v); _applyFilters(); },
+        onJobType:  (v) { setState(() => _jobType  = v); _applyFilters(); },
+        onSort:     (v) { setState(() => _sort     = v); _applyFilters(); },
+      )),
+      Expanded(
+    child: Padding(
+    padding: const EdgeInsets.all(10),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          transitionBuilder: (child, anim) => SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(_showDetail ? 1 : -1, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+            child: child,
           ),
-
-          const SizedBox(width: 14),
-
-          // Title & Subtitle
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Shortlisting Dashboard',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: kTextPrimary,
-                  height: 1.2,
-                ),
-              ),
-              Text(
-                'Review & Manage Shortlisted candidates',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: kTextSecondary,
-                  height: 1.2,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilters() {
-    final companies = _getUnique('company');
-    final locations = _getUnique('location');
-    final types = _getUnique('nature');
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: _border)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Container(
-              height: 44,
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.poppins(fontSize: 14, color: _textPrimary),
-                decoration: InputDecoration(
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: _textSecondary,
-                    size: 20,
-                  ),
-                  hintText: 'Search positions, companies, skills...',
-                  hintStyle: GoogleFonts.poppins(
-                    color: _textSecondary,
-                    fontSize: 14,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: _border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: _primary, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  filled: true,
-                  fillColor: _background,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          _buildFilterDropdown(
-            'Company',
-            _selectedCompany,
-            companies,
-            Icons.business_rounded,
-            (v) => setState(() => _selectedCompany = v),
-          ),
-          const SizedBox(width: 10),
-          _buildFilterDropdown(
-            'Location',
-            _selectedLocation,
-            locations,
-            Icons.location_on_rounded,
-            (v) => setState(() => _selectedLocation = v),
-          ),
-          const SizedBox(width: 10),
-          _buildFilterDropdown(
-            'Type',
-            _selectedJobType,
-            types,
-            Icons.work_outline_rounded,
-            (v) => setState(() => _selectedJobType = v),
-          ),
-          const SizedBox(width: 10),
-          _buildSortButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterDropdown(
-    String label,
-    String value,
-    List<String> items,
-    IconData icon,
-    Function(String) onChanged,
-  ) {
-    if (items.isEmpty) return const SizedBox();
-    return Container(
-      height: 44,
-      child: PopupMenuButton<String>(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: value.isNotEmpty ? _primaryLight : _surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: value.isNotEmpty ? _primary : _border,
-              width: value.isNotEmpty ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: value.isNotEmpty ? _primary : _textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                value.isEmpty ? label : value,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: value.isNotEmpty ? _primary : _textSecondary,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: 18,
-                color: value.isNotEmpty ? _primary : _textSecondary,
-              ),
-            ],
+          child: _showDetail
+              ? _MobileDetailPanel(
+            key: ValueKey('detail-$_selectedJobId'),
+            jobId: _selectedJobId,
+            onBack: () => setState(() => _showDetail = false),
+          )
+              : _JobListPanel(
+            key: const ValueKey('job-list'),
+            jobs: _filtered,
+            selectedJobId: _selectedJobId,
+            scrollCtrl: _scrollCtrl,
+            onJobTap: _selectJob,
           ),
         ),
-        onSelected: (v) {
-          setState(() => onChanged(v));
-          _applyFilters();
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem<String>(
-            value: '',
-            child: Text('All', style: GoogleFonts.poppins(fontSize: 13)),
-          ),
-          ...items.map(
-            (i) => PopupMenuItem<String>(
-              value: i,
-              child: Text(i, style: GoogleFonts.poppins(fontSize: 13)),
-            ),
-          ),
-        ],
+    ),
       ),
-    );
+    ]);
   }
 
-  Widget _buildSortButton() {
-    return Container(
-      height: 44,
-      child: PopupMenuButton<String>(
-        initialValue: _selectedSortOption,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: _surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.sort_rounded, size: 18, color: _textSecondary),
-              const SizedBox(width: 8),
-              Text(
-                'Sort',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: _textSecondary,
+  // ── DESKTOP: side-by-side ─────────────────────────────────────────────────
+  Widget _buildDesktopLayout() {
+    return Column(children: [
+      RepaintBoundary(child: _FilterBar(
+        searchCtrl: _searchCtrl,
+        companies: _unique('company'),
+        locations: _unique('location'),
+        types:     _unique('nature'),
+        company:   _company,  location: _location,  jobType: _jobType,
+        sort:      _sort,
+        onCompany:  (v) { setState(() => _company  = v); _applyFilters(); },
+        onLocation: (v) { setState(() => _location = v); _applyFilters(); },
+        onJobType:  (v) { setState(() => _jobType  = v); _applyFilters(); },
+        onSort:     (v) { setState(() => _sort     = v); _applyFilters(); },
+      )),
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Left — job list
+            SizedBox(
+              width: 360,
+              child: RepaintBoundary(
+                child: _JobListPanel(
+                  jobs: _filtered,
+                  selectedJobId: _selectedJobId,
+                  scrollCtrl: _scrollCtrl,
+                  onJobTap: _selectJob,
+                  showCount: true,
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 20),
+            // Right — applicants detail
+            Expanded(
+              child: RepaintBoundary(
+                child: _selectedJobId != null
+                    ? view_shortlisted(
+                  key: ValueKey(_selectedJobId),
+                  jobId: _selectedJobId,
+                )
+                    : const _EmptyApplicantsState(),
+              ),
+            ),
+          ]),
         ),
-        onSelected: (val) {
-          setState(() => _selectedSortOption = val);
-          _applyFilters();
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: 'newest',
-            child: Text('Newest First', style: GoogleFonts.poppins(fontSize: 13)),
-          ),
-          PopupMenuItem(
-            value: 'oldest',
-            child: Text('Oldest First', style: GoogleFonts.poppins(fontSize: 13)),
-          ),
-          PopupMenuItem(
-            value: 'company',
-            child: Text('Company A→Z', style: GoogleFonts.poppins(fontSize: 13)),
-          ),
-        ],
       ),
-    );
-  }
-
-  Widget _buildMainContent() {
-    if (_filteredJobs.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: _primaryLight,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(
-                Icons.search_off_rounded,
-                size: 60,
-                color: _primary.withOpacity(0.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No positions found',
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: _textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try adjusting your search filters',
-              style: GoogleFonts.poppins(fontSize: 15, color: _textSecondary),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // LEFT: Job Cards List
-          SizedBox(
-            width: 380,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.work_outline_rounded,
-                        size: 20,
-                        color: _textPrimary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Positions (${_filteredJobs.length})',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    itemCount: _filteredJobs.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final job = _filteredJobs[index];
-                      final jobId = job['id'] as String?;
-                      final isSelected = jobId == _selectedJobId;
-                      return JobCard(
-                        jobData: job,
-                        isSelected: isSelected,
-                        onTap: () => setState(() => _selectedJobId = jobId),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 24),
-          // RIGHT: Applicants View
-          Expanded(
-            child: _selectedJobId != null
-                ? view_shortlisted(
-                    key: ValueKey(_selectedJobId),
-                    jobId: _selectedJobId,
-                  )
-                : _EmptyApplicantsView(),
-          ),
-        ],
-      ),
-    );
+    ]);
   }
 }
 
-// PROFESSIONAL JOB CARD
+// ═════════════════════════════════════════════════════════════════════════════
+// JOB LIST PANEL  (stateless → stable identity, no unnecessary rebuilds)
+// ═════════════════════════════════════════════════════════════════════════════
+class _JobListPanel extends StatelessWidget {
+  final List<Map<String, dynamic>> jobs;
+  final String? selectedJobId;
+  final ScrollController scrollCtrl;
+  final ValueChanged<String?> onJobTap;
+  final bool showCount;
 
-class JobCard extends StatefulWidget {
-  final Map<String, dynamic> jobData;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const JobCard({
+  const _JobListPanel({
     super.key,
-    required this.jobData,
-    required this.isSelected,
-    required this.onTap,
+    required this.jobs,
+    required this.selectedJobId,
+    required this.scrollCtrl,
+    required this.onJobTap,
+    this.showCount = false,
   });
 
   @override
-  State<JobCard> createState() => _JobCardState();
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (showCount)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: Row(children: [
+            const Icon(Icons.work_outline_rounded, size: 17, color: _T.textPri),
+            const SizedBox(width: 7),
+            Text('Positions (${jobs.length})', style: _T.head(fs: 14)),
+          ]),
+        ),
+      Expanded(
+        child: ListView.separated(
+          controller: scrollCtrl,
+          padding: EdgeInsets.zero,
+          itemCount: jobs.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (_, i) {
+            final job = jobs[i];
+            final id  = job['id'] as String?;
+            return _JobCard(
+              key: ValueKey(id),
+              jobData: job,
+              isSelected: id == selectedJobId,
+              onTap: () => onJobTap(id),
+            );
+          },
+        ),
+      ),
+    ]);
+  }
 }
 
-class _JobCardState extends State<JobCard> {
-  bool _isHovered = false;
-
-  String _getRelativeTime(Timestamp? ts) {
-    if (ts == null) return '';
-    return timeago.format(ts.toDate(), locale: 'en_short');
-  }
+// ═════════════════════════════════════════════════════════════════════════════
+// MOBILE DETAIL PANEL  (back button + detail view)
+// ═════════════════════════════════════════════════════════════════════════════
+class _MobileDetailPanel extends StatelessWidget {
+  final String? jobId;
+  final VoidCallback onBack;
+  const _MobileDetailPanel({super.key, required this.jobId, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
-    final job = widget.jobData;
-    final title = job['title'] as String? ?? 'No Title';
-    final company = job['company'] as String? ?? 'Unknown Company';
-    final location = job['location'] as String? ?? 'Remote';
-    final skills = (job['skills'] as List<dynamic>?)?.cast<String>() ?? [];
-    final logoUrl = job['logoUrl'] as String?;
-    final postedAgo = _getRelativeTime(job['timestamp'] as Timestamp?);
+    return Column(children: [
+      // Back bar
+      Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: const BoxDecoration(
+          color: _T.white,
+          border: Border(bottom: BorderSide(color: _T.border)),
+        ),
+        child: Row(children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, size: 20, color: _T.textSec),
+            onPressed: onBack,
+          ),
+          Text('Go Back to Job List', style: _T.head(fs: 14)),
+        ]),
+      ),
+      Expanded(
+        child: jobId != null
+            ? view_shortlisted(key: ValueKey(jobId), jobId: jobId)
+            : const _EmptyApplicantsState(),
+      ),
+    ]);
+  }
+}
 
-    // UX: Define animation curve for smoother interactions
-    const animationDuration = Duration(milliseconds: 200);
-    const animationCurve = Curves.easeOutCubic;
-    const Color _primary = Color(0xFF2563EB);
-    const Color _primaryLight = Color(0xFFEFF6FF);
-    const Color _surface = Colors.white;
-    const Color _background = Color(0xFFF8FAFC);
-    const Color _border = Color(0xFFE2E8F0);
-    const Color _textPrimary = Color(0xFF1E293B);
-    const Color _textSecondary = Color(0xFF64748B);
-    const Color _accent = Color(0xFF3B82F6);
+// ═════════════════════════════════════════════════════════════════════════════
+// FILTER BAR
+// ═════════════════════════════════════════════════════════════════════════════
+class _FilterBar extends StatelessWidget {
+  final TextEditingController searchCtrl;
+  final List<String> companies, locations, types;
+  final String company, location, jobType, sort;
+  final ValueChanged<String> onCompany, onLocation, onJobType, onSort;
+
+  const _FilterBar({
+    required this.searchCtrl,
+    required this.companies, required this.locations, required this.types,
+    required this.company,   required this.location,  required this.jobType,
+    required this.sort,
+    required this.onCompany, required this.onLocation,
+    required this.onJobType, required this.onSort,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = _LD.isMobile(context);
+    final h = isMobile ? 40.0 : 42.0;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 24,
+          vertical:   isMobile ? 10 : 14),
+      decoration: const BoxDecoration(
+          color: _T.white,
+          border: Border(bottom: BorderSide(color: _T.border))),
+      child: isMobile
+          ? Column(children: [
+        _SearchField(ctrl: searchCtrl, height: h),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: _dropdowns(h)),
+        ),
+      ])
+          : Row(children: [
+        Expanded(flex: 3, child: _SearchField(ctrl: searchCtrl, height: h)),
+        const SizedBox(width: 10),
+        ..._dropdowns(h),
+      ]),
+    );
+  }
+
+  List<Widget> _dropdowns(double h) => [
+    if (companies.isNotEmpty) ...[
+      _FilterDropdown(
+        label: 'Company', value: company, items: companies,
+        icon: Icons.business_rounded, height: h, onChanged: onCompany,
+      ),
+      const SizedBox(width: 8),
+    ],
+    if (locations.isNotEmpty) ...[
+      _FilterDropdown(
+        label: 'Location', value: location, items: locations,
+        icon: Icons.location_on_rounded, height: h, onChanged: onLocation,
+      ),
+      const SizedBox(width: 8),
+    ],
+    if (types.isNotEmpty) ...[
+      _FilterDropdown(
+        label: 'Type', value: jobType, items: types,
+        icon: Icons.work_outline_rounded, height: h, onChanged: onJobType,
+      ),
+      const SizedBox(width: 8),
+    ],
+    _SortButton(value: sort, height: h, onChanged: onSort),
+  ];
+}
+
+class _SearchField extends StatelessWidget {
+  final TextEditingController ctrl;
+  final double height;
+  const _SearchField({required this.ctrl, required this.height});
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: height,
+    child: TextField(
+      controller: ctrl,
+      style: _T.body(fs: 13),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.search_rounded,
+            color: _T.textSec, size: 18),
+        hintText: 'Search positions, companies, skills…',
+        hintStyle: _T.label(fs: 13),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _T.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _T.primary, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14, vertical: 10),
+        filled: true, fillColor: _T.bg,
+        isDense: true,
+      ),
+    ),
+  );
+}
+
+class _FilterDropdown extends StatelessWidget {
+  final String label, value;
+  final List<String> items;
+  final IconData icon;
+  final double height;
+  final ValueChanged<String> onChanged;
+
+  const _FilterDropdown({
+    required this.label, required this.value, required this.items,
+    required this.icon,  required this.height, required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final active = value.isNotEmpty;
+    return SizedBox(
+      height: height,
+      child: PopupMenuButton<String>(
+        onSelected: (v) { onChanged(v); },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: active ? _T.primaryLight : _T.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: active ? _T.primary : _T.border,
+              width: active ? 1.5 : 1,
+            ),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, size: 15,
+                color: active ? _T.primary : _T.textSec),
+            const SizedBox(width: 6),
+            Text(active ? value : label,
+                style: _T.label(fs: 12,
+                    c: active ? _T.primary : _T.textSec,
+                    fw: FontWeight.w600)),
+            const SizedBox(width: 3),
+            Icon(Icons.keyboard_arrow_down_rounded, size: 15,
+                color: active ? _T.primary : _T.textSec),
+          ]),
+        ),
+        itemBuilder: (_) => [
+          _menuItem('', 'All'),
+          for (final i in items) _menuItem(i, i),
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _menuItem(String v, String t) =>
+      PopupMenuItem(value: v, child: Text(t, style: _T.body(fs: 13)));
+}
+
+class _SortButton extends StatelessWidget {
+  final String value;
+  final double height;
+  final ValueChanged<String> onChanged;
+  const _SortButton({required this.value, required this.height, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: height,
+    child: PopupMenuButton<String>(
+      initialValue: value,
+      onSelected: onChanged,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: _T.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _T.border),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.sort_rounded, size: 15, color: _T.textSec),
+          const SizedBox(width: 6),
+          Text('Sort', style: _T.label(fs: 12, fw: FontWeight.w600)),
+        ]),
+      ),
+      itemBuilder: (_) => [
+        _item('newest', 'Newest First'),
+        _item('oldest', 'Oldest First'),
+        _item('company', 'Company A→Z'),
+      ],
+    ),
+  );
+
+  PopupMenuItem<String> _item(String v, String t) =>
+      PopupMenuItem(value: v, child: Text(t, style: _T.body(fs: 13)));
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// JOB CARD  (hover state isolated — only this card repaints on hover)
+// ═════════════════════════════════════════════════════════════════════════════
+class _JobCard extends StatefulWidget {
+  final Map<String, dynamic> jobData;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _JobCard({super.key, required this.jobData,
+    required this.isSelected, required this.onTap});
+
+  @override
+  State<_JobCard> createState() => _JobCardState();
+}
+
+class _JobCardState extends State<_JobCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final job      = widget.jobData;
+    final title    = job['title']    as String? ?? 'No Title';
+    final company  = job['company']  as String? ?? 'Unknown';
+    final location = job['location'] as String? ?? 'Remote';
+    final nature   = job['nature']   as String? ?? '';
+    final skills   = (job['skills']  as List?)?.cast<String>() ?? [];
+    final logoUrl  = job['logoUrl']  as String?;
+    final ts       = job['timestamp'] as Timestamp?;
+    final ago      = ts != null ? timeago.format(ts.toDate(), locale: 'en_short') : '';
 
     return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit:  (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: animationDuration,
-          curve: animationCurve,
-          // UX: Physically lift the card on hover for tactile feedback
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered && !widget.isSelected ? -4.0 : 0.0),
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.translationValues(
+              0, _hovered && !widget.isSelected ? -3 : 0, 0),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: widget.isSelected ? _primary.withOpacity(0.04) : _surface,
-            borderRadius: BorderRadius.circular(16),
+            color: widget.isSelected
+                ? _T.primary.withOpacity(0.05)
+                : _T.white,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: widget.isSelected
-                  ? _primary
-                  : _isHovered
-                  ? _primary.withOpacity(0.3)
-                  : _border,
-              width: widget.isSelected ? 2 : 1,
+                  ? _T.primary
+                  : _hovered
+                  ? _T.primary.withOpacity(0.35)
+                  : _T.border,
+              width: widget.isSelected ? 1.5 : 1,
             ),
-
+            boxShadow: _hovered && !widget.isSelected
+                ? [const BoxShadow(
+                color: Color(0x0D000000),
+                blurRadius: 10, offset: Offset(0, 4))]
+                : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // --- Header Section: Logo + Title + Date ---
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLogo(logoUrl),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: _textPrimary,
-                                  height: 1.2,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (postedAgo.isNotEmpty)
-                              _buildTimeBadge(postedAgo),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          company,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: _textSecondary,
-                          ),
+              // ── Header
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                _LogoBox(logoUrl: logoUrl),
+                const SizedBox(width: 12),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Expanded(child: Text(title,
+                          style: _T.head(fs: 14),
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          overflow: TextOverflow.ellipsis)),
+                      if (ago.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        _TimeBadge(ago),
                       ],
+                    ]),
+                    const SizedBox(height: 3),
+                    Text(company, style: _T.label(fs: 12, fw: FontWeight.w500),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                )),
+              ]),
+              const SizedBox(height: 12),
+              // ── Meta row
+              Row(children: [
+                _MetaChip(Icons.location_on_outlined, location),
+                if (nature.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  _MetaChip(Icons.work_outline_rounded, nature),
+                ],
+                if (widget.isSelected) ...[
+                  const Spacer(),
+                  Container(
+                    width: 24, height: 24,
+                    decoration: BoxDecoration(
+                      color: _T.primary, shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(
+                          color: _T.primary.withOpacity(0.35),
+                          blurRadius: 6, offset: const Offset(0, 2))],
                     ),
+                    child: const Icon(Icons.check, size: 14, color: _T.white),
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // --- Middle Section: Location & Attributes ---
-              Row(
-                children: [
-                  _buildIconText(Icons.location_on_outlined, location),
-                  const SizedBox(width: 16),
-                  // Example of adding a second attribute like "Full-time"
-                  _buildIconText(Icons.work_outline_rounded, "Full-time"),
-                ],
-              ),
-
+              ]),
+              // ── Skills
               if (skills.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                const Divider(height: 1, color: _border, thickness: 0.5),
-                const SizedBox(height: 12),
-
-                // --- Footer Section: Skills & Selected Indicator ---
-                Row(
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: _T.border),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6, runSpacing: 6,
                   children: [
-                    Expanded(
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: skills.take(3).map((skill) => _buildSkillChip(skill)).toList(),
-                      ),
-                    ),
-                    if (widget.isSelected) ...[
-                      const SizedBox(width: 8),
-                      _buildSelectedIndicator(),
-                    ]
+                    for (final s in skills.take(3)) _SkillPill(s),
                   ],
                 ),
               ],
@@ -783,248 +852,185 @@ class _JobCardState extends State<JobCard> {
       ),
     );
   }
-
-  // --- Helper Widgets ---
-
-  Widget _buildLogo(String? logoUrl) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _border.withOpacity(0.6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(9),
-        child: logoUrl != null && logoUrl.isNotEmpty
-            ? CachedNetworkImage(
-          imageUrl: logoUrl,
-          fit: BoxFit.contain, // Contain usually looks better for logos so they don't get cropped
-          placeholder: (_, __) => Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
-          ),
-          errorWidget: (_, __, ___) => Icon(Icons.business, color: _textSecondary),
-        )
-            : Icon(Icons.business, color: _textSecondary),
-      ),
-    );
-  }
-
-  Widget _buildTimeBadge(String time) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        time,
-        style: GoogleFonts.poppins(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: _textSecondary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIconText(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: _textSecondary),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            text,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: _textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSkillChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: _primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(6),
-        // Removed border for a cleaner, modern "pill" look
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: _primary,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedIndicator() {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: _primary,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: _primary.withOpacity(0.4),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.check,
-        size: 16,
-        color: Colors.white,
-      ),
-    );
-  }
-}
-// EMPTY APPLICANTS VIEW
-class _EmptyApplicantsView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_primaryLight, _primary.withOpacity(0.1)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.people_alt_rounded, size: 80, color: _primary),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Select a Job Position',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: _textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Click on any job card to view applicants',
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              color: _textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ERROR WIDGET
-class _ErrorWidget extends StatelessWidget {
-  final String error;
-  const _ErrorWidget({required this.error});
+// ═════════════════════════════════════════════════════════════════════════════
+// MICRO WIDGETS
+// ═════════════════════════════════════════════════════════════════════════════
+class _LogoBox extends StatelessWidget {
+  final String? logoUrl;
+  const _LogoBox({this.logoUrl});
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        margin: const EdgeInsets.symmetric(horizontal: 24),
+  Widget build(BuildContext context) => Container(
+    width: 44, height: 44,
+    decoration: BoxDecoration(
+      color: _T.white,
+      borderRadius: BorderRadius.circular(9),
+      border: Border.all(color: _T.border),
+      boxShadow: const [BoxShadow(
+          color: Color(0x08000000), blurRadius: 4, offset: Offset(0, 2))],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: logoUrl != null && logoUrl!.isNotEmpty
+          ? CachedNetworkImage(
+        imageUrl: logoUrl!,
+        fit: BoxFit.contain,
+        placeholder: (_, __) => const Padding(
+            padding: EdgeInsets.all(12),
+            child: CircularProgressIndicator(
+                strokeWidth: 2, color: _T.primary)),
+        errorWidget: (_, __, ___) => const Icon(
+            Icons.business_rounded, color: _T.textSec, size: 22),
+      )
+          : const Icon(Icons.business_rounded,
+          color: _T.textSec, size: 22),
+    ),
+  );
+}
+
+class _TimeBadge extends StatelessWidget {
+  final String time;
+  const _TimeBadge(this.time);
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+        color: _T.bg, borderRadius: BorderRadius.circular(5)),
+    child: Text(time, style: _T.label(fs: 10)),
+  );
+}
+
+class _MetaChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _MetaChip(this.icon, this.text);
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 13, color: _T.textSec),
+      const SizedBox(width: 4),
+      Flexible(child: Text(text, style: _T.label(fs: 11),
+          maxLines: 1, overflow: TextOverflow.ellipsis)),
+    ],
+  );
+}
+
+class _SkillPill extends StatelessWidget {
+  final String label;
+  const _SkillPill(this.label);
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+        color: _T.primary.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(5)),
+    child: Text(label, style: _T.label(fs: 11, c: _T.primary, fw: FontWeight.w600)),
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// EMPTY / ERROR STATES
+// ═════════════════════════════════════════════════════════════════════════════
+class _EmptyApplicantsState extends StatelessWidget {
+  const _EmptyApplicantsState();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Container(
+        padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.shade200),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.red.shade700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.red.shade600,
-              ),
-            ),
-          ],
-        ),
+            color: _T.primaryLight, shape: BoxShape.circle),
+        child: const Icon(Icons.people_alt_rounded,
+            size: 64, color: _T.primary),
       ),
-    );
-  }
+      const SizedBox(height: 20),
+      Text('Select a Job Position', style: _T.head(fs: 20)),
+      const SizedBox(height: 6),
+      Text('Tap any job card to view its applicants',
+          style: _T.label(fs: 13)),
+    ]),
+  );
 }
 
-// EMPTY WIDGET
-class _EmptyWidget extends StatelessWidget {
+class _NoResultsState extends StatelessWidget {
+  final VoidCallback onClear;
+  const _NoResultsState({required this.onClear});
+
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.work_outline_rounded,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Positions Available',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey.shade700,
-            ),
-          ),
-        ],
+  Widget build(BuildContext context) => Center(
+    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Container(
+        width: 100, height: 100,
+        decoration: BoxDecoration(
+            color: _T.primaryLight,
+            borderRadius: BorderRadius.circular(20)),
+        child: Icon(Icons.search_off_rounded,
+            size: 52, color: _T.primary.withOpacity(0.55)),
       ),
-    );
-  }
+      const SizedBox(height: 20),
+      Text('No positions found', style: _T.head(fs: 18)),
+      const SizedBox(height: 6),
+      Text('Try adjusting your filters', style: _T.label(fs: 13)),
+      const SizedBox(height: 16),
+      TextButton.icon(
+        onPressed: onClear,
+        icon: const Icon(Icons.clear_all_rounded, size: 17),
+        label: Text('Clear filters', style: _T.label(fs: 13, c: _T.primary)),
+      ),
+    ]),
+  );
+}
+
+class _EmptyJobsState extends StatelessWidget {
+  const _EmptyJobsState();
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+            color: _T.bg, shape: BoxShape.circle),
+        child: const Icon(Icons.work_outline_rounded,
+            size: 56, color: _T.textTert),
+      ),
+      const SizedBox(height: 20),
+      Text('No Positions Available', style: _T.head(fs: 18, c: _T.textSec)),
+    ]),
+  );
+}
+
+class _ErrorState extends StatelessWidget {
+  final String error;
+  const _ErrorState({required this.error});
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Container(
+      padding: const EdgeInsets.all(28),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF1F2),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _T.red.withOpacity(0.25)),
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.error_outline_rounded,
+            size: 52, color: _T.red.withOpacity(0.7)),
+        const SizedBox(height: 14),
+        Text('Something went wrong',
+            style: _T.head(fs: 16, c: _T.red)),
+        const SizedBox(height: 6),
+        Text(error, textAlign: TextAlign.center,
+            style: _T.label(fs: 12, c: _T.red)),
+      ]),
+    ),
+  );
 }

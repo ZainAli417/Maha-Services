@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
 
@@ -63,7 +62,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                   color: scoreColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: FaIcon(FontAwesomeIcons.chartSimple,
+                child: Icon(Icons.bar_chart_sharp,
                     color: scoreColor, size: 22),
               ),
               const SizedBox(width: 12),
@@ -148,8 +147,8 @@ class ProfileCompletenessCard extends StatelessWidget {
                 shadowColor: const Color(0xFF6366F1).withOpacity(0.4),
                 elevation: 4,
               ),
-              icon: const FaIcon(
-                FontAwesomeIcons.userPen,
+              icon: const Icon(
+                Icons.edit,
                 size: 16,
                 color: Colors.white,
               ),

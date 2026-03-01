@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:another_flushbar/flushbar.dart';
 import 'package:lottie/lottie.dart';
 
 class ForgotPasswordProvider with ChangeNotifier {
@@ -19,8 +18,10 @@ class ForgotPasswordProvider with ChangeNotifier {
   }
 
   Future<void> submitForgotPassword(BuildContext context) async {
+    // 1. Input Validation
     if (_email.isEmpty || !_email.contains('@')) {
-      _showErrorFlushbar(context, 'Please enter a valid email address.');
+      // REPLACED: _showErrorFlushbar
+      showErrorSnackBar(context, 'Please enter a valid email address.');
       return;
     }
 
@@ -29,25 +30,30 @@ class ForgotPasswordProvider with ChangeNotifier {
 
     try {
       await _auth.sendPasswordResetEmail(email: _email);
-      _showSuccessDialog(context);
+      _showSuccessDialog(context); // You might want to update this to a Green SnackBar too!
     } on FirebaseAuthException catch (e) {
+      // 2. Firebase Error Handling
       if (e.code == 'user-not-found') {
-        _showErrorFlushbar(context, 'No user found for that email.');
+        showErrorSnackBar(context, 'No user found for that email.');
       } else if (e.code == 'invalid-email') {
-        _showErrorFlushbar(context, 'The email address is badly formatted.');
+        showErrorSnackBar(context, 'The email address is badly formatted.');
       } else {
-        _showErrorFlushbar(
-            context, e.message ?? 'Failed to send password reset email.');
+        showErrorSnackBar(
+            context,
+            e.message ?? 'Failed to send password reset email.'
+        );
       }
     } catch (e) {
-      _showErrorFlushbar(
-          context, 'An unexpected error occurred. Please try again.');
+      // 3. Generic Error Handling
+      showErrorSnackBar(
+          context,
+          'An unexpected error occurred. Please try again.'
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
-
   void _showSuccessDialog(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
 
@@ -135,26 +141,84 @@ class ForgotPasswordProvider with ChangeNotifier {
     );
   }
 
-  void _showErrorFlushbar(BuildContext context, String message) {
-    Flushbar(
-      message: message,
-      backgroundColor: Colors.red,
-      margin: const EdgeInsets.all(12),
-      borderRadius: BorderRadius.circular(8),
-      duration: const Duration(seconds: 3),
-      flushbarPosition: FlushbarPosition.TOP,
-      icon: const Icon(Icons.error_outline, color: Colors.white),
-      messageText: Text(
-        message,
-        style: GoogleFonts.montserrat(
-          fontWeight: FontWeight.w500,
-          color: Colors.white,
+  void showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              height: 90,
+              decoration: BoxDecoration(
+                color: const Color(0xFFC72C41),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 40),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Oh Snap!",
+                          style: GoogleFonts.montserrat(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          message,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Decorative bubble logic (Optional)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                ),
+                child: Transform.translate(
+                  offset: const Offset(-10, 20),
+                  child: Container(
+                    height: 80,
+                    width: 80,
+                    color: Colors.white.withOpacity(0.1), // Bubbles
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        margin: const EdgeInsets.all(20), // Floats comfortably
+        duration: const Duration(seconds: 3),
       ),
-      animationDuration: const Duration(milliseconds: 500),
-      forwardAnimationCurve: Curves.easeOut,
-      reverseAnimationCurve: Curves.easeIn,
-      isDismissible: true,
-    ).show(context);
+    );
   }
 }

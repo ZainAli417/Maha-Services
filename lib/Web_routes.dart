@@ -24,6 +24,7 @@ import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
 import 'Screens/Recruiter/Request_Box.dart';
 import 'SignUp /profile_builder.dart';
 import 'SignUp /signup_screen_auth.dart';
+import 'Screens/Recruiter/post_a_job_form.dart';
 
 // ========== 1. ROBUST DATA SERVICE (Logic from Code A) ==========
 class RoleService {
@@ -255,6 +256,7 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
     GoRoute(path: '/job-application-tracker', pageBuilder: (c, s) => _fadePage(const Job_Applicant_Tracker(), s)),
     GoRoute(path: '/request-box', pageBuilder: (c, s) => _fadePage(const RequestBoxScreen(), s)),
+    GoRoute(path: '/post-job', pageBuilder: (c, s) => _fadePage(const PostJobScreen(), s)),
 
   ],
 );

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:mime/mime.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../Recruiter/LIst_of_Applicants.dart';
 import '../JS_Top_Bar.dart';
 import 'JS_Profile_Provider.dart';
@@ -267,15 +266,15 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   ];
 
   final List<IconData> _stepIcons = [
-    FontAwesomeIcons.user,
-    FontAwesomeIcons.graduationCap,
-    FontAwesomeIcons.briefcase,
-    FontAwesomeIcons.clock,
-    FontAwesomeIcons.certificate,
-    FontAwesomeIcons.fileAlt,
-    FontAwesomeIcons.award,
-    FontAwesomeIcons.users,
-    // FontAwesomeIcons.folder,
+    Icons.supervised_user_circle_outlined,
+    Icons.school_outlined,
+    Icons.work_outline,
+    Icons.work_history_outlined,
+    Icons.verified,
+    Icons.file_copy_outlined,
+    Icons.video_file_outlined,
+    Icons.assured_workload_outlined,
+    Icons.group_add_outlined,    // FontAwesomeIcons.folder,
   ];
 
   @override

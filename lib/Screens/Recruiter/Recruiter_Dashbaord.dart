@@ -8,11 +8,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill_internal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:job_portal/Constant/recruiter_AI.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:job_portal/Screens/Recruiter/post_a_job_form.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../Constant/recruiter_doughnat_chart.dart';
@@ -68,9 +70,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
       key: _scaffoldKey,
       backgroundColor: _background,
       drawer: isMobile
-          ? Drawer(
-              child: RecruiterSidebar(activeIndex: 0, isDrawer: true),
-            )
+          ? Drawer(child: RecruiterSidebar(activeIndex: 0, isDrawer: true))
           : null,
       body: Row(
         children: [
@@ -82,8 +82,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                 children: [
                   Column(
                     children: [
-                      if (isMobile)
-                        _buildMobileAppBar('Recruiter Dashboard'),
+                      if (isMobile) _buildMobileAppBar('Recruiter Dashboard'),
                       Expanded(
                         child: Consumer<JobSeekerProvider>(
                           builder: (context, provider, _) =>
@@ -110,10 +109,9 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                               ),
                         ),
                       ),
+                      // AI Chat moved to Post Job Form
                     ],
                   ),
-                  // AI Chat with built-in toggle
-                  const AIFloatingChat(),
                 ],
               ),
             ),
@@ -146,14 +144,53 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
               color: const Color(0xFF1E40AF).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.recent_actors_outlined, size: 20, color: Color(0xFF1E40AF)),
+            child: const Icon(
+              Icons.recent_actors_outlined,
+              size: 20,
+              color: Color(0xFF1E40AF),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(title,
-              style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+            child: Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0F172A),
+              ),
             ),
           ),
+          GestureDetector(
+            onTap: () {
+              context.go('/post-job');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E3A5F), Color(0xFF3B82F6)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, color: Colors.white, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Post',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
     );
@@ -169,7 +206,8 @@ class _ErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(isMobile ? 24 : 10),
+
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           color: Colors.red.shade50,
@@ -245,77 +283,6 @@ class _EmptyWidget extends StatelessWidget {
 }
 
 // COMPACT SIDE CHAT WIDGET - ADD THIS TO YOUR PARENT WIDGET FILE
-class AIFloatingChat extends StatefulWidget {
-  const AIFloatingChat({super.key});
-
-  @override
-  State<AIFloatingChat> createState() => _AIFloatingChatState();
-}
-
-class _AIFloatingChatState extends State<AIFloatingChat> {
-  bool _showChat = false;
-
-  void _toggleChat() {
-    setState(() {
-      _showChat = !_showChat;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Chat Widget (positioned at bottom-right corner, above FAB)
-        if (_showChat)
-          Positioned(
-            right: 24,
-            bottom: 90, // Above the FAB button
-            child: AIJDBuilderWidget(onClose: _toggleChat),
-          ),
-
-        // FAB Button (positioned at bottom right)
-        Positioned(
-          right: 24,
-          bottom: 24,
-          child: Material(
-            elevation: 6,
-            borderRadius: BorderRadius.circular(16),
-            color: const Color(0xFF4F46E5),
-            child: InkWell(
-              onTap: _toggleChat,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _showChat ? Icons.close : Icons.smart_toy,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Recruite.AI',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class Recruiter_Analytics extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
@@ -400,7 +367,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
                   ? const NeverScrollableScrollPhysics()
                   : const BouncingScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(child: _buildHeader(isMobile)),
+                if (!isMobile)
+                  SliverToBoxAdapter(child: _buildHeader(isMobile)),
                 SliverToBoxAdapter(child: _buildStatsOverview(isMobile)),
                 SliverToBoxAdapter(child: _buildAnalyticsSection(isMobile)),
               ],
@@ -417,13 +385,17 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     const Color kTextSecondary = Color(0xFF475569);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 16 : 24,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           // Left Icon
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isMobile ? 24 : 10),
+
             decoration: BoxDecoration(
               color: kPrimaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
@@ -473,14 +445,10 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   }
 
   Widget _buildPostJobButton() {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => const PostJobDialog(),
-        ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.go('/post-job'),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 44,
@@ -522,7 +490,12 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   // STATS OVERVIEW CARDS
   Widget _buildStatsOverview(bool isMobile) {
     return Container(
-      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 24),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 12 : 32,
+        isMobile ? 8 : 0,
+        isMobile ? 12 : 32,
+        isMobile ? 12 : 24,
+      ),
       color: _background,
       child: FutureBuilder<Map<String, dynamic>>(
         future: _fetchAllApplicantsData(),
@@ -540,6 +513,64 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           final accepted = data['accepted'] ?? 0;
           final rejected = data['rejected'] ?? 0;
           final shortlist = data['shortlist'] ?? 0;
+
+          if (isMobile) {
+            // Compact 2-column grid + 1 full-width card for mobile
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCompactStatCard(
+                        title: 'Total Apps',
+                        value: totalApps.toString(),
+                        icon: Icons.people_alt_outlined,
+                        color: _accent,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildCompactStatCard(
+                        title: 'Pending',
+                        value: pending.toString(),
+                        icon: Icons.hourglass_empty,
+                        color: _warning,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCompactStatCard(
+                        title: 'Accepted',
+                        value: accepted.toString(),
+                        icon: Icons.check_circle_outline,
+                        color: _success,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildCompactStatCard(
+                        title: 'Rejected',
+                        value: rejected.toString(),
+                        icon: Icons.group_remove_outlined,
+                        color: _error,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _buildCompactStatCard(
+                  title: 'Shortlist',
+                  value: shortlist.toString(),
+                  icon: Icons.star_outline,
+                  color: _primary,
+                ),
+              ],
+            );
+          }
 
           final cards = [
             _buildStatCardEnhanced(
@@ -579,31 +610,81 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
             ),
           ];
 
-          if (isMobile) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: cards.map((c) => Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 12),
-                  child: c,
-                )).toList(),
-              ),
-            );
-          }
-
           return Row(
             children: cards.asMap().entries.map((e) {
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: e.key < cards.length - 1 ? 16 : 0),
+                  padding: EdgeInsets.only(
+                    right: e.key < cards.length - 1 ? 16 : 0,
+                  ),
                   child: e.value,
                 ),
               );
             }).toList(),
           );
         },
+      ),
+    );
+  }
+
+  // COMPACT STAT CARD FOR MOBILE
+  Widget _buildCompactStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _textPrimary,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -615,74 +696,69 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     required IconData icon,
     required Color color,
   }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: _background,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, color: color, size: 22),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(isMobile ? 24 : 10),
+
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: _textPrimary,
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              color: _textPrimary,
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: _textPrimary,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
             ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -690,7 +766,12 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   // ANALYTICS SECTION
   Widget _buildAnalyticsSection(bool isMobile) {
     return Container(
-      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 24),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 32,
+        0,
+        isMobile ? 16 : 32,
+        24,
+      ),
       color: _background,
       child: FutureBuilder<Map<String, dynamic>>(
         future: _fetchAllApplicantsData(),
@@ -754,7 +835,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
     return Container(
       height: 350,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 24 : 10),
+
       decoration: BoxDecoration(
         color: _background,
         borderRadius: BorderRadius.circular(16),
@@ -952,9 +1034,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
         color: _warning,
         value: pending.toDouble(),
         title: '${((pending / total) * 100).toInt()}%',
-        radius: 60,
+        radius: 40,
         titleStyle: GoogleFonts.poppins(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
@@ -965,9 +1047,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
         color: _success,
         value: accepted.toDouble(),
         title: '${((accepted / total) * 100).toInt()}%',
-        radius: 60,
+        radius: 40,
         titleStyle: GoogleFonts.poppins(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
@@ -978,9 +1060,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
         color: _error,
         value: rejected.toDouble(),
         title: '${((rejected / total) * 100).toInt()}%',
-        radius: 60,
+        radius: 40,
         titleStyle: GoogleFonts.poppins(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
@@ -991,9 +1073,9 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
         color: _primary,
         value: shortlist.toDouble(),
         title: '${((shortlist / total) * 100).toInt()}%',
-        radius: 60,
+        radius: 40,
         titleStyle: GoogleFonts.poppins(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
@@ -1004,7 +1086,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
     return Container(
       height: 350,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 24 : 10),
+
       decoration: BoxDecoration(
         color: _background,
         borderRadius: BorderRadius.circular(16),
@@ -1137,7 +1220,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
     return Container(
       height: 400,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 24 : 10),
+
       decoration: BoxDecoration(
         color: _background,
         borderRadius: BorderRadius.circular(16),
@@ -1310,7 +1394,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
 
     return Container(
       height: 400,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 24 : 10),
+
       decoration: BoxDecoration(
         color: _background,
         borderRadius: BorderRadius.circular(16),
@@ -1423,7 +1508,8 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
   Widget _buildEmptyChart(String title, String message) {
     return Container(
       height: 350,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 24 : 10),
+
       decoration: BoxDecoration(
         color: _background,
         borderRadius: BorderRadius.circular(16),

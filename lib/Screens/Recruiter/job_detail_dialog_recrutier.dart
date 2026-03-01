@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../Widgets/quill_editor.dart';
 
 import 'Recruiter_provider_Job_listing.dart';
 
@@ -346,17 +347,26 @@ class JobDetailModal_recruiter extends StatelessWidget {
 
                       // About the Role
                       _buildSectionTitle('About the Role'),
-                      _buildRichText(description),
+                      AppRichTextViewer(
+                        deltaOrPlainText: description,
+                        fontSize: 15,
+                      ),
                       const SizedBox(height: 24),
 
                       // Key Responsibilities
                       _buildSectionTitle('Key Responsibilities'),
-                      _buildRichText(responsibilities),
+                      AppRichTextViewer(
+                        deltaOrPlainText: responsibilities,
+                        fontSize: 15,
+                      ),
                       const SizedBox(height: 24),
 
                       // Qualifications
                       _buildSectionTitle('Qualifications'),
-                      _buildRichText(qualifications),
+                      AppRichTextViewer(
+                        deltaOrPlainText: qualifications,
+                        fontSize: 15,
+                      ),
                       const SizedBox(height: 32),
 
                       // Sidebar Cards row (skills, work mode, benefits)

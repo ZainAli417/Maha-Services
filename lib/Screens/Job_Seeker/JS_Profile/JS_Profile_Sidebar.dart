@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../Constant/CV_Generator.dart';
 import 'JS_Profile_Provider.dart';
@@ -336,7 +335,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              FaIcon(FontAwesomeIcons.listCheck, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(Icons.checklist_rtl_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Completeness Breakdown',
@@ -456,7 +455,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              FaIcon(FontAwesomeIcons.diamond, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(Icons.diamond_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Top Skills',
@@ -533,7 +532,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              FaIcon(FontAwesomeIcons.idCard, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(Icons.contact_mail_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Contact Info',
@@ -547,10 +546,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
           ),
           SizedBox(height: isMobile ? 12 : 20),
 
-          _buildInfoRow(FontAwesomeIcons.envelope, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
-          _buildInfoRow(FontAwesomeIcons.phoneFlip, 'Phone', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
-          _buildInfoRow(FontAwesomeIcons.globe, 'Nationality', provider.nationality.isNotEmpty ? provider.nationality : '—'),
-          _buildInfoRow(FontAwesomeIcons.cakeCandles, 'DOB', provider.dob.isNotEmpty ? provider.dob : '—'),
+          _buildInfoRow(Icons.mail_rounded, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
+          _buildInfoRow(Icons.phone_iphone_rounded, 'Phone', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
+          _buildInfoRow(Icons.public_rounded, 'Nationality', provider.nationality.isNotEmpty ? provider.nationality : '—'),
+          _buildInfoRow(Icons.cake_rounded, 'DOB', provider.dob.isNotEmpty ? provider.dob : '—'),
 
           // Summary Accordion
           if (provider.personalSummary.isNotEmpty) ...[
@@ -622,7 +621,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
             ),
-            child: FaIcon(icon, color: const Color(0xFF6B7280), size: isMobile ? 10 : 12),
+            child: Icon(icon, color: const Color(0xFF6B7280), size: isMobile ? 10 : 12),
           ),
           SizedBox(width: isMobile ? 8 : 12),
           Expanded(

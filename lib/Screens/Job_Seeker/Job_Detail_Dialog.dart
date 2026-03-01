@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../Widgets/quill_editor.dart';
 
 class JobDetailModal extends StatelessWidget {
   final String jobId;
@@ -361,7 +362,11 @@ class JobDetailModal extends StatelessWidget {
                     if (description.isNotEmpty) ...[
                       _sectionHeader(Icons.article_outlined, 'About the Role'),
                       const SizedBox(height: 10),
-                      _bodyText(description, isMobile),
+                      AppRichTextViewer(
+                        deltaOrPlainText: description,
+                        isMobile: isMobile,
+                        fontSize: isMobile ? 14 : 15,
+                      ),
                       const SizedBox(height: 28),
                     ],
 
@@ -369,7 +374,11 @@ class JobDetailModal extends StatelessWidget {
                     if (responsibilities.isNotEmpty) ...[
                       _sectionHeader(Icons.checklist_rounded, 'Key Responsibilities'),
                       const SizedBox(height: 10),
-                      _bodyText(responsibilities, isMobile),
+                      AppRichTextViewer(
+                        deltaOrPlainText: responsibilities,
+                        isMobile: isMobile,
+                        fontSize: isMobile ? 14 : 15,
+                      ),
                       const SizedBox(height: 28),
                     ],
 
@@ -377,7 +386,11 @@ class JobDetailModal extends StatelessWidget {
                     if (qualifications.isNotEmpty) ...[
                       _sectionHeader(Icons.school_outlined, 'Qualifications'),
                       const SizedBox(height: 10),
-                      _bodyText(qualifications, isMobile),
+                      AppRichTextViewer(
+                        deltaOrPlainText: qualifications,
+                        isMobile: isMobile,
+                        fontSize: isMobile ? 14 : 15,
+                      ),
                       const SizedBox(height: 28),
                     ],
 

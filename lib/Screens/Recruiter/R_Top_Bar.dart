@@ -29,9 +29,11 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
     return Consumer<R_TopNavProvider>(
       builder: (context, provider, child) {
         final initials = provider.initials;
+
         final sidebarWidth = widget.isDrawer
-            ? (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 280.0)
-            : 260.0;
+        // Mobile: Reduced to 60% width, clamped between 200 and 250
+            ? (MediaQuery.of(context).size.width * 0.40).clamp(200.0, 250.0)
+            : 260.0; // Desktop: Stays the same
         return Container(
           width: sidebarWidth,
           decoration: BoxDecoration(
@@ -82,11 +84,19 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       onTap: () => context.go('/recruiter-dashboard'),
                     ),
                     _buildMenuItem(
+                      icon: Icons.post_add_outlined,
+                      activeIcon: Icons.post_add,
+                      label: 'Post a Job',
+                      index: 1,
+                      isActive: widget.activeIndex == 1,
+                      onTap: () => context.go('/post-job'),
+                    ),
+                    _buildMenuItem(
                       icon: Icons.spatial_tracking_outlined,
                       activeIcon: Icons.spatial_tracking_rounded,
                       label: 'Job Application Tracker',
-                      index: 1,
-                      isActive: widget.activeIndex == 1,
+                      index:2,
+                      isActive: widget.activeIndex == 2,
                       onTap: () => context.go('/job-application-tracker'),
                     ),
 
@@ -95,16 +105,16 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       icon: Icons.person_outline,
                       activeIcon: Icons.person,
                       label: 'Shortlisting',
-                      index: 2,
-                      isActive: widget.activeIndex == 2,
+                      index: 3,
+                      isActive: widget.activeIndex == 3,
                       onTap: () => context.go('/shortlisting'),
                     ),
                     _buildMenuItem(
                       icon: Icons.all_inbox_outlined,
                       activeIcon: Icons.all_inbox,
                       label: 'Request Box',
-                      index: 5,
-                      isActive: widget.activeIndex == 5,
+                      index: 4,
+                      isActive: widget.activeIndex == 4,
                       onTap: () => context.go('/request-box'),
                     ),
 
@@ -115,8 +125,8 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                        icon: Icons.work_outline,
                        activeIcon: Icons.work,
                        label: 'Settings',
-                       index: 3,
-                       isActive: widget.activeIndex == 3,
+                       index: 5,
+                       isActive: widget.activeIndex == 5,
                        onTap: () => context.go('/Settings'),
                      ),
 
@@ -124,8 +134,8 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       icon: Icons.help_outline,
                       activeIcon: Icons.help,
                       label: 'Help & Support',
-                      index: 4,
-                      isActive: widget.activeIndex == 4,
+                      index: 6,
+                      isActive: widget.activeIndex == 6,
                       onTap: () => context.go('/help'),
                     ),
                   ],
