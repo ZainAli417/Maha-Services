@@ -348,10 +348,22 @@ class _ViewShortlistedState extends State<view_shortlisted>
     });
   }
 
-  void _showProfile(ApplicantRecord a) => showDialog(
-    context: context,
-    builder: (_) => ViewApplicantDetails(applicant: a),
-  );
+  void _showProfile(ApplicantRecord a) {
+    if (_LD.mobile(context)) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => ViewApplicantDetails(applicant: a),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => ViewApplicantDetails(applicant: a),
+      );
+    }
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

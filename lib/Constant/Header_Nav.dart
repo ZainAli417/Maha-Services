@@ -159,9 +159,8 @@ class HeaderNav extends StatelessWidget {
           child: TextButton(
             onPressed: () => context.go('/login'),
             style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 12 : 16,
-                vertical: isMobile ? 6 : 8,
+              padding: EdgeInsets.all(
+                 isMobile ? 12 : 16,
               ),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,

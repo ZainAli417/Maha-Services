@@ -387,7 +387,7 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 16 : 24,
-        vertical: 12,
+        vertical: 10,
       ),
       decoration: BoxDecoration(color: Colors.white),
       child: Row(

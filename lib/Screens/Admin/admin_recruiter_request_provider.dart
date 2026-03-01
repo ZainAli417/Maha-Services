@@ -617,6 +617,7 @@ class AdminProvider extends ChangeNotifier {
       };
 
       _requestDetailsCache[requestId] = _CacheEntry(result, DateTime.now());
+      debugPrint('📥 Admin: Details fetched successfully for $requestId (Candidates: ${candidateDetails.length})');
       completer.complete(result);
       _pendingFetches.remove(requestId);
       loading = false;

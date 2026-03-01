@@ -362,38 +362,38 @@ class _LandingPageState extends State<LandingPage>
               ),
             ),
             const SizedBox(width: 6),
-            _AnimatedButton(
-              onPressed: () => context.go('/admin'),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "A",
-                      style: GoogleFonts.poppins(
-                        fontSize: btnFontSize,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: iconSize,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
+            // _AnimatedButton(
+            //   onPressed: () => context.go('/admin'),
+            //   child: Container(
+            //     padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+            //     decoration: BoxDecoration(
+            //       gradient: const LinearGradient(
+            //         colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            //       ),
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text(
+            //           "A",
+            //           style: GoogleFonts.poppins(
+            //             fontSize: btnFontSize,
+            //             fontWeight: FontWeight.w600,
+            //             color: Colors.white,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 4),
+            //         Icon(
+            //           Icons.arrow_forward_rounded,
+            //           size: iconSize,
+            //           color: Colors.white,
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(width: 6),
 
             _buildNavItem(title: 'ViewPricing',icon: Icons.payments_outlined,route: '/pricing', isActive: false)
 

@@ -58,7 +58,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       
       for (var doc in usersSnap.docs) {
         final role = (doc.data()['role'] ?? '').toString().toLowerCase();
-        if (role == 'admin' || role == 'superadmin') {
+        if (role == 'admin' || role == 'superadmin' || role == 'Admin') {
           tempAdmin++;
         } else if (role == 'recruiter') {
           tempRec++;
@@ -70,7 +70,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       totalAdmins = tempAdmin;
       totalRecruiters = tempRec;
       totalJobSeekers = tempJs;
-      totalUsers = tempAdmin + tempRec + tempJs;
+      totalUsers = tempRec + tempJs;
 
       final jobsQuery = await _firestore.collection('Posted_jobs_public').count().get();
       totalJobs = jobsQuery.count ?? 0;

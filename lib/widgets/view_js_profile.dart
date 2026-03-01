@@ -90,40 +90,53 @@ class ViewApplicantDetails extends StatelessWidget {
       else               l = _Layout.desktop;
       final ld = _LayoutData(l, sw);
 
+      final content = ClipRRect(
+        borderRadius: BorderRadius.circular(ld.isMobile ? 0 : 12),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth:  ld.isDesktop ? 1100 : (l == _Layout.tablet ? 780 : sw),
+            maxHeight: ld.isMobile
+                ? MediaQuery.of(ctx).size.height
+                : (l == _Layout.tablet
+                ? MediaQuery.of(ctx).size.height * 0.92
+                : 860),
+          ),
+          child: Material(
+            color: _T.cWht,
+            child: Column(children: [
+              if (ld.isMobile)
+                Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _T.cBdr,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              RepaintBoundary(
+                child: _Header(applicant: applicant),
+              ),
+              Expanded(
+                child: ld.isDesktop
+                    ? _DesktopBody(applicant: applicant)
+                    : _MobileTabletBody(applicant: applicant),
+              ),
+            ]),
+          ),
+        ),
+      );
+
       return _LD(
         data: ld,
-        child: Dialog(
+        child: ld.isMobile
+            ? content
+            : Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.symmetric(
-            horizontal: ld.isMobile ? 0 : (l == _Layout.tablet ? 24 : 48),
-            vertical:   ld.isMobile ? 0 : 20,
+            horizontal: l == _Layout.tablet ? 24 : 48,
+            vertical: 20,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(ld.isMobile ? 0 : 12),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth:  ld.isDesktop ? 1100 : (l == _Layout.tablet ? 780 : sw),
-                maxHeight: ld.isMobile
-                    ? MediaQuery.of(ctx).size.height
-                    : (l == _Layout.tablet
-                    ? MediaQuery.of(ctx).size.height * 0.92
-                    : 860),
-              ),
-              child: Material(
-                color: _T.cWht,
-                child: Column(children: [
-                  RepaintBoundary(
-                    child: _Header(applicant: applicant),
-                  ),
-                  Expanded(
-                    child: ld.isDesktop
-                        ? _DesktopBody(applicant: applicant)
-                        : _MobileTabletBody(applicant: applicant),
-                  ),
-                ]),
-              ),
-            ),
-          ),
+          child: content,
         ),
       );
     });

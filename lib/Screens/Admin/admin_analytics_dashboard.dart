@@ -294,6 +294,22 @@ class _MainContent extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  KPI GRID
 // ═══════════════════════════════════════════════════════════════════════════
+// ─── KPI data model ───────────────────────────────────────────────────────
+class _KD {
+  final IconData icon;
+  final String label, sub;
+  final int value;
+  final Color accent, bg;
+  const _KD(this.icon, this.label, this.value, this.sub, this.accent, this.bg);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// KPI GRID
+// Three layouts driven by breakpoint:
+//   desktop (isMid) → single row of 4 cards (existing behaviour)
+//   tablet           → 2×2 grid, cards have fixed compact height
+//   mobile (<480)   → vertical list of horizontal mini-cards (no overflow)
+// ═════════════════════════════════════════════════════════════════════════════
 class _KpiGrid extends StatelessWidget {
   final AdminAnalyticsProvider prov;
   final bool isMid;
@@ -313,111 +329,166 @@ class _KpiGrid extends StatelessWidget {
           'Approved / closed', _C.violet, _C.violetLt),
     ];
 
+    // Desktop — existing single-row behaviour
     if (isMid) {
       return Row(
-        children: items.asMap().entries.map((e) {
-          return Expanded(
-            child: Padding(
-              padding:
-              EdgeInsets.only(right: e.key < items.length - 1 ? 16 : 0),
-              child: _KpiCard(d: e.value),
-            ),
-          );
-        }).toList(),
+        children: items.asMap().entries.map((e) => Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: e.key < items.length - 1 ? 16 : 0),
+            child: _KpiCardVertical(d: e.value),
+          ),
+        )).toList(),
       );
     }
 
-    // Grid for Mobile/Small Screens
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        // Increased height ratio to accommodate content without overflow
-        // A lower number here (e.g., 1.1) makes the card taller.
-        childAspectRatio: 1.4,
-      ),
-      itemBuilder: (context, index) => _KpiCard(d: items[index]),
+    final w = MediaQuery.sizeOf(context).width;
+
+    // Tablet (600–960) — compact 2×2 grid, fixed aspect ratio
+    if (w >= 480) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: items.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.85, // wider than tall → no overflow
+        ),
+        itemBuilder: (_, i) => _KpiCardVertical(d: items[i], compact: true),
+      );
+    }
+
+    // Mobile (<480) — horizontal list cards, fixed height, never overflows
+    return Column(
+      children: items.asMap().entries.map((e) => Padding(
+        padding: EdgeInsets.only(bottom: e.key < items.length - 1 ? 10 : 0),
+        child: _KpiCardHorizontal(d: e.value),
+      )).toList(),
     );
   }
 }
-class _KD {
-  final IconData icon;
-  final String label, sub;
-  final int value;
-  final Color accent, bg;
-  const _KD(this.icon, this.label, this.value, this.sub, this.accent, this.bg);
-}
 
-class _KpiCard extends StatelessWidget {
+// ═════════════════════════════════════════════════════════════════════════════
+// VERTICAL CARD  (desktop + tablet)
+// ═════════════════════════════════════════════════════════════════════════════
+class _KpiCardVertical extends StatelessWidget {
   final _KD d;
-  const _KpiCard({required this.d});
+  final bool compact;
+  const _KpiCardVertical({required this.d, this.compact = false});
 
-  String _fmt(int n) =>
-      n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k' : '$n';
+  String _fmt(int n) => n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k' : '$n';
 
   @override
   Widget build(BuildContext context) {
-    // Detect if we are on a small screen to reduce vertical footprint
-    final bool isSmall = MediaQuery.of(context).size.width < 400;
-
+    final p = compact ? 14.0 : 20.0;
     return Container(
-      // Reduced padding for mobile (20 -> 12/16)
-      padding: EdgeInsets.all(isSmall ? 14 : 20),
+      padding: EdgeInsets.all(p),
       decoration: BoxDecoration(
         color: _C.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _C.border),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x06000000), blurRadius: 12, offset: Offset(0, 4))
-        ],
+        boxShadow: const [BoxShadow(
+            color: Color(0x06000000), blurRadius: 10, offset: Offset(0, 3))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // Prevents the column from expanding
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                // Scaled down icon container for mobile
-                padding: EdgeInsets.all(isSmall ? 7 : 9),
-                decoration: BoxDecoration(
-                    color: d.bg, borderRadius: BorderRadius.circular(10)),
-                child: Icon(d.icon, color: d.accent, size: isSmall ? 16 : 18),
-              ),
-              Icon(Icons.trending_up_rounded,
-                  color: d.accent.withOpacity(0.35), size: 16),
-            ],
-          ),
-          // Reduced height spacing for mobile
-          SizedBox(height: isSmall ? 10 : 14),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Container(
+              padding: EdgeInsets.all(compact ? 7 : 9),
+              decoration: BoxDecoration(
+                  color: d.bg, borderRadius: BorderRadius.circular(9)),
+              child: Icon(d.icon,
+                  color: d.accent, size: compact ? 15 : 18),
+            ),
+            Icon(Icons.trending_up_rounded,
+                color: d.accent.withOpacity(0.35), size: 15),
+          ]),
+          SizedBox(height: compact ? 10 : 14),
           TweenAnimationBuilder<int>(
             tween: IntTween(begin: 0, end: d.value),
-            duration: const Duration(milliseconds: 1400),
+            duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutCubic,
-            builder: (_, v, __) =>
-                Text(_fmt(v), style: _C.p(isSmall ? 22 : 26, fw: FontWeight.w800)),
+            builder: (_, v, __) => Text(_fmt(v),
+                style: _C.p(compact ? 20 : 26, fw: FontWeight.w800)),
           ),
           const SizedBox(height: 2),
-          Text(d.label, style: _C.p(11, color: _C.t2)),
+          Text(d.label,
+              style: _C.p(compact ? 10 : 11, color: _C.t2)),
           const SizedBox(height: 1),
-          Text(
-            d.sub,
-            style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1, // Strict single line to prevent vertical overflow
-          ),
+          Text(d.sub,
+              style: _C.p(compact ? 9 : 10,
+                  fw: FontWeight.w500, color: _C.t3),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1),
         ],
       ),
     );
   }
 }
-// ═══════════════════════════════════════════════════════════════════════════
+
+// ═════════════════════════════════════════════════════════════════════════════
+// HORIZONTAL CARD  (mobile — fixed height, never overflows)
+// Layout: [icon box] | [label + sub] | [animated number]
+// ═════════════════════════════════════════════════════════════════════════════
+class _KpiCardHorizontal extends StatelessWidget {
+  final _KD d;
+  const _KpiCardHorizontal({required this.d});
+
+  String _fmt(int n) => n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k' : '$n';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 64, // fixed — zero chance of overflow
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border),
+        boxShadow: const [BoxShadow(
+            color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 2))],
+      ),
+      child: Row(children: [
+        // Icon box
+        Container(
+          width: 36, height: 36,
+          decoration: BoxDecoration(
+              color: d.bg, borderRadius: BorderRadius.circular(9)),
+          child: Icon(d.icon, color: d.accent, size: 17),
+        ),
+        const SizedBox(width: 12),
+
+        // Label + subtitle
+        Expanded(child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(d.label, style: _C.p(12, fw: FontWeight.w700)),
+            const SizedBox(height: 1),
+            Text(d.sub,
+                style: _C.p(10, color: _C.t3),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1),
+          ],
+        )),
+
+        // Animated count — right-aligned
+        TweenAnimationBuilder<int>(
+          tween: IntTween(begin: 0, end: d.value),
+          duration: const Duration(milliseconds: 1200),
+          curve: Curves.easeOutCubic,
+          builder: (_, v, __) => Text(
+            _fmt(v),
+            style: _C.p(22, fw: FontWeight.w800, color: d.accent),
+          ),
+        ),
+      ]),
+    );
+  }
+}// ═══════════════════════════════════════════════════════════════════════════
 //  USER BREAKDOWN ROW
 // ═══════════════════════════════════════════════════════════════════════════
 class _UserBreakdown extends StatelessWidget {

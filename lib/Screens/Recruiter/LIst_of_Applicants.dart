@@ -325,10 +325,22 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     onToggle: () => _toggleOne(a.userId, p),
                     onStatusChange: (s) =>
                         p.updateApplicationStatus(a.userId, a.docId, s),
-                    onViewDetails: () => showDialog(
-                      context: context,
-                      builder: (_) => ViewApplicantDetails(applicant: a),
-                    ),
+                    onViewDetails: () {
+                      if (isMobile) {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => ViewApplicantDetails(applicant: a),
+                        );
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (_) => ViewApplicantDetails(applicant: a),
+                        );
+                      }
+                    },
                     onShowScore: (r) => _showScoreDialog(context, r),
                   );
                 }
@@ -345,10 +357,22 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   onToggle: () => _toggleOne(a.userId, p),
                   onStatusChange: (s) =>
                       p.updateApplicationStatus(a.userId, a.docId, s),
-                  onViewDetails: () => showDialog(
-                    context: context,
-                    builder: (_) => ViewApplicantDetails(applicant: a),
-                  ),
+                  onViewDetails: () {
+                    if (isMobile) {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => ViewApplicantDetails(applicant: a),
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (_) => ViewApplicantDetails(applicant: a),
+                      );
+                    }
+                  },
                   onShowScore: (r) => _showScoreDialog(context, r),
                 );
               },

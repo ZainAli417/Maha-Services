@@ -24,20 +24,23 @@ class _T {
     double fs = 11,
     Color? c,
     FontWeight fw = FontWeight.w500,
-  }) => GoogleFonts.ibmPlexSans(
+  }) => GoogleFonts.poppins
+(
     fontSize: fs,
     fontWeight: fw,
     color: c ?? textSec,
   );
 
-  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.ibmPlexSans(
+  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.poppins
+(
     fontSize: fs,
     fontWeight: FontWeight.w700,
     color: c ?? textPri,
   );
 
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, color: c ?? textPri, height: 1.55);
+      GoogleFonts.poppins
+(fontSize: fs, color: c ?? textPri, height: 1.55);
 }
 
 // ─── Layout breakpoint InheritedWidget (computed ONCE at root) ────────────────

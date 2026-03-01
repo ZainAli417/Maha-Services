@@ -238,8 +238,8 @@ class _ShortlistingDashboardState extends State<_ShortlistingDashboard> {
   String _jobType  = '';
   String _sort     = 'newest';
 
-  // Mobile: show detail panel over list
-  bool _showDetail = false;
+  // Mobile: show detail panel over list - DEPRECATED in favor of bottom sheet
+  // bool _showDetail = false;
 
   @override
   void initState() {
@@ -319,10 +319,42 @@ class _ShortlistingDashboardState extends State<_ShortlistingDashboard> {
     ..sort();
 
   void _selectJob(String? jobId) {
-    setState(() {
-      _selectedJobId = jobId;
-      _showDetail    = true;  // on mobile, slide to detail
-    });
+    setState(() => _selectedJobId = jobId);
+    if (_LD.isMobile(context)) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => Container(
+          height: MediaQuery.of(context).size.height * 0.92,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _T.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: view_shortlisted(
+                  key: ValueKey('sheet-$jobId'),
+                  jobId: jobId,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -360,29 +392,13 @@ class _ShortlistingDashboardState extends State<_ShortlistingDashboard> {
       Expanded(
     child: Padding(
     padding: const EdgeInsets.all(10),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
-          transitionBuilder: (child, anim) => SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(_showDetail ? 1 : -1, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-            child: child,
-          ),
-          child: _showDetail
-              ? _MobileDetailPanel(
-            key: ValueKey('detail-$_selectedJobId'),
-            jobId: _selectedJobId,
-            onBack: () => setState(() => _showDetail = false),
-          )
-              : _JobListPanel(
+          child: _JobListPanel(
             key: const ValueKey('job-list'),
             jobs: _filtered,
             selectedJobId: _selectedJobId,
             scrollCtrl: _scrollCtrl,
             onJobTap: _selectJob,
           ),
-        ),
     ),
       ),
     ]);
@@ -487,42 +503,6 @@ class _JobListPanel extends StatelessWidget {
             );
           },
         ),
-      ),
-    ]);
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// MOBILE DETAIL PANEL  (back button + detail view)
-// ═════════════════════════════════════════════════════════════════════════════
-class _MobileDetailPanel extends StatelessWidget {
-  final String? jobId;
-  final VoidCallback onBack;
-  const _MobileDetailPanel({super.key, required this.jobId, required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      // Back bar
-      Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: const BoxDecoration(
-          color: _T.white,
-          border: Border(bottom: BorderSide(color: _T.border)),
-        ),
-        child: Row(children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, size: 20, color: _T.textSec),
-            onPressed: onBack,
-          ),
-          Text('Go Back to Job List', style: _T.head(fs: 14)),
-        ]),
-      ),
-      Expanded(
-        child: jobId != null
-            ? view_shortlisted(key: ValueKey(jobId), jobId: jobId)
-            : const _EmptyApplicantsState(),
       ),
     ]);
   }
