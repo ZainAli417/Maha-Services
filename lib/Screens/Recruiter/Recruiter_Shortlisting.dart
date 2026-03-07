@@ -157,21 +157,24 @@ class _MobileTopBar extends StatelessWidget {
   const _MobileTopBar({required this.onMenu});
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 54,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    decoration: const BoxDecoration(
-        color: _T.white,
-        border: Border(bottom: BorderSide(color: _T.border))),
-    child: Row(children: [
-      IconButton(
-          icon: const Icon(Icons.menu_rounded, size: 22, color: _T.textSec),
-          onPressed: onMenu),
-      const SizedBox(width: 4),
-      const _HeaderIconBox(),
-      const SizedBox(width: 10),
-      Text('Shortlisting Dashboard', style: _T.head(fs: 15)),
-    ]),
+  Widget build(BuildContext context) => SafeArea(
+    bottom: false,
+    child: Container(
+      height: 54,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: const BoxDecoration(
+          color: _T.white,
+          border: Border(bottom: BorderSide(color: _T.border))),
+      child: Row(children: [
+        IconButton(
+            icon: const Icon(Icons.menu_rounded, size: 22, color: _T.textSec),
+            onPressed: onMenu),
+        const SizedBox(width: 4),
+        const _HeaderIconBox(),
+        const SizedBox(width: 10),
+        Text('Shortlisting', style: _T.head(fs: 15)),
+      ]),
+    ),
   );
 }
 

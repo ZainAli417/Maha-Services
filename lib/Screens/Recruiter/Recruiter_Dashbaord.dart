@@ -115,7 +115,9 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
   }
 
   Widget _buildMobileAppBar(BuildContext context) {
-    return Container(
+    return SafeArea(
+      bottom: false,
+      child: Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
@@ -175,6 +177,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
           const SizedBox(width: 8),
         ],
       ),
+    ),
     );
   }
 }

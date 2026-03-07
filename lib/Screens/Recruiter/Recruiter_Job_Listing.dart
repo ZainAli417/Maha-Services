@@ -153,15 +153,18 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Row(
-          children: [
-            RecruiterSidebar(activeIndex: 1),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsetsGeometry.all(0),
+      drawer: isMobile
+          ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
+          : null,
+      body: Row(
+        children: [
+          if (!isMobile) const RecruiterSidebar(activeIndex: 1),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(0),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
@@ -173,7 +176,6 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
           ),
         ],
       ),
-          ),
     );
   }
 

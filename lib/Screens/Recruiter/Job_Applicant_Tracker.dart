@@ -243,31 +243,41 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   }
 
   Future<void> _loadMetadata() async {
+    if (!mounted) return;
+
     setState(() => _isLoading = true);
+
     try {
       await Future.wait(widget.jobIds.map((id) async {
         if (_cache.containsKey(id)) return;
+
         final doc = await FirebaseFirestore.instance
-            .collection('Posted_jobs_public').doc(id).get();
+            .collection('Posted_jobs_public')
+            .doc(id)
+            .get();
+
         if (doc.exists) {
           final d = doc.data()!;
           _cache[id] = {
-            'title':            d['title'] ?? '',
-            'company':          d['company'] ?? '',
-            'location':         d['location'] ?? '',
-            'nature':           d['nature'] ?? '',
-            'description':      d['description'] ?? '',
-            'skills':           (d['skills'] as List?)?.cast<String>() ?? [],
-            'benefits':         (d['benefits'] as List?)?.cast<String>() ?? [],
-            'timestamp':        d['timestamp'],
+            'title': d['title'] ?? '',
+            'company': d['company'] ?? '',
+            'location': d['location'] ?? '',
+            'nature': d['nature'] ?? '',
+            'description': d['description'] ?? '',
+            'skills': (d['skills'] as List?)?.cast<String>() ?? [],
+            'benefits': (d['benefits'] as List?)?.cast<String>() ?? [],
+            'timestamp': d['timestamp'],
             'applicationCount': d['applicationCount'] ?? 0,
           };
         }
       }));
+
+      if (!mounted) return;
       _applyFilters();
     } catch (e) {
       debugPrint('Error loading metadata: $e');
     } finally {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -278,24 +288,32 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   }
 
   void _applyFilters() {
+    if (!mounted) return;
+
     final q = _searchCtrl.text.toLowerCase();
+
     setState(() {
       _filteredIds = widget.jobIds.where((id) {
         final m = _cache[id];
         if (m == null) return false;
+
         if (q.isNotEmpty) {
-          final txt = '${m['title']} ${m['company']} ${m['description']} ${(m['skills'] as List).join(' ')}'.toLowerCase();
+          final txt =
+          '${m['title']} ${m['company']} ${m['description']} ${(m['skills'] as List).join(' ')}'
+              .toLowerCase();
           if (!txt.contains(q)) return false;
         }
-        if (_selCompany.isNotEmpty  && m['company']  != _selCompany)  return false;
+
+        if (_selCompany.isNotEmpty && m['company'] != _selCompany) return false;
         if (_selLocation.isNotEmpty && m['location'] != _selLocation) return false;
-        if (_selJobType.isNotEmpty  && m['nature']   != _selJobType)  return false;
+        if (_selJobType.isNotEmpty && m['nature'] != _selJobType) return false;
+
         return true;
       }).toList();
+
       _sortIds();
     });
   }
-
   void _sortIds() {
     _filteredIds.sort((a, b) {
       final ma = _cache[a]; final mb = _cache[b];
