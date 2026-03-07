@@ -1,4 +1,4 @@
-// lib/screens/signup_screen_auth.dart - FIXED VERSION
+// lib/screens/signup_screen_auth.dart
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -18,13 +18,13 @@ class SignUp_Screen extends StatefulWidget {
   State<SignUp_Screen> createState() => _SignUp_ScreenState();
 }
 
-class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateMixin {
+class _SignUp_ScreenState extends State<SignUp_Screen>
+    with TickerProviderStateMixin {
   final _formKeyAccount = GlobalKey<FormState>();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
-  // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -36,10 +36,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   void initState() {
     super.initState();
     registerRecaptchaView('6LfUnUAsAAAAAE580fSsiwknCmKCYghhujXtycaQ');
-
     _initializeAnimations();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final provider = Provider.of<SignupProvider>(context, listen: false);
       provider.clearAll();
       _setupCaptchaListeners(provider);
@@ -47,7 +47,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   }
 
   void _initializeAnimations() {
-    // ✅ FIX: Add safety checks to prevent infinite loops
     _floatingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -80,7 +79,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
     );
 
-    // ✅ Start animations AFTER frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _fadeController.forward();
@@ -92,7 +90,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   }
 
   void _setupCaptchaListeners(SignupProvider provider) {
-    // Listen for captcha success
     web.window.addEventListener('captcha-success', ((web.Event event) {
       try {
         if (event.isA<web.CustomEvent>()) {
@@ -102,7 +99,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             final token = (detail as JSString).toDart;
             if (token.isNotEmpty) {
               provider.setCaptchaVerified(true, token: token);
-              print('✓ Captcha verified successfully');
             } else {
               provider.setCaptchaVerified(false);
             }
@@ -112,14 +108,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         }
       } catch (e) {
         provider.setCaptchaVerified(false);
-        print('Captcha error: $e');
       }
     }).toJS);
 
-    // Listen for captcha expired
     web.window.addEventListener('captcha-expired', ((web.Event event) {
       provider.setCaptchaVerified(false);
-      print('⚠ Captcha expired - please verify again');
     }).toJS);
   }
 
@@ -141,7 +134,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     }
   }
 
-  // ========== LEFT PANEL ==========
+  // ─── LEFT PANEL (desktop only) ───────────────────────────────────────────────
+
   Widget leftPanel(BuildContext context) {
     return RepaintBoundary(
       child: Container(
@@ -160,10 +154,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         child: Stack(
           children: [
             _buildAnimatedOrbs(),
-
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -186,14 +180,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
   }
 
-  // ✅ FIX: Simplified animated orbs with bounded animation
   Widget _buildAnimatedOrbs() {
     return Stack(
       children: [
         AnimatedBuilder(
           animation: _floatingController,
           builder: (context, child) {
-            // ✅ Clamp animation value to prevent overflow
             final offset = (_floatingController.value * 50).clamp(0.0, 50.0);
             return Positioned(
               top: 100 + offset,
@@ -217,7 +209,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         AnimatedBuilder(
           animation: _floatingController,
           builder: (context, child) {
-            // ✅ Clamp animation value to prevent overflow
             final offset = (_floatingController.value * 30).clamp(0.0, 30.0);
             return Positioned(
               bottom: 50 - offset,
@@ -316,7 +307,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
   }
 
-  // ✅ FIX: Removed AnimatedBuilder from metrics (causing issues)
   Widget _buildLiveMetrics() {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -330,10 +320,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1.5,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
       ),
       child: Row(
         children: [
@@ -352,11 +339,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.bolt_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
+            child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -404,8 +387,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
   }
 
   Widget _buildCompactStats() {
-    return Row(
-      children: const [
+    return const Row(
+      children: [
         Expanded(
           child: _CompactMetric(
             value: '1.2K',
@@ -451,19 +434,14 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         ),
         const SizedBox(height: 14),
         const _CompactFeature(
-          icon: Icons.auto_awesome_rounded,
-          title: 'AI-Powered Matching',
-        ),
+            icon: Icons.auto_awesome_rounded, title: 'AI-Powered Matching'),
         const SizedBox(height: 10),
         const _CompactFeature(
-          icon: Icons.speed_rounded,
-          title: 'Seek More Borderless Jobs',
-        ),
+            icon: Icons.speed_rounded, title: 'Seek More Borderless Jobs'),
         const SizedBox(height: 10),
         const _CompactFeature(
-          icon: Icons.verified_user_rounded,
-          title: 'Verified Employers across Globe',
-        ),
+            icon: Icons.verified_user_rounded,
+            title: 'Verified Employers across Globe'),
       ],
     );
   }
@@ -474,54 +452,50 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           const _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
-          Container(
-            width: 1,
-            height: 20,
-            color: Colors.white.withOpacity(0.1),
-          ),
+          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
           const _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
-          Container(
-            width: 1,
-            height: 20,
-            color: Colors.white.withOpacity(0.1),
-          ),
+          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
           const _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
         ],
       ),
     );
   }
 
-  // ========== ACCOUNT PANEL ==========
-  Widget accountPanel(BuildContext context, SignupProvider p) {
+  // ─── ACCOUNT PANEL ───────────────────────────────────────────────────────────
+
+  Widget accountPanel(
+      BuildContext context, SignupProvider p, bool isWide) {
+    final double fieldGap = isWide ? 18 : 14;
+    final double sectionGap = isWide ? 28 : 18;
+
     return Form(
       key: _formKeyAccount,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
-          const SizedBox(height: 28),
-          _buildRoleSelector(p),
-          const SizedBox(height: 28),
+          _buildHeader(isWide),
+          SizedBox(height: sectionGap),
+          _buildRoleSelector(p, isWide),
+          SizedBox(height: sectionGap),
           if (p.role == 'Recruiter') ...[
             _buildEnhancedTextField(
               controller: p.nameController,
               label: 'Full Name',
               hint: 'Enter your full name',
               icon: Icons.person_outline_rounded,
+              isWide: isWide,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Name required';
                 return null;
               },
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: fieldGap),
           ],
           _buildEnhancedTextField(
             controller: p.emailController,
@@ -529,7 +503,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             hint: 'abc@mail.com',
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
             errorText: p.emailError,
+            isWide: isWide,
             validator: (v) {
               if (v == null || v.trim().isEmpty) return 'Email required';
               final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
@@ -537,14 +513,18 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
               return null;
             },
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: fieldGap),
           _buildEnhancedTextField(
             controller: p.passwordController,
             label: 'Password',
-            hint: 'Create a strong password (min. 8 characters)',
+            hint: isWide
+                ? 'Create a strong password (min. 8 characters)'
+                : 'Min. 8 characters',
             icon: Icons.lock_outline_rounded,
             obscureText: !_isPasswordVisible,
+            textInputAction: TextInputAction.next,
             errorText: p.passwordError,
+            isWide: isWide,
             validator: (v) {
               if (v == null || v.isEmpty) return 'Password required';
               if (v.length < 8) return 'Minimum 8 characters';
@@ -552,58 +532,61 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             },
             suffixIcon: IconButton(
               icon: Icon(
-                _isPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _isPasswordVisible
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: const Color(0xFF6366F1),
                 size: 20,
               ),
-              onPressed: () {
-                setState(() {
-                  _isPasswordVisible = !_isPasswordVisible;
-                });
-              },
+              onPressed: () =>
+                  setState(() => _isPasswordVisible = !_isPasswordVisible),
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: fieldGap),
           _buildEnhancedTextField(
             controller: p.confirmPasswordController,
             label: 'Confirm Password',
             hint: 'Re-enter your password',
             icon: Icons.lock_outline_rounded,
             obscureText: !_isConfirmPasswordVisible,
+            textInputAction: TextInputAction.done,
             errorText: p.passwordError,
+            isWide: isWide,
             validator: (v) {
               if (v == null || v.isEmpty) return 'Confirm your password';
-              if (v != p.passwordController.text) {
-                return 'Passwords must match';
-              }
+              if (v != p.passwordController.text) return 'Passwords must match';
               return null;
             },
             suffixIcon: IconButton(
               icon: Icon(
-                _isConfirmPasswordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _isConfirmPasswordVisible
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: const Color(0xFF6366F1),
                 size: 20,
               ),
-              onPressed: () {
-                setState(() {
-                  _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                });
-              },
+              onPressed: () => setState(() =>
+              _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isWide ? 32 : 22),
           _buildReCaptcha(p),
-          const SizedBox(height: 20),
-          _buildSubmitButton(p),
+          SizedBox(height: isWide ? 20 : 16),
+          _buildSubmitButton(p, isWide),
           const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isWide) {
+    final double iconPad = isWide ? 14 : 10;
+    final double iconSize = isWide ? 28 : 22;
+    final double titleSize = isWide ? 26 : 20;
+    final double subSize = isWide ? 13 : 12;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isWide ? 24 : 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -622,7 +605,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(iconPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -636,13 +619,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: Icon(Icons.account_circle_outlined,
+                color: Colors.white, size: iconSize),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,17 +630,17 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
                 Text(
                   'Create Account',
                   style: GoogleFonts.poppins(
-                    fontSize: 26,
+                    fontSize: titleSize,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1E293B),
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   'Start your journey to find the perfect opportunity',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
+                    fontSize: subSize,
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
@@ -687,9 +667,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           Text(
             'Please verify that you are not a robot',
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+                fontSize: 12, color: Colors.grey.shade600),
           )
         else
           Row(
@@ -710,13 +688,14 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
   }
 
-  Widget _buildSubmitButton(SignupProvider provider) {
+  Widget _buildSubmitButton(SignupProvider provider, bool isWide) {
+    final verified = provider.isCaptchaVerified;
     return Center(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: 280,
+        width: isWide ? 280 : double.infinity,
         decoration: BoxDecoration(
-          gradient: provider.isCaptchaVerified
+          gradient: verified
               ? const LinearGradient(
             colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
           )
@@ -725,12 +704,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: provider.isCaptchaVerified
-                ? Colors.transparent
-                : Colors.grey.shade300,
+            color: verified ? Colors.transparent : Colors.grey.shade300,
             width: 1.5,
           ),
-          boxShadow: provider.isCaptchaVerified
+          boxShadow: verified
               ? [
             BoxShadow(
               color: const Color(0xFF6366F1).withOpacity(0.3),
@@ -747,29 +724,27 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
           ],
         ),
         child: ElevatedButton.icon(
-          onPressed: provider.isCaptchaVerified ? () => _handleSubmit(provider) : null,
+          onPressed: verified ? () => _handleSubmit(provider) : null,
           icon: Icon(
-            provider.isCaptchaVerified
-                ? Icons.person_add_rounded
-                : Icons.lock_outline_rounded,
+            verified ? Icons.person_add_rounded : Icons.lock_outline_rounded,
             size: 20,
-            color: provider.isCaptchaVerified ? Colors.white : Colors.grey.shade500,
+            color: verified ? Colors.white : Colors.grey.shade500,
           ),
           label: Text(
-            provider.isCaptchaVerified
+            verified
                 ? (provider.role == 'Recruiter'
                 ? 'Create Recruiter Account'
                 : 'Create Job Seeker Account')
                 : 'Verify First',
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
-              color: provider.isCaptchaVerified ? Colors.white : Colors.grey.shade500,
-              fontSize: 15,
+              color: verified ? Colors.white : Colors.grey.shade500,
+              fontSize: isWide ? 15 : 14,
               letterSpacing: 0.3,
             ),
           ),
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: EdgeInsets.symmetric(vertical: isWide ? 18 : 15),
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
@@ -792,10 +767,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
       return;
     }
 
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogCtx) => _buildLoadingDialog(),
+      builder: (_) => _buildLoadingDialog(),
     );
 
     try {
@@ -805,15 +781,15 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
           Navigator.of(context, rootNavigator: true).pop();
         }
+        if (!mounted) return;
 
         if (success) {
           _showSnackBar('✓ Account created successfully!', isError: false);
-          if (mounted) context.go('/recruiter-dashboard');
+          context.go('/recruiter-dashboard');
         } else {
           _showSnackBar(
-            provider.generalError ?? 'Failed to create account',
-            isError: true,
-          );
+              provider.generalError ?? 'Failed to create account',
+              isError: true);
         }
       } else {
         final route = await provider.createJobSeekerAccount();
@@ -821,25 +797,23 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
           Navigator.of(context, rootNavigator: true).pop();
         }
+        if (!mounted) return;
 
         if (route != null) {
           _showSnackBar('✓ Account created successfully!', isError: false);
-          if (mounted) {
-            await Future.delayed(const Duration(milliseconds: 500));
-            context.go(route);
-          }
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (mounted) context.go(route);
         } else {
           _showSnackBar(
-            provider.generalError ?? 'Failed to create account',
-            isError: true,
-          );
+              provider.generalError ?? 'Failed to create account',
+              isError: true);
         }
       }
     } catch (e) {
       if (mounted && Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }
-      _showSnackBar('Error: ${e.toString()}', isError: true);
+      if (mounted) _showSnackBar('Error: ${e.toString()}', isError: true);
     }
   }
 
@@ -856,17 +830,13 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             Text(
               'Creating Your Account',
               style: GoogleFonts.poppins(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
+                  fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Please wait...',
               style: GoogleFonts.poppins(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+                  color: Colors.grey.shade600, fontSize: 14),
             ),
           ],
         ),
@@ -874,9 +844,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     );
   }
 
-  Widget _buildRoleSelector(SignupProvider p) {
+  Widget _buildRoleSelector(SignupProvider p, bool isWide) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(isWide ? 6 : 4),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(16),
@@ -890,26 +860,30 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
               icon: Icons.person_search_rounded,
               isSelected: p.role == 'Job Seeker',
               onTap: () => p.setRole('Job Seeker'),
+              compact: !isWide,
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: isWide ? 6 : 4),
           Expanded(
             child: _buildRoleChip(
               label: 'Recruiter',
               icon: Icons.business_center_rounded,
               isSelected: p.role == 'Recruiter',
               onTap: () => p.setRole('Recruiter'),
+              compact: !isWide,
             ),
           ),
         ],
       ),
     );
   }
+
   Widget _buildRoleChip({
     required String label,
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
+    bool compact = false,
   }) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -937,23 +911,32 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: compact ? 12 : 16,
+              horizontal: compact ? 10 : 18,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
-                  size: 22,
+                  color:
+                  isSelected ? Colors.white : Colors.grey.shade600,
+                  size: compact ? 18 : 22,
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.grey.shade700,
+                SizedBox(width: compact ? 6 : 10),
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: compact ? 13 : 14,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.grey.shade700,
+                    ),
                   ),
                 ),
               ],
@@ -969,7 +952,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
     required String label,
     required String hint,
     required IconData icon,
+    required bool isWide,
     TextInputType? keyboardType,
+    TextInputAction? textInputAction,
     bool obscureText = false,
     String? errorText,
     String? Function(String?)? validator,
@@ -983,29 +968,31 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1E293B),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          textInputAction: textInputAction,
           obscureText: obscureText,
           maxLines: maxLines,
           onChanged: onChanged,
           validator: validator,
-          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500),
+          style: GoogleFonts.poppins(
+              fontSize: 14, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.poppins(
               color: Colors.grey.shade400,
-              fontSize: 14,
+              fontSize: 13,
             ),
             prefixIcon: Container(
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.all(10),
+              margin: EdgeInsets.all(isWide ? 12 : 10),
+              padding: EdgeInsets.all(isWide ? 10 : 8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -1015,7 +1002,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: const Color(0xFF6366F1), size: 20),
+              child:
+              Icon(icon, color: const Color(0xFF6366F1), size: 18),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -1025,23 +1013,27 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              borderSide:
+              BorderSide(color: Colors.grey.shade200, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide:
+              const BorderSide(color: Color(0xFF6366F1), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.red.shade300, width: 1.5),
+              borderSide:
+              BorderSide(color: Colors.red.shade300, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.red.shade400, width: 2),
+              borderSide:
+              BorderSide(color: Colors.red.shade400, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 18,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: isWide ? 18 : 14,
             ),
             errorText: errorText,
             suffixIcon: suffixIcon,
@@ -1053,22 +1045,29 @@ class _SignUp_ScreenState extends State<SignUp_Screen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return _SignUp_ScreenInner();
+    return const _SignUp_ScreenInner();
   }
 }
 
-// ========== INNER WIDGET ==========
+// ─── INNER WIDGET ─────────────────────────────────────────────────────────────
+
 class _SignUp_ScreenInner extends StatelessWidget {
   const _SignUp_ScreenInner();
 
   @override
   Widget build(BuildContext context) {
     final p = context.watch<SignupProvider>();
-    final state = context.findAncestorStateOfType<_SignUp_ScreenState>()!;
+    final state =
+    context.findAncestorStateOfType<_SignUp_ScreenState>()!;
     final isWide = MediaQuery.of(context).size.width > 900;
+
+    // Responsive paddings
+    final double hPad = isWide ? 32 : 20;
+    final double vPad = isWide ? 32 : 20;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           children: [
@@ -1084,7 +1083,8 @@ class _SignUp_ScreenInner extends StatelessWidget {
                   Flexible(
                     flex: 5,
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(32),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: hPad, vertical: vPad),
                       child: FadeTransition(
                         opacity: state._fadeAnimation,
                         child: SlideTransition(
@@ -1092,41 +1092,38 @@ class _SignUp_ScreenInner extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Mobile brand header
                               if (!isWide) ...[
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.indigo,
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: const Icon(
-                                            Icons.work_outline_rounded,
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          'Maha Services',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.indigo,
-                                          ),
-                                        ),
-                                      ],
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.indigo,
+                                        borderRadius:
+                                        BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.work_outline_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Maha Services',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.indigo,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16),
                               ],
-                              state.accountPanel(context, p),
-                              const SizedBox(height: 10),
+                              state.accountPanel(context, p, isWide),
+                              const SizedBox(height: 8),
                               Center(
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1134,16 +1131,24 @@ class _SignUp_ScreenInner extends StatelessWidget {
                                     Text(
                                       'Already have an account?',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         color: Colors.grey.shade600,
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: () => context.go('/login'),
+                                      onPressed: () =>
+                                          context.go('/login'),
+                                      style: TextButton.styleFrom(
+                                        padding:
+                                        const EdgeInsets.only(left: 4),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                      ),
                                       child: Text(
                                         'Login',
                                         style: GoogleFonts.poppins(
-                                          fontSize: 14,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.indigo,
                                         ),
@@ -1168,7 +1173,8 @@ class _SignUp_ScreenInner extends StatelessWidget {
   }
 }
 
-// ========== REUSABLE COMPONENTS ==========
+// ─── Reusable components ──────────────────────────────────────────────────────
+
 class _CompactMetric extends StatelessWidget {
   final String value;
   final String label;
@@ -1196,9 +1202,7 @@ class _CompactMetric extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1232,10 +1236,7 @@ class _CompactFeature extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const _CompactFeature({
-    required this.icon,
-    required this.title,
-  });
+  const _CompactFeature({required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -1272,10 +1273,7 @@ class _TrustBadge extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _TrustBadge({
-    required this.icon,
-    required this.label,
-  });
+  const _TrustBadge({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {

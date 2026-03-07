@@ -162,7 +162,7 @@ class RouteConfig {
 
 // ========== 4. THE ULTIMATE ROUTER ==========
 final GoRouter router = GoRouter(
-  initialLocation: '/',
+  initialLocation: kIsWeb ? '/' : '/login',
   refreshListenable: authProvider,
   redirect: (context, state) {
     final location = state.uri.path;

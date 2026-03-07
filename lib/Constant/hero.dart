@@ -6,11 +6,7 @@ import 'dart:async';
 
 class HeroSection extends StatefulWidget {
   final bool isDarkMode;
-
-  const HeroSection({
-    super.key,
-    required this.isDarkMode,
-  });
+  const HeroSection({super.key, required this.isDarkMode});
 
   @override
   State<HeroSection> createState() => _HeroSectionState();
@@ -23,38 +19,16 @@ class _HeroSectionState extends State<HeroSection>
   late Timer _lottieTimer;
   int _currentLottieIndex = 0;
 
-  // Cached text styles for performance
-  late TextStyle _badgeTextStyle;
-  late TextStyle _headlineTextStyle;
-  late TextStyle _descriptionTextStyle;
-  late TextStyle _subDescriptionTextStyle;
-  late TextStyle _featureTextStyle;
-  late TextStyle _buttonTextStyle;
-
   final List<Map<String, String>> _lottieData = const [
-    {
-      'title': 'Step 1: Candidates Apply for Jobs',
-      'path': 'images/1.json',
-    },
-    {
-      'title': 'Step 2: Recruiter Shortlist & Submit Request',
-      'path': 'images/2.json',
-    },
-    {
-      'title': 'Step 3: Admin Review Requested Candidates',
-      'path': 'images/3.json',
-    },
-    {
-      'title': 'Step 4: Admin Interview,Train & Handover Candidates',
-      'path': 'images/4.json',
-    },
+    {'title': 'Step 1: Candidates Apply for Jobs', 'path': 'images/1.json'},
+    {'title': 'Step 2: Recruiter Shortlist & Submit Request', 'path': 'images/2.json'},
+    {'title': 'Step 3: Admin Review Requested Candidates', 'path': 'images/3.json'},
+    {'title': 'Step 4: Admin Interview, Train & Handover Candidates', 'path': 'images/4.json'},
   ];
 
   @override
   void initState() {
     super.initState();
-
-    // Optimized animation duration for web
     _contentAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -65,8 +39,7 @@ class _HeroSectionState extends State<HeroSection>
       vsync: this,
     )..forward();
 
-    // Auto-switch Lottie animations every 5 seconds
-    _lottieTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _lottieTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (mounted) {
         setState(() {
           _currentLottieIndex = (_currentLottieIndex + 1) % _lottieData.length;
@@ -83,193 +56,130 @@ class _HeroSectionState extends State<HeroSection>
     super.dispose();
   }
 
-  // Responsive text style helpers
-  TextStyle _getBadgeTextStyle(bool isMobile) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 10 : 13,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.3,
-    );
-  }
+  // ─── Responsive text style helpers ───────────────────────────────────────────
 
-  TextStyle _getHeadlineTextStyle(bool isMobile, bool isTablet) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 28 : (isTablet ? 42 : 64),
-      fontWeight: FontWeight.w700,
-    );
-  }
+  TextStyle _badgeStyle(bool isMobile) => GoogleFonts.poppins(
+    fontSize: isMobile ? 10 : 13,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.3,
+  );
 
-  TextStyle _getDescriptionTextStyle(bool isMobile) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 12 : 14,
-      fontWeight: FontWeight.w400,
-      height: 1.7,
-      letterSpacing: 0.3,
-    );
-  }
+  TextStyle _headlineStyle(bool isMobile, bool isTablet) => GoogleFonts.poppins(
+    fontSize: isMobile ? 26 : (isTablet ? 38 : 64),
+    fontWeight: FontWeight.w700,
+  );
 
-  TextStyle _getSubDescriptionTextStyle(bool isMobile) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 11 : 14,
-      fontWeight: FontWeight.w500,
-    );
-  }
+  TextStyle _descStyle(bool isMobile) => GoogleFonts.poppins(
+    fontSize: isMobile ? 12 : 14,
+    fontWeight: FontWeight.w400,
+    height: 1.7,
+    letterSpacing: 0.3,
+  );
 
-  TextStyle _getFeatureTextStyle(bool isMobile) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 11 : 14,
-      fontWeight: FontWeight.w600,
-    );
-  }
+  TextStyle _subDescStyle(bool isMobile) => GoogleFonts.poppins(
+    fontSize: isMobile ? 11 : 14,
+    fontWeight: FontWeight.w500,
+  );
 
-  TextStyle _getButtonTextStyle(bool isMobile) {
-    return GoogleFonts.poppins(
-      fontSize: isMobile ? 12 : 15,
-      fontWeight: FontWeight.w600,
-    );
-  }
+  TextStyle _featureStyle(bool isMobile) => GoogleFonts.poppins(
+    fontSize: isMobile ? 10 : 14,
+    fontWeight: FontWeight.w600,
+  );
+
+  TextStyle _btnStyle(bool isMobile) => GoogleFonts.poppins(
+    fontSize: isMobile ? 12 : 15,
+    fontWeight: FontWeight.w600,
+  );
 
   @override
   Widget build(BuildContext context) {
-    return _buildHeroSection();
-  }
-
-  Widget _buildHeroSection() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final hPad = isMobile ? 12.0 : (isTablet ? 20.0 : 30.0);
-    final vPad = isMobile ? 20.0 : 40.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final hPad = isMobile ? 0.0 : (isTablet ? 20.0 : 30.0);
+    final vPad = isMobile ? 16.0 : 40.0;
 
     return RepaintBoundary(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: widget.isDarkMode
-                ? [const Color(0x00f9fafb), const Color(0x00f9fafb)]
-                : [
-              const Color(0x00f9fafb),
-              const Color(0x00f9fafb),
-              const Color(0x00f9fafb),
-            ],
-          ),
-        ),
         child: isMobile
             ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left content first on mobile
-                  RepaintBoundary(
-                    child: _buildLeftContent(),
-                  ),
-                  const SizedBox(height: 20),
-                  // Right panel below on mobile
-                  RepaintBoundary(
-                    child: _buildRightPanel(),
-                  ),
-                ],
-              )
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RepaintBoundary(child: _buildLeftContent()),
+            const SizedBox(height: 24),
+            RepaintBoundary(child: _buildRightPanel()),
+          ],
+        )
             : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left content - isolated from repaints
-                  Expanded(
-                    flex: 6,
-                    child: RepaintBoundary(
-                      child: _buildLeftContent(),
-                    ),
-                  ),
-                  SizedBox(width: isTablet ? 20 : 20),
-                  // Right panel - Lottie animations with capsules
-                  Expanded(
-                    flex: 4,
-                    child: RepaintBoundary(
-                      child: _buildRightPanel(),
-                    ),
-                  ),
-                ],
-              ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+                flex: 6,
+                child: RepaintBoundary(child: _buildLeftContent())),
+            SizedBox(width: isTablet ? 16 : 20),
+            Expanded(
+                flex: 4,
+                child: RepaintBoundary(child: _buildRightPanel())),
+          ],
+        ),
       ),
     );
   }
 
+  // ─── Left Content ─────────────────────────────────────────────────────────────
+
   Widget _buildLeftContent() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final spacing1 = isMobile ? 16.0 : 30.0;
-    final spacing2 = isMobile ? 16.0 : 30.0;
-    final spacing3 = isMobile ? 20.0 : 40.0;
-    final spacing4 = isMobile ? 20.0 : 40.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final s1 = isMobile ? 12.0 : 30.0;
+    final s2 = isMobile ? 12.0 : 30.0;
+    final s3 = isMobile ? 16.0 : 40.0;
+    final s4 = isMobile ? 16.0 : 40.0;
 
     return Column(
-      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment:
+      isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        // Animated badge
-        RepaintBoundary(
-          child: _buildAnimatedBadge(),
-        ),
-        SizedBox(height: spacing1),
-
-        // Animated headline with optimized shader
-        RepaintBoundary(
-          child: _buildAnimatedGradientHeadline(),
-        ),
-        SizedBox(height: spacing2),
-
-        // Enhanced description
-        RepaintBoundary(
-          child: _buildEnhancedDescription(),
-        ),
-        SizedBox(height: spacing3),
-
-        // Feature highlights
-        RepaintBoundary(
-          child: _buildFeatureHighlights(),
-        ),
-        SizedBox(height: spacing4),
-
-        // CTA Buttons
-        RepaintBoundary(
-          child: _buildEnhancedCTAButtons(),
-        ),
+        RepaintBoundary(child: _buildAnimatedBadge()),
+        SizedBox(height: s1),
+        RepaintBoundary(child: _buildAnimatedGradientHeadline()),
+        SizedBox(height: s2),
+        RepaintBoundary(child: _buildEnhancedDescription()),
+        SizedBox(height: s3),
+        RepaintBoundary(child: _buildFeatureHighlights()),
+        SizedBox(height: s4),
+        RepaintBoundary(child: _buildEnhancedCTAButtons()),
       ],
     );
   }
 
+  // ─── Right Panel ──────────────────────────────────────────────────────────────
 
-
-
-  // ==================== RIGHT PANEL - LOTTIE ANIMATIONS ====================
   Widget _buildRightPanel() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final panelHeight = isMobile ? 360.0 : (isTablet ? 500.0 : 700.0);
-    final lottieWidth = isMobile ? 400.0 : (isTablet ? 500.0 : 750.0);
-    final lottieHeight = isMobile ? 300.0 : (isTablet ? 400.0 : 600.0);
-    final capsuleTop = isMobile ? 10.0 : 35.0;
-    final lottieTop = isMobile ? 30.0 : 60.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final panelHeight = isMobile ? 300.0 : (isTablet ? 500.0 : 700.0);
+    final lottieW = isMobile ? 320.0 : (isTablet ? 500.0 : 750.0);
+    final lottieH = isMobile ? 240.0 : (isTablet ? 400.0 : 600.0);
+    final capsuleTop = isMobile ? 0.0 : 35.0;
+    final lottieTop = isMobile ? 36.0 : 60.0;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 800),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
-            child: child,
-          ),
-        );
-      },
-      child: SizedBox(  // ADD THIS - provides bounded constraints
-        height: panelHeight,    // ADD THIS
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
+          child: child,
+        ),
+      ),
+      child: SizedBox(
+        height: panelHeight,
         key: ValueKey<int>(_currentLottieIndex),
         child: Stack(
           children: [
-            // Main Lottie animation - positioned lower and bigger
             Positioned(
               top: lottieTop,
               left: 0,
@@ -279,14 +189,13 @@ class _HeroSectionState extends State<HeroSection>
                 child: Lottie.asset(
                   _lottieData[_currentLottieIndex]['path']!,
                   fit: BoxFit.contain,
-                  width: lottieWidth,
-                  height: lottieHeight,
+                  width: lottieW,
+                  height: lottieH,
                   repeat: true,
                   animate: true,
                 ),
               ),
             ),
-            // Animated capsule badge
             Positioned(
               top: capsuleTop,
               left: isMobile ? 0 : 20,
@@ -300,82 +209,77 @@ class _HeroSectionState extends State<HeroSection>
       ),
     );
   }
+
   Widget _buildAnimatedCapsule() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final hPad = isMobile ? 12.0 : 20.0;
-    final vPad = isMobile ? 8.0 : 12.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final hPad = isMobile ? 10.0 : 20.0;
+    final vPad = isMobile ? 7.0 : 12.0;
     final dotSize = isMobile ? 6.0 : 8.0;
     final fontSize = isMobile ? 10.0 : 14.0;
 
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Transform.scale(
-          scale: value,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF686BE1),
-                  const Color(0xFF682EE8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
-                width: 1.5,
-              ),
+      builder: (context, value, child) => Transform.scale(
+        scale: value,
+        child: Container(
+          padding:
+          EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF686Be1), Color(0xFF682EE8)],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: dotSize,
-                  height: dotSize,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.5),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: isMobile ? 6 : 10),
-                Flexible(
-                  child: Text(
-                    _lottieData[_currentLottieIndex]['title']!,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: const Color(0xFF6366F1).withOpacity(0.3),
+              width: 1.5,
             ),
           ),
-        );
-      },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: dotSize,
+                height: dotSize,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.5),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: isMobile ? 6 : 10),
+              Flexible(
+                child: Text(
+                  _lottieData[_currentLottieIndex]['title']!,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  // ==================== ANIMATED COMPONENTS ====================
-
+  // ─── Animated components ──────────────────────────────────────────────────────
 
   Widget _buildAnimatedBadge() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final badgeTextStyle = _getBadgeTextStyle(isMobile);
-    final hPad = isMobile ? 12.0 : 20.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final hPad = isMobile ? 10.0 : 20.0;
     final vPad = isMobile ? 6.0 : 10.0;
     final iconPad = isMobile ? 4.0 : 6.0;
     final iconSize = isMobile ? 12.0 : 16.0;
@@ -383,19 +287,18 @@ class _HeroSectionState extends State<HeroSection>
     final slideAnimation = Tween<Offset>(
       begin: const Offset(-0.5, 0),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _contentAnimationController,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-      ),
-    );
+    ).animate(CurvedAnimation(
+      parent: _contentAnimationController,
+      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+    ));
 
     return SlideTransition(
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+          padding:
+          EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: widget.isDarkMode
@@ -417,17 +320,14 @@ class _HeroSectionState extends State<HeroSection>
                   color: const Color(0xFF6366F1).withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  color: Color(0xFF6366F1),
-                  size: iconSize,
-                ),
+                child: Icon(Icons.auto_awesome_rounded,
+                    color: const Color(0xFF6366F1), size: iconSize),
               ),
               SizedBox(width: isMobile ? 8 : 12),
               Flexible(
                 child: Text(
                   'AI-Powered 4 Steps Recruitment Process',
-                  style: badgeTextStyle.copyWith(
+                  style: _badgeStyle(isMobile).copyWith(
                     color: widget.isDarkMode
                         ? const Color(0xFFDDD6FE)
                         : const Color(0xFF6366F1),
@@ -442,47 +342,42 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildAnimatedGradientHeadline() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final headlineTextStyle = _getHeadlineTextStyle(isMobile, isTablet);
-    const headline = 'Discover the Right Talent at Right time';
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
 
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 1000),
       tween: Tween(begin: 0.0, end: 1.0),
       curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.translate(
-            offset: Offset(0, 30 * (1 - value)),
-            child: ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                colors: widget.isDarkMode
-                    ? [Colors.white, const Color(0xFFDDD6FE)]
-                    : [const Color(0xFF213246), const Color(0xFF6366F1)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: Text(
-                headline,
-                textAlign: isMobile ? TextAlign.center : TextAlign.start,
-                style: headlineTextStyle.copyWith(color: Colors.white),
-              ),
+      builder: (context, value, _) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: widget.isDarkMode
+                  ? [Colors.white, const Color(0xFFDDD6FE)]
+                  : [const Color(0xFF213246), const Color(0xFF6366F1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds),
+            child: Text(
+              'Discover the Right Talent at Right time',
+              textAlign: isMobile ? TextAlign.center : TextAlign.start,
+              style: _headlineStyle(isMobile, isTablet)
+                  .copyWith(color: Colors.white),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildEnhancedDescription() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final descriptionTextStyle = _getDescriptionTextStyle(isMobile);
-    final subDescriptionTextStyle = _getSubDescriptionTextStyle(isMobile);
-    final verifiedIconSize = isMobile ? 16.0 : 20.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final verifiedIconSize = isMobile ? 14.0 : 20.0;
 
     final fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -493,52 +388,49 @@ class _HeroSectionState extends State<HeroSection>
 
     return FadeTransition(
       opacity: fadeAnimation,
-      child: Container(
-        padding: EdgeInsets.only(left: isMobile ? 0 : 4),
-        child: Column(
-          crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Revolutionize your talent acquisition with our cutting-edge platform that seamlessly connects exceptional candidates with forward-thinking recruiters.',
-              textAlign: isMobile ? TextAlign.center : TextAlign.start,
-              style: descriptionTextStyle.copyWith(
-                color: widget.isDarkMode
-                    ? const Color(0xFFCBD5E1)
-                    : const Color(0xFF4B5563),
-              ),
+      child: Column(
+        crossAxisAlignment: isMobile
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Revolutionize your talent acquisition with our cutting-edge platform that seamlessly connects exceptional candidates with forward-thinking recruiters.',
+            textAlign: isMobile ? TextAlign.center : TextAlign.start,
+            style: _descStyle(isMobile).copyWith(
+              color: widget.isDarkMode
+                  ? const Color(0xFFCBD5E1)
+                  : const Color(0xFF4B5563),
             ),
-            SizedBox(height: isMobile ? 10 : 16),
-            Row(
-              mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.verified_rounded,
-                  size: verifiedIconSize,
-                  color: Color(0xFF10B981),
-                ),
-                SizedBox(width: isMobile ? 6 : 8),
-                Flexible(
-                  child: Text(
-                    '🇵🇰 Trusted Employment from Pakistan\'s Fastest Growing IT Sector',
-                    style: subDescriptionTextStyle.copyWith(
-                      color: widget.isDarkMode
-                          ? const Color(0xFF94A3B8)
-                          : const Color(0xFF6B7280),
-                    ),
+          ),
+          SizedBox(height: isMobile ? 8 : 16),
+          Row(
+            mainAxisAlignment: isMobile
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.start,
+            children: [
+              Icon(Icons.verified_rounded,
+                  size: verifiedIconSize, color: const Color(0xFF10B981)),
+              SizedBox(width: isMobile ? 5 : 8),
+              Flexible(
+                child: Text(
+                  '🇵🇰 Trusted Employment from Pakistan\'s Fastest Growing IT Sector',
+                  style: _subDescStyle(isMobile).copyWith(
+                    color: widget.isDarkMode
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF6B7280),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFeatureHighlights() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final featureTextStyle = _getFeatureTextStyle(isMobile);
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
     final featureIconSize = isMobile ? 13.0 : 18.0;
     final featureHPad = isMobile ? 8.0 : 16.0;
     final featureVPad = isMobile ? 6.0 : 10.0;
@@ -546,76 +438,51 @@ class _HeroSectionState extends State<HeroSection>
     final slideAnimation = Tween<Offset>(
       begin: const Offset(-0.2, 0),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _contentAnimationController,
-        curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-      ),
-    );
+    ).animate(CurvedAnimation(
+      parent: _contentAnimationController,
+      curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
+    ));
 
     final features = [
-      {
-        'icon': Icons.psychology_rounded,
-        'text': 'AI-Powered',
-        'color': const Color(0xFF8B5CF6),
-      },
-      {
-        'icon': Icons.speed_rounded,
-        'text': '3x Faster Hiring',
-        'color': const Color(0xFF10B981),
-      },
-      {
-        'icon': Icons.security,
-        'text': 'Enterprise Security',
-        'color': const Color(0xFFF59E0B),
-      },
+      {'icon': Icons.psychology_rounded, 'text': 'AI-Powered', 'color': const Color(0xFF8B5CF6)},
+      {'icon': Icons.speed_rounded, 'text': '3x Faster Hiring', 'color': const Color(0xFF10B981)},
+      {'icon': Icons.security, 'text': 'Enterprise Security', 'color': const Color(0xFFF59E0B)},
     ];
 
     return SlideTransition(
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
-        child: Row(
-          mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: features.asMap().entries.map((entry) {
-            final feature = entry.value;
+        child: Wrap(
+          alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+          spacing: isMobile ? 6 : 12,
+          runSpacing: isMobile ? 6 : 10,
+          children: features.map((feature) {
             final color = feature['color'] as Color;
-            final isLast = entry.key == features.length - 1;
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: featureHPad, vertical: featureVPad),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(widget.isDarkMode ? 0.15 : 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: color.withOpacity(0.3)),
+            return Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: featureHPad, vertical: featureVPad),
+              decoration: BoxDecoration(
+                color: color.withOpacity(widget.isDarkMode ? 0.15 : 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(feature['icon'] as IconData,
+                      size: featureIconSize, color: color),
+                  SizedBox(width: isMobile ? 4 : 8),
+                  Text(
+                    feature['text'] as String,
+                    style: _featureStyle(isMobile).copyWith(
+                      color: widget.isDarkMode
+                          ? Colors.white
+                          : const Color(0xFF1F2937),
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        feature['icon'] as IconData,
-                        size: featureIconSize,
-                        color: color,
-                      ),
-                      SizedBox(width: isMobile ? 4 : 8),
-                      Text(
-                        feature['text'] as String,
-                        style: featureTextStyle.copyWith(
-                          fontSize: isMobile ? 10.0 : 14.0,
-                          color: widget.isDarkMode
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!isLast) SizedBox(width: isMobile ? 6 : 12),
-              ],
+                ],
+              ),
             );
           }).toList(),
         ),
@@ -624,47 +491,45 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildEnhancedCTAButtons() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final buttonTextStyle = _getButtonTextStyle(isMobile);
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
 
     final slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _contentAnimationController,
-        curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
-      ),
-    );
+    ).animate(CurvedAnimation(
+      parent: _contentAnimationController,
+      curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
+    ));
 
     return SlideTransition(
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Row(
-          mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+          mainAxisAlignment:
+          isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
           children: [
             Expanded(
               child: _EnhancedButton(
                 onPressed: () => context.go('/register'),
                 isPrimary: true,
                 icon: Icons.person_add_rounded,
-                label: 'I\'m a Candidate',
+                label: "I'm a Candidate",
                 isDarkMode: widget.isDarkMode,
-                textStyle: buttonTextStyle,
+                textStyle: _btnStyle(isMobile),
                 isMobile: isMobile,
               ),
             ),
-            SizedBox(width: isMobile ? 10 : 16),
+            SizedBox(width: isMobile ? 8 : 16),
             Expanded(
               child: _EnhancedButton(
                 onPressed: () => context.go('/register'),
                 isPrimary: false,
                 icon: Icons.business_center_rounded,
-                label: 'I\'m a Recruiter',
+                label: "I'm a Recruiter",
                 isDarkMode: widget.isDarkMode,
-                textStyle: buttonTextStyle,
+                textStyle: _btnStyle(isMobile),
                 isMobile: isMobile,
               ),
             ),
@@ -674,6 +539,8 @@ class _HeroSectionState extends State<HeroSection>
     );
   }
 }
+
+// ─── Enhanced Button ──────────────────────────────────────────────────────────
 
 class _EnhancedButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -724,9 +591,10 @@ class _EnhancedButtonState extends State<_EnhancedButton>
 
   @override
   Widget build(BuildContext context) {
-    final hPad = widget.isMobile ? 16.0 : 28.0;
-    final vPad = widget.isMobile ? 14.0 : 25.0;
-    final iconSize = widget.isMobile ? 16.0 : 20.0;
+    final hPad = widget.isMobile ? 12.0 : 28.0;
+    final vPad = widget.isMobile ? 13.0 : 25.0;
+    final iconSize = widget.isMobile ? 15.0 : 20.0;
+    final radius = widget.isMobile ? 10.0 : 14.0;
 
     return MouseRegion(
       onEnter: (_) {
@@ -743,26 +611,15 @@ class _EnhancedButtonState extends State<_EnhancedButton>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.isMobile ? 10 : 14),
-            boxShadow: _isHovered
-                ? [
+            borderRadius: BorderRadius.circular(radius),
+            boxShadow: [
               BoxShadow(
                 color: (widget.isPrimary
                     ? const Color(0xFF6366F1)
                     : const Color(0xFF10B981))
-                    .withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ]
-                : [
-              BoxShadow(
-                color: (widget.isPrimary
-                    ? const Color(0xFF6366F1)
-                    : const Color(0xFF10B981))
-                    .withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+                    .withOpacity(_isHovered ? 0.3 : 0.15),
+                blurRadius: _isHovered ? 16 : 8,
+                offset: Offset(0, _isHovered ? 6 : 3),
               ),
             ],
           ),
@@ -777,12 +634,14 @@ class _EnhancedButtonState extends State<_EnhancedButton>
               foregroundColor: widget.isPrimary
                   ? Colors.white
                   : const Color(0xFF10B981),
-              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+              padding:
+              EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(widget.isMobile ? 10 : 14),
+                borderRadius: BorderRadius.circular(radius),
                 side: widget.isPrimary
                     ? BorderSide.none
-                    : const BorderSide(color: Color(0xFF10B981), width: 2),
+                    : const BorderSide(
+                    color: Color(0xFF10B981), width: 2),
               ),
               elevation: 0,
             ),
@@ -791,7 +650,13 @@ class _EnhancedButtonState extends State<_EnhancedButton>
               children: [
                 Icon(widget.icon, size: iconSize),
                 SizedBox(width: widget.isMobile ? 6 : 10),
-                Text(widget.label, style: widget.textStyle),
+                Flexible(
+                  child: Text(
+                    widget.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: widget.textStyle,
+                  ),
+                ),
               ],
             ),
           ),

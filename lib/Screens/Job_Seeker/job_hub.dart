@@ -335,7 +335,6 @@ class _job_hubState extends State<job_hub>
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [

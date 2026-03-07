@@ -244,7 +244,6 @@ class _CompactHeader extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 10 : 14),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: kBorderLight, width: 1)),
       ),
       child: Row(
         children: [

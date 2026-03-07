@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,14 +16,8 @@ class SplashScreen extends StatelessWidget {
     return MaterialApp(
       title: 'Maha Services - Smart End-To-End Hiring Platform',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.indigo,
-        brightness: Brightness.dark,
-      ),
+      theme: ThemeData(primarySwatch: Colors.indigo, brightness: Brightness.light),
+      darkTheme: ThemeData(primarySwatch: Colors.indigo, brightness: Brightness.dark),
       home: const LandingPage(),
     );
   }
@@ -36,105 +30,61 @@ class LandingPage extends StatefulWidget {
   State<LandingPage> createState() => _LandingPageState();
 }
 
-class _LandingPageState extends State<LandingPage>
-    with TickerProviderStateMixin {
+class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late AnimationController _workflowController;
   late Animation<double> _workflowAnimation;
   late AnimationController _rotationController;
-  late Animation<double> _rotationAnimation;
   late AnimationController _controller;
   late AnimationController _contentAnimationController;
   late AnimationController _particleAnimationController;
 
-  static const Color pureWhite = Color(0xFFFFFFFF);
-  static const Color charcoalGray = Colors.black87;
-
   bool isDarkMode = false;
-  final int _activeStage = 0;
-
-  // Cached text styles to avoid recreation
-  late TextStyle _logoTextStyle;
-  late TextStyle _navItemStyle;
-  late TextStyle _buttonTextStyle;
-
   late ScrollController _scrollController;
   bool _showScrollToTop = false;
+
+  // Cached styles
+  late TextStyle _logoTextStyle;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize text styles
     _initializeTextStyles();
 
-    // Reduced duration for smoother animation on web
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 30),
-    )..repeat();
-
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 30),
-      vsync: this,
-    )..repeat();
-
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(_rotationController);
-
-    _particleAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
-
-    _contentAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..forward();
-
-    _workflowController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _workflowAnimation = CurvedAnimation(
-      parent: _workflowController,
-      curve: Curves.easeInOut,
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 30))
+      ..repeat();
+    _rotationController =
+    AnimationController(duration: const Duration(seconds: 30), vsync: this)..repeat();
+    _particleAnimationController =
+    AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _contentAnimationController =
+    AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))
+      ..forward();
+    _workflowController =
+        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this);
+    _workflowAnimation =
+        CurvedAnimation(parent: _workflowController, curve: Curves.easeInOut);
     _workflowController.forward();
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
+    _fadeController =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
     _fadeController.forward();
 
-    _scrollController = ScrollController();
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 400 && !_showScrollToTop) {
-        setState(() => _showScrollToTop = true);
-      } else if (_scrollController.offset <= 400 && _showScrollToTop) {
-        setState(() => _showScrollToTop = false);
-      }
-    });
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final show = _scrollController.offset > 400;
+        if (show != _showScrollToTop) {
+          setState(() => _showScrollToTop = show);
+        }
+      });
   }
 
   void _initializeTextStyles() {
-    _logoTextStyle = GoogleFonts.poppins(
-      fontWeight: FontWeight.w600,
-      fontSize: 14,
-    );
-    _navItemStyle = GoogleFonts.poppins(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-    );
+    _logoTextStyle = GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14);
   }
 
   @override
@@ -152,53 +102,46 @@ class _LandingPageState extends State<LandingPage>
   void toggleTheme() {
     setState(() {
       isDarkMode = !isDarkMode;
-      _initializeTextStyles(); // Refresh text styles
+      _initializeTextStyles();
     });
   }
 
   void _scrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 1000),
-      curve: Curves.easeInOutCubic,
-    );
+    _scrollController.animateTo(0,
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeInOutCubic);
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
     final outerH = isMobile ? 12.0 : (isTablet ? 30.0 : 50.0);
 
     return Scaffold(
-      backgroundColor: isDarkMode
-          ? const Color(0xFF0F172A)
-          : Colors.transparent,
+      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.transparent,
       body: Stack(
         children: [
-          // Optimized animated grid with RepaintBoundary
+          // Animated grid background
           Positioned.fill(
             child: RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _controller,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: _OptimizedGridPainter(_controller.value),
-                    size: Size.infinite,
-                    willChange: true, // Web optimization hint
-                  );
-                },
+                builder: (_, __) => CustomPaint(
+                  painter: _OptimizedGridPainter(_controller.value),
+                  size: Size.infinite,
+                  willChange: true,
+                ),
               ),
             ),
           ),
 
-          // Content with ListView.builder for better performance
+          // Main scroll content
           CustomScrollView(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              /// ───────── Top Bar + Hero ─────────
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(outerH, 0, outerH, 0),
@@ -210,16 +153,12 @@ class _LandingPageState extends State<LandingPage>
                   ),
                 ),
               ),
-
-              /// ───────── FEATURES ─────────
               SliverToBoxAdapter(child: _buildFeaturesSection()),
-
-              /// ───────── FOOTER ─────────
               SliverToBoxAdapter(child: _buildFooter()),
             ],
           ),
 
-          // Floating CTA buttons
+          // Floating CTA
           ScrollAwareCTAButtons(
             isDarkMode: isDarkMode,
             scrollController: _scrollController,
@@ -239,228 +178,177 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
+  // ─── Top Bar ──────────────────────────────────────────────────────────────────
+
   Widget _buildTopBar() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final hPad = isMobile ? 8.0 : (isTablet ? 20.0 : 65.0);
+    if (!kIsWeb) return const SizedBox.shrink();
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final hPad = isMobile ? 4.0 : (isTablet ? 20.0 : 65.0);
     final vPad = isMobile ? 6.0 : 10.0;
 
     return RepaintBoundary(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-        decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0x00f9fafb) : Colors.transparent,
-        ),
         child: isMobile
-            ? Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [_buildEnhancedLogo(),   _buildNavigation(), _buildThemeToggle()],
-                  ),
-                ],
-              )
+            ? Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildEnhancedLogo(),
+            _buildNavigation(),
+            _buildThemeToggle(),
+          ],
+        )
             : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [_buildEnhancedLogo(), _buildNavigation()],
-              ),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildEnhancedLogo(),
+            _buildNavigation(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEnhancedLogo() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final logoSize = isMobile ? 50.0 : 100.0;
-    final cacheSize = isMobile ? 100 : 200;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final logoSize = isMobile ? 40.0 : 100.0;
+    final cacheSize = isMobile ? 80 : 200;
 
-    return Row(
-      children: [
-        Container(
-          width: logoSize,
-          height: logoSize,
-          padding: const EdgeInsets.all(0),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-          ),
-          child: ClipOval(
-            child: Image.asset(
-              'images/logo.png',
-              fit: BoxFit.fill,
-              cacheWidth: cacheSize,
-              cacheHeight: cacheSize,
-            ),
-          ),
+    return Container(
+      width: logoSize,
+      height: logoSize,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+      child: ClipOval(
+        child: Image.asset(
+          'images/logo.png',
+          fit: BoxFit.fill,
+          cacheWidth: cacheSize,
+          cacheHeight: cacheSize,
         ),
-        SizedBox(width: isMobile ? 6 : 14),
-      ],
+      ),
     );
   }
 
   Widget _buildNavigation() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
 
     if (isMobile) {
-      // On mobile: compact row with just Login + Get Started + Admin, no nav items
-      final btnHPad = 10.0;
-      final btnVPad = 8.0;
-      final btnFontSize = 11.0;
-      final iconSize = 12.0;
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _AnimatedButton(
-              onPressed: () => context.go('/login'),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
-                ),
-                child: Text(
-                  "Login",
+      const double btnHPad = 10;
+      const double btnVPad = 7;
+      const double btnFont = 11;
+      const double iconSz = 11;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _AnimatedButton(
+            onPressed: () => context.go('/login'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: btnHPad, vertical: btnVPad),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border:
+                Border.all(color: const Color(0xFF6366F1), width: 1.5),
+              ),
+              child: Text('Login',
                   style: _logoTextStyle.copyWith(
-                    color: const Color(0xFF6366F1),
-                    fontSize: btnFontSize,
-                  ),
-                ),
+                      color: const Color(0xFF6366F1), fontSize: btnFont)),
+            ),
+          ),
+          const SizedBox(width: 6),
+          _AnimatedButton(
+            onPressed: () => context.go('/register'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: btnHPad, vertical: btnVPad),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Get Started',
+                      style: GoogleFonts.poppins(
+                          fontSize: btnFont,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
+                  const SizedBox(width: 3),
+                  const Icon(Icons.arrow_forward_rounded,
+                      size: iconSz, color: Colors.white),
+                ],
               ),
             ),
-            const SizedBox(width: 6),
-            _AnimatedButton(
-              onPressed: () => context.go('/register'),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("Get Started", style: GoogleFonts.poppins(
-                      fontSize: btnFontSize,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    )),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: iconSize,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // _AnimatedButton(
-            //   onPressed: () => context.go('/admin'),
-            //   child: Container(
-            //     padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
-            //     decoration: BoxDecoration(
-            //       gradient: const LinearGradient(
-            //         colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-            //       ),
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     child: Row(
-            //       mainAxisSize: MainAxisSize.min,
-            //       children: [
-            //         Text(
-            //           "A",
-            //           style: GoogleFonts.poppins(
-            //             fontSize: btnFontSize,
-            //             fontWeight: FontWeight.w600,
-            //             color: Colors.white,
-            //           ),
-            //         ),
-            //         const SizedBox(width: 4),
-            //         Icon(
-            //           Icons.arrow_forward_rounded,
-            //           size: iconSize,
-            //           color: Colors.white,
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(width: 6),
-
-            _buildNavItem(title: 'ViewPricing',icon: Icons.payments_outlined,route: '/pricing', isActive: false)
-
-          ],
-        ),
+          ),
+          const SizedBox(width: 6),
+          _buildNavItem(
+              title: 'Pricing',
+              icon: Icons.payments_outlined,
+              route: '/pricing',
+              isActive: false),
+        ],
       );
     }
 
     // Tablet & Desktop
-    final navSpacing = isTablet ? 16.0 : 32.0;
-    final btnHPad = isTablet ? 14.0 : 24.0;
-    final btnVPad = isTablet ? 8.0 : 12.0;
-    final btnFontSize = isTablet ? 12.0 : 14.0;
-    final iconSize = isTablet ? 14.0 : 16.0;
+    final navBtnHPad = isTablet ? 14.0 : 24.0;
+    final navBtnVPad = isTablet ? 8.0 : 12.0;
+    final navBtnFont = isTablet ? 12.0 : 14.0;
+    final navIconSz = isTablet ? 14.0 : 16.0;
 
     return Row(
       children: [
-        // _buildNavItem('Features', Icons.stars_rounded),
-        // SizedBox(width: navSpacing),
-        // _buildNavItem('Workflow', Icons.account_tree_rounded),
-        // SizedBox(width: navSpacing),
-        _buildNavItem(title: 'View Pricing',icon: Icons.payments_outlined,route: '/pricing', isActive: false),
-
+        _buildNavItem(
+            title: 'View Pricing',
+            icon: Icons.payments_outlined,
+            route: '/pricing',
+            isActive: false),
         SizedBox(width: isTablet ? 20 : 40),
         _AnimatedButton(
           onPressed: () => context.go('/login'),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+            padding: EdgeInsets.symmetric(
+                horizontal: navBtnHPad, vertical: navBtnVPad),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFF6366F1), width: 2),
             ),
-            child: Text(
-              "Login",
-              style: _logoTextStyle.copyWith(
-                color: const Color(0xFF6366F1),
-                fontSize: btnFontSize,
-              ),
-            ),
+            child: Text('Login',
+                style: _logoTextStyle.copyWith(
+                    color: const Color(0xFF6366F1),
+                    fontSize: navBtnFont)),
           ),
         ),
         SizedBox(width: isTablet ? 8 : 16),
         _AnimatedButton(
           onPressed: () => context.go('/register'),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+            padding: EdgeInsets.symmetric(
+                horizontal: navBtnHPad, vertical: navBtnVPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Get Started",  style: GoogleFonts.poppins(
-                  fontSize: btnFontSize,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),),
+                Text('Get Started',
+                    style: GoogleFonts.poppins(
+                        fontSize: navBtnFont,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
                 SizedBox(width: isTablet ? 4 : 8),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: iconSize,
-                  color: Colors.white,
-                ),
+                Icon(Icons.arrow_forward_rounded,
+                    size: navIconSz, color: Colors.white),
               ],
             ),
           ),
@@ -469,30 +357,24 @@ class _LandingPageState extends State<LandingPage>
         _AnimatedButton(
           onPressed: () => context.go('/admin'),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: btnHPad, vertical: btnVPad),
+            padding: EdgeInsets.symmetric(
+                horizontal: navBtnHPad, vertical: navBtnVPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "Admin Panel",
-                  style: GoogleFonts.poppins(
-                    fontSize: btnFontSize,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                Text('Admin Panel',
+                    style: GoogleFonts.poppins(
+                        fontSize: navBtnFont,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
                 SizedBox(width: isTablet ? 4 : 8),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: iconSize,
-                  color: Colors.white,
-                ),
+                Icon(Icons.arrow_forward_rounded,
+                    size: navIconSz, color: Colors.white),
               ],
             ),
           ),
@@ -503,89 +385,74 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
-
-
   Widget _buildNavItem({
     required String title,
     required IconData icon,
     required String route,
     bool isActive = false,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final primaryColor = const Color(0xFF6366F1);
+    final inactiveColor =
+    isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
-    // Design Constants
-    final primaryColor = const Color(0xFF6366F1); // Modern Indigo
-    final inactiveColor = isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: StatefulBuilder( // Using StatefulBuilder for localized hover state
-        builder: (context, setItemState) {
-          bool isHovered = false;
-
-          return MouseRegion(
-            onEnter: (_) => setItemState(() => isHovered = true),
-            onExit: (_) => setItemState(() => isHovered = false),
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => context.go(route),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 10 : 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  // Sublte "Ghost" background on hover or active
-                  color: isActive
-                      ? primaryColor.withOpacity(0.08)
-                      : (isHovered ? primaryColor.withOpacity(0.04) : Colors.transparent),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Animated Icon
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        icon,
-                        key: ValueKey(isActive),
-                        size: isTablet ? 16.0 : 20.0,
-                        color: isActive || isHovered ? primaryColor : inactiveColor,
-                      ),
-                    ),
-                    SizedBox(width: isTablet ? 6 : 10),
-                    // Responsive Text
-                    Text(
-                      title,
-                      style: GoogleFonts.inter( // Using Inter for better web readability
-                        fontSize: isTablet ? 13.0 : 14.5,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                        color: isActive || isHovered
-                            ? (isDarkMode ? Colors.white : const Color(0xFF1E293B))
-                            : inactiveColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return StatefulBuilder(builder: (context, setItemState) {
+      bool isHovered = false;
+      return MouseRegion(
+        onEnter: (_) => setItemState(() => isHovered = true),
+        onExit: (_) => setItemState(() => isHovered = false),
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => context.go(route),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 8 : (isTablet ? 10 : 14),
+              vertical: isMobile ? 6 : 8,
             ),
-          );
-        },
-      ),
-    );
+            decoration: BoxDecoration(
+              color: isActive
+                  ? primaryColor.withOpacity(0.08)
+                  : (isHovered
+                  ? primaryColor.withOpacity(0.04)
+                  : Colors.transparent),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon,
+                    size: isMobile ? 13 : (isTablet ? 16.0 : 20.0),
+                    color: isActive || isHovered ? primaryColor : inactiveColor),
+                SizedBox(width: isMobile ? 4 : (isTablet ? 6 : 10)),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: isMobile ? 11 : (isTablet ? 13.0 : 14.5),
+                    fontWeight:
+                    isActive ? FontWeight.w600 : FontWeight.w500,
+                    color: isActive || isHovered
+                        ? (isDarkMode
+                        ? Colors.white
+                        : const Color(0xFF1E293B))
+                        : inactiveColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 
-
-
-
   Widget _buildThemeToggle() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
     final pad = isMobile ? 6.0 : 10.0;
-    final iconSize = isMobile ? 16.0 : 20.0;
+    final iconSize = isMobile ? 14.0 : 20.0;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -616,10 +483,12 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
+  // ─── Features Section ─────────────────────────────────────────────────────────
+
   Widget _buildFeaturesSection() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
     final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
 
     final features = [
@@ -630,26 +499,10 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFF6366F1),
         icon: Icons.person_rounded,
         items: [
-          FeatureItem(
-            'Profile Builder',
-            'Create comprehensive professional profiles',
-            Icons.account_circle_rounded,
-          ),
-          FeatureItem(
-            'CV Generator',
-            'AI-powered resume creation tools',
-            Icons.description_rounded,
-          ),
-          FeatureItem(
-            'Skill Showcase',
-            'Highlight expertise and certifications',
-            Icons.workspace_premium_rounded,
-          ),
-          FeatureItem(
-            'Public Portfolio',
-            'Share your journey with recruiters',
-            Icons.public_rounded,
-          ),
+          FeatureItem('Profile Builder', 'Create comprehensive professional profiles', Icons.account_circle_rounded),
+          FeatureItem('CV Generator', 'AI-powered resume creation tools', Icons.description_rounded),
+          FeatureItem('Skill Showcase', 'Highlight expertise and certifications', Icons.workspace_premium_rounded),
+          FeatureItem('Public Portfolio', 'Share your journey with recruiters', Icons.public_rounded),
         ],
       ),
       FeaturePortal(
@@ -659,26 +512,10 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFF10B981),
         icon: Icons.business_rounded,
         items: [
-          FeatureItem(
-            'Candidate Search',
-            'Browse qualified talent pool',
-            Icons.search_rounded,
-          ),
-          FeatureItem(
-            'Bulk Selection',
-            'Select multiple candidates at once',
-            Icons.checklist_rounded,
-          ),
-          FeatureItem(
-            'Request Management',
-            'Submit hiring requests to admin',
-            Icons.send_rounded,
-          ),
-          FeatureItem(
-            'Request Tracker',
-            'Realtime Recruitment Request Tracking',
-            Icons.auto_graph,
-          ),
+          FeatureItem('Candidate Search', 'Browse qualified talent pool', Icons.search_rounded),
+          FeatureItem('Bulk Selection', 'Select multiple candidates at once', Icons.checklist_rounded),
+          FeatureItem('Request Management', 'Submit hiring requests to admin', Icons.send_rounded),
+          FeatureItem('Request Tracker', 'Realtime Recruitment Request Tracking', Icons.auto_graph),
         ],
       ),
       FeaturePortal(
@@ -688,26 +525,10 @@ class _LandingPageState extends State<LandingPage>
         color: const Color(0xFFF59E0B),
         icon: Icons.admin_panel_settings_rounded,
         items: [
-          FeatureItem(
-            'Request Review',
-            'Evaluate recruiter requests',
-            Icons.rate_review_rounded,
-          ),
-          FeatureItem(
-            'Interview Scheduling',
-            'Organize and conduct interviews',
-            Icons.event_rounded,
-          ),
-          FeatureItem(
-            'Candidate Training',
-            'Skill development and preparation',
-            Icons.school_rounded,
-          ),
-          FeatureItem(
-            'Final Selection',
-            'Complete hiring and onboarding',
-            Icons.how_to_reg_rounded,
-          ),
+          FeatureItem('Request Review', 'Evaluate recruiter requests', Icons.rate_review_rounded),
+          FeatureItem('Interview Scheduling', 'Organize and conduct interviews', Icons.event_rounded),
+          FeatureItem('Candidate Training', 'Skill development and preparation', Icons.school_rounded),
+          FeatureItem('Final Selection', 'Complete hiring and onboarding', Icons.how_to_reg_rounded),
         ],
       ),
     ];
@@ -715,19 +536,6 @@ class _LandingPageState extends State<LandingPage>
     return RepaintBoundary(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 0),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDarkMode
-                ? [const Color(0x00f9fafb), const Color(0x00f9fafb)]
-                : [
-              const Color(0x00f9fafb),
-              const Color(0x00f9fafb),
-              const Color(0x00f9fafb),
-            ],
-          ),
-        ),
         child: Column(
           children: [
             _buildSectionHeader(
@@ -739,48 +547,41 @@ class _LandingPageState extends State<LandingPage>
             SizedBox(height: isMobile ? 20 : 40),
             isMobile
                 ? Column(
-                    children: [
-                      for (int i = 0; i < features.length; i++) ...[
-                        RepaintBoundary(
-                          child: _buildFeatureCard(features[i]),
-                        ),
-                        if (i < features.length - 1)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Icon(
-                              Icons.arrow_downward,
-                              color: isDarkMode
-                                  ? const Color(0xFF475569)
-                                  : const Color(0xFFD1D5DB),
-                              size: 28,
-                            ),
-                          ),
-                      ],
-                    ],
-                  )
+              children: [
+                for (int i = 0; i < features.length; i++) ...[
+                  RepaintBoundary(child: _buildFeatureCard(features[i])),
+                  if (i < features.length - 1)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Icon(Icons.arrow_downward,
+                          color: isDarkMode
+                              ? const Color(0xFF475569)
+                              : const Color(0xFFD1D5DB),
+                          size: 24),
+                    ),
+                ],
+              ],
+            )
                 : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (int i = 0; i < features.length; i++) ...[
-                        Expanded(
-                          child: RepaintBoundary(
-                            child: _buildFeatureCard(features[i]),
-                          ),
-                        ),
-                        if (i < features.length - 1)
-                          Padding(
-                            padding: EdgeInsets.only(top: isTablet ? 60 : 100),
-                            child: Icon(
-                              Icons.arrow_forward,
-                              color: isDarkMode
-                                  ? const Color(0xFF475569)
-                                  : const Color(0xFFD1D5DB),
-                              size: isTablet ? 28 : 40,
-                            ),
-                          ),
-                      ],
-                    ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (int i = 0; i < features.length; i++) ...[
+                  Expanded(
+                    child: RepaintBoundary(
+                        child: _buildFeatureCard(features[i])),
                   ),
+                  if (i < features.length - 1)
+                    Padding(
+                      padding: EdgeInsets.only(top: isTablet ? 60 : 100),
+                      child: Icon(Icons.arrow_forward,
+                          color: isDarkMode
+                              ? const Color(0xFF475569)
+                              : const Color(0xFFD1D5DB),
+                          size: isTablet ? 28 : 40),
+                    ),
+                ],
+              ],
+            ),
             SizedBox(height: isMobile ? 20 : 40),
           ],
         ),
@@ -789,19 +590,19 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFeatureCard(FeaturePortal portal) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final cardPad = isMobile ? 18.0 : (isTablet ? 20.0 : 32.0);
-    final numberFontSize = isMobile ? 13.0 : 16.0;
-    final numberHPad = isMobile ? 12.0 : 16.0;
-    final numberVPad = isMobile ? 6.0 : 8.0;
-    final iconContainerPad = isMobile ? 10.0 : 14.0;
-    final portalIconSize = isMobile ? 24.0 : 32.0;
-    final titleFontSize = isMobile ? 18.0 : (isTablet ? 20.0 : 24.0);
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final cardPad = isMobile ? 16.0 : (isTablet ? 20.0 : 32.0);
+    final numberFontSize = isMobile ? 12.0 : 16.0;
+    final numberHPad = isMobile ? 10.0 : 16.0;
+    final numberVPad = isMobile ? 5.0 : 8.0;
+    final iconContainerPad = isMobile ? 8.0 : 14.0;
+    final portalIconSize = isMobile ? 22.0 : 32.0;
+    final titleFontSize = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
     final subtitleFontSize = isMobile ? 12.0 : 14.0;
-    final itemIconSize = isMobile ? 18.0 : 22.0;
-    final itemIconPad = isMobile ? 8.0 : 10.0;
+    final itemIconSize = isMobile ? 16.0 : 22.0;
+    final itemIconPad = isMobile ? 7.0 : 10.0;
     final itemTitleFontSize = isMobile ? 13.0 : 15.0;
     final itemDescFontSize = isMobile ? 11.0 : 13.0;
 
@@ -809,13 +610,13 @@ class _LandingPageState extends State<LandingPage>
       padding: EdgeInsets.all(cardPad),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 24),
         border: Border.all(color: portal.color.withOpacity(0.2), width: 2),
         boxShadow: [
           BoxShadow(
             color: portal.color.withOpacity(0.08),
-            blurRadius: isMobile ? 16 : 30,
-            offset: Offset(0, isMobile ? 6 : 10),
+            blurRadius: isMobile ? 12 : 30,
+            offset: Offset(0, isMobile ? 4 : 10),
           ),
         ],
       ),
@@ -827,68 +628,58 @@ class _LandingPageState extends State<LandingPage>
             children: [
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: numberHPad,
-                  vertical: numberVPad,
-                ),
+                    horizontal: numberHPad, vertical: numberVPad),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [portal.color, portal.color.withOpacity(0.7)],
-                  ),
+                      colors: [portal.color, portal.color.withOpacity(0.7)]),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
-                  portal.number,
-                  style: GoogleFonts.poppins(
-                    fontSize: numberFontSize,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
+                child: Text(portal.number,
+                    style: GoogleFonts.poppins(
+                        fontSize: numberFontSize,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white)),
               ),
               Container(
                 padding: EdgeInsets.all(iconContainerPad),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      portal.color.withOpacity(0.1),
-                      portal.color.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+                  gradient: LinearGradient(colors: [
+                    portal.color.withOpacity(0.1),
+                    portal.color.withOpacity(0.05),
+                  ]),
+                  borderRadius:
+                  BorderRadius.circular(isMobile ? 10 : 16),
                 ),
-                child: Icon(portal.icon, color: portal.color, size: portalIconSize),
+                child: Icon(portal.icon,
+                    color: portal.color, size: portalIconSize),
               ),
             ],
           ),
-          SizedBox(height: isMobile ? 16 : 24),
-          Text(
-            portal.title,
-            style: GoogleFonts.poppins(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w600,
-              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
-            ),
-          ),
-          SizedBox(height: isMobile ? 4 : 8),
-          Text(
-            portal.subtitle,
-            style: GoogleFonts.poppins(
-              fontSize: subtitleFontSize,
-              color: isDarkMode
-                  ? const Color(0xFF94A3B8)
-                  : const Color(0xFF6B7280),
-              fontWeight: FontWeight.w500,
-              height: 1.5,
-            ),
-          ),
-          SizedBox(height: isMobile ? 16 : 28),
+          SizedBox(height: isMobile ? 14 : 24),
+          Text(portal.title,
+              style: GoogleFonts.poppins(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode
+                      ? Colors.white
+                      : const Color(0xFF1F2937))),
+          SizedBox(height: isMobile ? 3 : 8),
+          Text(portal.subtitle,
+              style: GoogleFonts.poppins(
+                  fontSize: subtitleFontSize,
+                  color: isDarkMode
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                  height: 1.5)),
+          SizedBox(height: isMobile ? 14 : 28),
           ...portal.items.asMap().entries.map((entry) {
             final i = entry.key;
             final item = entry.value;
             return Padding(
               padding: EdgeInsets.only(
-                bottom: i < portal.items.length - 1 ? (isMobile ? 10 : 16) : 0,
-              ),
+                  bottom:
+                  i < portal.items.length - 1 ? (isMobile ? 10 : 16) : 0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -896,37 +687,34 @@ class _LandingPageState extends State<LandingPage>
                     padding: EdgeInsets.all(itemIconPad),
                     decoration: BoxDecoration(
                       color: portal.color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
-                      border: Border.all(color: portal.color.withOpacity(0.2)),
+                      borderRadius:
+                      BorderRadius.circular(isMobile ? 8 : 12),
+                      border: Border.all(
+                          color: portal.color.withOpacity(0.2)),
                     ),
-                    child: Icon(item.icon, color: portal.color, size: itemIconSize),
+                    child: Icon(item.icon,
+                        color: portal.color, size: itemIconSize),
                   ),
                   SizedBox(width: isMobile ? 10 : 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.title,
-                          style: GoogleFonts.poppins(
-                            fontSize: itemTitleFontSize,
-                            fontWeight: FontWeight.w600,
-                            color: isDarkMode
-                                ? Colors.white
-                                : const Color(0xFF1F2937),
-                          ),
-                        ),
+                        Text(item.title,
+                            style: GoogleFonts.poppins(
+                                fontSize: itemTitleFontSize,
+                                fontWeight: FontWeight.w600,
+                                color: isDarkMode
+                                    ? Colors.white
+                                    : const Color(0xFF1F2937))),
                         const SizedBox(height: 2),
-                        Text(
-                          item.description,
-                          style: GoogleFonts.poppins(
-                            fontSize: itemDescFontSize,
-                            color: isDarkMode
-                                ? const Color(0xFF64748B)
-                                : const Color(0xFF9CA3AF),
-                            height: 1.4,
-                          ),
-                        ),
+                        Text(item.description,
+                            style: GoogleFonts.poppins(
+                                fontSize: itemDescFontSize,
+                                color: isDarkMode
+                                    ? const Color(0xFF64748B)
+                                    : const Color(0xFF9CA3AF),
+                                height: 1.4)),
                       ],
                     ),
                   ),
@@ -939,10 +727,12 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 
+  // ─── Footer ───────────────────────────────────────────────────────────────────
+
   Widget _buildFooter() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
 
     return RepaintBoundary(
       child: Container(
@@ -963,69 +753,12 @@ class _LandingPageState extends State<LandingPage>
                 horizontal: isMobile ? 20 : (isTablet ? 30 : 50),
                 vertical: 10,
               ),
-              child: Column(
+              child: isMobile
+                  ? _buildFooterBrand()
+                  : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  isMobile
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFooterBrand(),
-                            // const SizedBox(height: 24),
-                            // _buildFooterColumn('For Candidates', [
-                            //   'Create Profile',
-                            //   'Build CV',
-                            //   'Browse Jobs',
-                            //   'Career Resources',
-                            // ]),
-                            // const SizedBox(height: 20),
-                            // _buildFooterColumn('For Recruiters', [
-                            //   'Find Talent',
-                            //   'Submit Requests',
-                            //   'Pricing Plans',
-                            //   'Success Stories',
-                            // ]),
-                            // const SizedBox(height: 20),
-                            // _buildFooterColumn('Company', [
-                            //   'About Us',
-                            //   'Contact',
-                            //   'Careers',
-                            //   'Privacy Policy',
-                            // ]),
-                          ],
-                        )
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 2, child: _buildFooterBrand()),
-                            // SizedBox(width: isTablet ? 30 : 80),
-                            // Expanded(
-                            //   child: _buildFooterColumn('For Candidates', [
-                            //     'Create Profile',
-                            //     'Build CV',
-                            //     'Browse Jobs',
-                            //     'Career Resources',
-                            //   ]),
-                            // ),
-                            // SizedBox(width: isTablet ? 20 : 60),
-                            // Expanded(
-                            //   child: _buildFooterColumn('For Recruiters', [
-                            //     'Find Talent',
-                            //     'Submit Requests',
-                            //     'Pricing Plans',
-                            //     'Success Stories',
-                            //   ]),
-                            // ),
-                            // SizedBox(width: isTablet ? 20 : 60),
-                            // Expanded(
-                            //   child: _buildFooterColumn('Company', [
-                            //     'About Us',
-                            //     'Contact',
-                            //     'Careers',
-                            //     'Privacy Policy',
-                            //   ]),
-                            // ),
-                          ],
-                        ),
+                  Expanded(flex: 2, child: _buildFooterBrand()),
                 ],
               ),
             ),
@@ -1037,51 +770,44 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _buildFooterBrand() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final titleFontSize = isMobile ? 20.0 : 28.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final titleFontSize = isMobile ? 18.0 : 28.0;
     final descFontSize = isMobile ? 12.0 : 14.0;
+    final iconPad = isMobile ? 7.0 : 10.0;
+    final iconSize = isMobile ? 16.0 : 20.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'MAHA SERVICES',
-          style: GoogleFonts.poppins(
-            fontSize: titleFontSize,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: isMobile ? 10 : 16),
+        Text('MAHA SERVICES',
+            style: GoogleFonts.poppins(
+                fontSize: titleFontSize,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
+        SizedBox(height: isMobile ? 8 : 16),
         Text(
           'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF9CA3AF),
-            fontSize: descFontSize,
-            height: 1.8,
-          ),
+              color: const Color(0xFF9CA3AF),
+              fontSize: descFontSize,
+              height: 1.8),
         ),
-        SizedBox(height: isMobile ? 16 : 24),
+        SizedBox(height: isMobile ? 14 : 24),
         Row(
           children: [
-            _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2)),
+            _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2), iconPad, iconSize),
             const SizedBox(width: 12),
-            _buildSocialIcon(Icons.link, const Color(0xFF0A66C2)),
+            _buildSocialIcon(Icons.link, const Color(0xFF0A66C2), iconPad, iconSize),
             const SizedBox(width: 12),
-            _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335)),
+            _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335), iconPad, iconSize),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildSocialIcon(IconData icon, Color color) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final pad = isMobile ? 8.0 : 10.0;
-    final iconSize = isMobile ? 16.0 : 20.0;
-
+  Widget _buildSocialIcon(IconData icon, Color color, double pad, double size) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: Container(
@@ -1091,68 +817,20 @@ class _LandingPageState extends State<LandingPage>
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: color.withOpacity(0.3)),
         ),
-        child: Icon(icon, color: color, size: iconSize),
+        child: Icon(icon, color: color, size: size),
       ),
     );
   }
 
-  Widget _buildFooterColumn(String title, List<String> items) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final titleFontSize = isMobile ? 14.0 : 16.0;
-    final itemFontSize = isMobile ? 12.0 : 13.0;
-    final arrowSize = isMobile ? 10.0 : 12.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: titleFontSize,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: isMobile ? 12 : 20),
-        ...items.map(
-              (item) => Padding(
-            padding: EdgeInsets.only(bottom: isMobile ? 10 : 14),
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Color(0xFF6366F1),
-                    size: arrowSize,
-                  ),
-                  SizedBox(width: isMobile ? 6 : 8),
-                  Text(
-                    item,
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: itemFontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFooterBottom() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
     final hPad = isMobile ? 16.0 : (isTablet ? 40.0 : 80.0);
-    final vPad = isMobile ? 16.0 : 30.0;
-    final copyrightFontSize = isMobile ? 11.0 : 13.0;
-    final aiFontSize = isMobile ? 10.0 : 12.0;
+    final vPad = isMobile ? 14.0 : 30.0;
+    final copyrightFont = isMobile ? 11.0 : 13.0;
+    final aiFont = isMobile ? 10.0 : 12.0;
+    final aiIconSize = isMobile ? 13.0 : 16.0;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
@@ -1161,285 +839,213 @@ class _LandingPageState extends State<LandingPage>
       ),
       child: isMobile
           ? Column(
-              children: [
-                Text(
-                  '© 2026 Maha Services. All rights reserved.',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF6B7280),
-                    fontSize: copyrightFontSize,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.psychology_rounded,
-                        color: Color(0xFF6366F1),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Powered by AI',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF6366F1),
-                          fontSize: aiFontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
+        children: [
+          Text('© 2026 Maha Services. All rights reserved.',
+              style: GoogleFonts.poppins(
+                  color: const Color(0xFF6B7280),
+                  fontSize: copyrightFont)),
+          const SizedBox(height: 10),
+          _buildAIBadge(aiFont, aiIconSize),
+        ],
+      )
           : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '© 2025 Maha Services. All rights reserved.',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF6B7280),
-                    fontSize: copyrightFontSize,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.psychology_rounded,
-                        color: Color(0xFF6366F1),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Powered by AI',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFF6366F1),
-                          fontSize: aiFontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('© 2025 Maha Services. All rights reserved.',
+              style: GoogleFonts.poppins(
+                  color: const Color(0xFF6B7280),
+                  fontSize: copyrightFont)),
+          _buildAIBadge(aiFont, aiIconSize),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIBadge(double fontSize, double iconSize) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: iconSize < 14 ? 10 : 12,
+          vertical: iconSize < 14 ? 5 : 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF6366F1).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border:
+        Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.psychology_rounded,
+              color: const Color(0xFF6366F1), size: iconSize),
+          const SizedBox(width: 4),
+          Text('Powered by AI',
+              style: GoogleFonts.poppins(
+                  color: const Color(0xFF6366F1),
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 
   Widget _buildSectionHeader(
-      String badge,
-      String title,
-      String subtitle,
-      IconData icon,
-      ) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final badgeFontSize = isMobile ? 10.0 : 13.0;
-    final badgeIconSize = isMobile ? 14.0 : 18.0;
-    final badgeHPad = isMobile ? 12.0 : 20.0;
+      String badge, String title, String subtitle, IconData icon) {
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
+    final badgeFont = isMobile ? 10.0 : 13.0;
+    final badgeIconSize = isMobile ? 13.0 : 18.0;
+    final badgeHPad = isMobile ? 10.0 : 20.0;
     final badgeVPad = isMobile ? 6.0 : 10.0;
-    final titleFontSize = isMobile ? 24.0 : (isTablet ? 34.0 : 48.0);
-    final subtitleFontSize = isMobile ? 13.0 : 18.0;
+    final titleFont = isMobile ? 22.0 : (isTablet ? 34.0 : 48.0);
+    final subtitleFont = isMobile ? 13.0 : 18.0;
 
     return FadeTransition(
       opacity: _workflowAnimation,
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(horizontal: badgeHPad, vertical: badgeVPad),
+            padding: EdgeInsets.symmetric(
+                horizontal: badgeHPad, vertical: badgeVPad),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF6366F1).withOpacity(0.2),
-                  const Color(0xFF8B5CF6).withOpacity(0.2),
-                ],
-              ),
+              gradient: LinearGradient(colors: [
+                const Color(0xFF6366F1).withOpacity(0.2),
+                const Color(0xFF8B5CF6).withOpacity(0.2),
+              ]),
               borderRadius: BorderRadius.circular(50),
               border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.5),
-                width: 1.5,
-              ),
+                  color: const Color(0xFF6366F1).withOpacity(0.5),
+                  width: 1.5),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: const Color(0xFF7233FB), size: badgeIconSize),
-                SizedBox(width: isMobile ? 6 : 10),
-                Text(
-                  badge,
-                  style: GoogleFonts.poppins(
+                Icon(icon,
                     color: const Color(0xFF7233FB),
-                    fontSize: badgeFontSize,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                    size: badgeIconSize),
+                SizedBox(width: isMobile ? 6 : 10),
+                Text(badge,
+                    style: GoogleFonts.poppins(
+                        color: const Color(0xFF7233FB),
+                        fontSize: badgeFont,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5)),
               ],
             ),
           ),
-          SizedBox(height: isMobile ? 14 : 24),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w900,
-              color: isDarkMode ? Colors.white : const Color(0xFF081D69),
-              letterSpacing: -1,
-            ),
-          ),
+          SizedBox(height: isMobile ? 12 : 24),
+          Text(title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                  fontSize: titleFont,
+                  fontWeight: FontWeight.w900,
+                  color: isDarkMode
+                      ? Colors.white
+                      : const Color(0xFF081D69),
+                  letterSpacing: -1)),
           SizedBox(height: isMobile ? 8 : 16),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: subtitleFontSize,
-              color: isDarkMode
-                  ? const Color(0xFF94A3B8)
-                  : const Color(0xFF6B7280),
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          Text(subtitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                  fontSize: subtitleFont,
+                  color: isDarkMode
+                      ? const Color(0xFF94A3B8)
+                      : const Color(0xFF6B7280),
+                  fontWeight: FontWeight.w400)),
         ],
       ),
     );
   }
 
   Widget _buildStatsShowcase() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final isTablet = w >= 600 && w < 1024;
     final vPad = isMobile ? 24.0 : 50.0;
     final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
-    final titleFontSize = isMobile ? 24.0 : (isTablet ? 32.0 : 42.0);
-    final subtitleFontSize = isMobile ? 13.0 : 18.0;
-    final provenFontSize = isMobile ? 10.0 : 12.0;
-    final statSpacing = isMobile ? 12.0 : (isTablet ? 20.0 : 50.0);
+    final titleFont = isMobile ? 22.0 : (isTablet ? 32.0 : 42.0);
+    final subtitleFont = isMobile ? 12.0 : 18.0;
+    final provenFont = isMobile ? 10.0 : 12.0;
+    final statSpacing = isMobile ? 10.0 : (isTablet ? 20.0 : 50.0);
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: vPad, horizontal: hPad),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDarkMode
-              ? [
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-          ]
-              : [
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-          ],
-        ),
-      ),
       child: Column(
         children: [
           Container(
             padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 12 : 20,
-              vertical: isMobile ? 5 : 8,
-            ),
+                horizontal: isMobile ? 12 : 20,
+                vertical: isMobile ? 5 : 8),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(50),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            child: Text(
-              '⚡ PROVEN SUCCESS',
-              style: GoogleFonts.poppins(
-                fontSize: provenFontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
+            child: Text('⚡ PROVEN SUCCESS',
+                style: GoogleFonts.poppins(
+                    fontSize: provenFont,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    letterSpacing: 1.5)),
           ),
           SizedBox(height: isMobile ? 12 : 20),
-          Text(
-            'Trusted by Industry Leaders',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
+          Text('Trusted by Industry Leaders',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                  fontSize: titleFont,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white)),
           SizedBox(height: isMobile ? 8 : 12),
-          Text(
-            'Real numbers, real impact - see how we transform hiring',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: subtitleFontSize,
-              color: Colors.white.withOpacity(0.7),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: isMobile ? 24 : 70),
+          Text('Real numbers, real impact - see how we transform hiring',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                  fontSize: subtitleFont,
+                  color: Colors.white.withOpacity(0.7),
+                  fontWeight: FontWeight.w500)),
+          SizedBox(height: isMobile ? 20 : 70),
           isMobile
               ? Wrap(
-                  spacing: statSpacing,
-                  runSpacing: statSpacing,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-                    _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-                    _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-                    _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-                  ],
-                )
+            spacing: statSpacing,
+            runSpacing: statSpacing,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+            ],
+          )
               : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-                  ],
-                ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
+              SizedBox(width: statSpacing),
+              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSuccessMetric(String value, String label, IconData icon) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final hPad = isMobile ? 14.0 : 24.0;
-    final vPad = isMobile ? 10.0 : 16.0;
-    final iconSize = isMobile ? 18.0 : 24.0;
-    final valueFontSize = isMobile ? 18.0 : 24.0;
-    final labelFontSize = isMobile ? 10.0 : 12.0;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 600;
+    final hPad = isMobile ? 12.0 : 24.0;
+    final vPad = isMobile ? 8.0 : 16.0;
+    final iconSize = isMobile ? 16.0 : 24.0;
+    final valueFont = isMobile ? 16.0 : 24.0;
+    final labelFont = isMobile ? 10.0 : 12.0;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+        borderRadius: BorderRadius.circular(isMobile ? 10 : 16),
         border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
@@ -1450,22 +1056,16 @@ class _LandingPageState extends State<LandingPage>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: valueFontSize,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: labelFontSize,
-                  color: Colors.white.withOpacity(0.6),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(value,
+                  style: GoogleFonts.poppins(
+                      fontSize: valueFont,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white)),
+              Text(label,
+                  style: GoogleFonts.poppins(
+                      fontSize: labelFont,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w500)),
             ],
           ),
         ],
@@ -1473,6 +1073,8 @@ class _LandingPageState extends State<LandingPage>
     );
   }
 }
+
+// ─── Animated Button ──────────────────────────────────────────────────────────
 
 class _AnimatedButton extends StatefulWidget {
   final VoidCallback onPressed;
@@ -1506,24 +1108,7 @@ class _AnimatedButtonState extends State<_AnimatedButton> {
   }
 }
 
-// Data Models
-class WorkflowStage {
-  final String step;
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final List<String> details;
-
-  WorkflowStage({
-    required this.step,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.details,
-  });
-}
+// ─── Data Models ──────────────────────────────────────────────────────────────
 
 class FeaturePortal {
   final String number;
@@ -1551,11 +1136,11 @@ class FeatureItem {
   FeatureItem(this.title, this.description, this.icon);
 }
 
-// Optimized Grid Painter with reduced complexity
+// ─── Optimized Grid Painter ───────────────────────────────────────────────────
+
 class _OptimizedGridPainter extends CustomPainter {
   final double animationValue;
 
-  // Cache for paint objects
   static final Paint _baseGridPaint = Paint()
     ..color = const Color(0xFF4A90E2).withOpacity(0.15)
     ..strokeWidth = 1.6
@@ -1576,27 +1161,20 @@ class _OptimizedGridPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const double gridSize = 100.0;
     final offset = animationValue * gridSize;
+    const beamUpdateInterval = 2;
 
-    // Reduce the number of beam calculations for web performance
-    final beamUpdateInterval = 2; // Only update beams every 2 grid lines
-
-    // Draw vertical lines
-    int verticalIndex = 0;
-    for (
-    double x = -gridSize + (offset % gridSize);
+    int vi = 0;
+    for (double x = -gridSize + (offset % gridSize);
     x < size.width + gridSize;
-    x += gridSize
-    ) {
+    x += gridSize) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), _baseGridPaint);
-
-      if (verticalIndex % beamUpdateInterval == 0) {
-        final beamProgress = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-        final beamStart = beamProgress * size.height;
-        final beamLength = size.height * 0.4;
-
-        final verticalGradient = ui.Gradient.linear(
-          Offset(x, beamStart - beamLength / 2),
-          Offset(x, beamStart + beamLength / 2),
+      if (vi % beamUpdateInterval == 0) {
+        final bp = (animationValue * 2 + vi * 0.3) % 1.0;
+        final bs = bp * size.height;
+        final bl = size.height * 0.4;
+        _beamPaint.shader = ui.Gradient.linear(
+          Offset(x, bs - bl / 2),
+          Offset(x, bs + bl / 2),
           [
             Colors.transparent,
             const Color(0xFFF7E6FF).withOpacity(0.4),
@@ -1606,35 +1184,27 @@ class _OptimizedGridPainter extends CustomPainter {
           ],
           [0.0, 0.2, 0.5, 0.8, 1.0],
         );
-
-        _beamPaint.shader = verticalGradient;
         canvas.drawLine(
-          Offset(x, math.max(0, beamStart - beamLength / 2)),
-          Offset(x, math.min(size.height, beamStart + beamLength / 2)),
+          Offset(x, math.max(0, bs - bl / 2)),
+          Offset(x, math.min(size.height, bs + bl / 2)),
           _beamPaint,
         );
       }
-      verticalIndex++;
+      vi++;
     }
 
-    // Draw horizontal lines
-    int horizontalIndex = 0;
-    for (
-    double y = -gridSize + (offset % gridSize);
+    int hi = 0;
+    for (double y = -gridSize + (offset % gridSize);
     y < size.height + gridSize;
-    y += gridSize
-    ) {
+    y += gridSize) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), _baseGridPaint);
-
-      if (horizontalIndex % beamUpdateInterval == 0) {
-        final beamProgress =
-            (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
-        final beamStart = beamProgress * size.width;
-        final beamLength = size.width * 0.6;
-
-        final horizontalGradient = ui.Gradient.linear(
-          Offset(beamStart - beamLength / 2, y),
-          Offset(beamStart + beamLength / 2, y),
+      if (hi % beamUpdateInterval == 0) {
+        final bp = (animationValue * 1.5 + hi * 0.25) % 1.0;
+        final bs = bp * size.width;
+        final bl = size.width * 0.6;
+        _beamPaint.shader = ui.Gradient.linear(
+          Offset(bs - bl / 2, y),
+          Offset(bs + bl / 2, y),
           [
             Colors.transparent,
             const Color(0xFFE6EFFF).withOpacity(0.4),
@@ -1644,46 +1214,33 @@ class _OptimizedGridPainter extends CustomPainter {
           ],
           [0.0, 0.2, 0.5, 0.8, 1.0],
         );
-
-        _beamPaint.shader = horizontalGradient;
         canvas.drawLine(
-          Offset(math.max(0, beamStart - beamLength / 2), y),
-          Offset(math.min(size.width, beamStart + beamLength / 2), y),
+          Offset(math.max(0, bs - bl / 2), y),
+          Offset(math.min(size.width, bs + bl / 2), y),
           _beamPaint,
         );
       }
-      horizontalIndex++;
+      hi++;
     }
 
-    // Simplified intersection glow (reduce calculations)
     if (animationValue % 0.1 < 0.05) {
-      // Only draw every 10th frame
-      verticalIndex = 0;
-      for (
-      double x = -gridSize + (offset % gridSize);
+      vi = 0;
+      for (double x = -gridSize + (offset % gridSize);
       x < size.width + gridSize;
-      x += gridSize * 2
-      ) {
-        horizontalIndex = 0;
-        for (
-        double y = -gridSize + (offset % gridSize);
+      x += gridSize * 2) {
+        hi = 0;
+        for (double y = -gridSize + (offset % gridSize);
         y < size.height + gridSize;
-        y += gridSize * 2
-        ) {
-          final beamProgressV =
-              (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-          final beamProgressH =
-              (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
-          final verticalBeamY = beamProgressV * size.height;
-          final horizontalBeamX = beamProgressH * size.width;
-
-          if ((verticalBeamY - y).abs() < 50 &&
-              (horizontalBeamX - x).abs() < 50) {
+        y += gridSize * 2) {
+          final bpv = (animationValue * 2 + vi * 0.3) % 1.0;
+          final bph = (animationValue * 1.5 + hi * 0.25) % 1.0;
+          if ((bpv * size.height - y).abs() < 50 &&
+              (bph * size.width - x).abs() < 50) {
             canvas.drawCircle(Offset(x, y), 8, _intersectionPaint);
           }
-          horizontalIndex++;
+          hi++;
         }
-        verticalIndex++;
+        vi++;
       }
     }
   }

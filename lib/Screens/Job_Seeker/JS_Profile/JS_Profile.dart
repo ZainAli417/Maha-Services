@@ -37,7 +37,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   final TextEditingController _personalSummaryCtrl = TextEditingController();
   final TextEditingController _dobCtrl = TextEditingController();
   final TextEditingController _institutionCtrl = TextEditingController();
-  final TextEditingController _durationCtrl = TextEditingController();
+  final TextEditingController _eduStartYearCtrl = TextEditingController();
+  final TextEditingController _eduEndYearCtrl = TextEditingController();
   final TextEditingController _majorCtrl = TextEditingController();
   final TextEditingController _marksCtrl = TextEditingController();
   final TextEditingController _experienceTextCtrl = TextEditingController();
@@ -70,7 +71,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime.now(),
-      firstDate: DateTime(1950),
+      firstDate: DateTime(1930),
       lastDate: DateTime(2100),
       builder: (context, child) {
         return Theme(
@@ -235,6 +236,42 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     );
   }
 
+  Future<void> _selectYear(
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
+    final int currentYear = DateTime.now().year;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Select Year',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: YearPicker(
+              firstDate: DateTime(1930),
+              lastDate: DateTime(currentYear + 10),
+              selectedDate: controller.text.isNotEmpty
+                  ? DateTime(int.tryParse(controller.text) ?? currentYear)
+                  : DateTime(currentYear),
+              onChanged: (DateTime dateTime) {
+                controller.text = dateTime.year.toString();
+                Navigator.pop(context);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   String _getMonthName(int month) {
     const months = [
       'Jan',
@@ -326,7 +363,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     _personalSummaryCtrl.dispose();
     _dobCtrl.dispose();
     _institutionCtrl.dispose();
-    _durationCtrl.dispose();
+    _eduStartYearCtrl.dispose();
+    _eduEndYearCtrl.dispose();
     _majorCtrl.dispose();
     _marksCtrl.dispose();
     _experienceTextCtrl.dispose();
@@ -938,7 +976,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                             _dobCtrl,
                             initialDate: _dobCtrl.text.isNotEmpty
                                 ? DateTime.tryParse(_dobCtrl.text)
-                                : DateTime(1990),
+                                : DateTime(1930),
                             onDateSelected: (dateString) {
                               prov.updateDob(dateString);
                             },
@@ -977,7 +1015,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               _dobCtrl,
                               initialDate: _dobCtrl.text.isNotEmpty
                                   ? DateTime.tryParse(_dobCtrl.text)
-                                  : DateTime(1990),
+                                  : DateTime(1930),
                               onDateSelected: (dateString) {
                                 print('[DOB] Date selected from picker: $dateString');
                                 prov.updateDob(dateString);
@@ -1180,11 +1218,36 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           _isMobile
               ? Column(
                   children: [
-                    _buildTextField(
-                      label: 'Duration',
-                      controller: _durationCtrl,
-                      icon: Icons.access_time,
-                      hint: 'e.g. 2016 - 2020',
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectYear(context, _eduStartYearCtrl),
+                            child: AbsorbPointer(
+                              child: _buildTextField(
+                                label: 'Start Year',
+                                controller: _eduStartYearCtrl,
+                                icon: Icons.calendar_today,
+                                hint: 'Start',
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectYear(context, _eduEndYearCtrl),
+                            child: AbsorbPointer(
+                              child: _buildTextField(
+                                label: 'End Year',
+                                controller: _eduEndYearCtrl,
+                                icon: Icons.calendar_today,
+                                hint: 'End',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     _buildTextField(
@@ -1197,11 +1260,36 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               : Row(
                   children: [
                     Expanded(
-                      child: _buildTextField(
-                        label: 'Duration',
-                        controller: _durationCtrl,
-                        icon: Icons.access_time,
-                        hint: 'e.g. 2016 - 2020',
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _selectYear(context, _eduStartYearCtrl),
+                              child: AbsorbPointer(
+                                child: _buildTextField(
+                                  label: 'Start Year',
+                                  controller: _eduStartYearCtrl,
+                                  icon: Icons.calendar_today,
+                                  hint: 'Start',
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _selectYear(context, _eduEndYearCtrl),
+                              child: AbsorbPointer(
+                                child: _buildTextField(
+                                  label: 'End Year',
+                                  controller: _eduEndYearCtrl,
+                                  icon: Icons.calendar_today,
+                                  hint: 'End',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -1227,12 +1315,14 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             child: InkWell(
               onTap: () {
                 prov.tempSchool = _institutionCtrl.text;
-                prov.tempEduStart = _durationCtrl.text;
+                prov.tempEduStart = _eduStartYearCtrl.text;
+                prov.tempEduEnd = _eduEndYearCtrl.text;
                 prov.tempFieldOfStudy = _majorCtrl.text;
                 prov.tempDegree = _marksCtrl.text;
                 prov.addEducationEntry(context);
                 _institutionCtrl.clear();
-                _durationCtrl.clear();
+                _eduStartYearCtrl.clear();
+                _eduEndYearCtrl.clear();
                 _majorCtrl.clear();
                 _marksCtrl.clear();
               },

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,7 +31,6 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
   late AnimationController _floatingController;
   late AnimationController _pulseController;
 
-
   @override
   void initState() {
     super.initState();
@@ -59,16 +57,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     _floatAnimation = Tween<double>(begin: -10, end: 10).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fadeController.forward();
-      _slideController.forward();
-    });
     _floatingController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -79,6 +74,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       duration: const Duration(milliseconds: 2000),
     )..repeat();
 
+    // Defer animation start to avoid jank on first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _fadeController.forward();
+        _slideController.forward();
+      }
+    });
   }
 
   @override
@@ -88,7 +90,6 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     _fadeController.dispose();
     _slideController.dispose();
     _floatController.dispose();
-
     _floatingController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -127,6 +128,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       }
     } catch (e) {
       debugPrint('Login exception: $e');
+      if (!mounted) return;
       _snack('Connection error. Please try again', error: true);
     }
   }
@@ -137,13 +139,15 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     final isWide = size.width > 900;
 
     return Scaffold(
+      // Prevent resize when keyboard appears — form scrolls instead
+      resizeToAvoidBottomInset: true,
       body: Column(
         children: [
           const HeaderNav(),
           Expanded(
             child: Row(
               children: [
-                if (isWide) Expanded(flex: 5, child: leftPanel(context)),
+                if (isWide) Expanded(flex: 5, child: _leftPanel(context)),
                 Expanded(
                   flex: isWide ? 5 : 1,
                   child: _buildFormPanel(isWide),
@@ -156,28 +160,25 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     );
   }
 
+  // ─── LEFT PANEL (desktop only) ───────────────────────────────────────────────
 
-  Widget leftPanel(BuildContext context) {
+  Widget _leftPanel(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF0F0F23),
-            const Color(0xFF1a1a3e),
-            const Color(0xFF2d1b4e),
+            Color(0xFF0F0F23),
+            Color(0xFF1a1a3e),
+            Color(0xFF2d1b4e),
           ],
         ),
       ),
       child: Stack(
         children: [
-          // Animated background orbs
           _buildAnimatedOrbs(),
-
-
-          // Main content - NO SCROLL
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
@@ -185,13 +186,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildCompactHeader(),
-                  const SizedBox(height: 15,),
+                  const SizedBox(height: 15),
                   _buildLiveMetrics(),
-                  const SizedBox(height: 15,),
+                  const SizedBox(height: 15),
                   _buildCompactStats(),
-                  const SizedBox(height: 15,),
+                  const SizedBox(height: 15),
                   _buildCompactFeatures(),
-                  const SizedBox(height: 15,),
+                  const SizedBox(height: 15),
                   _buildTrustBadges(),
                 ],
               ),
@@ -207,47 +208,43 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       children: [
         AnimatedBuilder(
           animation: _floatingController,
-          builder: (context, child) {
-            return Positioned(
-              top: 100 + (_floatingController.value * 50),
-              left: -100,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFF667eea).withOpacity(0.4),
-                      Colors.transparent,
-                    ],
-                  ),
+          builder: (context, child) => Positioned(
+            top: 100 + (_floatingController.value * 50),
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF667eea).withOpacity(0.4),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
         AnimatedBuilder(
           animation: _floatingController,
-          builder: (context, child) {
-            return Positioned(
-              bottom: 50 - (_floatingController.value * 30),
-              right: -80,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFFf093fb).withOpacity(0.3),
-                      Colors.transparent,
-                    ],
-                  ),
+          builder: (context, child) => Positioned(
+            bottom: 50 - (_floatingController.value * 30),
+            right: -80,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFf093fb).withOpacity(0.3),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ],
     );
@@ -330,92 +327,90 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
   Widget _buildLiveMetrics() {
     return AnimatedBuilder(
       animation: _pulseController,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.08),
-                Colors.white.withOpacity(0.03),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1.5,
-            ),
-
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF667eea), Color(0xFF8B5CF6)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.4),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.bolt_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Enterprise Grade',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'AES-256 • Hash Algorithm',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: Colors.white.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4ade80),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Text(
-                  'ACTIVE',
-                  style: GoogleFonts.poppins(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F0F23),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+      builder: (context, child) => Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withOpacity(0.08),
+              Colors.white.withOpacity(0.03),
             ],
           ),
-        );
-      },
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF667eea), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF667eea).withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.bolt_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Enterprise Grade',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'AES-256 • Hash Algorithm',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4ade80),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Text(
+                'ACTIVE',
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F0F23),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -466,17 +461,17 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           ),
         ),
         const SizedBox(height: 14),
-        _CompactFeature(
+        const _CompactFeature(
           icon: Icons.auto_awesome_rounded,
           title: 'AI-Powered Matching',
         ),
         const SizedBox(height: 10),
-        _CompactFeature(
+        const _CompactFeature(
           icon: Icons.speed_rounded,
           title: 'Seek More Borderless Jobs',
         ),
         const SizedBox(height: 10),
-        _CompactFeature(
+        const _CompactFeature(
           icon: Icons.verified_user_rounded,
           title: 'Verified Employers across Globe',
         ),
@@ -490,33 +485,35 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
-          Container(
-            width: 1,
-            height: 20,
-            color: Colors.white.withOpacity(0.1),
-          ),
-          _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
-          Container(
-            width: 1,
-            height: 20,
-            color: Colors.white.withOpacity(0.1),
-          ),
-          _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
+          const _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
+          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+          const _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
+          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+          const _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
         ],
       ),
     );
   }
 
+  // ─── FORM PANEL ──────────────────────────────────────────────────────────────
 
   Widget _buildFormPanel(bool isWide) {
+    // Responsive paddings: tighter on mobile
+    final double hPad = isWide ? 80 : 20;
+    final double vPad = isWide ? 48 : 24;
+    final double headerFontSize = isWide ? 32 : 24;
+    final double subFontSize = isWide ? 15 : 13;
+    final double iconSize = isWide ? 28 : 22;
+    final double iconPad = isWide ? 12 : 10;
+    final double sectionGap = isWide ? 32 : 20;
+    final double fieldGap = isWide ? 24 : 16;
+    final double btnHeight = isWide ? 56 : 50;
+
     return SlideTransition(
       position: _slideAnimation,
       child: FadeTransition(
@@ -537,8 +534,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           child: Center(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: isWide ? 80 : 32,
-                vertical: 48,
+                horizontal: hPad,
+                vertical: vPad,
               ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 460),
@@ -546,166 +543,99 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Row(
+                    // ── Header ──────────────────────────────────────────────
+                    Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(iconPad),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.waving_hand_rounded,
                             color: Colors.white,
-                            size: 28,
+                            size: iconSize,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome Back!',
-                              style: GoogleFonts.poppins(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1F2937),
-                                letterSpacing: -0.5,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome Back!',
+                                style: GoogleFonts.poppins(
+                                  fontSize: headerFontSize,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1F2937),
+                                  letterSpacing: -0.5,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Sign in to continue your journey',
-                              style: GoogleFonts.poppins(
-                                color: const Color(0xFF6B7280),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
+                              const SizedBox(height: 2),
+                              Text(
+                                'Sign in to continue your journey',
+                                style: GoogleFonts.poppins(
+                                  color: const Color(0xFF6B7280),
+                                  fontSize: subFontSize,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: isWide ? 20 : 16),
 
-                    // Role selector
+                    // ── Role Selector ────────────────────────────────────────
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: EdgeInsets.all(isWide ? 6 : 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          Expanded(child: _buildRoleButton('Job Seeker', Icons.person_search_rounded)),
-                          Expanded(child: _buildRoleButton('Recruiter', Icons.business_center_rounded)),
+                          Expanded(
+                              child: _buildRoleButton(
+                                  'Job Seeker', Icons.person_search_rounded,
+                                  compact: !isWide)),
+                          Expanded(
+                              child: _buildRoleButton(
+                                  'Recruiter', Icons.business_center_rounded,
+                                  compact: !isWide)),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: sectionGap),
 
+                    // ── Form ─────────────────────────────────────────────────
                     Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Email Address',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1F2937),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _email,
-                            keyboardType: TextInputType.emailAddress,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              color: const Color(0xFF1F2937),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'you@example.com',
-                              hintStyle: GoogleFonts.poppins(
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.email_rounded,
-                                color: Color(0xFF6366F1),
-                                size: 20,
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 18,
-                                horizontal: 20,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE5E7EB),
-                                  width: 1,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF6366F1),
-                                  width: 2,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                  width: 1,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) {
-                                return 'Email is required';
-                              }
-                              if (!v.contains('@')) {
-                                return 'Enter a valid email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 24),
+                          _fieldLabel('Email Address'),
+                          const SizedBox(height: 8),
+                          _emailField(isWide),
+                          SizedBox(height: fieldGap),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Password',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1F2937),
-                                ),
-                              ),
+                              _fieldLabel('Password'),
                               TextButton(
-                                onPressed: () => ForgotPasswordModal.show(context),
+                                onPressed: () =>
+                                    ForgotPasswordModal.show(context),
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: Text(
                                   'Forgot password?',
@@ -718,86 +648,15 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _password,
-                            obscureText: _obscure,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              color: const Color(0xFF1F2937),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: '********',
-                              hintStyle: GoogleFonts.poppins(
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.lock_rounded,
-                                color: Color(0xFF6366F1),
-                                size: 20,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscure
-                                      ? Icons.visibility_off_rounded
-                                      : Icons.visibility_rounded,
-                                  color: const Color(0xFF6B7280),
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(() => _obscure = !_obscure),
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 18,
-                                horizontal: 20,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE5E7EB),
-                                  width: 1,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF6366F1),
-                                  width: 2,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                  width: 1,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFEF4444),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) {
-                                return 'Password is required';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 8),
+                          _passwordField(isWide),
+                          SizedBox(height: sectionGap),
 
-                          Consumer<LoginProvider>(builder: (_, provider, __) {
-                            return Container(
+                          // ── Login Button ─────────────────────────────────
+                          Consumer<LoginProvider>(
+                            builder: (_, provider, __) => Container(
                               width: double.infinity,
-                              height: 56,
+                              height: btnHeight,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
@@ -808,21 +667,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                                    color: const Color(0xFF6366F1)
+                                        .withOpacity(0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
                                 ],
                               ),
-
-
-
-
-
-
-
-
-
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.transparent,
@@ -832,61 +683,61 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                onPressed: provider.isLoading ? null : _onLogin,
+                                onPressed:
+                                provider.isLoading ? null : _onLogin,
                                 child: provider.isLoading
                                     ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
                                     color: Colors.white,
                                   ),
                                 )
                                     : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       'Log In',
                                       style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     const Icon(
                                       Icons.arrow_forward_rounded,
-                                      size: 20,
+                                      size: 18,
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          }),
-
-
-
+                            ),
+                          ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: isWide ? 32 : 20),
 
+                    // ── Sign Up Link ──────────────────────────────────────────
                     Center(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Don\'t have an account?',
+                            "Don't have an account?",
                             style: GoogleFonts.poppins(
                               color: const Color(0xFF6B7280),
-                              fontSize: 14,
+                              fontSize: 13,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
                           TextButton(
                             onPressed: () => context.go('/register'),
                             style: TextButton.styleFrom(
-                              padding: const EdgeInsets.only(left: 6),
+                              padding: const EdgeInsets.only(left: 4),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
@@ -894,7 +745,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                               'Sign Up',
                               style: GoogleFonts.poppins(
                                 color: const Color(0xFF6366F1),
-                                fontSize: 14,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -912,14 +763,120 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     );
   }
 
-  Widget _buildRoleButton(String value, IconData icon) {
+  // ─── Shared field helpers ─────────────────────────────────────────────────
+
+  Widget _fieldLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: const Color(0xFF1F2937),
+      ),
+    );
+  }
+
+  /// Shared InputDecoration factory — single source of truth
+  InputDecoration _inputDecoration({
+    required String hint,
+    required Widget prefix,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+      prefixIcon: prefix,
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: const Color(0xFFF9FAFB),
+      contentPadding:
+      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide:
+        const BorderSide(color: Color(0xFFE5E7EB), width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide:
+        const BorderSide(color: Color(0xFF6366F1), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide:
+        const BorderSide(color: Color(0xFFEF4444), width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide:
+        const BorderSide(color: Color(0xFFEF4444), width: 2),
+      ),
+    );
+  }
+
+  Widget _emailField(bool isWide) {
+    return TextFormField(
+      controller: _email,
+      keyboardType: TextInputType.emailAddress,
+      textInputAction: TextInputAction.next,
+      style: GoogleFonts.poppins(
+          fontSize: 15, color: const Color(0xFF1F2937)),
+      decoration: _inputDecoration(
+        hint: 'you@example.com',
+        prefix: const Icon(Icons.email_rounded,
+            color: Color(0xFF6366F1), size: 20),
+      ),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Email is required';
+        if (!v.contains('@')) return 'Enter a valid email';
+        return null;
+      },
+    );
+  }
+
+  Widget _passwordField(bool isWide) {
+    return TextFormField(
+      controller: _password,
+      obscureText: _obscure,
+      textInputAction: TextInputAction.done,
+      onFieldSubmitted: (_) => _onLogin(),
+      style: GoogleFonts.poppins(
+          fontSize: 15, color: const Color(0xFF1F2937)),
+      decoration: _inputDecoration(
+        hint: '••••••••',
+        prefix: const Icon(Icons.lock_rounded,
+            color: Color(0xFF6366F1), size: 20),
+        suffix: IconButton(
+          icon: Icon(
+            _obscure
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
+            color: const Color(0xFF6B7280),
+            size: 20,
+          ),
+          onPressed: () => setState(() => _obscure = !_obscure),
+        ),
+      ),
+      validator: (v) {
+        if (v == null || v.trim().isEmpty) return 'Password is required';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildRoleButton(String value, IconData icon,
+      {bool compact = false}) {
     final selected = _role == value;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: GestureDetector(
         onTap: () => setState(() => _role = value),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: compact ? 10 : 12),
           decoration: BoxDecoration(
             gradient: selected
                 ? const LinearGradient(
@@ -943,16 +900,17 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             children: [
               Icon(
                 icon,
-                size: 18,
+                size: compact ? 16 : 18,
                 color: selected ? Colors.white : const Color(0xFF6B7280),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 6 : 8),
               Text(
                 value,
                 style: GoogleFonts.poppins(
                   color: selected ? Colors.white : const Color(0xFF6B7280),
-                  fontSize: 14,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: compact ? 13 : 14,
+                  fontWeight:
+                  selected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],
@@ -962,6 +920,9 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     );
   }
 }
+
+// ─── Sub-widgets ──────────────────────────────────────────────────────────────
+
 class _CompactMetric extends StatelessWidget {
   final String value;
   final String label;
@@ -989,9 +950,7 @@ class _CompactMetric extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1025,10 +984,7 @@ class _CompactFeature extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const _CompactFeature({
-    required this.icon,
-    required this.title,
-  });
+  const _CompactFeature({required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -1060,14 +1016,12 @@ class _CompactFeature extends StatelessWidget {
     );
   }
 }
+
 class _TrustBadge extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _TrustBadge({
-    required this.icon,
-    required this.label,
-  });
+  const _TrustBadge({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {

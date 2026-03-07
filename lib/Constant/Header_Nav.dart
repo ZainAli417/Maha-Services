@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -42,6 +43,8 @@ class HeaderNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!kIsWeb) return const SizedBox.shrink();
+    
     final w = MediaQuery.of(context).size.width;
     final isDesktop = w > 900;
     final isMobile  = w <= 600;
