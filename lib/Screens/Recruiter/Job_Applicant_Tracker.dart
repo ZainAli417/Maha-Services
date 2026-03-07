@@ -116,8 +116,10 @@ class _AppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 56,
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        height: 56,
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
       decoration: const BoxDecoration(
         color: _kSurface,
@@ -193,6 +195,7 @@ class _AppBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

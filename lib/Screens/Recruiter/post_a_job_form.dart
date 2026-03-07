@@ -210,7 +210,7 @@ class _PostJobScreenState extends State<PostJobScreen>
 
   // ─── APP BAR (mirrors dashboard _buildMobileAppBar style for all sizes) ──
   Widget _buildAppBar() {
-    return Container(
+    return SafeArea(bottom: false, child: Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 16),
 
@@ -280,7 +280,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           // ),
         ],
       ),
-    );
+    ),);
   }
 
   // ─── BODY ─────────────────────────────────────────────────────────────────

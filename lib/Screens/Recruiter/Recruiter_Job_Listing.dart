@@ -155,12 +155,13 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      body: Row(
-        children: [
-          RecruiterSidebar(activeIndex: 1),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsetsGeometry.all(0),
+      body: SafeArea(
+        child: Row(
+          children: [
+            RecruiterSidebar(activeIndex: 1),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsetsGeometry.all(0),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
@@ -172,6 +173,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
           ),
         ],
       ),
+          ),
     );
   }
 
