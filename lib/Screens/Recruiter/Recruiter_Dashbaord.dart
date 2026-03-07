@@ -122,8 +122,10 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
   }
 
   Widget _buildMobileAppBar(String title) {
-    return Container(
-      height: 56,
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -193,8 +195,9 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
           const SizedBox(width: 8),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // ERROR WIDGET

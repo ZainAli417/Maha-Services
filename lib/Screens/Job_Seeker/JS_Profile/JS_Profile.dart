@@ -1,7 +1,10 @@
 // js_profile_screen.dart
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -527,60 +530,63 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     const Color kTextSecondary = Color(0xFF475569);
     final isMobile = _isMobile;
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 12 : 24,
-        vertical: isMobile ? 10 : 16,
-      ),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          if (isMobile)
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, size: 24),
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 24,
+          vertical: isMobile ? 10 : 16,
+        ),
+        decoration: const BoxDecoration(color: Colors.white),
+        child: Row(
+          children: [
+            if (isMobile)
+              IconButton(
+                icon: const Icon(Icons.menu_rounded, size: 24),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+            Container(
+              padding: EdgeInsets.all(isMobile ? 6 : 10),
+              decoration: BoxDecoration(
+                color: kPrimaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.person_add_alt_outlined,
+                size: isMobile ? 18 : 24,
+                color: kPrimaryBlue,
+              ),
             ),
-          Container(
-            padding: EdgeInsets.all(isMobile ? 6 : 10),
-            decoration: BoxDecoration(
-              color: kPrimaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.person_add_alt_outlined,
-              size: isMobile ? 18 : 24,
-              color: kPrimaryBlue,
-            ),
-          ),
-          SizedBox(width: isMobile ? 8 : 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Profile',
-                  style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 14 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: kTextPrimary,
-                    height: 1.2,
-                  ),
-                ),
-                if (!isMobile)
+            SizedBox(width: isMobile ? 8 : 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    'One Click Profile Analyzer & CV Builder',
+                    'Profile',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: kTextSecondary,
+                      fontSize: isMobile ? 14 : 18,
+                      fontWeight: FontWeight.w600,
+                      color: kTextPrimary,
                       height: 1.2,
                     ),
                   ),
-              ],
+                  if (!isMobile)
+                    Text(
+                      'One Click Profile Analyzer & CV Builder',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: kTextSecondary,
+                        height: 1.2,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          _buildProgressIndicator(),
-        ],
+            _buildProgressIndicator(),
+          ],
+        ),
       ),
     );
   }
@@ -604,7 +610,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            isMobile ? '${_currentStep + 1}/${_stepTitles.length}' : 'Step ${_currentStep + 1} of ${_stepTitles.length}',
+           'Step ${_currentStep + 1} of ${_stepTitles.length}',
             style: GoogleFonts.poppins(
               fontSize: isMobile ? 11 : 13,
               fontWeight: FontWeight.w600,
@@ -640,11 +646,16 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Widget _buildMainContent(ProfileProvider_NEW prov) {
     final isMobile = _isMobile;
     return Padding(
-      padding: EdgeInsets.all(isMobile ? 10 : 20),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 10 : 20,
+        isMobile ? 0 : 20, // Reduced top padding to use dead space
+        isMobile ? 5 : 20,
+        isMobile ? 10 : 20,
+      ),
       child: Column(
         children: [
           _buildStepIndicators(),
-          SizedBox(height: isMobile ? 12 : 24),
+          SizedBox(height: isMobile ? 8 : 24), // Reduced spacing
           Expanded(
             child: RepaintBoundary(
               child: Container(
@@ -680,8 +691,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 8 : 16,
-                    vertical: isMobile ? 6 : 12,
+                    horizontal: isMobile ? 8: 20, // Increased from 8/16
+                    vertical: isMobile ? 8 : 12,    // Increased from 6
                   ),
                   decoration: BoxDecoration(
                     color: isActive
@@ -715,7 +726,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       Text(
                         _stepTitles[index],
                         style: GoogleFonts.poppins(
-                          fontSize: isMobile ? 10 : 13,
+                          fontSize: isMobile ? 12: 14,
                           fontWeight: isActive
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -2975,9 +2986,20 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     }
 
     final isMobile = _isMobile;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          isMobile ? 16 : 24,
+          isMobile ? 15 : 16,
+          isMobile ? 16 : 24,
+          isMobile ? 10 : 24, // Extra bottom padding to clear Android buttons
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
         if (_currentStep > 0)
           Material(
             color: Colors.transparent,
@@ -3211,6 +3233,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           ],
         ),
       ],
+            ),
+      ),
     );
   }
 
@@ -3323,21 +3347,35 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Future<void> _pickAndUploadProfilePic(ProfileProvider_NEW prov) async {
-    final res = await FilePicker.platform.pickFiles(
-      allowMultiple: false,
-      withData: true,
-      type: FileType.image,
-    );
-    if (res == null) return;
+    Uint8List? bytes;
+    String fileName = '';
 
-    final file = res.files.first;
-    final bytes = file.bytes;
+    if (kIsWeb) {
+      final res = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        withData: true,
+        type: FileType.image,
+      );
+      if (res == null) return;
+      final file = res.files.first;
+      bytes = file.bytes;
+      fileName = file.name;
+    } else {
+      final ImagePicker picker = ImagePicker();
+      final XFile? picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (picked == null) return;
+      bytes = await picked.readAsBytes();
+      fileName = picked.name;
+    }
+
     if (bytes == null) return;
-
-    final mimeType = lookupMimeType(file.name, headerBytes: bytes);
+    final mimeType = lookupMimeType(fileName, headerBytes: bytes) ?? "image/jpeg";
     await prov.uploadProfilePicture(
-      Uint8List.fromList(bytes),
-      file.name,
+      bytes,
+      fileName,
       mimeType: mimeType,
     );
   }
@@ -3345,17 +3383,26 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Future<void> _pickAndUploadDocument(ProfileProvider_NEW prov) async {
     final res = await FilePicker.platform.pickFiles(
       allowMultiple: false,
-      withData: true,
+      withData: kIsWeb,
     );
     if (res == null) return;
 
     final file = res.files.first;
-    final bytes = file.bytes;
+    Uint8List? bytes;
+
+    if (kIsWeb) {
+      bytes = file.bytes;
+    } else {
+      if (file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+    }
+
     if (bytes == null) return;
 
     final mimeType = lookupMimeType(file.name, headerBytes: bytes);
     final entry = await prov.uploadDocument(
-      Uint8List.fromList(bytes),
+      bytes,
       file.name,
       mimeType: mimeType,
     );
@@ -3370,23 +3417,32 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Future<void> _pickAndUploadExperienceDoc(ProfileProvider_NEW prov) async {
     final res = await FilePicker.platform.pickFiles(
       allowMultiple: false,
-      withData: true,
+      withData: kIsWeb,
     );
     if (res == null) return;
 
     final file = res.files.first;
-    final bytes = file.bytes;
+    Uint8List? bytes;
+
+    if (kIsWeb) {
+      bytes = file.bytes;
+    } else {
+      if (file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+    }
+
     if (bytes == null) return;
 
     // Check 5MB limit
     if (bytes.length > 5 * 1024 * 1024) {
-      showErrorTop(context, "FIle Size Limit 5Mb Exceed");
+      showErrorTop(context, "File Size Limit 5MB Exceeded");
       return;
     }
 
     final mimeType = lookupMimeType(file.name, headerBytes: bytes);
     final entry = await prov.uploadExperienceDocument(
-      Uint8List.fromList(bytes),
+      bytes,
       file.name,
       mimeType: mimeType,
     );
@@ -3394,7 +3450,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     if (entry != null) {
       showSuccessLight(context, "Experience Document Attached");
     } else {
-      showErrorTop(context, "Failed to attached Document");
+      showErrorTop(context, "Failed to attach Document");
     }
   }
 
@@ -3402,18 +3458,26 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Future<void> _pickAndUploadCertificationDoc(ProfileProvider_NEW prov) async {
     final res = await FilePicker.platform.pickFiles(
       allowMultiple: false,
-      withData: true,
+      withData: kIsWeb,
     );
     if (res == null) return;
 
     final file = res.files.first;
-    final bytes = file.bytes;
+    Uint8List? bytes;
+
+    if (kIsWeb) {
+      bytes = file.bytes;
+    } else {
+      if (file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+    }
+
     if (bytes == null) return;
 
     // Check 5MB limit
     if (bytes.length > 5 * 1024 * 1024) {
-      showErrorTop(context, "FIle Size limit 5Mb Exceed");
-
+      showErrorTop(context, "File Size limit 5MB Exceeded");
       return;
     }
 

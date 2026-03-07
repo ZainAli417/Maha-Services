@@ -77,34 +77,44 @@ class _ForgotPasswordDialogContentState
     final isMobile = screenWidth < 600;
     final dialogWidth = isMobile ? screenWidth * 0.92 : 460.0;
 
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: dialogWidth,
-          margin: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.08),
-                blurRadius: 40,
-                offset: const Offset(0, 16),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: dialogWidth,
+                margin: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withOpacity(0.08),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  switchInCurve: Curves.easeOutCubic,
+                  child: _submitted
+                      ? _buildSuccessView(isMobile)
+                      : _buildFormView(isMobile),
+                ),
               ),
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOutCubic,
-            child: _submitted
-                ? _buildSuccessView(isMobile)
-                : _buildFormView(isMobile),
+            ),
           ),
         ),
       ),

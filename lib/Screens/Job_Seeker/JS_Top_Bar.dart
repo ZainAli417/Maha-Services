@@ -50,110 +50,113 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Logo Section
-                _buildLogoSection(),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Logo Section
+                  _buildLogoSection(),
 
-                const Divider(height: 1, thickness: 1),
+                  const Divider(height: 1, thickness: 1),
 
-                // Profile Card
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _buildProfileCard(initials),
-                ),
-
-                const Divider(height: 1, thickness: 1),
-
-                // Menu Items
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                    children: [
-                      _buildSectionLabel('MAIN MENU'),
-                      const SizedBox(height: 8),
-                      _buildMenuItem(
-                        icon: Icons.dashboard_outlined,
-                        activeIcon: Icons.dashboard,
-                        label: 'Dashboard',
-                        index: 0,
-                        isActive: widget.activeIndex == 0,
-                        onTap: () => context.go('/dashboard'),
-                      ),
-                      _buildMenuItem(
-                        icon: Icons.person_outline,
-                        activeIcon: Icons.person,
-                        label: 'Profile',
-                        index: 1,
-                        isActive: widget.activeIndex == 1,
-                        onTap: () => context.go('/profile'),
-                      ),
-                      _buildMenuItem(
-                        icon: Icons.auto_awesome_outlined,
-                        activeIcon: Icons.auto_awesome,
-                        label: 'ATS Cv Analyzer',
-                        index: 2,
-                        isActive: widget.activeIndex == 2,
-                        onTap: () => context.go('/ai-tools'),
-                      ),
-
-                      const SizedBox(height: 20),
-                      _buildSectionLabel('JOB SEARCH'),
-                      const SizedBox(height: 8),
-                      _buildMenuItem(
-                        icon: Icons.work_outline,
-                        activeIcon: Icons.work,
-                        label: 'Job Hub',
-                        index: 3,
-                        isActive: widget.activeIndex == 3,
-                        onTap: () => context.go('/job-hub'),
-                      ),
-                      _buildProMenuItem(
-                        icon: Icons.bookmark_outline,
-                        label: 'Saved Jobs',
-                      ),
-                      // _buildProMenuItem(
-                      //   icon: Icons.send_outlined,
-                      //   label: 'Applications',
-                      // ),
-
-                      const SizedBox(height: 20),
-                      _buildSectionLabel('COMMUNICATION'),
-                      const SizedBox(height: 8),
-                      _buildProMenuItem(
-                        icon: Icons.video_call_outlined,
-                        label: 'Interviews',
-                      ),
-                      _buildProMenuItem(
-                        icon: Icons.chat_bubble_outline,
-                        label: 'Messages',
-                      ),
-                      _buildProMenuItem(
-                        icon: Icons.notifications_outlined,
-                        label: 'Notifications',
-                      ),
-
-                      const SizedBox(height: 20),
-                      _buildSectionLabel('ACCOUNT'),
-                      const SizedBox(height: 8),
-                      _buildProMenuItem(
-                        icon: Icons.settings_outlined,
-                        label: 'Settings',
-                      ),
-                      _buildProMenuItem(
-                        icon: Icons.help_outline,
-                        label: 'Help & Support',
-                      ),
-                    ],
+                  // Profile Card
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildProfileCard(initials),
                   ),
-                ),
 
-                const Divider(height: 1, thickness: 1),
+                  const Divider(height: 1, thickness: 1),
 
-                // Footer
-                _buildFooter(),
-              ],
+                  // Menu Items
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      children: [
+                        _buildSectionLabel('MAIN MENU'),
+                        const SizedBox(height: 8),
+                        _buildMenuItem(
+                          icon: Icons.dashboard_outlined,
+                          activeIcon: Icons.dashboard,
+                          label: 'Dashboard',
+                          index: 0,
+                          isActive: widget.activeIndex == 0,
+                          onTap: () => context.go('/dashboard'),
+                        ),
+                        _buildMenuItem(
+                          icon: Icons.person_outline,
+                          activeIcon: Icons.person,
+                          label: 'Profile',
+                          index: 1,
+                          isActive: widget.activeIndex == 1,
+                          onTap: () => context.go('/profile'),
+                        ),
+                        _buildMenuItem(
+                          icon: Icons.auto_awesome_outlined,
+                          activeIcon: Icons.auto_awesome,
+                          label: 'ATS Cv Analyzer',
+                          index: 2,
+                          isActive: widget.activeIndex == 2,
+                          onTap: () => context.go('/ai-tools'),
+                        ),
+
+                        const SizedBox(height: 20),
+                        _buildSectionLabel('JOB SEARCH'),
+                        const SizedBox(height: 8),
+                        _buildMenuItem(
+                          icon: Icons.work_outline,
+                          activeIcon: Icons.work,
+                          label: 'Job Hub',
+                          index: 3,
+                          isActive: widget.activeIndex == 3,
+                          onTap: () => context.go('/job-hub'),
+                        ),
+                        _buildProMenuItem(
+                          icon: Icons.bookmark_outline,
+                          label: 'Saved Jobs',
+                        ),
+                        // _buildProMenuItem(
+                        //   icon: Icons.send_outlined,
+                        //   label: 'Applications',
+                        // ),
+
+                        const SizedBox(height: 20),
+                        _buildSectionLabel('COMMUNICATION'),
+                        const SizedBox(height: 8),
+                        _buildProMenuItem(
+                          icon: Icons.video_call_outlined,
+                          label: 'Interviews',
+                        ),
+                        _buildProMenuItem(
+                          icon: Icons.chat_bubble_outline,
+                          label: 'Messages',
+                        ),
+                        _buildProMenuItem(
+                          icon: Icons.notifications_outlined,
+                          label: 'Notifications',
+                        ),
+
+                        const SizedBox(height: 20),
+                        _buildSectionLabel('ACCOUNT'),
+                        const SizedBox(height: 8),
+                        _buildProMenuItem(
+                          icon: Icons.settings_outlined,
+                          label: 'Settings',
+                        ),
+                        _buildProMenuItem(
+                          icon: Icons.help_outline,
+                          label: 'Help & Support',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(height: 1, thickness: 1),
+
+                  // Footer
+                  _buildFooter(),
+                ],
+              ),
             ),
           );
         },

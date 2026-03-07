@@ -30,69 +30,72 @@ class _AdminSidebarState extends State<AdminSidebar> {
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(2, 0)),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildLogoSection(),
-          const Divider(height: 1, thickness: 1),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: const AdminProfile(),
-          ),
-          const Divider(height: 1, thickness: 1),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              children: [
-                _buildSectionLabel('MAIN'),
-                const SizedBox(height: 8),
-                _buildMenuItem(
-                  icon: Icons.dashboard_outlined,
-                  activeIcon: Icons.dashboard,
-                  label: 'Dashboard',
-                  menuKey: 'Dashboard',
-                ),
-                const SizedBox(height: 20),
-                _buildSectionLabel('MANAGEMENT'),
-                const SizedBox(height: 8),
-                _buildMenuItem(
-                  icon: Icons.people_outline,
-                  activeIcon: Icons.people,
-                  label: 'User Management',
-                  menuKey: 'User Management',
-                ),
-                // Recruiter Requests — LIVE BADGE from Firestore
-                _buildRecruiterRequestItem(),
-                // Locked items below Recruiter Requests
-                _buildLockedItem(
-                  icon: Icons.person_search_outlined,
-                  label: 'Candidate Vetting',
-                ),
-                _buildLockedItem(
-                  icon: Icons.calendar_today_outlined,
-                  label: 'Interview Schedule',
-                ),
-                const SizedBox(height: 20),
-                _buildSectionLabel('SYSTEM'),
-                const SizedBox(height: 8),
-                _buildLockedItem(
-                  icon: Icons.verified_user_outlined,
-                  label: 'Verification',
-                ),
-                _buildLockedItem(
-                  icon: Icons.report_outlined,
-                  label: 'Reports',
-                ),
-                _buildLockedItem(
-                  icon: Icons.settings_outlined,
-                  label: 'Settings',
-                ),
-              ],
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildLogoSection(),
+            const Divider(height: 1, thickness: 1),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: const AdminProfile(),
             ),
-          ),
-          const Divider(height: 1, thickness: 1),
-          _buildFooter(),
-        ],
+            const Divider(height: 1, thickness: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                children: [
+                  _buildSectionLabel('MAIN'),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    icon: Icons.dashboard_outlined,
+                    activeIcon: Icons.dashboard,
+                    label: 'Dashboard',
+                    menuKey: 'Dashboard',
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSectionLabel('MANAGEMENT'),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    icon: Icons.people_outline,
+                    activeIcon: Icons.people,
+                    label: 'User Management',
+                    menuKey: 'User Management',
+                  ),
+                  // Recruiter Requests — LIVE BADGE from Firestore
+                  _buildRecruiterRequestItem(),
+                  // Locked items below Recruiter Requests
+                  _buildLockedItem(
+                    icon: Icons.person_search_outlined,
+                    label: 'Candidate Vetting',
+                  ),
+                  _buildLockedItem(
+                    icon: Icons.calendar_today_outlined,
+                    label: 'Interview Schedule',
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSectionLabel('SYSTEM'),
+                  const SizedBox(height: 8),
+                  _buildLockedItem(
+                    icon: Icons.verified_user_outlined,
+                    label: 'Verification',
+                  ),
+                  _buildLockedItem(
+                    icon: Icons.report_outlined,
+                    label: 'Reports',
+                  ),
+                  _buildLockedItem(
+                    icon: Icons.settings_outlined,
+                    label: 'Settings',
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, thickness: 1),
+            _buildFooter(),
+          ],
+        ),
       ),
     );
   }

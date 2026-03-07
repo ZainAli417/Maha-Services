@@ -135,27 +135,33 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isWide = size.width > 900;
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width > 900;
 
     return Scaffold(
-      // Prevent resize when keyboard appears — form scrolls instead
       resizeToAvoidBottomInset: true,
-      body: Column(
-        children: [
-          const HeaderNav(),
-          Expanded(
-            child: Row(
-              children: [
-                if (isWide) Expanded(flex: 5, child: _leftPanel(context)),
-                Expanded(
-                  flex: isWide ? 5 : 1,
-                  child: _buildFormPanel(isWide),
-                ),
-              ],
+      body: SafeArea(
+        top: !isWide,
+        bottom: false,
+        child: isWide
+            ? Column(
+          children: [
+            const HeaderNav(),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(flex: 5, child: _leftPanel(context)),
+                  Expanded(flex: 5, child: _buildFormPanel(true)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        )
+
+        // ✅ MOBILE LAYOUT
+            : SingleChildScrollView(
+          child: _buildFormPanel(false),
+        ),
       ),
     );
   }
@@ -518,25 +524,15 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       position: _slideAnimation,
       child: FadeTransition(
         opacity: _fadeAnimation,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: isWide
-                ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 30,
-                offset: const Offset(-10, 0),
-              ),
-            ]
-                : null,
-          ),
+
           child: Center(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: hPad,
                 vertical: vPad,
               ),
+              physics: const BouncingScrollPhysics(),
+
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 460),
                 child: Column(
@@ -544,6 +540,17 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Header ──────────────────────────────────────────────
+                    if (!isWide)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 30),
+                        child: Center(
+                          child: Image.asset(
+                            "images/logo.png",
+                            height: 150,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -758,7 +765,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
               ),
             ),
           ),
-        ),
+
       ),
     );
   }

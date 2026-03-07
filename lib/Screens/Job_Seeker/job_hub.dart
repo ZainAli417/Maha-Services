@@ -124,35 +124,37 @@ class _job_hubState extends State<job_hub>
                   child: Column(
                     children: [
                       if (isMobile)
-                        Container(
-                          height: 50,
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
-                          ),
-                          child: Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.menu_rounded, size: 22),
-                                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                              ),
-                              const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.all(7),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1E40AF).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(7),
+                        SafeArea(
+                          bottom: false,
+                          child: Container(
+                            height: 50,
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.menu_rounded, size: 22),
+                                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                 ),
-                                child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF1E40AF)),
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Job Hub',
-                                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E40AF).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(7),
+                                  ),
+                                  child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF1E40AF)),
+                                ),
+                                const SizedBox(width: 8),
+                                Text('Job Hub',
+                                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       Expanded(child: _buildDashboardContent(context)),

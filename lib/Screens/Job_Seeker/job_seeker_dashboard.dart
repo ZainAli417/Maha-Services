@@ -186,25 +186,29 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           child: JobSeekerSidebar(activeIndex: 0, isDrawer: true),
         )
             : null,
-        body: Row(
-          children: [
-            if (!isMobile) JobSeekerSidebar(activeIndex: 0),
-            Expanded(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    children: [
-                      if (isMobile)
-                        _buildMobileAppBar('My Applications'),
-                      Expanded(child: _buildContent(context)),
-                    ],
+        body: SafeArea(
+          top: isMobile,
+          bottom: false,
+          child: Row(
+            children: [
+              if (!isMobile) JobSeekerSidebar(activeIndex: 0),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      children: [
+                        if (isMobile)
+                          _buildMobileAppBar('My Applications'),
+                        Expanded(child: _buildContent(context)),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -498,10 +502,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     onChanged: (v) => setState(() => _selectedCompany = v!)),
                 const SizedBox(width: 6),
                 _DateRangeBtn(range: _appliedRange, onTap: _showDatePicker),
-                const SizedBox(width: 6),
-                _SortDropdown(
-                    value: _getSortLabel(),
-                    onChanged: _onSortChanged),
+                // _SortDropdown hidden on mobile to save space as per request
                 if (_hasActiveFilters()) ...[
                   const SizedBox(width: 6),
                   _OutlineBtn(
@@ -513,6 +514,14 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               ],
             ),
           ),
+          if (Theme.of(context).platform == TargetPlatform.android)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 4),
+              child: Text(
+                'PULL DOWN LONG TO REFRESH DATA',
+                style: _C.p(9, fw: FontWeight.w500, color: _C.t3.withOpacity(0.7)),
+              ),
+            ),
         ],
       )
           : Row(

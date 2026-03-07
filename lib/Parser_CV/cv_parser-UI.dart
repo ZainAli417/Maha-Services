@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -138,7 +140,7 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'docx', 'txt'],
-        withData: true,
+        withData: kIsWeb,
       );
 
       if (res == null || res.files.isEmpty) return;
@@ -149,8 +151,22 @@ class _CvUploadSectionState extends State<CvUploadSection> with TickerProviderSt
         return;
       }
 
+      Uint8List? bytesResult;
+      if (kIsWeb) {
+        bytesResult = file.bytes;
+      } else {
+        if (file.path != null) {
+          bytesResult = await File(file.path!).readAsBytes();
+        }
+      }
+
+      if (bytesResult == null) {
+        _showNotification('Cannot read file content', isError: true);
+        return;
+      }
+
       setState(() {
-        _fileBytes = file.bytes;
+        _fileBytes = bytesResult;
         _fileName = file.name;
         _isProcessing = true;
       });

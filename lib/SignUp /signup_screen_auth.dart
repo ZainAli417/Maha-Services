@@ -1,15 +1,15 @@
 // lib/screens/signup_screen_auth.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../Constant/captcha.dart';
 import '../widgets/custom_snackbars.dart';
 import 'package:job_portal/SignUp%20/signup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:web/web.dart' as web;
-import 'dart:js_interop';
 import '../Constant/Header_Nav.dart';
-import '../Constant/captcha_webview.dart';
+import '../Constant/captcha_web_listeners.dart';
 
 class SignUp_Screen extends StatefulWidget {
   const SignUp_Screen({super.key});
@@ -35,14 +35,18 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
   @override
   void initState() {
     super.initState();
-    registerRecaptchaView('6LfUnUAsAAAAAE580fSsiwknCmKCYghhujXtycaQ');
+    if (kIsWeb) {
+      registerRecaptchaView('6LfUnUAsAAAAAE580fSsiwknCmKCYghhujXtycaQ');
+    }
     _initializeAnimations();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final provider = Provider.of<SignupProvider>(context, listen: false);
       provider.clearAll();
-      _setupCaptchaListeners(provider);
+      if (kIsWeb) {
+        setupCaptchaListeners(provider);
+      }
     });
   }
 
@@ -89,32 +93,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
     });
   }
 
-  void _setupCaptchaListeners(SignupProvider provider) {
-    web.window.addEventListener('captcha-success', ((web.Event event) {
-      try {
-        if (event.isA<web.CustomEvent>()) {
-          final customEvent = event as web.CustomEvent;
-          final detail = event.detail;
-          if (detail != null && detail.isDefinedAndNotNull) {
-            final token = (detail as JSString).toDart;
-            if (token.isNotEmpty) {
-              provider.setCaptchaVerified(true, token: token);
-            } else {
-              provider.setCaptchaVerified(false);
-            }
-          } else {
-            provider.setCaptchaVerified(false);
-          }
-        }
-      } catch (e) {
-        provider.setCaptchaVerified(false);
-      }
-    }).toJS);
-
-    web.window.addEventListener('captcha-expired', ((web.Event event) {
-      provider.setCaptchaVerified(false);
-    }).toJS);
-  }
+  // Captcha listeners moved to captcha_web_listeners.dart for platform safety
 
   @override
   void dispose() {
@@ -654,6 +633,14 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
   }
 
   Widget _buildReCaptcha(SignupProvider provider) {
+    // reCAPTCHA is web-only; on mobile, auto-verify
+    if (!kIsWeb) {
+      if (!provider.isCaptchaVerified) {
+        provider.setCaptchaVerified(true, token: 'mobile-bypass');
+      }
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1071,7 +1058,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const HeaderNav(),
+            if (isWide) const HeaderNav() else _buildMobileLogoHeader(context),
             Expanded(
               child: Row(
                 children: [
@@ -1093,35 +1080,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Mobile brand header
-                              if (!isWide) ...[
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.indigo,
-                                        borderRadius:
-                                        BorderRadius.circular(10),
-                                      ),
-                                      child: const Icon(
-                                        Icons.work_outline_rounded,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Maha Services',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.indigo,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                              ],
+
                               state.accountPanel(context, p, isWide),
                               const SizedBox(height: 8),
                               Center(
@@ -1171,6 +1130,54 @@ class _SignUp_ScreenInner extends StatelessWidget {
       ),
     );
   }
+  Widget _buildMobileLogoHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.go('/login'),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'images/logo.png',
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
+                errorBuilder: (ctx, _, __) => Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.indigo,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.work_outline_rounded,
+                      color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Maha Services',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1F2937),
+              letterSpacing: -0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 // ─── Reusable components ──────────────────────────────────────────────────────
@@ -1268,6 +1275,7 @@ class _CompactFeature extends StatelessWidget {
     );
   }
 }
+
 
 class _TrustBadge extends StatelessWidget {
   final IconData icon;

@@ -1,10 +1,7 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -24,18 +21,27 @@ android {
 
     defaultConfig {
         applicationId = "com.example.job_portal"
-
-        // ✅ Correct Kotlin DSL style:
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
+
+            // temporary signing (replace later with release keystore)
             signingConfig = signingConfigs.getByName("debug")
+
+            // 🔥 IMPORTANT OPTIMIZATION
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            // Proguard rules
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

@@ -52,101 +52,104 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Logo Section
-              _buildLogoSection(),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo Section
+                _buildLogoSection(),
 
-              const Divider(height: 1, thickness: 1),
+                const Divider(height: 1, thickness: 1),
 
-              // Profile Card
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _buildProfileCard(initials),
-              ),
-
-              const Divider(height: 1, thickness: 1),
-
-              // Menu Items
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  children: [
-                    _buildSectionLabel('MAIN MENU'),
-                    const SizedBox(height: 8),
-                    _buildMenuItem(
-                      icon: Icons.dashboard_outlined,
-                      activeIcon: Icons.dashboard,
-                      label: 'Dashboard',
-                      index: 0,
-                      isActive: widget.activeIndex == 0,
-                      onTap: () => context.go('/recruiter-dashboard'),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.post_add_outlined,
-                      activeIcon: Icons.post_add,
-                      label: 'Post a Job',
-                      index: 1,
-                      isActive: widget.activeIndex == 1,
-                      onTap: () => context.go('/post-job'),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.spatial_tracking_outlined,
-                      activeIcon: Icons.spatial_tracking_rounded,
-                      label: 'Job Application Tracker',
-                      index:2,
-                      isActive: widget.activeIndex == 2,
-                      onTap: () => context.go('/job-application-tracker'),
-                    ),
-
-                    _buildMenuItem(
-
-                      icon: Icons.person_outline,
-                      activeIcon: Icons.person,
-                      label: 'Shortlisting',
-                      index: 3,
-                      isActive: widget.activeIndex == 3,
-                      onTap: () => context.go('/shortlisting'),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.all_inbox_outlined,
-                      activeIcon: Icons.all_inbox,
-                      label: 'Request Box',
-                      index: 4,
-                      isActive: widget.activeIndex == 4,
-                      onTap: () => context.go('/request-box'),
-                    ),
-
-                    const SizedBox(height: 20),
-                    _buildSectionLabel('ACCOUNT'),
-                    const SizedBox(height: 8),
-                    _buildMenuItem(
-                       icon: Icons.work_outline,
-                       activeIcon: Icons.work,
-                       label: 'Settings',
-                       index: 5,
-                       isActive: widget.activeIndex == 5,
-                       onTap: () => context.go('/Settings'),
-                     ),
-
-                    _buildMenuItem(
-                      icon: Icons.help_outline,
-                      activeIcon: Icons.help,
-                      label: 'Help & Support',
-                      index: 6,
-                      isActive: widget.activeIndex == 6,
-                      onTap: () => context.go('/help'),
-                    ),
-                  ],
+                // Profile Card
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildProfileCard(initials),
                 ),
-              ),
 
-              const Divider(height: 1, thickness: 1),
+                const Divider(height: 1, thickness: 1),
 
-              // Footer
-              _buildFooter(),
-            ],
+                // Menu Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    children: [
+                      _buildSectionLabel('MAIN MENU'),
+                      const SizedBox(height: 8),
+                      _buildMenuItem(
+                        icon: Icons.dashboard_outlined,
+                        activeIcon: Icons.dashboard,
+                        label: 'Dashboard',
+                        index: 0,
+                        isActive: widget.activeIndex == 0,
+                        onTap: () => context.go('/recruiter-dashboard'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.post_add_outlined,
+                        activeIcon: Icons.post_add,
+                        label: 'Post a Job',
+                        index: 1,
+                        isActive: widget.activeIndex == 1,
+                        onTap: () => context.go('/post-job'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.spatial_tracking_outlined,
+                        activeIcon: Icons.spatial_tracking_rounded,
+                        label: 'Job Application Tracker',
+                        index:2,
+                        isActive: widget.activeIndex == 2,
+                        onTap: () => context.go('/job-application-tracker'),
+                      ),
+
+                      _buildMenuItem(
+
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: 'Shortlisting',
+                        index: 3,
+                        isActive: widget.activeIndex == 3,
+                        onTap: () => context.go('/shortlisting'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.all_inbox_outlined,
+                        activeIcon: Icons.all_inbox,
+                        label: 'Request Box',
+                        index: 4,
+                        isActive: widget.activeIndex == 4,
+                        onTap: () => context.go('/request-box'),
+                      ),
+
+                      const SizedBox(height: 20),
+                      _buildSectionLabel('ACCOUNT'),
+                      const SizedBox(height: 8),
+                      _buildMenuItem(
+                         icon: Icons.work_outline,
+                         activeIcon: Icons.work,
+                         label: 'Settings',
+                         index: 5,
+                         isActive: widget.activeIndex == 5,
+                         onTap: () => context.go('/Settings'),
+                       ),
+
+                      _buildMenuItem(
+                        icon: Icons.help_outline,
+                        activeIcon: Icons.help,
+                        label: 'Help & Support',
+                        index: 6,
+                        isActive: widget.activeIndex == 6,
+                        onTap: () => context.go('/help'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Footer
+                _buildFooter(),
+              ],
+            ),
           ),
         );
       },

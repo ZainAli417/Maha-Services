@@ -2,6 +2,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/widget/blocks/leaf/paragraph.dart';
@@ -12,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../Screens/Job_Seeker/job_hub.dart';
 import '../Screens/Job_Seeker/JS_Top_Bar.dart';
+import '../Screens/Job_Seeker/job_seeker_provider.dart';
 import 'cv_analysis_provider.dart';
 
 // ─── Colours ────────────────────────────────────────────────────────────────
@@ -59,6 +61,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   late AnimationController _animController;
   bool _isAiDialogVisible = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _resetTrigger = 0;
 
   @override
   void initState() {
@@ -81,7 +84,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     final res = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
-      withData: true,
+      withData: kIsWeb,
     );
     if (res != null && res.files.isNotEmpty) {
       setState(() => _pickedFile = res.files.single);
@@ -90,7 +93,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
 
   void _startAnalysis(BuildContext ctx) {
     if (_pickedFile == null) {
-      _showSnackBar(ctx, 'Please select a CV file first', isError: true);
+      _showSnackBar(ctx, 'Please select a CV/Resume first', isError: true);
       return;
     }
     if (_roleController.text.trim().isEmpty) {
@@ -184,9 +187,11 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
                               _pickedFile = null;
                               _roleController.clear();
                               _jdController.clear();
+                              _resetTrigger++;
                             });
                             prov.reset();
                           },
+                          resetKey: ValueKey(_resetTrigger),
                           provider: prov,
                         ),
                       );
@@ -247,55 +252,40 @@ class _CompactHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Hamburger on mobile
-          if (isMobile) ...[
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, size: 22),
-              onPressed: () => scaffoldKey.currentState?.openDrawer(),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-              color: kTextPrimary,
-            ),
-            const SizedBox(width: 6),
-          ],
-          // Icon
-          Container(
-            padding: EdgeInsets.all(isMobile ? 8 : 10),
-            decoration: BoxDecoration(
-              color: kPrimaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.analytics_outlined,
-                size: isMobile ? 20 : 24, color: kPrimaryBlue),
-          ),
-          SizedBox(width: isMobile ? 10 : 14),
-          // Title column
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'CV Analysis',
-                  style: GoogleFonts.poppins(
-                    fontSize: isMobile ? 15 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: kTextPrimary,
-                    height: 1.2,
-                  ),
+          if (isMobile)
+            SafeArea(
+              bottom: false,
+              child: Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
                 ),
-                if (!isMobile)
-                  Text(
-                    'AI-powered matching and insights',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: kTextSecondary,
-                      height: 1.2,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu_rounded, size: 22),
+                      onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     ),
-                  ),
-              ],
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E40AF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: const Icon(Icons.document_scanner_outlined, size: 16, color: Color(0xFF1E40AF)),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('CV Analyzer',
+                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
           if (provider.isLoading)
             SizedBox(
               width: 18,
@@ -322,6 +312,7 @@ class _ContentLayout extends StatelessWidget {
   final VoidCallback onAnalyze;
   final VoidCallback onReset;
   final CVAnalyzerBackendProvider provider;
+  final Key? resetKey;
 
   const _ContentLayout({
     required this.pickedFile,
@@ -331,6 +322,7 @@ class _ContentLayout extends StatelessWidget {
     required this.onAnalyze,
     required this.onReset,
     required this.provider,
+    this.resetKey,
   });
 
   @override
@@ -359,6 +351,7 @@ class _ContentLayout extends StatelessWidget {
                   onAnalyze: onAnalyze,
                   onReset: onReset,
                   isLoading: provider.isLoading,
+                  resetKey: resetKey,
                 ),
               ),
               const SizedBox(width: 20),
@@ -379,6 +372,7 @@ class _ContentLayout extends StatelessWidget {
               onAnalyze: onAnalyze,
               onReset: onReset,
               isLoading: provider.isLoading,
+              resetKey: resetKey,
             ),
             if (hasResults || provider.error != null) ...[
               const SizedBox(height: 16),
@@ -402,6 +396,7 @@ class _InputPanel extends StatelessWidget {
   final VoidCallback onAnalyze;
   final VoidCallback onReset;
   final bool isLoading;
+  final Key? resetKey;
 
   const _InputPanel({
     required this.pickedFile,
@@ -411,6 +406,7 @@ class _InputPanel extends StatelessWidget {
     required this.onAnalyze,
     required this.onReset,
     required this.isLoading,
+    this.resetKey,
   });
 
   @override
@@ -421,14 +417,7 @@ class _InputPanel extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.all(pad),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: kBorderLight),
-        boxShadow: const [
-          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3)),
-        ],
-      ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -436,6 +425,18 @@ class _InputPanel extends StatelessWidget {
           _SectionLabel(text: 'Upload CV', icon: Icons.upload_file),
           SizedBox(height: isMobile ? 8 : 12),
           _FileUploadZone(pickedFile: pickedFile, onPickFile: onPickFile),
+
+          SizedBox(height: isMobile ? 16 : 22),
+          _SectionLabel(text: 'Select Job from Hub (Optional)', icon: Icons.hub_outlined),
+          SizedBox(height: isMobile ? 8 : 10),
+          _JobSelector(
+            key: resetKey,
+            onJobSelected: (job) {
+              roleController.text = job['title'] ?? '';
+              jdController.text = job['description'] ?? '';
+            },
+            isMobile: isMobile,
+          ),
 
           SizedBox(height: isMobile ? 16 : 22),
           _SectionLabel(text: 'Target Role', icon: Icons.work_outline),
@@ -479,17 +480,24 @@ class _InputPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: kBorderLight),
-                  borderRadius: BorderRadius.circular(8),
+              OutlinedButton.icon(
+                onPressed: isLoading ? null : onReset,
+                icon: const Icon(Icons.refresh_rounded, size: 16),
+                label: Text(
+                  'Reset',
+                  style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 13 : 14,
+                      fontWeight: FontWeight.w600),
                 ),
-                child: IconButton(
-                  onPressed: isLoading ? null : onReset,
-                  icon: const Icon(Icons.refresh_rounded, size: 20),
-                  color: kTextSecondary,
-                  tooltip: 'Reset',
-                  padding: EdgeInsets.all(isMobile ? 10 : 12),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: kTextSecondary,
+                  side: const BorderSide(color: kBorderLight),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: isMobile ? 12 : 16,
+                      vertical: isMobile ? 14 : 18),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
                 ),
               ),
             ],
@@ -649,7 +657,7 @@ class _FileUploadZone extends StatelessWidget {
             Icon(Icons.cloud_upload_outlined, size: 34, color: kAccentBlue),
             const SizedBox(height: 8),
             Text(
-              'Tap to browse files',
+              'Tap to browse CVs/Resumes',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -682,6 +690,76 @@ class _FileUploadZone extends StatelessWidget {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  JOB SELECTOR
+// ════════════════════════════════════════════════════════════════════════════
+class _JobSelector extends StatefulWidget {
+  final Function(Map<String, dynamic>) onJobSelected;
+  final bool isMobile;
+
+  const _JobSelector({super.key, required this.onJobSelected, this.isMobile = false});
+
+  @override
+  State<_JobSelector> createState() => _JobSelectorState();
+}
+
+class _JobSelectorState extends State<_JobSelector> {
+  String? _selectedJobId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<JobSeekerProvider>(
+      builder: (context, provider, _) {
+        final jobs = provider.activeJobs;
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: kBackgroundGray,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: kBorderLight),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: _selectedJobId,
+              hint: Text(
+                'Browse public jobs to auto-fill...',
+                style: GoogleFonts.poppins(
+                  fontSize: widget.isMobile ? 12 : 14,
+                  color: kTextSecondary.withOpacity(0.6),
+                ),
+              ),
+              items: jobs.map((job) {
+                return DropdownMenuItem<String>(
+                  value: job['id'],
+                  child: Text(
+                    '${job['title']} @ ${job['company']}',
+                    style: GoogleFonts.poppins(
+                      fontSize: widget.isMobile ? 13 : 14,
+                      color: kTextPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedJobId = val);
+                  final selectedJob = jobs.firstWhere((j) => j['id'] == val);
+                  widget.onJobSelected(selectedJob);
+                }
+              },
+              icon: const Icon(Icons.arrow_drop_down, color: kTextSecondary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 
 // ════════════════════════════════════════════════════════════════════════════
 //  RESULTS PANEL

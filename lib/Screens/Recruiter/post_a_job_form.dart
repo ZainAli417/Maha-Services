@@ -1,5 +1,7 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -710,13 +712,25 @@ class _PostJobScreenState extends State<PostJobScreen>
   // ─── UNIT HEADER (logo + emblem row, flat — no card) ─────────────────────
   Widget _buildUnitHeader(job_listing_provider provider) {
     Future<void> pick() async {
-      final r = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        withData: true,
-      );
-      if (r != null && r.files.isNotEmpty) {
-        final f = r.files.first;
-        if (f.bytes != null) provider.updateTempLogo(f.bytes!, f.name);
+      if (kIsWeb) {
+        final r = await FilePicker.platform.pickFiles(
+          type: FileType.image,
+          withData: true,
+        );
+        if (r != null && r.files.isNotEmpty) {
+          final f = r.files.first;
+          if (f.bytes != null) provider.updateTempLogo(f.bytes!, f.name);
+        }
+      } else {
+        final picker = ImagePicker();
+        final picked = await picker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 80,
+        );
+        if (picked != null) {
+          final bytes = await picked.readAsBytes();
+          provider.updateTempLogo(bytes, picked.name);
+        }
       }
     }
 
