@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -230,6 +231,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      backgroundColor: Color(0xFFF8FAFC),
       body: Consumer<ApplicantsProvider>(
         builder: (ctx, provider, _) {
           if (provider.isLoading) {
@@ -255,20 +257,23 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           }
           return Column(
             children: [
-              _Header(
-                isMobile: isMobile,
-                selected: _selected,
-                rankByScore: _rankByScore,
-                jobId: widget.jobId,
-                provider: provider,
-                onShortlist: () => _shortlistSelected(provider),
-                onAutoShortlist: () => _autoShortlist(provider),
-                onToggleRank: () {
-                  setState(() => _rankByScore = !_rankByScore);
-                  _toast(_rankByScore
-                      ? 'Ranked by AI match score'
-                      : 'Ranking cleared');
-                },
+              SafeArea(
+                bottom: false,
+                child: _Header(
+                  isMobile: isMobile,
+                  selected: _selected,
+                  rankByScore: _rankByScore,
+                  jobId: widget.jobId,
+                  provider: provider,
+                  onShortlist: () => _shortlistSelected(provider),
+                  onAutoShortlist: () => _autoShortlist(provider),
+                  onToggleRank: () {
+                    setState(() => _rankByScore = !_rankByScore);
+                    _toast(_rankByScore
+                        ? 'Ranked by AI match score'
+                        : 'Ranking cleared');
+                  },
+                ),
               ),
               Expanded(child: _buildTable(provider, isMobile)),
             ],
@@ -941,8 +946,7 @@ class _Header extends StatelessWidget {
         isMobile ? 12 : 16,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: _cBorder)),
+        color: Color(0xFFF8FAFC),
       ),
       child: isMobile ? _mobileHeader(context) : _desktopHeader(context),
     );
@@ -968,8 +972,6 @@ class _Header extends StatelessWidget {
                       style: GoogleFonts.poppins(fontSize: 11, color: _cTxtSec)),
                 ]),
           ),
-          _AIBadge(small: true),
-          const SizedBox(width: 8),
           // Mobile action menu button
           GestureDetector(
             onTap: () => _showMobileActions(context),
@@ -983,6 +985,10 @@ class _Header extends StatelessWidget {
               child: const Icon(Icons.more_horiz_rounded,
                   size: 20, color: _cPrimary),
             ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close_rounded, color: CupertinoColors.systemGrey2),
           ),
         ]),
         // Selection status if any selected
@@ -1114,7 +1120,7 @@ class _Header extends StatelessWidget {
                     color: _cTxt,
                     letterSpacing: -0.5)),
             const SizedBox(width: 10),
-            const _AIBadge(small: false),
+
           ]),
           const SizedBox(height: 4),
           Text('Manage applicants efficiently using AI',
@@ -1676,30 +1682,6 @@ class _StatusDropdown extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // SMALL REUSABLE WIDGETS
 // ─────────────────────────────────────────────────────────────────────────────
-class _AIBadge extends StatelessWidget {
-  final bool small;
-  const _AIBadge({required this.small});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: EdgeInsets.symmetric(
-        horizontal: small ? 7 : 10, vertical: 3),
-    decoration: BoxDecoration(
-      color: _cPurple.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: _cPurple.withOpacity(0.2)),
-    ),
-    child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.auto_awesome, size: small ? 10 : 13, color: _cPurple),
-      const SizedBox(width: 4),
-      Text('AI Active',
-          style: GoogleFonts.poppins(
-              fontSize: small ? 9 : 11,
-              fontWeight: FontWeight.w600,
-              color: _cPurple)),
-    ]),
-  );
-}
 
 class _ActionTile extends StatelessWidget {
   final IconData icon;

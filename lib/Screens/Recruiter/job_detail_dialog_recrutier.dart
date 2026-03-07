@@ -4,40 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../Widgets/quill_editor.dart';
-
 import 'Recruiter_provider_Job_listing.dart';
 
 class JobDetailModal_recruiter extends StatelessWidget {
-  final String jobId; // now accept jobId and fetch from provider
-
+  final String jobId;
   const JobDetailModal_recruiter({super.key, required this.jobId});
 
-  // --- Professional Color Palette (Slate & Indigo) ---
-  static const Color _bgSurface = Colors.white;
-  static const Color _bgBackground = Color(0xFFF8FAFC); // Slate 50
-  static const Color _textPrimary = Color(0xFF0F172A); // Slate 900
-  static const Color _textSecondary = Color(0xFF64748B); // Slate 500
-  static const Color _accentPrimary = Color(0xFF4F46E5); // Indigo 600
-  static const Color _borderColor = Color(0xFFE2E8F0); // Slate 200
-  static const Color _dangerColor = Color(0xFFEF4444); // Red 500
-  static const Color _successColor = Color(0xFF10B981); // Emerald 500
+  // ─── Color Palette ────────────────────────────────────────────────────────
+  static const Color _bgSurface     = Colors.white;
+  static const Color _bgBackground  = Color(0xFFF8FAFC);
+  static const Color _textPrimary   = Color(0xFF0F172A);
+  static const Color _textSecondary = Color(0xFF64748B);
+  static const Color _accentPrimary = Color(0xFF4F46E5);
+  static const Color _borderColor   = Color(0xFFE2E8F0);
+  static const Color _dangerColor   = Color(0xFFEF4444);
+  static const Color _successColor  = Color(0xFF10B981);
 
-  // Helper to safely get job from provider
-  Map<String, dynamic>? _findJob(BuildContext context) {
-    final provider = Provider.of<job_listing_provider>(context, listen: true);
-    try {
-      final job = provider.jobList.firstWhere((j) {
-        final id = j['id']?.toString();
-        return id != null && id == jobId;
-      }, orElse: () => <String, dynamic>{});
-      if (job.isEmpty) return null;
-      return Map<String, dynamic>.from(job);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  // Safely parse a Firestore Timestamp or ISO string to readable string
+  // ─── Helpers ──────────────────────────────────────────────────────────────
   String _fmtDate(dynamic ts) {
     if (ts == null) return '';
     if (ts is Timestamp) {
@@ -45,7 +28,6 @@ class JobDetailModal_recruiter extends StatelessWidget {
       return '${d.year}-${_two(d.month)}-${_two(d.day)}';
     }
     if (ts is String) {
-      // try to parse ISO
       try {
         final d = DateTime.parse(ts);
         return '${d.year}-${_two(d.month)}-${_two(d.day)}';
@@ -53,143 +35,383 @@ class JobDetailModal_recruiter extends StatelessWidget {
         return ts;
       }
     }
-    if (ts is DateTime) {
-      final d = ts;
-      return '${d.year}-${_two(d.month)}-${_two(d.day)}';
-    }
+    if (ts is DateTime) return '${ts.year}-${_two(ts.month)}-${_two(ts.day)}';
     return ts.toString();
   }
 
   String _two(int n) => n.toString().padLeft(2, '0');
 
+  Future<Map<String, dynamic>?> _fetchJobFromFirestore() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Posted_jobs_public')
+        .doc(jobId)
+        .get();
+    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
+  }
+
+  // ─── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    // ✅ FIX: Use FutureBuilder to fetch job data directly from Firestore
-    return FutureBuilder<Map<String, dynamic>?>(
-        future: _fetchJobFromFirestore(),
-        builder: (context, snapshot) {
-          // Show loading state
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                height: 200,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Loading job details...',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: _textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+    final screenW = MediaQuery.of(context).size.width;
+    final screenH = MediaQuery.of(context).size.height;
+    final isMobile = screenW < 600;
 
-          // Show error state
-          if (snapshot.hasError || snapshot.data == null) {
-            return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Container(
-                height: 200,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: _dangerColor,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Job not found',
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: _fetchJobFromFirestore(),
+      builder: (context, snapshot) {
+        // Loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _wrapDialog(
+            isMobile: isMobile,
+            screenW: screenW,
+            screenH: screenH,
+            child: SizedBox(
+              height: 160,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 14),
+                  Text('Loading job details…',
                       style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
+                          fontSize: 13, color: _textSecondary)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Error / Not found
+        if (snapshot.hasError || snapshot.data == null) {
+          return _wrapDialog(
+            isMobile: isMobile,
+            screenW: screenW,
+            screenH: screenH,
+            child: SizedBox(
+              height: 200,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: _dangerColor),
+                  const SizedBox(height: 12),
+                  Text('Job not found',
+                      style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: _textPrimary)),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
                       'This job may have been removed or archived.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: _textSecondary,
+                          fontSize: 12, color: _textSecondary),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Close',
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // ── Data ready ──────────────────────────────────────────────────────
+        final jobData = snapshot.data!;
+        final title    = jobData['title']   as String? ?? 'Untitled Position';
+        final company  = jobData['company'] as String? ?? 'Unknown Company';
+        final logoUrl  = jobData['logoUrl'] as String? ?? '';
+        final description     = jobData['description']      as String? ?? 'No description provided.';
+        final responsibilities = jobData['responsibilities'] as String?
+            ?? jobData['responsibilitiesHtml'] ?? 'Not specified.';
+        final qualifications  = jobData['qualifications']   as String? ?? 'Not specified.';
+        final skills     = (jobData['skills']    as List?)?.cast<String>() ?? [];
+        final workModes  = (jobData['workModes'] as List?)?.cast<String>() ?? [];
+        final benefits   = (jobData['benefits']  as List?)?.cast<String>() ?? [];
+        final department = jobData['department']    as String? ?? '';
+        final experience = jobData['experience']    as String? ?? '';
+        final deadline   = _fmtDate(jobData['deadline'] ?? jobData['applicationDeadline']);
+        final contact    = jobData['contactEmail'] as String?
+            ?? jobData['contact'] as String? ?? '';
+        final status     = (jobData['status'] as String?)?.toLowerCase() ?? 'active';
+        final jobIdField = jobData['id']?.toString() ?? jobId;
+        final salary     = jobData['salary'] ?? jobData['pay'] ?? 'Not disclosed';
+        final nature     = jobData['nature'] ?? jobData['type'] ?? 'Full-time';
+        final location   = jobData['location']?.toString() ?? 'Remote';
+        final timestampRaw      = jobData['timestamp'];
+        final viewCount         = jobData['viewCount'] ?? 0;
+        final applicationCount  = jobData['applicationCount'] ?? 0;
+
+        return _wrapDialog(
+          isMobile: isMobile,
+          screenW: screenW,
+          screenH: screenH,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Header ───────────────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 14 : 20,
+                    vertical: isMobile ? 14 : 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Logo
+                    Container(
+                      width:  isMobile ? 44 : 56,
+                      height: isMobile ? 44 : 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: _borderColor),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: logoUrl.isNotEmpty
+                            ? Image.network(logoUrl, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.business,
+                                    color: _textSecondary)))
+                            : const Center(
+                            child: Icon(Icons.business,
+                                color: _textSecondary)),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Close',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const SizedBox(width: 12),
+                    // Title & company
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title,
+                              style: GoogleFonts.poppins(
+                                  fontSize: isMobile ? 15 : 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: _textPrimary,
+                                  height: 1.2)),
+                          const SizedBox(height: 3),
+                          Text(company,
+                              style: GoogleFonts.poppins(
+                                  fontSize: isMobile ? 12 : 14,
+                                  color: _textSecondary,
+                                  fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                    // Close
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close,
+                            size: 18, color: _textSecondary),
+                        tooltip: 'Close',
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          }
 
-          // ✅ Job data loaded successfully
-          final jobData = snapshot.data!;
-    // --- Extract fields (use same keys your listing uses) ---
-    final title = jobData['title'] as String? ?? 'Untitled Position';
-    final company = jobData['company'] as String? ?? 'Unknown Company';
-    final logoUrl = jobData['logoUrl'] as String? ?? '';
-    final description =
-        jobData['description'] as String? ?? 'No description provided.';
-    final responsibilities =
-        jobData['responsibilities'] as String? ??
-        jobData['responsibilitiesHtml'] ??
-        'Not specified.';
-    final qualifications =
-        jobData['qualifications'] as String? ?? 'Not specified.';
-    final skills =
-        (jobData['skills'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final workModes =
-        (jobData['workModes'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final benefits =
-        (jobData['benefits'] as List<dynamic>?)?.cast<String>() ?? <String>[];
-    final department = jobData['department'] as String? ?? '';
-    final experience = jobData['experience'] as String? ?? '';
-    final deadline = _fmtDate(
-      jobData['deadline'] ?? jobData['applicationDeadline'],
+              const Divider(height: 1, color: _borderColor),
+
+              // ── Meta strip (salary / type / location) ─────────────────
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 14 : 20,
+                    vertical: isMobile ? 10 : 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                      bottom: BorderSide(color: _borderColor)),
+                ),
+                child: isMobile
+                // On mobile: 3 chips in a Wrap to avoid overflow
+                    ? Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    _metaChip(Icons.payments_outlined,
+                        salary.toString()),
+                    _metaChip(
+                        Icons.work_outline, nature.toString()),
+                    _metaChip(
+                        Icons.location_on_outlined, location),
+                  ],
+                )
+                // Desktop: horizontal row with dividers
+                    : IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      _buildMetaItem(Icons.payments_outlined,
+                          'Salary', salary.toString()),
+                      const VerticalDivider(
+                          color: _borderColor, width: 32),
+                      _buildMetaItem(Icons.work_outline,
+                          'Job Type', nature.toString()),
+                      const VerticalDivider(
+                          color: _borderColor, width: 32),
+                      _buildMetaItem(
+                          Icons.location_on_outlined,
+                          'Location',
+                          location),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ── Scrollable content ────────────────────────────────────
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(isMobile ? 14 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Info badges row
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          if (department.isNotEmpty)
+                            _infoBadge('Dept', department, isMobile),
+                          if (deadline.isNotEmpty)
+                            _infoBadge('Deadline', deadline, isMobile),
+                          if (timestampRaw != null)
+                            _infoBadge('Posted',
+                                _fmtDate(timestampRaw), isMobile),
+                        ],
+                      ),
+                      SizedBox(height: isMobile ? 16 : 24),
+
+                      // About the Role
+                      _buildSectionTitle('About the Role', isMobile),
+                      AppRichTextViewer(
+                          deltaOrPlainText: description,
+                          fontSize: isMobile ? 13 : 15),
+                      SizedBox(height: isMobile ? 16 : 24),
+
+                      // Key Responsibilities
+                      _buildSectionTitle(
+                          'Key Responsibilities', isMobile),
+                      AppRichTextViewer(
+                          deltaOrPlainText: responsibilities,
+                          fontSize: isMobile ? 13 : 15),
+                      SizedBox(height: isMobile ? 16 : 24),
+
+                      // Qualifications
+                      _buildSectionTitle('Qualifications', isMobile),
+                      AppRichTextViewer(
+                          deltaOrPlainText: qualifications,
+                          fontSize: isMobile ? 13 : 15),
+                      SizedBox(height: isMobile ? 20 : 32),
+
+                      // Sidebar detail cards — full width stacked on mobile,
+                      // horizontal scroll on desktop
+                      isMobile
+                          ? _buildSidebarDetails(
+                          skills, workModes, benefits,
+                          department, experience, deadline,
+                          contact,
+                          viewCount.toString(),
+                          applicationCount.toString(),
+                          isMobile)
+                          : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: 580,
+                          child: _buildSidebarDetails(
+                              skills, workModes, benefits,
+                              department, experience, deadline,
+                              contact,
+                              viewCount.toString(),
+                              applicationCount.toString(),
+                              isMobile),
+                        ),
+                      ),
+
+                      // Bottom safe-area padding for mobile
+                      if (isMobile)
+                        const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Divider(height: 1, color: _borderColor),
+
+              // ── Footer actions ────────────────────────────────────────
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 14 : 20,
+                    vertical: isMobile ? 10 : 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
+                ),
+                child: isMobile
+                // Mobile: stack status + archive vertically
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildStatusToggle(
+                        context, status, jobIdField,
+                        jobData, isMobile),
+                    const SizedBox(height: 8),
+                    _buildArchiveButton(
+                        context, jobIdField, isMobile),
+                  ],
+                )
+                // Desktop: horizontal row
+                    : Row(
+                  children: [
+                    _buildStatusToggle(
+                        context, status, jobIdField,
+                        jobData, isMobile),
+                    const Spacer(),
+                    _buildArchiveButton(
+                        context, jobIdField, isMobile),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    final contact =
-        jobData['contactEmail'] as String? ??
-        jobData['contact'] as String? ??
-        '';
-    final status = (jobData['status'] as String?)?.toLowerCase() ?? 'active';
-    final jobIdField = jobData['id']?.toString() ?? jobId;
-    final salary = jobData['salary'] ?? jobData['pay'] ?? 'Not disclosed';
-    final nature = jobData['nature'] ?? jobData['type'] ?? 'Full-time';
-    final timestampRaw = jobData['timestamp'];
+  }
 
-    // Extract view count and application count
-    final viewCount = jobData['viewCount'] ?? 0;
-    final applicationCount = jobData['applicationCount'] ?? 0;
-
-    // Build UI (keeps your original widgets + wiring to provider functions)
+  // ─── Dialog wrapper ───────────────────────────────────────────────────────
+  Widget _wrapDialog({
+    required bool isMobile,
+    required double screenW,
+    required double screenH,
+    required Widget child,
+  }) {
     return Dialog(
       backgroundColor: _bgSurface,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+      // On mobile use tighter insets so dialog is near-fullscreen
+      insetPadding: isMobile
+          ? const EdgeInsets.symmetric(horizontal: 8, vertical: 16)
+          : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 0,
       child: Container(
+        // Cap width on desktop; fill on mobile
+        constraints: BoxConstraints(
+          maxWidth: isMobile ? double.infinity : 740,
+          maxHeight: screenH * (isMobile ? 0.93 : 0.88),
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: _borderColor),
@@ -202,515 +424,337 @@ class JobDetailModal_recruiter extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _borderColor),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: logoUrl.isNotEmpty
-                          ? Image.network(
-                              logoUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(
-                                  Icons.business,
-                                  color: _textSecondary,
-                                ),
-                              ),
-                            )
-                          : const Center(
-                              child: Icon(
-                                Icons.business,
-                                color: _textSecondary,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Title & Company
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: _textPrimary,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          company,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: _textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: _textSecondary),
-                    tooltip: 'Close',
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1, color: _borderColor),
-
-            // Meta Row
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor),
-              ),
-              child: IntrinsicHeight(
-                child: Row(
-                  children: [
-                    _buildMetaItem(
-                      Icons.payments_outlined,
-                      'Salary',
-                      salary.toString(),
-                    ),
-                    const VerticalDivider(color: _borderColor, width: 32),
-                    _buildMetaItem(
-                      Icons.work_outline,
-                      'Job Type',
-                      nature.toString(),
-                    ),
-                    const VerticalDivider(color: _borderColor, width: 32),
-                    _buildMetaItem(
-                      Icons.location_on_outlined,
-                      'Location',
-                      jobData['location']?.toString() ?? 'Remote',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Content area
-            Expanded(
-              child: Container(
-                color: _bgBackground,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Top Meta Row (deadline, dept, posted date)
-                      Row(
-                        children: [
-                          _infoBadge('Department', department),
-                          const SizedBox(width: 5),
-                          // _infoBadge('Experience', experience),
-                          //  const SizedBox(width: 5),
-                          if (deadline.isNotEmpty)
-                            _infoBadge('Deadline', deadline),
-                          const SizedBox(width: 5),
-
-                          if (timestampRaw != null)
-                            Text(
-                              'Posted: ${_fmtDate(timestampRaw)}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: _textSecondary,
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // About the Role
-                      _buildSectionTitle('About the Role'),
-                      AppRichTextViewer(
-                        deltaOrPlainText: description,
-                        fontSize: 15,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Key Responsibilities
-                      _buildSectionTitle('Key Responsibilities'),
-                      AppRichTextViewer(
-                        deltaOrPlainText: responsibilities,
-                        fontSize: 15,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Qualifications
-                      _buildSectionTitle('Qualifications'),
-                      AppRichTextViewer(
-                        deltaOrPlainText: qualifications,
-                        fontSize: 15,
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Sidebar Cards row (skills, work mode, benefits)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 550,
-                              child: _buildSidebarDetails(
-                                skills,
-                                workModes,
-                                benefits,
-                                department,
-                                experience,
-                                deadline,
-                                contact,
-                                viewCount.toString(),
-                                applicationCount.toString()
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            const Divider(height: 1, color: _borderColor),
-
-            // Footer actions (uses provider's functions)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _bgBackground,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _borderColor),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Job Status:',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: _textSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Switch.adaptive(
-                          value: status == 'active',
-                          activeColor: _successColor,
-                          onChanged: (val) async {
-                            final provider = Provider.of<job_listing_provider>(
-                              context,
-                              listen: false,
-                            );
-                            final error = await provider.toggleJobStatus(
-                              jobIdField,
-                              jobData['status']?.toString() ?? 'paused',
-                            );
-                            if (error == null) {
-                              Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    val ? 'Job Activated' : 'Job Paused',
-                                  ),
-                                ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Failed: $error')),
-                              );
-                            }
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          status == 'active' ? 'Active' : 'Paused',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: status == 'active'
-                                ? _successColor
-                                : _textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Archive Job'),
-                          content: const Text('Are you sure?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text(
-                                'Archive',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirm == true) {
-                        final provider = Provider.of<job_listing_provider>(
-                          context,
-                          listen: false,
-                        );
-                        await provider.archiveJob(jobIdField);
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.archive_outlined,
-                      size: 20,
-                      color: _dangerColor,
-                    ),
-                    label: Text(
-                      'Archive Job',
-                      style: GoogleFonts.poppins(
-                        color: _dangerColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                ],
-              ),
-            ),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: child,
         ),
       ),
     );
-
   }
-    );
-        }
 
-  // Reusable small widgets
+  // ─── Footer sub-widgets ───────────────────────────────────────────────────
+
+  Widget _buildStatusToggle(
+      BuildContext context,
+      String status,
+      String jobIdField,
+      Map<String, dynamic> jobData,
+      bool isMobile,
+      ) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 10 : 12, vertical: isMobile ? 6 : 8),
+      decoration: BoxDecoration(
+        color: _bgBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          Text('Job Status:',
+              style: GoogleFonts.poppins(
+                  fontSize: isMobile ? 12 : 13,
+                  color: _textSecondary)),
+          const SizedBox(width: 8),
+          Switch.adaptive(
+            value: status == 'active',
+            activeColor: _successColor,
+            onChanged: (val) async {
+              final provider = Provider.of<job_listing_provider>(
+                  context, listen: false);
+              final error = await provider.toggleJobStatus(
+                  jobIdField,
+                  jobData['status']?.toString() ?? 'paused');
+              if (error == null) {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(val ? 'Job Activated' : 'Job Paused')));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed: $error')));
+              }
+            },
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status == 'active' ? 'Active' : 'Paused',
+            style: GoogleFonts.poppins(
+                fontSize: isMobile ? 12 : 14,
+                fontWeight: FontWeight.w600,
+                color: status == 'active' ? _successColor : _textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArchiveButton(
+      BuildContext context, String jobIdField, bool isMobile) {
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 10 : 14,
+            vertical: isMobile ? 8 : 10),
+      ),
+      onPressed: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Archive Job'),
+            content: const Text('Are you sure?'),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel')),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Archive',
+                      style: TextStyle(color: Colors.red))),
+            ],
+          ),
+        );
+        if (confirm == true) {
+          final provider = Provider.of<job_listing_provider>(
+              context, listen: false);
+          await provider.archiveJob(jobIdField);
+          Navigator.of(context).pop();
+        }
+      },
+      icon: const Icon(Icons.archive_outlined, size: 18, color: _dangerColor),
+      label: Text('Archive',
+          style: GoogleFonts.poppins(
+              color: _dangerColor,
+              fontSize: isMobile ? 12 : 14,
+              fontWeight: FontWeight.w600)),
+    );
+  }
+
+  // ─── Small reusable widgets ───────────────────────────────────────────────
+
+  /// Compact chip for mobile meta strip
+  Widget _metaChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: _bgBackground,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: _textSecondary),
+          const SizedBox(width: 5),
+          Flexible(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _textPrimary)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildMetaItem(IconData icon, String label, String value) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: _textSecondary),
-              const SizedBox(width: 8),
-              Text(
-                label,
+          Row(children: [
+            Icon(icon, size: 14, color: _textSecondary),
+            const SizedBox(width: 6),
+            Text(label,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: _textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
-            ),
-          ),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _textSecondary)),
+          ]),
+          const SizedBox(height: 6),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary)),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, bool isMobile) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: _textPrimary,
-        ),
-      ),
+      padding: EdgeInsets.only(bottom: isMobile ? 8 : 12),
+      child: Text(title,
+          style: GoogleFonts.poppins(
+              fontSize: isMobile ? 13 : 16,
+              fontWeight: FontWeight.w700,
+              color: _textPrimary)),
     );
   }
 
-  Widget _buildRichText(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        height: 1.6,
-        color: const Color(0xFF334155),
-      ),
-    );
-  }
-
-  Widget _buildChip(String label, Color color) {
+  Widget _buildChip(String label, Color color, bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 8 : 10, vertical: isMobile ? 4 : 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withOpacity(0.2)),
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: color,
-        ),
-      ),
+      child: Text(label,
+          style: GoogleFonts.poppins(
+              fontSize: isMobile ? 11 : 12,
+              fontWeight: FontWeight.w500,
+              color: color)),
     );
   }
 
-  Widget _buildInfoRow(String label, String? value) {
+  Widget _buildInfoRow(String label, String? value, bool isMobile) {
     if (value == null || value.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 4 : 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(fontSize: 13, color: _textSecondary),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
+          Text(label,
               style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: _textPrimary,
-              ),
-            ),
+                  fontSize: isMobile ? 11 : 13,
+                  color: _textSecondary)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(value,
+                textAlign: TextAlign.end,
+                style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 11 : 13,
+                    fontWeight: FontWeight.w500,
+                    color: _textPrimary)),
           ),
         ],
       ),
     );
   }
 
+  Widget _infoBadge(String label, String value, bool isMobile) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 8 : 10,
+          vertical: isMobile ? 4 : 6),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('$label: ',
+              style: GoogleFonts.poppins(
+                  fontSize: isMobile ? 10 : 12,
+                  fontWeight: FontWeight.w600,
+                  color: _textSecondary)),
+          Flexible(
+            child: Text(value,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                    fontSize: isMobile ? 10 : 12,
+                    fontWeight: FontWeight.w600,
+                    color: _textPrimary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Sidebar detail cards ─────────────────────────────────────────────────
+
   Widget _buildSidebarDetails(
-    List<String> skills,
-    List<String> workModes,
-    List<String> benefits,
-    String department,
-    String experience,
-    String deadline,
-    String contact,
-    String applicationCount,
-    String viewCount,
-  ) {
+      List<String> skills,
+      List<String> workModes,
+      List<String> benefits,
+      String department,
+      String experience,
+      String deadline,
+      String contact,
+      String applicationCount,
+      String viewCount,
+      bool isMobile,
+      ) {
+    final gap = SizedBox(height: isMobile ? 10 : 16);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSidebarCard(
-          title: 'Required Skills',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((e) => _buildChip(e, _accentPrimary)).toList(),
+        if (skills.isNotEmpty) ...[
+          _buildSidebarCard(
+            title: 'Required Skills',
+            isMobile: isMobile,
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: skills
+                  .map((e) => _buildChip(e, _accentPrimary, isMobile))
+                  .toList(),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        _buildSidebarCard(
-          title: 'Work Arrangements',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: workModes
-                .map((e) => _buildChip(e, Colors.orange.shade700))
-                .toList(),
+          gap,
+        ],
+        if (workModes.isNotEmpty) ...[
+          _buildSidebarCard(
+            title: 'Work Arrangements',
+            isMobile: isMobile,
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: workModes
+                  .map((e) =>
+                  _buildChip(e, Colors.orange.shade700, isMobile))
+                  .toList(),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        _buildSidebarCard(
-          title: 'Perks & Benefits',
-          child: Column(
-            children: benefits
-                .map(
-                  (e) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check, size: 16, color: _successColor),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            e,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: _textPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
+          gap,
+        ],
+        if (benefits.isNotEmpty) ...[
+          _buildSidebarCard(
+            title: 'Perks & Benefits',
+            isMobile: isMobile,
+            child: Column(
+              children: benefits
+                  .map((e) => Padding(
+                padding:
+                EdgeInsets.only(bottom: isMobile ? 6 : 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.check,
+                        size: 14, color: _successColor),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(e,
+                          style: GoogleFonts.poppins(
+                              fontSize: isMobile ? 12 : 13,
+                              color: _textPrimary)),
                     ),
-                  ),
-                )
-                .toList(),
+                  ],
+                ),
+              ))
+                  .toList(),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
+          gap,
+        ],
         _buildSidebarCard(
           title: 'Additional Info',
+          isMobile: isMobile,
           child: Column(
             children: [
-              _buildInfoRow('Department', department),
-              _buildInfoRow('Experience', experience),
-              _buildInfoRow('Deadline', deadline),
-              _buildInfoRow('Contact', contact),
-              // _buildInfoRow('Job View Count', viewCount.toString()),
-              // _buildInfoRow('No Of Applicants', applicationCount.toString()),
+              _buildInfoRow('Department', department, isMobile),
+              _buildInfoRow('Experience', experience, isMobile),
+              _buildInfoRow('Deadline', deadline, isMobile),
+              _buildInfoRow('Contact', contact, isMobile),
             ],
           ),
         ),
@@ -718,10 +762,14 @@ class JobDetailModal_recruiter extends StatelessWidget {
     );
   }
 
-  Widget _buildSidebarCard({required String title, required Widget child}) {
+  Widget _buildSidebarCard({
+    required String title,
+    required Widget child,
+    required bool isMobile,
+  }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -730,94 +778,16 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: _textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 16),
+          Text(title.toUpperCase(),
+              style: GoogleFonts.poppins(
+                  fontSize: isMobile ? 10 : 11,
+                  fontWeight: FontWeight.w700,
+                  color: _textSecondary,
+                  letterSpacing: 0.5)),
+          SizedBox(height: isMobile ? 10 : 16),
           child,
         ],
       ),
     );
   }
-
-  Widget _buildStatItem(
-    IconData icon,
-    String label,
-    String value,
-    Color color,
-  ) {
-    return Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.poppins(fontSize: 12, color: _textSecondary),
-              ),
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoBadge(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _borderColor),
-      ),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _textSecondary,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<Map<String, dynamic>?> _fetchJobFromFirestore() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Posted_jobs_public')
-        .doc(jobId)
-        .get();
-    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
-  }
-
 }

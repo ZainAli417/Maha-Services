@@ -169,7 +169,7 @@ class _PostJobScreenState extends State<PostJobScreen>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: _background,
       drawer: _isMobile
           ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
           : null,
@@ -225,7 +225,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           ],
           // Icon badge — matches dashboard style
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: const Color(0xFF1E40AF).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),

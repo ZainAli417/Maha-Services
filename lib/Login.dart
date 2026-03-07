@@ -742,7 +742,8 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                             ),
                           ),
                           TextButton(
-                            onPressed: () => context.go('/register'),
+                            // onPressed: () => context.go('/register'),
+                            onPressed: () => context.go('/admin'),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.only(left: 4),
                               minimumSize: Size.zero,

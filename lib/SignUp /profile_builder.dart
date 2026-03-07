@@ -26,11 +26,11 @@ class _T {
   static const red       = Color(0xFFDC2626);
 
   static TextStyle label({double fs = 12, Color? c, FontWeight fw = FontWeight.w500}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: fw, color: c ?? textSec);
+      GoogleFonts.poppins(fontSize: fs, fontWeight: fw, color: c ?? textSec);
   static TextStyle head({double fs = 16, Color? c}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
+      GoogleFonts.poppins(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
   static TextStyle body({double fs = 14, Color? c}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, color: c ?? textPri, height: 1.55);
+      GoogleFonts.poppins(fontSize: fs, color: c ?? textPri, height: 1.55);
 }
 
 // ─── Layout InheritedWidget ────────────────────────────────────────────────
@@ -53,7 +53,7 @@ InputDecoration _inputDec({
       labelText: label,
       labelStyle: _T.label(fs: 12, fw: FontWeight.w600, c: _T.primary),
       hintText: hint,
-      hintStyle: GoogleFonts.ibmPlexSans(fontSize: 14, color: _T.textTert),
+      hintStyle: GoogleFonts.poppins(fontSize: 14, color: _T.textTert),
       prefixIcon: Icon(icon, color: _T.textTert, size: 19),
       filled: true,
       fillColor: _T.bg,

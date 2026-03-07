@@ -34,7 +34,7 @@ class _T {
   static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.poppins
 (
     fontSize: fs,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: c ?? textPri,
   );
 
@@ -150,7 +150,7 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
       isMobile: isMobile,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFF8FAFC),
         drawer: isMobile
             ? Drawer(child: RecruiterSidebar(activeIndex: 4, isDrawer: true))
             : null,
@@ -161,13 +161,16 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
               child: Column(
                 children: [
                   // ── Top bar
-                  RepaintBoundary(
-                    child: isMobile
-                        ? _MobileTopBar(
-                            onMenu: () =>
-                                _scaffoldKey.currentState?.openDrawer(),
-                          )
-                        : const _DesktopHeader(),
+                  SafeArea(
+                    bottom: false,
+                    child: RepaintBoundary(
+                      child: isMobile
+                          ? _MobileTopBar(
+                              onMenu: () =>
+                                  _scaffoldKey.currentState?.openDrawer(),
+                            )
+                          : const _DesktopHeader(),
+                    ),
                   ),
                   // ── Content
                   Expanded(
@@ -252,7 +255,7 @@ class _MobileTopBar extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     height: 54,
     padding: const EdgeInsets.symmetric(horizontal: 8),
-    decoration: const BoxDecoration(color: _T.white),
+    decoration: const BoxDecoration(color: _T.bg),
     child: Row(
       children: [
         IconButton(

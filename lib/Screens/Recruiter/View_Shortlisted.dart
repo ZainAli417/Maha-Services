@@ -27,11 +27,11 @@ class _T {
   static Color avatar(int i) => _avatarColors[i % _avatarColors.length];
 
   static TextStyle label({double fs = 11, Color? c, FontWeight fw = FontWeight.w500}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: fw, color: c ?? textSec);
+      GoogleFonts.poppins(fontSize: fs, fontWeight: fw, color: c ?? textSec);
   static TextStyle head({double fs = 14, Color? c}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
+      GoogleFonts.poppins(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.ibmPlexSans(fontSize: fs, color: c ?? textPri, height: 1.5);
+      GoogleFonts.poppins(fontSize: fs, color: c ?? textPri, height: 1.5);
   static TextStyle mono({double fs = 14, Color? c, FontWeight fw = FontWeight.w700}) =>
       GoogleFonts.ibmPlexMono(fontSize: fs, fontWeight: fw, color: c ?? textPri);
 }
@@ -40,12 +40,20 @@ class _T {
 class _LD extends InheritedWidget {
   final bool isMobile;
   const _LD({required this.isMobile, required super.child});
-  static bool mobile(BuildContext ctx) =>
-      ctx.dependOnInheritedWidgetOfExactType<_LD>()!.isMobile;
+
+  static bool mobile(BuildContext ctx) {
+    final inherited = ctx.dependOnInheritedWidgetOfExactType<_LD>();
+    if (inherited != null) return inherited.isMobile;
+    // fallback when no _LD ancestor exists (safe default)
+    final mq = MediaQuery.maybeOf(ctx);
+    if (mq != null) return mq.size.width < 768;
+    // last resort: assume desktop
+    return false;
+  }
+
   @override
   bool updateShouldNotify(_LD old) => old.isMobile != isMobile;
 }
-
 // ─── Email masker (pure fn) ────────────────────────────────────────────────
 String _maskEmail(String email) {
   final p = email.split('@');
@@ -349,7 +357,9 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   void _showProfile(ApplicantRecord a) {
-    if (_LD.mobile(context)) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    if (isMobile) {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -364,6 +374,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
       );
     }
   }
+
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

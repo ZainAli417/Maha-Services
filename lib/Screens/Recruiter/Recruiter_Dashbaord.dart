@@ -1,40 +1,32 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill_internal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:job_portal/Constant/recruiter_AI.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
-import 'package:job_portal/Screens/Recruiter/post_a_job_form.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
-import '../../Constant/recruiter_doughnat_chart.dart';
 import '../Job_Seeker/job_seeker_provider.dart';
-import 'LIst_of_Applicants.dart';
-import 'job_detail_dialog_recrutier.dart';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const _primary = Color(0xFF1E3A5F);
-const _primaryLight = Color(0xFF2E4A6F);
-const _accent = Color(0xFF3B82F6);
-const _secondary = Color(0xFF8B5CF6);
-const _background = Color(0xFFF8FAFC);
-const _surface = Color(0xFFFFFFFF);
-const _textPrimary = Color(0xFF0F172A);
-const _textSecondary = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
-const _success = Color(0xFF10B981);
-const _warning = Color(0xFFF59E0B);
-const _error = Color(0xFFEF4444);
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+const _navy      = Color(0xFF0A1628);
+const _blue      = Color(0xFF2563EB);
+const _blueLight = Color(0xFF3B82F6);
+const _cyan      = Color(0xFF06B6D4);
+const _emerald   = Color(0xFF10B981);
+const _amber     = Color(0xFFF59E0B);
+const _rose      = Color(0xFFEF4444);
+const _violet    = Color(0xFF002D73);
+const _slate50   = Color(0xFFF8FAFC);
+const _slate100  = Color(0xFFF1F5F9);
+const _slate200  = Color(0xFFE2E8F0);
+const _slate400  = Color(0xFF94A3B8);
+const _slate600  = Color(0xFF475569);
+const _slate900  = Color(0xFF0F172A);
+const _white     = Color(0xFFFFFFFF);
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 class Dashboard_Recruiter extends StatefulWidget {
@@ -45,31 +37,28 @@ class Dashboard_Recruiter extends StatefulWidget {
 
 class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _fadeCtrl;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    )..forward();
+    _fadeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 600))
+      ..forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _fadeCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: _background,
+      backgroundColor: _slate50,
       drawer: isMobile
           ? Drawer(child: RecruiterSidebar(activeIndex: 0, isDrawer: true))
           : null,
@@ -78,7 +67,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
           if (!isMobile) RecruiterSidebar(activeIndex: 0),
           Expanded(
             child: FadeTransition(
-              opacity: _controller,
+              opacity: _fadeCtrl,
               child: Column(
                 children: [
                   if (isMobile) _buildMobileAppBar(context),
@@ -90,17 +79,15 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const Center(
-                                  child: CircularProgressIndicator(color: _primary),
-                                );
+                                return const _LoadingView();
                               }
                               if (snapshot.hasError) {
-                                return _ErrorWidget(
+                                return _ErrorView(
                                     error: snapshot.error.toString());
                               }
                               final jobs = snapshot.data ?? [];
-                              if (jobs.isEmpty) return const _EmptyWidget();
-                              return Recruiter_Analytics(jobs: jobs);
+                              if (jobs.isEmpty) return const _EmptyView();
+                              return _AnalyticsDashboard(jobs: jobs);
                             },
                           ),
                     ),
@@ -113,591 +100,696 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
       ),
     );
   }
-
   Widget _buildMobileAppBar(BuildContext context) {
     return SafeArea(
       bottom: false,
       child: Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, size: 24),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E40AF).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: _slate50,
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.menu_rounded, size: 24),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             ),
-            child: const Icon(Icons.recent_actors_outlined,
-                size: 20, color: Color(0xFF1E40AF)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Recruiter Dashboard',
-              style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => context.go('/post-job'),
-            child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A5F), Color(0xFF3B82F6)]),
+                color: const Color(0xFF1E40AF).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.add, color: Colors.white, size: 16),
-                  const SizedBox(width: 4),
-                  Text('Post',
-                      style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
-                ],
+              child: const Icon(Icons.recent_actors_outlined,
+                  size: 20, color: Color(0xFF1E40AF)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Recruiter Dashboard',
+                style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: _slate900),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-    ),
-    );
-  }
-}
-
-// ─── Error Widget ─────────────────────────────────────────────────────────────
-class _ErrorWidget extends StatelessWidget {
-  final String error;
-  const _ErrorWidget({required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.red.shade200),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline_rounded,
-                size: 64, color: Colors.red.shade400),
-            const SizedBox(height: 16),
-            Text('Oops! Something went wrong',
-                style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red.shade700)),
-            const SizedBox(height: 8),
-            Text(error,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                    fontSize: 14, color: Colors.red.shade600)),
+            GestureDetector(
+              onTap: () => context.go('/post-job'),
+              child: Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [Color(0xFF1E3A5F), Color(0xFF3B82F6)]),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Text('Post',
+                        style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
           ],
         ),
       ),
     );
   }
+} // End of _Dashboard_RecruiterState
+
+// ─── Mobile App Bar ───────────────────────────────────────────────────────────
+
+
+
+
+// ─── State Views ──────────────────────────────────────────────────────────────
+class _LoadingView extends StatelessWidget {
+  const _LoadingView();
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 44,
+          height: 44,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: const AlwaysStoppedAnimation(_blue),
+            backgroundColor: _blue.withOpacity(0.12),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Text('Loading analytics…',
+            style: GoogleFonts.dmSans(
+                fontSize: 13, color: _slate600)),
+      ],
+    ),
+  );
 }
 
-// ─── Empty Widget ─────────────────────────────────────────────────────────────
-class _EmptyWidget extends StatelessWidget {
-  const _EmptyWidget();
-
+class _ErrorView extends StatelessWidget {
+  final String error;
+  const _ErrorView({required this.error});
   @override
-  Widget build(BuildContext context) {
-    return Center(
+  Widget build(BuildContext context) => Center(
+    child: Container(
+      margin: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: _rose.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _rose.withOpacity(0.2)),
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-                color: Colors.grey.shade100, shape: BoxShape.circle),
-            child: Icon(Icons.work_outline_rounded,
-                size: 64, color: Colors.grey.shade400),
+                color: _rose.withOpacity(0.1),
+                shape: BoxShape.circle),
+            child: const Icon(Icons.error_outline_rounded,
+                size: 32, color: _rose),
           ),
-          const SizedBox(height: 24),
-          Text('No Positions Available',
-              style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700)),
+          const SizedBox(height: 14),
+          Text('Something went wrong',
+              style: GoogleFonts.dmSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _slate900)),
+          const SizedBox(height: 6),
+          Text(error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.dmSans(
+                  fontSize: 13, color: _slate600)),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
-// ─── Analytics Widget ─────────────────────────────────────────────────────────
-class Recruiter_Analytics extends StatefulWidget {
+class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              _blue.withOpacity(0.08),
+              _cyan.withOpacity(0.08)
+            ]),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.work_outline_rounded,
+              size: 48, color: _blue),
+        ),
+        const SizedBox(height: 18),
+        Text('No Jobs Posted Yet',
+            style: GoogleFonts.dmSans(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: _slate900)),
+        const SizedBox(height: 5),
+        Text('Post your first job to see analytics here',
+            style: GoogleFonts.dmSans(
+                fontSize: 13, color: _slate600)),
+      ],
+    ),
+  );
+}
+
+// ─── Analytics Dashboard ──────────────────────────────────────────────────────
+class _AnalyticsDashboard extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
-  const Recruiter_Analytics({super.key, required this.jobs});
+  const _AnalyticsDashboard({required this.jobs});
 
   @override
-  State<Recruiter_Analytics> createState() => _Recruiter_AnalyticsState();
+  State<_AnalyticsDashboard> createState() =>
+      _AnalyticsDashboardState();
 }
 
-class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
-    with TickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
-  final Map<String, Future<DocumentSnapshot>> _jobDataCache = {};
-  bool _lockOuterScroll = false;
-
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
+class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
+  final _scroll = ScrollController();
+  final _jobCache = <String, Future<DocumentSnapshot>>{};
+  bool _lockScroll = false;
+  bool _isRefreshing = false;
+  late Future<Map<String, dynamic>> _dataFuture;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this)
-      ..forward();
-    _slideController = AnimationController(
-        duration: const Duration(milliseconds: 800), vsync: this)
-      ..forward();
+    _dataFuture = _fetchData();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _jobDataCache.clear();
-    _fadeController.dispose();
-    _slideController.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
-  // ─── Responsive helpers ────────────────────────────────────────────────────
-
-  /// Card padding: compact on mobile, comfortable on desktop
-  EdgeInsets _cardPad(bool isMobile) =>
-      EdgeInsets.all(isMobile ? 14 : 20);
-
-  /// Section outer padding
-  EdgeInsets _sectionPad(bool isMobile) => EdgeInsets.fromLTRB(
-    isMobile ? 12 : 32,
-    isMobile ? 8 : 0,
-    isMobile ? 12 : 32,
-    isMobile ? 12 : 24,
-  );
+  Future<void> _refresh() async {
+    setState(() {
+      _isRefreshing = true;
+      _jobCache.clear();
+      _dataFuture = _fetchData();
+    });
+    await _dataFuture;
+    if (mounted) setState(() => _isRefreshing = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    final isMobile = w < 768;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: _lockOuterScroll
-            ? const NeverScrollableScrollPhysics()
-            : const BouncingScrollPhysics(),
-        slivers: [
-          if (!isMobile)
-            SliverToBoxAdapter(child: _buildHeader(isMobile)),
-          SliverToBoxAdapter(child: _buildStatsOverview(isMobile)),
-          SliverToBoxAdapter(child: _buildAnalyticsSection(isMobile)),
-        ],
-      ),
+    Widget scrollView = FutureBuilder<Map<String, dynamic>>(
+      future: _dataFuture,
+      builder: (context, snap) {
+        final loading = !snap.hasData;
+        final data = snap.data ?? {};
+
+        return CustomScrollView(
+          controller: _scroll,
+          physics: isMobile
+              ? const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics())
+              : (_lockScroll
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics()),
+          slivers: [
+            // Desktop header
+            if (!isMobile)
+              SliverToBoxAdapter(child: _buildDesktopHeader()),
+
+            // Pull-to-refresh hint — mobile only
+            if (isMobile)
+              SliverToBoxAdapter(
+                child: AnimatedOpacity(
+                  opacity: _isRefreshing ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 2),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.keyboard_arrow_down_rounded,
+                            size: 13, color: _slate400),
+                        const SizedBox(width: 4),
+                        Text('Pull down to refresh',
+                            style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                color: _slate400,
+                                letterSpacing: 0.2)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Stats
+            SliverToBoxAdapter(
+              child: loading
+                  ? _shimmerStats(isMobile)
+                  : _buildStats(data, isMobile),
+            ),
+
+            // Charts
+            SliverToBoxAdapter(
+              child: loading
+                  ? _shimmerCharts(isMobile)
+                  : _buildCharts(data, isMobile),
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        );
+      },
     );
+
+    // Wrap in RefreshIndicator on mobile
+    if (isMobile) {
+      scrollView = RefreshIndicator(
+        onRefresh: _refresh,
+        color: _blue,
+        backgroundColor: _white,
+        strokeWidth: 2.5,
+        child: scrollView,
+      );
+    }
+
+    return scrollView;
   }
 
-  // ─── Header ───────────────────────────────────────────────────────────────
-
-  Widget _buildHeader(bool isMobile) {
+  // ─── Desktop Header ──────────────────────────────────────────────────────
+  Widget _buildDesktopHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 24, vertical: 10),
-      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(32, 20, 32, 16),
+      color: _white,
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E40AF).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              gradient: const LinearGradient(
+                  colors: [_blue, _cyan],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                    color: _blue.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4))
+              ],
             ),
-            child: const Icon(Icons.recent_actors_outlined,
-                size: 24, color: Color(0xFF1E40AF)),
+            child: const Icon(Icons.analytics_outlined,
+                size: 22, color: _white),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Recruiter Dashboard',
-                    style: GoogleFonts.poppins(
-                        fontSize: isMobile ? 16 : 18,
-                        fontWeight: FontWeight.w600,
-                        color: _textPrimary,
-                        height: 1.2)),
-                Text('Manage Trends',
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: _textSecondary,
-                        height: 1.2)),
+                    style: GoogleFonts.dmSans(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: _slate900)),
+                Text('Real-time hiring analytics',
+                    style: GoogleFonts.dmSans(
+                        fontSize: 12, color: _slate600)),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          if (!isMobile) _buildPostJobButton(),
+          _PostJobButton(),
         ],
       ),
     );
   }
 
-  Widget _buildPostJobButton() {
-    return InkWell(
+  // ─── Stats Cards ────────────────────────────────────────────────────────
+  Widget _buildStats(Map<String, dynamic> data, bool isMobile) {
+    final total     = data['totalApplicants'] ?? 0;
+    final pending   = data['pending']  ?? 0;
+    final accepted  = data['accepted'] ?? 0;
+    final rejected  = data['rejected'] ?? 0;
+    final shortlist = data['shortlist'] ?? 0;
+
+    final cards = [
+      _StatMeta('Total',      total.toString(),     Icons.people_alt_outlined,         _blue,    'All applicants'),
+      _StatMeta('Pending',    pending.toString(),   Icons.hourglass_top_rounded,        _amber,   'Needs review'),
+      _StatMeta('Accepted',   accepted.toString(),  Icons.check_circle_outline_rounded, _emerald, 'Moved forward'),
+      _StatMeta('Rejected',   rejected.toString(),  Icons.cancel_outlined,              _rose,    'Not selected'),
+      _StatMeta('Shortlisted',shortlist.toString(), Icons.star_rounded,                 _violet,  'Interview stage'),
+    ];
+
+    final pad = EdgeInsets.fromLTRB(
+        isMobile ? 14 : 32, isMobile ? 12 : 20,
+        isMobile ? 14 : 32, isMobile ? 12 : 16);
+
+    if (isMobile) {
+      return Padding(
+        padding: pad,
+        child: Column(children: [
+          Row(children: [
+            Expanded(child: _StatCard(meta: cards[0], isMobile: true)),
+            const SizedBox(width: 10),
+            Expanded(child: _StatCard(meta: cards[1], isMobile: true)),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(child: _StatCard(meta: cards[2], isMobile: true)),
+            const SizedBox(width: 10),
+            Expanded(child: _StatCard(meta: cards[3], isMobile: true)),
+          ]),
+          const SizedBox(height: 10),
+          _StatCard(meta: cards[4], isMobile: true),
+        ]),
+      );
+    }
+
+    return Padding(
+      padding: pad,
+      child: Row(
+        children: cards.asMap().entries.map((e) => Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+                right: e.key < cards.length - 1 ? 14 : 0),
+            child: _StatCard(meta: e.value, isMobile: false),
+          ),
+        )).toList(),
+      ),
+    );
+  }
+
+  // ─── Charts Layout ───────────────────────────────────────────────────────
+  Widget _buildCharts(Map<String, dynamic> data, bool isMobile) {
+    final hPad = isMobile ? 14.0 : 32.0;
+
+    if (isMobile) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: hPad),
+        child: Column(children: [
+          _TrendChart(data: data, isMobile: true),
+          const SizedBox(height: 14),
+          _StatusPie(data: data, isMobile: true),
+          const SizedBox(height: 14),
+          _TopSkillsCard(
+              data: data,
+              isMobile: true,
+              onLockScroll: (v) => setState(() => _lockScroll = v)),
+          const SizedBox(height: 14),
+          _TopJobsCard(data: data, isMobile: true, cache: _jobCache),
+        ]),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 0),
+      child: Column(children: [
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(flex: 3,
+                  child: _TrendChart(data: data, isMobile: false)),
+              const SizedBox(width: 16),
+              Expanded(flex: 2,
+                  child: _StatusPie(data: data, isMobile: false)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(flex: 3,
+                  child: _TopSkillsCard(
+                      data: data,
+                      isMobile: false,
+                      onLockScroll: (v) =>
+                          setState(() => _lockScroll = v))),
+              const SizedBox(width: 16),
+              Expanded(flex: 2,
+                  child: _TopJobsCard(
+                      data: data, isMobile: false, cache: _jobCache)),
+            ],
+          ),
+        ),
+      ]),
+    );
+  }
+
+  // ─── Shimmer placeholders ────────────────────────────────────────────────
+  Widget _shimmerStats(bool isMobile) {
+    return Padding(
+      padding: EdgeInsets.all(isMobile ? 14 : 32),
+      child: isMobile
+          ? Column(children: [
+        Row(children: [
+          Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+          const SizedBox(width: 10),
+          Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+        ]),
+        const SizedBox(height: 10),
+        _ShimmerBox(height: 78, radius: 16),
+      ])
+          : Row(
+        children: List.generate(
+            5,
+                (i) => Expanded(
+              child: Padding(
+                padding:
+                EdgeInsets.only(right: i < 4 ? 14 : 0),
+                child: _ShimmerBox(height: 110, radius: 18),
+              ),
+            )),
+      ),
+    );
+  }
+
+  Widget _shimmerCharts(bool isMobile) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 14 : 32),
+      child: Column(children: [
+        _ShimmerBox(height: isMobile ? 260 : 300, radius: 18),
+        const SizedBox(height: 14),
+        _ShimmerBox(height: 240, radius: 18),
+      ]),
+    );
+  }
+
+  // ─── Data fetch ──────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>> _fetchData() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final snap = await FirebaseFirestore.instance
+          .collectionGroup('applied_jobs')
+          .where('recruiterUid', isEqualTo: uid)
+          .get();
+
+      int total = snap.docs.length;
+      int pending = 0, accepted = 0, rejected = 0, shortlist = 0;
+      final skillsCount = <String, int>{};
+      final jobCount    = <String, int>{};
+      final daily       = <DateTime, int>{};
+
+      for (var doc in snap.docs) {
+        final d = doc.data();
+        switch ((d['status']?.toString().toLowerCase() ?? 'pending')) {
+          case 'accepted':  accepted++;  break;
+          case 'rejected':  rejected++;  break;
+          case 'shortlist': shortlist++; break;
+          default:          pending++;
+        }
+        final jid = d['jobId']?.toString() ?? '';
+        if (jid.isNotEmpty) jobCount[jid] = (jobCount[jid] ?? 0) + 1;
+
+        final pp =
+        ((d['profileSnapshot'] as Map?) ?? {})['user_Account_Data'];
+        final personal = (pp as Map?)?['personalProfile'] as Map?;
+        for (var s in (personal?['skills'] as List? ?? [])) {
+          final sk = s.toString();
+          skillsCount[sk] = (skillsCount[sk] ?? 0) + 1;
+        }
+
+        final at = d['appliedAt'];
+        if (at is Timestamp) {
+          final dt = at.toDate();
+          final day = DateTime(dt.year, dt.month, dt.day);
+          daily[day] = (daily[day] ?? 0) + 1;
+        }
+      }
+
+      final topSkills = (skillsCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(10)
+          .toList();
+      final topJobs = (jobCount.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)))
+          .take(5)
+          .toList();
+
+      final sortedDays = daily.keys.toList()..sort();
+      int cum = 0;
+      final spots = <FlSpot>[];
+      for (int i = 0; i < sortedDays.length; i++) {
+        cum += daily[sortedDays[i]] ?? 0;
+        spots.add(FlSpot(i.toDouble(), cum.toDouble()));
+      }
+
+      return {
+        'totalApplicants': total,
+        'pending': pending,
+        'accepted': accepted,
+        'rejected': rejected,
+        'shortlist': shortlist,
+        'topSkills': topSkills,
+        'topJobs': topJobs,
+        'trendData': spots,
+        'dates': sortedDays,
+      };
+    } catch (e) {
+      debugPrint('Dashboard fetch error: $e');
+      return {};
+    }
+  }
+}
+
+// ─── Post Job Button ──────────────────────────────────────────────────────────
+class _PostJobButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
       onTap: () => context.go('/post-job'),
       child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-              colors: [_primary, _accent],
+              colors: [_blue, _blueLight],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: _primary.withOpacity(0.3),
+                color: _blue.withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4))
           ],
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add, color: Colors.white, size: 20),
+            const Icon(Icons.add_rounded, color: _white, size: 20),
             const SizedBox(width: 8),
-            Text('Post Job',
-                style: GoogleFonts.poppins(
+            Text('Post',
+                style: GoogleFonts.dmSans(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white)),
+                    fontWeight: FontWeight.w700,
+                    color: _white)),
           ],
         ),
       ),
     );
   }
+}
 
-  // ─── Stats Overview ────────────────────────────────────────────────────────
+// ─── Stat Meta ────────────────────────────────────────────────────────────────
+class _StatMeta {
+  final String label, value, subtitle;
+  final IconData icon;
+  final Color color;
+  const _StatMeta(
+      this.label, this.value, this.icon, this.color, this.subtitle);
+}
 
-  Widget _buildStatsOverview(bool isMobile) {
-    return Container(
-      padding: _sectionPad(isMobile),
-      color: _background,
-      child: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchAllApplicantsData(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox(
-              height: 100,
-              child: Center(
-                  child: CircularProgressIndicator(color: _primary)),
-            );
-          }
-          final data = snapshot.data!;
-          final totalApps = data['totalApplicants'] ?? 0;
-          final pending = data['pending'] ?? 0;
-          final accepted = data['accepted'] ?? 0;
-          final rejected = data['rejected'] ?? 0;
-          final shortlist = data['shortlist'] ?? 0;
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+class _StatCard extends StatelessWidget {
+  final _StatMeta meta;
+  final bool isMobile;
+  const _StatCard({required this.meta, required this.isMobile});
 
-          if (isMobile) {
-            return Column(
-              children: [
-                Row(children: [
-                  Expanded(
-                      child: _buildCompactStatCard(
-                          title: 'Total Apps',
-                          value: totalApps.toString(),
-                          icon: Icons.people_alt_outlined,
-                          color: _accent)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: _buildCompactStatCard(
-                          title: 'Pending',
-                          value: pending.toString(),
-                          icon: Icons.hourglass_empty,
-                          color: _warning)),
-                ]),
-                const SizedBox(height: 8),
-                Row(children: [
-                  Expanded(
-                      child: _buildCompactStatCard(
-                          title: 'Accepted',
-                          value: accepted.toString(),
-                          icon: Icons.check_circle_outline,
-                          color: _success)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: _buildCompactStatCard(
-                          title: 'Rejected',
-                          value: rejected.toString(),
-                          icon: Icons.group_remove_outlined,
-                          color: _error)),
-                ]),
-                const SizedBox(height: 8),
-                _buildCompactStatCard(
-                    title: 'Shortlist',
-                    value: shortlist.toString(),
-                    icon: Icons.star_outline,
-                    color: _primary),
-              ],
-            );
-          }
-
-          // Desktop row
-          final items = [
-            (title: 'Total Apps', value: totalApps.toString(), sub: 'Across jobs', icon: Icons.people_alt_outlined, color: _accent),
-            (title: 'Pending', value: pending.toString(), sub: 'Needs review', icon: Icons.hourglass_empty, color: _warning),
-            (title: 'Accepted', value: accepted.toString(), sub: 'By Admin', icon: Icons.check_circle_outline, color: _success),
-            (title: 'Rejected', value: rejected.toString(), sub: 'Candidates', icon: Icons.group_remove_outlined, color: _error),
-            (title: 'Shortlist', value: shortlist.toString(), sub: 'Interview', icon: Icons.star_outline, color: _primary),
-          ];
-
-          return Row(
-            children: items.asMap().entries.map((e) {
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      right: e.key < items.length - 1 ? 16 : 0),
-                  child: _buildStatCardEnhanced(
-                    title: e.value.title,
-                    value: e.value.value,
-                    subtitle: e.value.sub,
-                    icon: e.value.icon,
-                    color: e.value.color,
-                  ),
-                ),
-              );
-            }).toList(),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCompactStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value,
-                    style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: _textPrimary,
-                        height: 1.1)),
-                Text(title,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: _textSecondary)),
-              ],
+  @override
+  Widget build(BuildContext context) {
+    if (isMobile) {
+      return Container(
+        padding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _slate200),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2))
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                  color: meta.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(meta.icon, color: meta.color, size: 18),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(meta.value,
+                      style: GoogleFonts.dmSans(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: _slate900,
+                          height: 1.1)),
+                  Text(meta.label,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.dmSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: _slate600)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
-  Widget _buildStatCardEnhanced({
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-  }) {
+    // Desktop vertical card
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        color: _white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
               offset: const Offset(0, 4))
         ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 16),
-          Text(value,
-              style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: _textPrimary)),
-          const SizedBox(height: 4),
-          Text(title,
-              style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary)),
-          const SizedBox(height: 2),
-          Text(subtitle,
-              style: GoogleFonts.poppins(
-                  fontSize: 12, color: _textSecondary)),
-        ],
-      ),
-    );
-  }
-
-  // ─── Analytics Section ─────────────────────────────────────────────────────
-
-  Widget _buildAnalyticsSection(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        isMobile ? 12 : 32,
-        0,
-        isMobile ? 12 : 32,
-        24,
-      ),
-      color: _background,
-      child: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchAllApplicantsData(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox(
-              height: 300,
-              child: Center(
-                  child: CircularProgressIndicator(color: _primary)),
-            );
-          }
-          final data = snapshot.data!;
-
-          if (isMobile) {
-            return Column(
-              children: [
-                _buildApplicationsTrendChart(data, isMobile),
-                const SizedBox(height: 14),
-                _buildStatusDistribution(data, isMobile),
-                const SizedBox(height: 14),
-                _buildTopSkillsChart(data, isMobile),
-                const SizedBox(height: 14),
-                _buildTopJobsList(data, isMobile),
-              ],
-            );
-          }
-
-          return Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      flex: 3,
-                      child: _buildApplicationsTrendChart(data, isMobile)),
-                  const SizedBox(width: 20),
-                  Expanded(
-                      flex: 2,
-                      child: _buildStatusDistribution(data, isMobile)),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      flex: 2,
-                      child: _buildTopSkillsChart(data, isMobile)),
-                  const SizedBox(width: 20),
-                  Expanded(child: _buildTopJobsList(data, isMobile)),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  // ─── Trend Chart ───────────────────────────────────────────────────────────
-
-  Widget _buildApplicationsTrendChart(
-      Map<String, dynamic> data, bool isMobile) {
-    final trendData = data['trendData'] as List<FlSpot>? ?? [];
-    final dates = data['dates'] as List<DateTime>? ?? [];
-
-    if (trendData.isEmpty) {
-      return _buildEmptyChart('Application Trends', 'No data available',
-          isMobile);
-    }
-
-    final chartHeight = isMobile ? 260.0 : 350.0;
-    final titleFont = isMobile ? 14.0 : 18.0;
-    final subFont = isMobile ? 11.0 : 13.0;
-
-    return Container(
-      height: chartHeight,
-      padding: _cardPad(isMobile),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,256 +797,250 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Application Trends',
-                        style: GoogleFonts.poppins(
-                            fontSize: titleFont,
-                            fontWeight: FontWeight.w600,
-                            color: _textPrimary)),
-                    const SizedBox(height: 2),
-                    Text('Daily application volume',
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                            fontSize: subFont, color: _textSecondary)),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
               Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 8 : 12,
-                    vertical: isMobile ? 4 : 6),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                            color: _accent, shape: BoxShape.circle)),
-                    const SizedBox(width: 6),
-                    Text('${dates.length}d',
-                        style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 10 : 12,
-                            fontWeight: FontWeight.w600,
-                            color: _accent)),
-                  ],
-                ),
+                    color: meta.color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(meta.icon, color: meta.color, size: 20),
+              ),
+              // accent bar
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: meta.color.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(2)),
               ),
             ],
           ),
-          SizedBox(height: isMobile ? 12 : 24),
+          const SizedBox(height: 16),
+          Text(meta.value,
+              style: GoogleFonts.dmSans(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: _slate900,
+                  height: 1.0)),
+          const SizedBox(height: 4),
+          Text(meta.label,
+              style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _slate900)),
+          const SizedBox(height: 2),
+          Text(meta.subtitle,
+              style: GoogleFonts.dmSans(
+                  fontSize: 11, color: _slate400)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Trend Chart ──────────────────────────────────────────────────────────────
+class _TrendChart extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isMobile;
+  const _TrendChart({required this.data, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    final spots = data['trendData'] as List<FlSpot>? ?? [];
+    final dates = data['dates']    as List<DateTime>? ?? [];
+
+    return _ChartCard(
+      isMobile: isMobile,
+      height: isMobile ? 260 : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _CardHeader(
+            title: 'Application Trends',
+            subtitle: 'Cumulative applicants over time',
+            isMobile: isMobile,
+            badge: spots.isEmpty ? null : '${dates.length} day(s)',
+            badgeColor: _blue,
+          ),
+          SizedBox(height: isMobile ? 14 : 20),
           Expanded(
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval:
-                  trendData.isNotEmpty ? trendData.last.y / 4 : 1,
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: _border, strokeWidth: 1, dashArray: [5, 5]),
-                ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval:
-                      (trendData.length / (isMobile ? 4 : 6))
-                          .ceil()
-                          .toDouble(),
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index >= 0 && index < dates.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              DateFormat(isMobile ? 'M/d' : 'MMM d')
-                                  .format(dates[index]),
-                              style: GoogleFonts.poppins(
-                                  fontSize: isMobile ? 9 : 11,
-                                  color: _textSecondary),
-                            ),
-                          );
-                        }
-                        return const SizedBox();
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: isMobile ? 28 : 40,
-                      getTitlesWidget: (value, meta) => Text(
-                        '${value.toInt()}',
-                        style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 9 : 11,
-                            color: _textSecondary),
-                      ),
-                    ),
-                  ),
-                  topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: (trendData.length - 1).toDouble(),
-                minY: 0,
-                maxY: trendData.isNotEmpty ? trendData.last.y * 1.2 : 1,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: trendData,
-                    isCurved: true,
-                    curveSmoothness: 0.35,
-                    color: _accent,
-                    barWidth: isMobile ? 2 : 3,
-                    dotData: FlDotData(
-                      show: !isMobile, // hide dots on mobile to reduce clutter
-                      getDotPainter: (spot, percent, barData, index) =>
-                          FlDotCirclePainter(
-                              radius: 4,
-                              color: _accent,
-                              strokeWidth: 2,
-                              strokeColor: _background),
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          _accent.withOpacity(0.25),
-                          _accent.withOpacity(0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => _textPrimary.withOpacity(0.9),
-                    getTooltipItems: (spots) => spots.map((spot) {
-                      final idx = spot.x.toInt();
-                      final date = idx < dates.length
-                          ? DateFormat('MMM d, yyyy').format(dates[idx])
-                          : '';
-                      return LineTooltipItem(
-                        '$date\n${spot.y.toInt()} apps',
-                        GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
+            child: spots.isEmpty
+                ? _EmptyHint(
+                message: 'No trend data yet',
+                isMobile: isMobile)
+                : LineChart(_lineData(spots, dates)),
           ),
         ],
       ),
     );
   }
 
-  // ─── Status Distribution ───────────────────────────────────────────────────
+  LineChartData _lineData(List<FlSpot> spots, List<DateTime> dates) {
+    final maxY = spots.map((s) => s.y).reduce(max) * 1.25;
+    return LineChartData(
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        horizontalInterval: maxY / 4,
+        getDrawingHorizontalLine: (_) =>
+            FlLine(color: _slate200, strokeWidth: 1, dashArray: [4, 4]),
+      ),
+      borderData: FlBorderData(show: false),
+      titlesData: FlTitlesData(
+        topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false)),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: isMobile ? 28 : 36,
+            getTitlesWidget: (v, m) => Text('${v.toInt()}',
+                style: GoogleFonts.dmSans(
+                    fontSize: isMobile ? 9 : 10,
+                    color: _slate400)),
+          ),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: max(
+                1,
+                (spots.length / (isMobile ? 4 : 6))
+                    .ceil())
+                .toDouble(),
+            getTitlesWidget: (v, m) {
+              final i = v.toInt();
+              if (i < 0 || i >= dates.length) {
+                return const SizedBox();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: Text(
+                  DateFormat(isMobile ? 'M/d' : 'MMM d')
+                      .format(dates[i]),
+                  style: GoogleFonts.dmSans(
+                      fontSize: isMobile ? 9 : 10,
+                      color: _slate400),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      minX: 0,
+      maxX: (spots.length - 1).toDouble(),
+      minY: 0,
+      maxY: maxY,
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          curveSmoothness: 0.4,
+          color: _blue,
+          barWidth: isMobile ? 2.5 : 3,
+          dotData: FlDotData(
+            show: spots.length < 15,
+            getDotPainter: (s, p, b, i) => FlDotCirclePainter(
+                radius: 3.5,
+                color: _blue,
+                strokeWidth: 2,
+                strokeColor: _white),
+          ),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: [
+                _blue.withOpacity(0.16),
+                _blue.withOpacity(0.0)
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ],
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipColor: (_) => _navy,
+          tooltipBorderRadius: BorderRadius.circular(10),
+          getTooltipItems: (ts) => ts.map((t) {
+            final i = t.x.toInt();
+            final d = i < dates.length
+                ? DateFormat('MMM d').format(dates[i])
+                : '';
+            return LineTooltipItem(
+              '$d\n${t.y.toInt()} total',
+              GoogleFonts.dmSans(
+                  color: _white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
 
-  Widget _buildStatusDistribution(
-      Map<String, dynamic> data, bool isMobile) {
-    final pending = data['pending'] ?? 0;
-    final accepted = data['accepted'] ?? 0;
-    final rejected = data['rejected'] ?? 0;
-    final shortlist = data['shortlist'] ?? 0;
+// ─── Status Pie ───────────────────────────────────────────────────────────────
+class _StatusPie extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isMobile;
+  const _StatusPie({required this.data, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    final pending   = (data['pending']   ?? 0) as int;
+    final accepted  = (data['accepted']  ?? 0) as int;
+    final rejected  = (data['rejected']  ?? 0) as int;
+    final shortlist = (data['shortlist'] ?? 0) as int;
     final total = pending + accepted + rejected + shortlist;
 
-    if (total == 0) {
-      return _buildEmptyChart(
-          'Status Distribution', 'No data available', isMobile);
-    }
-
-    PieChartSectionData _section(
-        Color color, int value, IconData icon) {
-      final pct = ((value / total) * 100).toInt();
-      return PieChartSectionData(
-        color: color,
-        value: value.toDouble(),
-        title: '$pct%',
-        radius: isMobile ? 32 : 40,
-        titleStyle: GoogleFonts.poppins(
-            fontSize: isMobile ? 10 : 12,
-            fontWeight: FontWeight.w700,
-            color: Colors.white),
-        badgeWidget: _buildPieBadge(icon, color, isMobile),
-        badgePositionPercentageOffset: 1.2,
-      );
-    }
-
-    final chartHeight = isMobile ? 240.0 : 350.0;
-
-    return Container(
-      height: chartHeight,
-      padding: _cardPad(isMobile),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
-      ),
+    return _ChartCard(
+      isMobile: isMobile,
+      height: isMobile ? 250 : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Application Status',
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 14 : 18,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary)),
-          const SizedBox(height: 2),
-          Text('Distribution by current status',
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 11 : 13,
-                  color: _textSecondary)),
-          SizedBox(height: isMobile ? 12 : 24),
+          _CardHeader(
+            title: 'Status Breakdown',
+            subtitle: 'Application pipeline',
+            isMobile: isMobile,
+          ),
+          SizedBox(height: isMobile ? 14 : 20),
           Expanded(
-            child: Row(
+            child: total == 0
+                ? _EmptyHint(
+                message: 'No applicants yet',
+                isMobile: isMobile)
+                : Row(
               children: [
                 Expanded(
-                  flex: 3,
-                  child: PieChart(
-                    PieChartData(
-                      sections: [
-                        _section(_warning, pending, Icons.hourglass_empty),
-                        _section(_success, accepted, Icons.check),
-                        _section(_error, rejected, Icons.close),
-                        _section(_primary, shortlist, Icons.star),
-                      ],
-                      centerSpaceRadius: isMobile ? 28 : 40,
-                      sectionsSpace: 2,
-                    ),
-                  ),
+                  flex: isMobile ? 5 : 4,
+                  child: PieChart(PieChartData(
+                    sections: [
+                      _pieSection(_amber,   pending,   total),
+                      _pieSection(_emerald, accepted,  total),
+                      _pieSection(_rose,    rejected,  total),
+                      _pieSection(_violet,  shortlist, total),
+                    ],
+                    centerSpaceRadius: isMobile ? 28 : 38,
+                    sectionsSpace: 3,
+                  )),
                 ),
+                const SizedBox(width: 10),
                 Expanded(
-                  flex: 2,
+                  flex: isMobile ? 4 : 3,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment:
+                    MainAxisAlignment.center,
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
                     children: [
-                      _buildLegendItem(
-                          'Pending', pending.toString(), _warning, isMobile),
-                      SizedBox(height: isMobile ? 8 : 12),
-                      _buildLegendItem(
-                          'Accepted', accepted.toString(), _success, isMobile),
-                      SizedBox(height: isMobile ? 8 : 12),
-                      _buildLegendItem(
-                          'Rejected', rejected.toString(), _error, isMobile),
-                      SizedBox(height: isMobile ? 8 : 12),
-                      _buildLegendItem(
-                          'Shortlist', shortlist.toString(), _primary, isMobile),
+                      _PieLegend('Pending',     pending,   _amber,   isMobile),
+                      _PieLegend('Accepted',    accepted,  _emerald, isMobile),
+                      _PieLegend('Rejected',    rejected,  _rose,    isMobile),
+                      _PieLegend('Shortlisted', shortlist, _violet,  isMobile),
                     ],
                   ),
                 ),
@@ -966,195 +1052,184 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
     );
   }
 
-  Widget _buildPieBadge(IconData icon, Color color, bool isMobile) {
-    final size = isMobile ? 22.0 : 28.0;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: _background, width: 2),
-        boxShadow: [
-          BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 4,
-              offset: const Offset(0, 2))
+  PieChartSectionData _pieSection(
+      Color color, int value, int total) {
+    final pct = total == 0 ? 0 : (value / total * 100).round();
+    return PieChartSectionData(
+      color: color,
+      value: value.toDouble(),
+      title: value == 0 ? '' : '$pct%',
+      radius: isMobile ? 34 : 44,
+      titleStyle: GoogleFonts.dmSans(
+          fontSize: isMobile ? 9 : 11,
+          fontWeight: FontWeight.w700,
+          color: _white),
+    );
+  }
+}
+
+class _PieLegend extends StatelessWidget {
+  final String label;
+  final int value;
+  final Color color;
+  final bool isMobile;
+  const _PieLegend(this.label, this.value, this.color, this.isMobile);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isMobile ? 8 : 10),
+      child: Row(
+        children: [
+          Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(3))),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(label,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.dmSans(
+                    fontSize: isMobile ? 11 : 12,
+                    color: _slate600)),
+          ),
+          Text('$value',
+              style: GoogleFonts.dmSans(
+                  fontSize: isMobile ? 12 : 13,
+                  fontWeight: FontWeight.w700,
+                  color: _slate900)),
         ],
       ),
-      child: Icon(icon, color: Colors.white, size: isMobile ? 10 : 14),
     );
   }
+}
 
-  Widget _buildLegendItem(
-      String label, String value, Color color, bool isMobile) {
-    return Row(
-      children: [
-        Container(
-          width: isMobile ? 10 : 12,
-          height: isMobile ? 10 : 12,
-          decoration: BoxDecoration(
-              color: color, borderRadius: BorderRadius.circular(3)),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(label,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 11 : 13, color: _textSecondary)),
-        ),
-        Text(value,
-            style: GoogleFonts.poppins(
-                fontSize: isMobile ? 11 : 13,
-                fontWeight: FontWeight.w600,
-                color: _textPrimary)),
-      ],
-    );
-  }
+// ─── Top Skills ───────────────────────────────────────────────────────────────
+class _TopSkillsCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isMobile;
+  final ValueChanged<bool> onLockScroll;
+  const _TopSkillsCard({
+    required this.data,
+    required this.isMobile,
+    required this.onLockScroll,
+  });
 
-  // ─── Top Skills Chart ──────────────────────────────────────────────────────
-
-  Widget _buildTopSkillsChart(Map<String, dynamic> data, bool isMobile) {
-    final topSkills =
+  @override
+  Widget build(BuildContext context) {
+    final skills =
         data['topSkills'] as List<MapEntry<String, int>>? ?? [];
+    final maxVal =
+    skills.isEmpty ? 1.0 : skills.first.value.toDouble();
 
-    if (topSkills.isEmpty) {
-      return _buildEmptyChart(
-          'Top Skills', 'No skills data available', isMobile);
-    }
-
-    final maxValue = topSkills.first.value.toDouble();
-    final chartHeight = isMobile ? 320.0 : 400.0;
-
-    return Container(
-      height: chartHeight,
-      padding: _cardPad(isMobile),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
-      ),
+    return _ChartCard(
+      isMobile: isMobile,
+      height: isMobile ? 360 : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Top Skills',
-                        style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 14 : 18,
-                            fontWeight: FontWeight.w600,
-                            color: _textPrimary)),
-                    const SizedBox(height: 2),
-                    Text('Most requested skills',
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                            fontSize: isMobile ? 11 : 13,
-                            color: _textSecondary)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 8 : 12,
-                    vertical: isMobile ? 4 : 6),
-                decoration: BoxDecoration(
-                    color: _primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8)),
-                child: Text('${topSkills.length} skills',
-                    style: GoogleFonts.poppins(
-                        fontSize: isMobile ? 10 : 12,
-                        fontWeight: FontWeight.w600,
-                        color: _primary)),
-              ),
-            ],
+          _CardHeader(
+            title: 'Top Skills',
+            subtitle: 'Most common applicant skills',
+            isMobile: isMobile,
+            badge: skills.isEmpty ? null : '${skills.length}',
+            badgeColor: _violet,
           ),
-          SizedBox(height: isMobile ? 12 : 24),
+          SizedBox(height: isMobile ? 14 : 18),
           Expanded(
-            child: MouseRegion(
-              onEnter: (_) => setState(() => _lockOuterScroll = true),
-              onExit: (_) => setState(() => _lockOuterScroll = false),
+            child: skills.isEmpty
+                ? _EmptyHint(
+                message: 'No skill data yet',
+                isMobile: isMobile)
+                : MouseRegion(
+              onEnter: (_) => onLockScroll(true),
+              onExit: (_) => onLockScroll(false),
               child: ListView.builder(
+                padding: EdgeInsets.zero,
                 physics: const ClampingScrollPhysics(),
-                itemCount: topSkills.length > 10 ? 10 : topSkills.length,
-                itemBuilder: (context, index) {
-                  final skill = topSkills[index];
-                  final percentage =
-                  (skill.value / maxValue * 100).round();
+                itemCount:
+                skills.length > 10 ? 10 : skills.length,
+                itemBuilder: (ctx, i) {
+                  final sk = skills[i];
+                  final pct = sk.value / maxVal;
+                  final isTop = i < 3;
 
                   return Padding(
                     padding: EdgeInsets.only(
-                        bottom: isMobile ? 10 : 16),
+                        bottom: isMobile ? 10 : 12),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: isMobile ? 24 : 28,
-                                    height: isMobile ? 24 : 28,
-                                    decoration: BoxDecoration(
-                                      color: index < 3
-                                          ? _accent.withOpacity(0.1)
-                                          : _surface,
-                                      borderRadius:
-                                      BorderRadius.circular(6),
-                                    ),
-                                    child: Center(
-                                      child: Text('${index + 1}',
-                                          style: GoogleFonts.poppins(
-                                              fontSize:
-                                              isMobile ? 10 : 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: index < 3
-                                                  ? _accent
-                                                  : _textSecondary)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(skill.key,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.poppins(
-                                            fontSize:
-                                            isMobile ? 12 : 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: _textPrimary)),
-                                  ),
-                                ],
+                            // Rank badge
+                            Container(
+                              width:  isMobile ? 22 : 26,
+                              height: isMobile ? 22 : 26,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isTop
+                                    ? _violet
+                                    .withOpacity(0.12)
+                                    : _slate100,
+                                borderRadius:
+                                BorderRadius.circular(
+                                    7),
                               ),
+                              child: Text('${i + 1}',
+                                  style: GoogleFonts.dmSans(
+                                      fontSize:
+                                      isMobile ? 10 : 11,
+                                      fontWeight:
+                                      FontWeight.w800,
+                                      color: isTop
+                                          ? _violet
+                                          : _slate400)),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              '${skill.value} ($percentage%)',
-                              style: GoogleFonts.poppins(
-                                  fontSize: isMobile ? 10 : 12,
-                                  color: _textSecondary),
+                            // Skill name
+                            Expanded(
+                              child: Text(sk.key,
+                                  overflow:
+                                  TextOverflow.ellipsis,
+                                  style: GoogleFonts.dmSans(
+                                      fontSize:
+                                      isMobile ? 12 : 13,
+                                      fontWeight:
+                                      FontWeight.w600,
+                                      color: _slate900)),
                             ),
+                            const SizedBox(width: 8),
+                            // Count
+                            Text('${sk.value}',
+                                style: GoogleFonts.dmSans(
+                                    fontSize:
+                                    isMobile ? 11 : 12,
+                                    fontWeight:
+                                    FontWeight.w700,
+                                    color: isTop
+                                        ? _violet
+                                        : _slate600)),
                           ],
                         ),
-                        SizedBox(height: isMobile ? 5 : 8),
+                        const SizedBox(height: 5),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius:
+                          BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: skill.value / maxValue,
-                            backgroundColor:
-                            _border.withOpacity(0.3),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              index < 3
-                                  ? _accent
-                                  : _primary.withOpacity(0.6),
-                            ),
-                            minHeight: isMobile ? 4 : 6,
+                            value: pct,
+                            minHeight: isMobile ? 5 : 6,
+                            backgroundColor: _slate100,
+                            valueColor:
+                            AlwaysStoppedAnimation(
+                                isTop
+                                    ? _violet
+                                    : _blue
+                                    .withOpacity(
+                                    0.5)),
                           ),
                         ),
                       ],
@@ -1168,123 +1243,147 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
       ),
     );
   }
+}
 
-  // ─── Top Jobs List ─────────────────────────────────────────────────────────
+// ─── Top Jobs ─────────────────────────────────────────────────────────────────
+class _TopJobsCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isMobile;
+  final Map<String, Future<DocumentSnapshot>> cache;
+  const _TopJobsCard({
+    required this.data,
+    required this.isMobile,
+    required this.cache,
+  });
 
-  Widget _buildTopJobsList(Map<String, dynamic> data, bool isMobile) {
-    final topJobIds =
+  @override
+  Widget build(BuildContext context) {
+    final jobs =
         data['topJobs'] as List<MapEntry<String, int>>? ?? [];
 
-    if (topJobIds.isEmpty) {
-      return _buildEmptyChart(
-          'Top Performing Jobs', 'No data available', isMobile);
+    for (var e in jobs.take(5)) {
+      cache.putIfAbsent(
+          e.key,
+              () => FirebaseFirestore.instance
+              .collection('Posted_jobs_public')
+              .doc(e.key)
+              .get());
     }
 
-    for (var jobEntry in topJobIds.take(5)) {
-      if (!_jobDataCache.containsKey(jobEntry.key)) {
-        _jobDataCache[jobEntry.key] = FirebaseFirestore.instance
-            .collection('Posted_jobs_public')
-            .doc(jobEntry.key)
-            .get();
-      }
-    }
-
-    final chartHeight = isMobile ? 320.0 : 400.0;
-
-    return Container(
-      height: chartHeight,
-      padding: _cardPad(isMobile),
-      decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
-      ),
+    return _ChartCard(
+      isMobile: isMobile,
+      height: isMobile ? 360 : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Top Performing Jobs',
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 14 : 18,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary)),
-          const SizedBox(height: 2),
-          Text('Jobs with most applications',
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 11 : 13,
-                  color: _textSecondary)),
-          SizedBox(height: isMobile ? 12 : 24),
+          _CardHeader(
+            title: 'Top Performing Jobs',
+            subtitle: 'Ranked by applications received',
+            isMobile: isMobile,
+          ),
+          SizedBox(height: isMobile ? 14 : 18),
           Expanded(
-            child: ListView.builder(
+            child: jobs.isEmpty
+                ? _EmptyHint(
+                message: 'No job data yet',
+                isMobile: isMobile)
+                : ListView.builder(
+              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: topJobIds.take(5).length,
-              itemBuilder: (context, index) {
-                final jobEntry = topJobIds[index];
+              itemCount: jobs.take(5).length,
+              itemBuilder: (ctx, i) {
+                final entry = jobs[i];
+                final rankColor = i == 0
+                    ? _amber
+                    : i == 1
+                    ? _slate400
+                    : _blue.withOpacity(0.55);
+
                 return FutureBuilder<DocumentSnapshot>(
-                  future: _jobDataCache[jobEntry.key],
-                  builder: (context, snapshot) {
-                    String jobTitle = 'Loading...';
-                    if (snapshot.hasData &&
-                        snapshot.data!.data() != null) {
-                      final d = snapshot.data!.data()
-                      as Map<String, dynamic>;
-                      jobTitle =
-                          d['title']?.toString() ?? 'Unknown Job';
+                  future: cache[entry.key],
+                  builder: (ctx, snap) {
+                    String title = '…';
+                    if (snap.hasData &&
+                        snap.data!.data() != null) {
+                      title = ((snap.data!.data()
+                      as Map)['title']
+                          ?.toString()) ??
+                          'Untitled';
                     }
 
                     return Container(
                       margin: EdgeInsets.only(
-                          bottom: isMobile ? 8 : 12),
-                      padding: EdgeInsets.all(isMobile ? 12 : 16),
+                          bottom: isMobile ? 8 : 10),
+                      padding: EdgeInsets.all(
+                          isMobile ? 12 : 14),
                       decoration: BoxDecoration(
-                        color: _surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _border),
+                        color: i == 0
+                            ? _amber.withOpacity(0.05)
+                            : _slate50,
+                        borderRadius:
+                        BorderRadius.circular(12),
+                        border: Border.all(
+                            color: i == 0
+                                ? _amber.withOpacity(0.2)
+                                : _slate200),
                       ),
                       child: Row(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.center,
                         children: [
+                          // Rank circle — fixed size
                           Container(
-                            width: isMobile ? 30 : 36,
-                            height: isMobile ? 30 : 36,
+                            width:  isMobile ? 30 : 34,
+                            height: isMobile ? 30 : 34,
+                            alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: index == 0
-                                  ? _warning.withOpacity(0.1)
-                                  : _primary.withOpacity(0.1),
+                              color: rankColor
+                                  .withOpacity(0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: Center(
-                              child: Text('${index + 1}',
-                                  style: GoogleFonts.poppins(
-                                      fontSize: isMobile ? 12 : 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: index == 0
-                                          ? _warning
-                                          : _primary)),
-                            ),
+                            child: Text('${i + 1}',
+                                style: GoogleFonts.dmSans(
+                                    fontSize:
+                                    isMobile ? 12 : 13,
+                                    fontWeight:
+                                    FontWeight.w800,
+                                    color: rankColor)),
                           ),
                           const SizedBox(width: 10),
+                          // Title + count — left-aligned
                           Expanded(
                             child: Column(
                               crossAxisAlignment:
                               CrossAxisAlignment.start,
+                              mainAxisSize:
+                              MainAxisSize.min,
                               children: [
-                                Text(jobTitle,
+                                Text(title,
                                     maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.poppins(
-                                        fontSize: isMobile ? 12 : 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: _textPrimary)),
+                                    overflow: TextOverflow
+                                        .ellipsis,
+                                    style: GoogleFonts.dmSans(
+                                        fontSize: isMobile
+                                            ? 12
+                                            : 13,
+                                        fontWeight:
+                                        FontWeight.w700,
+                                        color: _slate900)),
                                 const SizedBox(height: 2),
-                                Text('${jobEntry.value} applications',
-                                    style: GoogleFonts.poppins(
-                                        fontSize: isMobile ? 10 : 12,
-                                        color: _textSecondary)),
+                                Text(
+                                    '${entry.value} application${entry.value == 1 ? '' : 's'}',
+                                    style: GoogleFonts.dmSans(
+                                        fontSize: isMobile
+                                            ? 10
+                                            : 11,
+                                        color: _slate400)),
                               ],
                             ),
                           ),
-                          Icon(Icons.trending_up,
-                              color: _success,
-                              size: isMobile ? 16 : 20),
+                          // Trailing icon
+                          Icon(Icons.trending_up_rounded,
+                              color: _emerald,
+                              size: isMobile ? 16 : 18),
                         ],
                       ),
                     );
@@ -1297,173 +1396,168 @@ class _Recruiter_AnalyticsState extends State<Recruiter_Analytics>
       ),
     );
   }
+}
 
-  // ─── Empty Chart ───────────────────────────────────────────────────────────
+// ─── Chart Card Shell ─────────────────────────────────────────────────────────
+class _ChartCard extends StatelessWidget {
+  final Widget child;
+  final bool isMobile;
+  final double? height;
+  const _ChartCard(
+      {required this.child, required this.isMobile, this.height});
 
-  Widget _buildEmptyChart(
-      String title, String message, bool isMobile) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      height: isMobile ? 200 : 350,
-      padding: _cardPad(isMobile),
+      height: height,
+      constraints: height == null
+          ? const BoxConstraints(minHeight: 220)
+          : null,
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        color: _background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        color: _white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _slate200),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
+      child: child,
+    );
+  }
+}
+
+// ─── Card Header ──────────────────────────────────────────────────────────────
+class _CardHeader extends StatelessWidget {
+  final String title, subtitle;
+  final bool isMobile;
+  final String? badge;
+  final Color? badgeColor;
+  const _CardHeader({
+    required this.title,
+    required this.subtitle,
+    required this.isMobile,
+    this.badge,
+    this.badgeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: GoogleFonts.dmSans(
+                      fontSize: isMobile ? 14 : 16,
+                      fontWeight: FontWeight.w800,
+                      color: _slate900)),
+              const SizedBox(height: 2),
+              Text(subtitle,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSans(
+                      fontSize: isMobile ? 11 : 12,
+                      color: _slate400)),
+            ],
+          ),
+        ),
+        if (badge != null) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 8 : 10,
+                vertical: isMobile ? 3 : 4),
+            decoration: BoxDecoration(
+                color: (badgeColor ?? _blue).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20)),
+            child: Text(badge!,
+                style: GoogleFonts.dmSans(
+                    fontSize: isMobile ? 10 : 11,
+                    fontWeight: FontWeight.w700,
+                    color: badgeColor ?? _blue)),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ─── Empty Hint ───────────────────────────────────────────────────────────────
+class _EmptyHint extends StatelessWidget {
+  final String message;
+  final bool isMobile;
+  const _EmptyHint({required this.message, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.insert_chart_outlined,
-              size: isMobile ? 44 : 64,
-              color: _textSecondary.withOpacity(0.3)),
-          const SizedBox(height: 16),
-          Text(title,
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 14 : 18,
-                  fontWeight: FontWeight.w600,
-                  color: _textPrimary)),
+          Icon(Icons.bar_chart_rounded,
+              size: isMobile ? 36 : 44,
+              color: _slate200),
           const SizedBox(height: 8),
           Text(message,
-              style: GoogleFonts.poppins(
-                  fontSize: isMobile ? 12 : 14,
-                  color: _textSecondary),
-              textAlign: TextAlign.center),
+              style: GoogleFonts.dmSans(
+                  fontSize: isMobile ? 12 : 13,
+                  color: _slate400)),
         ],
       ),
     );
   }
+}
 
-  // ─── Data Fetching (unchanged) ─────────────────────────────────────────────
+// ─── Shimmer Box ──────────────────────────────────────────────────────────────
+class _ShimmerBox extends StatefulWidget {
+  final double height;
+  final double radius;
+  const _ShimmerBox({required this.height, required this.radius});
 
-  Future<Map<String, dynamic>> _fetchAllApplicantsData() async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      final applicantsSnapshot = await FirebaseFirestore.instance
-          .collectionGroup('applied_jobs')
-          .where('recruiterUid', isEqualTo: uid)
-          .get();
+  @override
+  State<_ShimmerBox> createState() => _ShimmerBoxState();
+}
 
-      int totalApplicants = applicantsSnapshot.docs.length;
-      int pending = 0, accepted = 0, rejected = 0, shortlist = 0;
-      Map<String, int> skillsCount = {};
-      Map<String, int> locationCount = {};
-      Map<String, int> nationalityCount = {};
-      Map<String, int> jobApplicationCount = {};
-      Map<DateTime, int> dailyApplications = {};
+class _ShimmerBoxState extends State<_ShimmerBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
 
-      for (var doc in applicantsSnapshot.docs) {
-        final data = doc.data();
-        final status =
-            data['status']?.toString().toLowerCase() ?? 'pending';
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1200))
+      ..repeat(reverse: true);
+    _anim = Tween<double>(begin: 0.35, end: 0.85).animate(
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
 
-        switch (status) {
-          case 'accepted':
-            accepted++;
-            break;
-          case 'rejected':
-            rejected++;
-            break;
-          case 'shortlist':
-            shortlist++;
-            break;
-          default:
-            pending++;
-        }
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
-        final jobId = data['jobId']?.toString() ?? '';
-        if (jobId.isNotEmpty) {
-          jobApplicationCount[jobId] =
-              (jobApplicationCount[jobId] ?? 0) + 1;
-        }
-
-        final profileSnapshot =
-        data['profileSnapshot'] as Map<String, dynamic>?;
-        if (profileSnapshot != null) {
-          final accountData = profileSnapshot['user_Account_Data']
-          as Map<String, dynamic>?;
-          if (accountData != null) {
-            final personalProfile =
-            accountData['personalProfile'] as Map<String, dynamic>?;
-
-            final skills = personalProfile?['skills'] as List?;
-            if (skills != null) {
-              for (var skill in skills) {
-                final s = skill.toString();
-                skillsCount[s] = (skillsCount[s] ?? 0) + 1;
-              }
-            }
-
-            final location =
-                personalProfile?['location']?.toString() ?? '';
-            if (location.isNotEmpty) {
-              locationCount[location] =
-                  (locationCount[location] ?? 0) + 1;
-            }
-
-            final nationality =
-                personalProfile?['nationality']?.toString() ?? '';
-            if (nationality.isNotEmpty) {
-              nationalityCount[nationality] =
-                  (nationalityCount[nationality] ?? 0) + 1;
-            }
-          }
-        }
-
-        final appliedAt = data['appliedAt'];
-        if (appliedAt is Timestamp) {
-          final dt = appliedAt.toDate();
-          final date = DateTime(dt.year, dt.month, dt.day);
-          dailyApplications[date] =
-              (dailyApplications[date] ?? 0) + 1;
-        }
-      }
-
-      final topSkills = (skillsCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(10)
-          .toList();
-
-      final topLocations = (locationCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
-
-      final topNationalities = (nationalityCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
-
-      final topJobs = (jobApplicationCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
-
-      final sortedDates = dailyApplications.keys.toList()..sort();
-      List<FlSpot> trendData = [];
-      int cumulative = 0;
-      for (int i = 0; i < sortedDates.length; i++) {
-        cumulative += dailyApplications[sortedDates[i]] ?? 0;
-        trendData.add(FlSpot(i.toDouble(), cumulative.toDouble()));
-      }
-
-      return {
-        'totalApplicants': totalApplicants,
-        'pending': pending,
-        'accepted': accepted,
-        'rejected': rejected,
-        'shortlist': shortlist,
-        'topSkills': topSkills,
-        'topLocations': topLocations,
-        'topNationalities': topNationalities,
-        'topJobs': topJobs,
-        'trendData': trendData,
-        'dates': sortedDates,
-        'dailyApplications': dailyApplications,
-      };
-    } catch (e) {
-      debugPrint('Error fetching applicants data: $e');
-      return {};
-    }
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => Container(
+        height: widget.height,
+        decoration: BoxDecoration(
+          color: _slate100.withOpacity(_anim.value),
+          borderRadius: BorderRadius.circular(widget.radius),
+        ),
+      ),
+    );
   }
 }
 

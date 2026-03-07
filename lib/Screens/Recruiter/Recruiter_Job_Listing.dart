@@ -41,6 +41,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
     'Executive',
   ];
   final List<String> _workModeOptions = ['All', 'Remote', 'On-site', 'Hybrid'];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // Animation Controllers
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -155,6 +156,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFC),
       drawer: isMobile
           ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
@@ -169,8 +171,13 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: _buildDashboardContent(context),
-                ),
+                child: isMobile
+                    ? SafeArea(
+                        bottom: false,
+                        child: _buildDashboardContent(context),
+                      )
+                    : _buildDashboardContent(context),
+              ),
               ),
             ),
           ),
@@ -206,14 +213,22 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, int jobCount) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return AppBar(
       elevation: 0,
       backgroundColor: Color(0xFFFAFAFA),
+      leading: isMobile
+          ? IconButton(
+              icon: const Icon(Icons.menu_rounded, color: Color(0xFF0B0B0B)),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            )
+          : null,
       title: Text(
         'Jobs Dashboard',
         style: GoogleFonts.montserrat(
-          fontSize: 26,
-          fontWeight: FontWeight.w700, color: Color(0xFF0B0B0B),
+          fontSize: isMobile ? 20 : 26,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF0B0B0B),
         ),
       ),
       actions: [
