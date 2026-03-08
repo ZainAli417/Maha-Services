@@ -98,7 +98,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             child: SlideTransition(
               position: _slideAnimation,
               child: Container(
-                color: const Color(0xFFFFFFFF),
+                color: const Color(0xFFF8FAFC),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,7 +123,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFF8FAFC),
       ),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
       child: Row(

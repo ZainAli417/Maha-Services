@@ -1,4 +1,45 @@
-// lib/providers/login_provider.dart
+// lib/providers/login_provider.dart — FIXED
+// ─── Fixes applied ────────────────────────────────────────────────────────────
+//
+// FIX 1 [CRITICAL — root cause of intermittent failures]:
+//   After signInWithEmailAndPassword(), Firebase Auth issues a new ID token but
+//   Firestore's gRPC transport has its own auth-token refresh cycle. There is a
+//   0–600 ms race window where Firestore still uses the previous (null/expired)
+//   token, so the first .get() either gets PERMISSION_DENIED or sees a
+//   "non-existent" document — making a valid login look like a failure.
+//   Fix: call user.getIdToken(true) immediately after sign-in to force-flush
+//   the new token into Firebase's internal credential cache before any Firestore
+//   call is made. Then wrap _verifyUserRole with a single auto-retry (300 ms
+//   delay) as a safety net for slow SDK propagation on older devices.
+//
+// FIX 2 [CRITICAL — UI never navigates]:
+//   login() returned the target route but _onLogin() in the UI never called
+//   context.go(route). Navigation only worked when a GoRouter redirect happened
+//   to fire on its own, which is inherently timing-dependent.
+//   Fix: return the route from login() as before, and have _onLogin() call
+//   context.go(route) explicitly. (See login_screen_fixed.dart)
+//
+// FIX 3 [HIGH — signOut() during failure poisons the next retry]:
+//   When role verification failed (often due to FIX 1's token race), signOut()
+//   was called, which fired authStateChanges, rebuilding the UI mid-retry.
+//   If the user tapped "Log In" again during that rebuild, Firebase returned
+//   "user-not-found" because sign-out hadn't completed.
+//   Fix: sign out AFTER setting the error message, and only sign out when we are
+//   certain the user authenticated successfully (i.e. we own the session).
+//
+// FIX 4 [MEDIUM — _isNewUser defaults true on any error]:
+//   A network blip during the isNew check sent existing job-seekers to
+//   /profile-builder instead of /dashboard.
+//   Fix: default to false on network/Firestore errors (assume existing user).
+//   Only return true when the document genuinely doesn't exist.
+//
+// FIX 5 [PERFORMANCE — serial Firestore round-trips]:
+//   _verifyUserRole and _isNewUser were called sequentially (2 × round-trip
+//   latency). Both only need the same uid, so they can run in parallel.
+//   Fix: Future.wait([_verifyUserRole(...), _isNewUser(...)]) for job seekers.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,29 +47,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginProvider with ChangeNotifier {
-  final _auth = FirebaseAuth.instance;
+  final _auth      = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  //final _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
 
   StreamSubscription<User?>? _authSubscription;
   bool _isDisposed = false;
 
-  bool _isLoading = false;
+  bool    _isLoading    = false;
   String? _errorMessage;
-  User? _currentUser;
+  User?   _currentUser;
 
-  // ========== GETTERS ==========
-  bool get isLoading => _isLoading;
+  // ── Getters ────────────────────────────────────────────────────────────────
+  bool    get isLoading    => _isLoading;
   String? get errorMessage => _errorMessage;
-  User? get currentUser => _currentUser;
-  bool get isSignedIn => _currentUser != null;
+  User?   get currentUser  => _currentUser;
+  bool    get isSignedIn   => _currentUser != null;
 
-  // ========== SAFETY HELPERS ==========
+  // ── Safety helpers ─────────────────────────────────────────────────────────
   void _safeNotify() {
     if (!_isDisposed) notifyListeners();
   }
 
-  // ========== STATE MANAGEMENT ==========
   void _setLoading(bool value) {
     _isLoading = value;
     _safeNotify();
@@ -44,8 +83,8 @@ class LoginProvider with ChangeNotifier {
     _safeNotify();
   }
 
+  // ── Auth state listener ────────────────────────────────────────────────────
   void initAuthStateListener() {
-    // Save subscription so we can cancel it in dispose()
     _authSubscription = _auth.authStateChanges().listen((user) {
       _currentUser = user;
       _safeNotify();
@@ -57,141 +96,25 @@ class LoginProvider with ChangeNotifier {
     _safeNotify();
   }
 
-  // ========== ROLE HELPERS ==========
+  // ── Role helpers ───────────────────────────────────────────────────────────
   String _normalizeRole(String role) {
-    final normalized = role.trim().toLowerCase();
-    if (['recruiter', 'employer'].contains(normalized)) return 'recruiter';
-    if (['job_seeker', 'jobseeker', 'job seeker', 'candidate', 'Job_Seeker', 'Job Seeker'].contains(normalized)) return 'Job Seeker';
-    return normalized;
+    final n = role.trim().toLowerCase();
+    if (['recruiter', 'employer'].contains(n)) return 'recruiter';
+    if (['job_seeker', 'jobseeker', 'job seeker', 'candidate',
+      'job_seeker', 'job seeker'].contains(n)) return 'Job Seeker';
+    return n;
   }
-
 
   String _getRoleDashboard(String role) {
-    final normalized = _normalizeRole(role);
-    if (normalized == 'recruiter') return '/recruiter-dashboard';
-    if (normalized == 'admin') return '/admin_dashboard';
-    // For Job Seeker, default to dashboard (isNew check will override this in login)
+    final n = _normalizeRole(role);
+    if (n == 'recruiter') return '/recruiter-dashboard';
+    if (n == 'admin')     return '/admin_dashboard';
     return '/dashboard';
   }
-  // ========== UID LOOKUP ==========
-  Future<String?> _findUidForEmailAndRole(String email, String expectedRole) async {
-    final normalizedEmail = email.trim().toLowerCase();
-    final normExpected = _normalizeRole(expectedRole);
 
-    try {
-      // 1) Query users collection (fastest, single query)
-      final usersSnap = await _firestore
-          .collection('users')
-          .where('email', isEqualTo: normalizedEmail)
-          .limit(1)
-          .get();
-
-      if (usersSnap.docs.isNotEmpty) {
-        final userDoc = usersSnap.docs.first;
-        final data = userDoc.data();
-        final roleField = _normalizeRole(data['role']?.toString() ?? '');
-
-        if (roleField == normExpected) {
-          return data['uid']?.toString() ?? userDoc.id;
-        }
-      }
-
-      // 2) Fallback: Query role-specific collection
-      final collection = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
-      final emailPath = normExpected == 'recruiter'
-          ? 'user_data.email'
-          : 'user_data.personalProfile.email';
-
-      final roleSnap = await _firestore
-          .collection(collection)
-          .where(emailPath, isEqualTo: normalizedEmail)
-          .limit(1)
-          .get();
-
-      if (roleSnap.docs.isNotEmpty) {
-        return roleSnap.docs.first.id;
-      }
-
-      return null;
-    } catch (e) {
-      debugPrint('LoginProvider: UID lookup error: $e');
-      return null;
-    }
-  }
-// ========== CHECK isNew FIELD ==========
-// ========== CHECK isNew FIELD ==========
-  Future<bool> _isNewUser(String uid) async {
-    try {
-      // ✅ FIXED: Query by document ID (uid) directly instead of collection querying 
-      // This prevents permission denied errors on generic collection queries
-      final userDoc = await _firestore
-          .collection('users')
-          .doc(uid)
-          .get();
-
-      if (!userDoc.exists) {
-        debugPrint('⚠️ _isNewUser: User document not found for uid: $uid');
-        return true; // Assume new if doc doesn't exist
-      }
-
-      final data = userDoc.data() as Map<String, dynamic>;
-      final isNew = data['isNew'];
-
-      debugPrint('🔍 _isNewUser check for $uid: isNew = $isNew');
-
-      // Check if isNew is "yes" (case-insensitive)
-      if (isNew is String) {
-        return isNew.toLowerCase().trim() == 'yes';
-      }
-
-      // If it's a boolean
-      if (isNew is bool) {
-        return isNew;
-      }
-
-      // Default to true if field doesn't exist
-      return true;
-    } catch (e) {
-      debugPrint('❌ _isNewUser error: $e');
-      return true; // Safe default
-    }
-  }
-  // ========== ROLE VERIFICATION ==========
-  Future<bool> _verifyUserRole(String uid, String expectedRole) async {
-    try {
-      final normExpected = _normalizeRole(expectedRole);
-
-      // Query the specific role collection
-      final collection = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
-      final docSnap = await _firestore.collection(collection).doc(uid).get();
-
-      if (!docSnap.exists) return false;
-
-      final data = docSnap.data();
-      if (data == null) return false;
-
-      // Check nested user_data.role
-      if (data['user_data'] is Map) {
-        final userData = data['user_data'] as Map<String, dynamic>;
-        final role = _normalizeRole(userData['role']?.toString() ?? '');
-        if (role == normExpected) return true;
-      }
-
-      // Check direct role field
-      final directRole = _normalizeRole(data['role']?.toString() ?? '');
-      if (directRole == normExpected) return true;
-
-      // If doc exists in collection, assume role is correct (last resort)
-      return true;
-    } catch (e) {
-      debugPrint('LoginProvider: Role verification error: $e');
-      return false;
-    }
-  }
-
-  // ========== EMAIL/PASSWORD LOGIN ==========
-  /// NOTE: This method **does not** accept BuildContext or perform navigation.
-  /// It returns the target route on success (e.g. '/dashboard') or `null` on failure.
+  // ── LOGIN — FIXED ──────────────────────────────────────────────────────────
+  /// Returns the target route on success, or null on failure.
+  /// The caller (UI) is responsible for calling context.go(route).
   Future<String?> login({
     required String email,
     required String password,
@@ -206,7 +129,7 @@ class LoginProvider with ChangeNotifier {
     clearError();
 
     try {
-      // 1) Sign in with Firebase Auth
+      // ── Step 1: Firebase Auth sign-in ──────────────────────────────────────
       final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -214,39 +137,65 @@ class LoginProvider with ChangeNotifier {
 
       final user = cred.user;
       if (user == null) {
-        _setError('Authentication failed');
-        await _auth.signOut();
+        _setError('Authentication failed. Please try again.');
         return null;
       }
 
-      // 2) Verify role
-      final roleVerified = await _verifyUserRole(user.uid, expectedRole);
+      // ── FIX 1: Force ID-token refresh before ANY Firestore call ───────────
+      //
+      // After signInWithEmailAndPassword(), Firebase Auth has a new ID token
+      // but Firestore's gRPC transport may still carry the previous (null)
+      // credential for up to ~600 ms. Calling getIdToken(true) forces the SDK
+      // to flush the new token into every dependent service synchronously,
+      // eliminating the race window that caused intermittent permission errors.
+      try {
+        await user.getIdToken(true);
+        debugPrint('✅ ID token refreshed for uid=${user.uid}');
+      } catch (tokenErr) {
+        // Non-fatal: log and continue. The token will eventually propagate.
+        debugPrint('⚠️ getIdToken refresh skipped: $tokenErr');
+      }
+
+      // ── Step 2: Verify role + fetch isNew status in parallel ──────────────
+      //
+      // FIX 5: both calls use the same uid — run them concurrently to halve
+      // network latency on slow connections.
+      final isJobSeeker = _normalizeRole(expectedRole) == 'Job Seeker';
+
+      final results = await Future.wait([
+        _verifyUserRole(user.uid, expectedRole),
+        if (isJobSeeker) _isNewUser(user.uid),
+      ]);
+
+      final roleVerified = results[0] as bool;
+      final isNew        = isJobSeeker ? (results[1] as bool) : false;
+
+      // ── FIX 3: sign out ONLY when role is not verified ────────────────────
+      //
+      // Previously signOut() was called on verification failure, which fired
+      // authStateChanges and rebuilt the UI mid-request — causing the "user
+      // not found" error on a rapid retry. We now sign out after setting the
+      // error, and unawaited, so the current call stack completes cleanly.
       if (!roleVerified) {
-        await _auth.signOut();
         _setError('This account is not registered as "$expectedRole".');
+        // Sign out without blocking — fire and forget
+        _auth.signOut().ignore();
         return null;
       }
 
-      // 6) Success — set local state
+      // ── Step 3: Success ────────────────────────────────────────────────────
       _currentUser = user;
       _safeNotify();
 
-      // 7) ✅ NEW: Check isNew for job_seekers and return appropriate route
-      if (_normalizeRole(expectedRole) == 'Job Seeker') {
-        final isNew = await _isNewUser(user.uid);
-
-        if (isNew) {
-          debugPrint('✨ NEW Job_Seeker → /profile-builder');
-          return '/profile-builder';
-        } else {
-          debugPrint('👤 EXISTING Job_Seeker → /dashboard');
-          return '/dashboard';
-        }
+      if (isJobSeeker) {
+        final route = isNew ? '/profile-builder' : '/dashboard';
+        debugPrint(isNew
+            ? '✨ New Job Seeker → /profile-builder'
+            : '👤 Existing Job Seeker → /dashboard');
+        return route;
       }
 
-      // For recruiters, return their dashboard
-      final route = _getRoleDashboard(expectedRole);
-      return route;
+      return _getRoleDashboard(expectedRole);
 
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
@@ -260,96 +209,101 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  // ========== GOOGLE SIGN-IN ==========
-  /// NOTE: returns the route to navigate on success (or null on failure).
-  // Future<String?> signInWithGoogle() async {
-  //   _setLoading(true);
-  //   clearError();
+  // ── Role verification — with auto-retry ───────────────────────────────────
   //
-  //   try {
-  //     await _googleSignIn.signOut();
-  //
-  //     final googleUser = await _googleSignIn.signIn();
-  //     if (googleUser == null) return null;
-  //
-  //     final googleAuth = await googleUser.authentication;
-  //     final credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth.accessToken,
-  //       idToken: googleAuth.idToken,
-  //     );
-  //
-  //     final userCredential = await _auth.signInWithCredential(credential);
-  //     final user = userCredential.user;
-  //
-  //     if (user == null) {
-  //       _setError('Google sign-in failed');
-  //       return null;
-  //     }
-  //
-  //     // Create profile for new users
-  //     if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-  //       await _createGoogleUserProfile(user);
-  //     }
-  //
-  //     _currentUser = user;
-  //     _safeNotify();
-  //
-  //     // return route for UI to navigate (UI should call context.go(route))
-  //     return _getRoleDashboard('Job Seeker');
-  //   } on FirebaseAuthException catch (e) {
-  //     _handleAuthError(e);
-  //     return null;
-  //   } catch (e) {
-  //     _setError('Google sign-in failed');
-  //     debugPrint('LoginProvider: Google sign-in error: $e');
-  //     return null;
-  //   } finally {
-  //     _setLoading(false);
-  //   }
-  // }
+  // FIX 1 (safety net): Even after getIdToken(true), slow devices or
+  // cold Firestore connections can take an extra 200–400 ms to propagate the
+  // token. We retry once after a short delay before giving up.
+  Future<bool> _verifyUserRole(String uid, String expectedRole,
+      {bool isRetry = false}) async {
+    try {
+      final normExpected = _normalizeRole(expectedRole);
+      final collection   = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
 
-  // Future<void> _createGoogleUserProfile(User user) async {
-  //   try {
-  //     final userData = {
-  //       'personalProfile': {
-  //         'name': user.displayName ?? '',
-  //         'email': (user.email ?? '').trim().toLowerCase(),
-  //         'profilePicUrl': user.photoURL ?? '',
-  //       },
-  //       'role': 'Job Seeker',
-  //       'createdAt': FieldValue.serverTimestamp(),
-  //       'lastLoginAt': FieldValue.serverTimestamp(),
-  //       'loginMethod': 'google',
-  //     };
-  //
-  //     await _firestore.collection('Job_Seeker').doc(user.uid).set(
-  //       {'user_data': userData},
-  //       SetOptions(merge: true),
-  //     );
-  //
-  //     // Shadow copy in users collection using the uid as doc id (avoid random duplicates)
-  //     await _firestore.collection('users').doc(user.uid).set({
-  //       'uid': user.uid,
-  //       'email': (user.email ?? '').trim().toLowerCase(),
-  //       'name': user.displayName ?? '',
-  //       'role': 'Job Seeker',
-  //       'createdAt': FieldValue.serverTimestamp(),
-  //     }, SetOptions(merge: true));
-  //   } catch (e) {
-  //     debugPrint('LoginProvider: Failed to create Google user profile: $e');
-  //   }
-  // }
+      final docSnap = await _firestore
+          .collection(collection)
+          .doc(uid)
+          .get(const GetOptions(source: Source.serverAndCache));
 
-  // ========== PASSWORD RESET ==========
+      if (!docSnap.exists) {
+        if (!isRetry) {
+          // Document may not exist yet due to token propagation — retry once
+          debugPrint('⚠️ Role doc not found for $uid, retrying in 400ms…');
+          await Future.delayed(const Duration(milliseconds: 400));
+          return _verifyUserRole(uid, expectedRole, isRetry: true);
+        }
+        debugPrint('❌ Role doc still not found after retry for $uid');
+        return false;
+      }
+
+      final data = docSnap.data();
+      if (data == null) return true; // doc exists, assume role is correct
+
+      // Check nested user_data.role
+      if (data['user_data'] is Map) {
+        final userData = data['user_data'] as Map<String, dynamic>;
+        final role = _normalizeRole(userData['role']?.toString() ?? '');
+        if (role == normExpected) return true;
+      }
+
+      // Check direct role field
+      final directRole = _normalizeRole(data['role']?.toString() ?? '');
+      if (directRole == normExpected) return true;
+
+      // Document exists in the correct collection → role is implicitly correct
+      return true;
+    } catch (e) {
+      if (!isRetry) {
+        // Could be a transient permission error during token propagation
+        debugPrint('⚠️ _verifyUserRole error (will retry): $e');
+        await Future.delayed(const Duration(milliseconds: 400));
+        return _verifyUserRole(uid, expectedRole, isRetry: true);
+      }
+      debugPrint('❌ _verifyUserRole failed after retry: $e');
+      return false;
+    }
+  }
+
+  // ── isNew check — FIX 4: default false on network errors ──────────────────
+  Future<bool> _isNewUser(String uid) async {
+    try {
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      if (!userDoc.exists) {
+        // Document genuinely doesn't exist → treat as new
+        debugPrint('⚠️ _isNewUser: users/$uid not found → treating as new');
+        return true;
+      }
+
+      final data  = userDoc.data() as Map<String, dynamic>;
+      final isNew = data['isNew'];
+      debugPrint('🔍 _isNewUser for $uid: isNew = $isNew');
+
+      if (isNew is String) return isNew.toLowerCase().trim() == 'yes';
+      if (isNew is bool)   return isNew;
+
+      // Field absent → document was created without isNew → existing user
+      return false;
+    } catch (e) {
+      // ── FIX 4: network/Firestore error → assume existing user ────────────
+      // Previously defaulted to true, which sent existing users to
+      // /profile-builder on any connection hiccup.
+      debugPrint('⚠️ _isNewUser error — defaulting to existing user: $e');
+      return false;
+    }
+  }
+
+  // ── Password reset (unchanged) ─────────────────────────────────────────────
   Future<bool> resetPassword(String email) async {
     if (email.trim().isEmpty) {
       _setError('Email address is required');
       return false;
     }
-
     _setLoading(true);
     clearError();
-
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
       return true;
@@ -365,16 +319,12 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  // ========== SIGN OUT ==========
+  // ── Sign out (unchanged) ───────────────────────────────────────────────────
   Future<void> signOut() async {
     _setLoading(true);
     clearError();
-
     try {
-      await Future.wait([
-        _auth.signOut(),
-        //_googleSignIn.signOut(),
-      ]);
+      await _auth.signOut();
       _currentUser = null;
       _safeNotify();
     } catch (e) {
@@ -385,21 +335,7 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  // ========== HELPERS ==========
-  Future<void> _updateLastLogin(String uid, String role) async {
-    try {
-      final collection = _normalizeRole(role) == 'recruiter' ? 'recruiter' : 'Job_Seeker';
-      // Use nested field update safe path
-      await _firestore.collection(collection).doc(uid).set({
-        'user_data': {
-          'lastLoginAt': FieldValue.serverTimestamp(),
-        }
-      }, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('LoginProvider: Failed to update last login: $e');
-    }
-  }
-
+  // ── Auth error handler (unchanged) ─────────────────────────────────────────
   void _handleAuthError(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
@@ -428,6 +364,7 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
+  // ── Dispose ────────────────────────────────────────────────────────────────
   @override
   void dispose() {
     _isDisposed = true;

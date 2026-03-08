@@ -9,7 +9,7 @@ import 'admin_analytics_dashboard_Provider.dart';
 //  DESIGN TOKENS  — Light Professional
 // ═══════════════════════════════════════════════════════════════════════════
 class _C {
-  static const canvas   = Color(0xFFFFFFFF);
+  static const canvas   = Color(0xFFF8FAFC);
   static const surface  = Color(0xFFFFFFFF);
   static const surfaceL = Color(0xFFFAFBFD);
   static const border   = Color(0xFFE8ECF4);
@@ -109,7 +109,7 @@ class _AdminAnalyticsDashboardScreenState
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFF8FAFC),
       ),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: Row(
