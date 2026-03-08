@@ -72,7 +72,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                   children: [
                     Text(
                       'Profile Completeness',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF111827),
@@ -81,7 +81,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         color: const Color(0xFF6B7280),
                       ),
@@ -105,7 +105,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                 ),
                 child: Text(
                   '$score%',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -154,7 +154,7 @@ class ProfileCompletenessCard extends StatelessWidget {
               ),
               label: Text(
                 'View / Edit Profile',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

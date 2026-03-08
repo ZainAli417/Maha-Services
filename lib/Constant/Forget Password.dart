@@ -170,7 +170,7 @@ class _ForgotPasswordDialogContentState
           // Title
           Text(
             'Reset Password',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 22 : 24,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1E293B),
@@ -182,7 +182,7 @@ class _ForgotPasswordDialogContentState
           // Subtitle
           Text(
             'Enter your email address and we\'ll send you a link to reset your password.',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: const Color(0xFF64748B),
               fontWeight: FontWeight.w400,
@@ -199,7 +199,7 @@ class _ForgotPasswordDialogContentState
               children: [
                 Text(
                   'Email Address',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF374151),
@@ -210,14 +210,14 @@ class _ForgotPasswordDialogContentState
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autofocus: true,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1E293B),
                   ),
                   decoration: InputDecoration(
                     hintText: 'you@example.com',
-                    hintStyle: GoogleFonts.poppins(
+                    hintStyle: GoogleFonts.plusJakartaSans(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 14,
                     ),
@@ -318,7 +318,7 @@ class _ForgotPasswordDialogContentState
                         )
                       : Text(
                           'Send Recovery Link',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -349,7 +349,7 @@ class _ForgotPasswordDialogContentState
                   const SizedBox(width: 6),
                   Text(
                     'Back to Login',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF6B7280),
@@ -389,7 +389,7 @@ class _ForgotPasswordDialogContentState
 
           Text(
             'Check Your Inbox',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 20 : 22,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1E293B),
@@ -401,7 +401,7 @@ class _ForgotPasswordDialogContentState
             'If an account exists for ${_emailController.text.trim()}, '
             'you\'ll receive a password reset link shortly.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: const Color(0xFF64748B),
               height: 1.5,
@@ -424,7 +424,7 @@ class _ForgotPasswordDialogContentState
               ),
               child: Text(
                 'Done',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

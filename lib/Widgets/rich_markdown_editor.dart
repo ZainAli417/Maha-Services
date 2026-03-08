@@ -196,7 +196,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
               children: [
                 Text(
                   widget.label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: labelSize,
                     fontWeight: FontWeight.w600,
                     color: hasError ? Colors.redAccent : Colors.grey.shade700,
@@ -230,7 +230,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                           const SizedBox(width: 4),
                           Text(
                             _showPreview ? 'Edit' : 'Preview',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               color: _showPreview ? _primary : Colors.grey.shade600,
@@ -280,7 +280,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                 padding: const EdgeInsets.only(top: 6, left: 4),
                 child: Text(
                   state.errorText ?? '',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.redAccent,
                     fontSize: widget.isMobile ? 10 : 12,
                     fontWeight: FontWeight.w500,
@@ -293,7 +293,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
               padding: const EdgeInsets.only(top: 4, left: 2),
               child: Text(
                 'Supports markdown: **bold**, *italic*, - bullets, 1. numbered',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 10,
                   color: Colors.grey.shade500,
                 ),
@@ -404,7 +404,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                   )
                 : Text(
                     tool.label ?? '',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: widget.isMobile ? 12 : 14,
                       fontWeight: tool.isBold ? FontWeight.w800 : FontWeight.w600,
                       fontStyle: tool.isItalic ? FontStyle.italic : FontStyle.normal,
@@ -432,7 +432,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
         keyboardType: TextInputType.multiline,
         textCapitalization: TextCapitalization.sentences,
         spellCheckConfiguration: const SpellCheckConfiguration(),
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: fontSize,
           color: const Color(0xFF2C3E50),
           height: 1.6,
@@ -440,7 +440,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: widget.hintText,
-          hintStyle: GoogleFonts.poppins(
+          hintStyle: GoogleFonts.plusJakartaSans(
             fontSize: fontSize - 1,
             color: Colors.grey.shade400,
           ),
@@ -471,7 +471,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
       child: text.isEmpty
           ? Text(
               'Nothing to preview yet.',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: fontSize,
                 color: Colors.grey.shade400,
                 fontStyle: FontStyle.italic,
@@ -522,7 +522,7 @@ class _MarkdownBody extends StatelessWidget {
           padding: const EdgeInsets.only(top: 10, bottom: 4),
           child: Text(
             match.group(1)!,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: hSize,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -588,7 +588,7 @@ class _MarkdownBody extends StatelessWidget {
                 width: 24,
                 child: Text(
                   '${numMatch.group(1)}.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: fontSize,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF4A90A4),
@@ -630,7 +630,7 @@ class _MarkdownBody extends StatelessWidget {
     final spans = _parseInlineSpans(text, fontSize, baseItalic: italic);
     return Text.rich(
       TextSpan(children: spans),
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: fontSize,
         height: 1.65,
         color: const Color(0xFF334155),
@@ -662,7 +662,7 @@ class _MarkdownBody extends StatelessWidget {
         // Bold
         spans.add(TextSpan(
           text: match.group(1),
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
@@ -672,7 +672,7 @@ class _MarkdownBody extends StatelessWidget {
         // Italic
         spans.add(TextSpan(
           text: match.group(2),
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: fontSize,
             fontStyle: FontStyle.italic,
             color: const Color(0xFF334155),
@@ -682,7 +682,7 @@ class _MarkdownBody extends StatelessWidget {
         // Underline
         spans.add(TextSpan(
           text: match.group(3),
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: fontSize,
             decoration: TextDecoration.underline,
             decorationColor: const Color(0xFF1E3A5F),

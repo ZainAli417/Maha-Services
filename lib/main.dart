@@ -162,7 +162,7 @@ void main() async {
 
   // ── Pre-load Google Fonts BEFORE runApp to avoid lazy_path.dart crash ──
   // Trigger font downloads so the engine never measures text with a missing font.
-  GoogleFonts.poppins();       // enqueues the Poppins download
+  GoogleFonts.plusJakartaSans();       // enqueues the plusJakartaSans download
   GoogleFonts.inter();         // enqueues the Inter download
   try {
     await GoogleFonts.pendingFonts();
@@ -239,7 +239,7 @@ class JobPortalApp extends StatelessWidget {
           primary: const Color(0xFF6366F1),
           secondary: const Color(0xFF6366F1),
         ),
-        fontFamily: GoogleFonts.poppins().fontFamily,
+        fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
         textTheme: GoogleFonts.interTextTheme(),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,

@@ -316,7 +316,7 @@ class _FloatingCTAState extends State<_FloatingCTA>
                       Text(
                         widget.label,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: fontSize,
                           fontWeight: FontWeight.w600,
                           color: foregroundColor,

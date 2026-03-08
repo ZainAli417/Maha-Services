@@ -128,7 +128,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
             // ── Label ──
             Text(
               widget.label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: labelSize,
                 fontWeight: FontWeight.w600,
                 color: state.hasError
@@ -235,7 +235,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                           scrollable: true,
                           customStyles: DefaultStyles(
                             paragraph: DefaultTextBlockStyle(
-                              GoogleFonts.poppins(
+                              GoogleFonts.plusJakartaSans(
                                 fontSize: editorFontSize,
                                 color: const Color(0xFF2C3E50),
                                 height: 1.65,
@@ -246,7 +246,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                               null,
                             ),
                             placeHolder: DefaultTextBlockStyle(
-                              GoogleFonts.poppins(
+                              GoogleFonts.plusJakartaSans(
                                 fontSize: editorFontSize,
                                 color: Colors.grey.shade400,
                                 fontStyle: FontStyle.italic,
@@ -272,7 +272,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                 padding: const EdgeInsets.only(top: 5, left: 4),
                 child: Text(
                   state.errorText ?? '',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.redAccent,
                     fontSize: widget.isMobile ? 10 : 11,
                     fontWeight: FontWeight.w500,
@@ -362,7 +362,7 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
         padding: EdgeInsets.zero,
         customStyles: DefaultStyles(
           paragraph: DefaultTextBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize,
               color: const Color(0xFF475569),
               height: 1.7,
@@ -372,17 +372,17 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             VerticalSpacing.zero,
             null,
           ),
-          bold: GoogleFonts.poppins(
+          bold: GoogleFonts.plusJakartaSans(
             fontSize: fontSize,
             fontWeight: FontWeight.w700,
             color: const Color(0xFF0F172A),
           ),
-          italic: GoogleFonts.poppins(
+          italic: GoogleFonts.plusJakartaSans(
             fontSize: fontSize,
             fontStyle: FontStyle.italic,
           ),
           lists: DefaultListBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize,
               color: const Color(0xFF475569),
               height: 1.65,
@@ -394,7 +394,7 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             null,
           ),
           h1: DefaultTextBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize + 6,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -405,7 +405,7 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             null,
           ),
           h2: DefaultTextBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize + 3,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1E293B),
@@ -416,7 +416,7 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             null,
           ),
           h3: DefaultTextBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize + 1,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF334155),
@@ -427,7 +427,7 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             null,
           ),
           quote: DefaultTextBlockStyle(
-            GoogleFonts.poppins(
+            GoogleFonts.plusJakartaSans(
               fontSize: fontSize,
               fontStyle: FontStyle.italic,
               color: const Color(0xFF64748B),

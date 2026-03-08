@@ -58,35 +58,35 @@ class _HeroSectionState extends State<HeroSection>
 
   // ─── Responsive text style helpers ───────────────────────────────────────────
 
-  TextStyle _badgeStyle(bool isMobile) => GoogleFonts.poppins(
+  TextStyle _badgeStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 10 : 13,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.3,
   );
 
-  TextStyle _headlineStyle(bool isMobile, bool isTablet) => GoogleFonts.poppins(
+  TextStyle _headlineStyle(bool isMobile, bool isTablet) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 26 : (isTablet ? 38 : 64),
     fontWeight: FontWeight.w700,
   );
 
-  TextStyle _descStyle(bool isMobile) => GoogleFonts.poppins(
+  TextStyle _descStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 12 : 14,
     fontWeight: FontWeight.w400,
     height: 1.7,
     letterSpacing: 0.3,
   );
 
-  TextStyle _subDescStyle(bool isMobile) => GoogleFonts.poppins(
+  TextStyle _subDescStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 11 : 14,
     fontWeight: FontWeight.w500,
   );
 
-  TextStyle _featureStyle(bool isMobile) => GoogleFonts.poppins(
+  TextStyle _featureStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 10 : 14,
     fontWeight: FontWeight.w600,
   );
 
-  TextStyle _btnStyle(bool isMobile) => GoogleFonts.poppins(
+  TextStyle _btnStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 12 : 15,
     fontWeight: FontWeight.w600,
   );
@@ -259,7 +259,7 @@ class _HeroSectionState extends State<HeroSection>
                 child: Text(
                   _lottieData[_currentLottieIndex]['title']!,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontSize: fontSize,
                     fontWeight: FontWeight.w600,

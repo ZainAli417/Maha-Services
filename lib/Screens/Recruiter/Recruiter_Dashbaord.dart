@@ -129,7 +129,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
             Expanded(
               child: Text(
                 'Recruiter Dashboard',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: _slate900),
@@ -151,7 +151,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                     const Icon(Icons.add, color: Colors.white, size: 16),
                     const SizedBox(width: 4),
                     Text('Post',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.white)),
@@ -521,7 +521,8 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     return Padding(
       padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 0),
       child: Column(children: [
-        IntrinsicHeight(
+        SizedBox(
+          height: 320,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -534,7 +535,8 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
           ),
         ),
         const SizedBox(height: 16),
-        IntrinsicHeight(
+        SizedBox(
+          height: 360,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

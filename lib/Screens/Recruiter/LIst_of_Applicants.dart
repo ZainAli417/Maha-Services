@@ -174,17 +174,17 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
           const Icon(Icons.auto_awesome, color: _cPurple),
           const SizedBox(width: 10),
           Text('Auto Shortlist',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700)),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
         ]),
         content: Text(
           'Add ${eligible.length} candidate${eligible.length > 1 ? 's' : ''} '
               'with AI score > 65% to shortlist?\n\nAlready shortlisted will be skipped.',
-          style: GoogleFonts.poppins(fontSize: 13),
+          style: GoogleFonts.plusJakartaSans(fontSize: 13),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel', style: GoogleFonts.poppins())),
+              child: Text('Cancel', style: GoogleFonts.plusJakartaSans())),
           ElevatedButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: ElevatedButton.styleFrom(
@@ -192,7 +192,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8))),
               child: Text('Confirm',
-                  style: GoogleFonts.poppins(color: Colors.white))),
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white))),
         ],
       ),
     );
@@ -246,7 +246,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   Icon(Icons.error_outline, size: 44, color: Colors.red[300]),
                   const SizedBox(height: 14),
                   Text('Error: ${provider.error}',
-                      style: GoogleFonts.poppins(color: Colors.red[700])),
+                      style: GoogleFonts.plusJakartaSans(color: Colors.red[700])),
                   const SizedBox(height: 14),
                   ElevatedButton(
                       onPressed: () => provider.refresh(jobId: widget.jobId),
@@ -415,12 +415,12 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(r.applicantName,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white)),
                           Text('AI Match Analysis',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   color: Colors.white.withOpacity(0.85))),
                         ]),
@@ -431,7 +431,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                         color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle),
                     child: Text('${r.overallScore}',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: Colors.white)),
@@ -457,7 +457,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                                   color: r.getRecommendationColor(), width: 1.5),
                             ),
                             child: Text(r.recommendation,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: r.getRecommendationColor())),
@@ -465,7 +465,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text('Score Breakdown',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 12),
                         _ScoreRow(label: 'Skills Match', score: r.skillsMatch),
@@ -490,7 +490,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                         ],
                         const SizedBox(height: 16),
                         Text('Detailed Analysis',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 8),
                         Container(
@@ -499,7 +499,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                               color: _cSurface,
                               borderRadius: BorderRadius.circular(10)),
                           child: Text(r.detailedAnalysis,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   height: 1.6,
                                   color: _cTxtSec)),
@@ -521,7 +521,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                     child: Text('Close',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
                 ),
@@ -569,7 +569,7 @@ class _MobileSelectBar extends StatelessWidget {
             selectedCount == 0
                 ? '$total candidate${total == 1 ? '' : 's'}'
                 : '$selectedCount of $total selected',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: selectedCount > 0 ? _cPurple : _cTxtSec,
@@ -678,7 +678,7 @@ class _ApplicantCard extends StatelessWidget {
                         applicant.name.isNotEmpty
                             ? applicant.name.substring(0, 2).toUpperCase()
                             : 'NA',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: avatarColor,
@@ -695,7 +695,7 @@ class _ApplicantCard extends StatelessWidget {
                       children: [
                         Text(
                           applicant.name,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: _cTxt,
@@ -704,7 +704,7 @@ class _ApplicantCard extends StatelessWidget {
                         ),
                         Text(
                           maskEmail(applicant.email),
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 11, color: _cTxtSec),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -772,7 +772,7 @@ class _ApplicantCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text('Analyzing…',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 11, color: _cTxtSec)),
                   ]);
                 }
@@ -814,7 +814,7 @@ class _ApplicantCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             hasScore ? '$score%  $sLabel' : sLabel,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: sColor,
@@ -858,7 +858,7 @@ class _ApplicantCard extends StatelessWidget {
                               size: 14, color: _cTxtSec),
                           const SizedBox(width: 5),
                           Text('View',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: _cTxtSec)),
@@ -903,7 +903,7 @@ class _MetaChip extends StatelessWidget {
           constraints: BoxConstraints(maxWidth: maxWidth ?? 80),
           child: Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 10, fontWeight: FontWeight.w600, color: _cTxtSec),
             overflow: TextOverflow.ellipsis,
           ),
@@ -962,14 +962,14 @@ class _Header extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Candidate Shortlisting',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: _cTxt,
                           letterSpacing: -0.4)),
                   const SizedBox(height: 2),
                   Text('AI-powered applicant management',
-                      style: GoogleFonts.poppins(fontSize: 11, color: _cTxtSec)),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _cTxtSec)),
                 ]),
           ),
           // Mobile action menu button
@@ -1004,7 +1004,7 @@ class _Header extends StatelessWidget {
                 border: Border.all(color: _cPurple.withOpacity(0.3)),
               ),
               child: Text('${selected.length} selected',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: _cPurple)),
@@ -1020,7 +1020,7 @@ class _Header extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('Shortlist',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
@@ -1056,7 +1056,7 @@ class _Header extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text('Actions',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 15, fontWeight: FontWeight.w700, color: _cTxt)),
             const SizedBox(height: 14),
             // Run AI Analysis
@@ -1114,7 +1114,7 @@ class _Header extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Text('Candidate Shortlisting',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: _cTxt,
@@ -1124,7 +1124,7 @@ class _Header extends StatelessWidget {
           ]),
           const SizedBox(height: 4),
           Text('Manage applicants efficiently using AI',
-              style: GoogleFonts.poppins(fontSize: 13, color: _cTxtSec)),
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxtSec)),
         ]),
       ),
       const SizedBox(width: 16),
@@ -1179,7 +1179,7 @@ class _DesktopActions extends StatelessWidget {
           icon: const Icon(Icons.checklist_rounded, size: 16),
           label: Text(
             selected.isEmpty ? 'Select to Shortlist' : 'Shortlist (${selected.length})',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 13, fontWeight: FontWeight.w600),
           ),
           style: selected.isEmpty
@@ -1212,7 +1212,7 @@ class _DesktopActions extends StatelessWidget {
                 ai.isAnalyzing ? Icons.hourglass_empty : Icons.psychology_outlined,
                 size: 16),
             label: Text(ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 13, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: _cTeal,
@@ -1228,7 +1228,7 @@ class _DesktopActions extends StatelessWidget {
           onPressed: onToggleRank,
           icon: Icon(rankByScore ? Icons.filter_list : Icons.sort, size: 16),
           label: Text(rankByScore ? 'Ranked' : 'Rank by Score',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13, fontWeight: FontWeight.w600)),
           style: OutlinedButton.styleFrom(
             foregroundColor: rankByScore ? _cPurple : _cTxtSec,
@@ -1244,7 +1244,7 @@ class _DesktopActions extends StatelessWidget {
           onPressed: onAutoShortlist,
           icon: const Icon(Icons.auto_awesome, size: 16),
           label: Text('Auto Shortlist >65%',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
             backgroundColor: _cGreen,
@@ -1277,10 +1277,10 @@ class _SearchBar extends StatelessWidget {
           border: Border(bottom: BorderSide(color: _cBorder))),
       child: TextField(
         controller: controller,
-        style: GoogleFonts.poppins(fontSize: 13, color: _cTxt),
+        style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxt),
         decoration: InputDecoration(
           hintText: 'Search by name, email or keyword…',
-          hintStyle: GoogleFonts.poppins(fontSize: 12, color: _cTxtTert),
+          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtTert),
           prefixIcon: const Icon(Icons.search, color: _cTxtTert, size: 18),
           filled: true,
           fillColor: _cSurface,
@@ -1357,7 +1357,7 @@ class _ThLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(text,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           fontWeight: FontWeight.w600,
           color: _cTxtSec,
@@ -1441,7 +1441,7 @@ class _TableRow extends StatelessWidget {
                     applicant.name.isNotEmpty
                         ? applicant.name.substring(0, 2).toUpperCase()
                         : 'NA',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: avatarColor),
@@ -1455,13 +1455,13 @@ class _TableRow extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(applicant.name,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: _cTxt),
                           overflow: TextOverflow.ellipsis),
                       Text(maskEmail(applicant.email),
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: 11, color: _cTxtSec),
                           overflow: TextOverflow.ellipsis),
                     ]),
@@ -1474,7 +1474,7 @@ class _TableRow extends StatelessWidget {
             flex: 2,
             child: Text(
               '${applicant.experienceYears}y  ${applicant.professionalStatus}',
-              style: GoogleFonts.poppins(fontSize: 12, color: _cTxtSec),
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -1484,7 +1484,7 @@ class _TableRow extends StatelessWidget {
             flex: 2,
             child: Text(
               DateFormat('MMM d, yy').format(applicant.appliedAt),
-              style: GoogleFonts.poppins(fontSize: 12, color: _cTxtSec),
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec),
             ),
           ),
 
@@ -1556,13 +1556,13 @@ class _ScoreCell extends StatelessWidget {
           const SizedBox(width: 6),
           Text('Analyzing…',
               style:
-              GoogleFonts.poppins(fontSize: 11, color: _cTxtSec)),
+              GoogleFonts.plusJakartaSans(fontSize: 11, color: _cTxtSec)),
         ]);
       }
 
       if (data == null || data['overallScore'] == null) {
         return Text('Not analyzed',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 color: _cTxtTert,
                 fontStyle: FontStyle.italic));
@@ -1594,13 +1594,13 @@ class _ScoreCell extends StatelessWidget {
           children: [
             Row(children: [
               Text('$score%',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: color)),
               const SizedBox(width: 5),
               Text(label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 10, color: color)),
             ]),
             const SizedBox(height: 5),
@@ -1654,7 +1654,7 @@ class _StatusDropdown extends StatelessWidget {
                 decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
             const SizedBox(width: 8),
             Text(e.value['label'] as String,
-                style: GoogleFonts.poppins(fontSize: 12)),
+                style: GoogleFonts.plusJakartaSans(fontSize: 12)),
           ]),
         );
       }).toList(),
@@ -1665,7 +1665,7 @@ class _StatusDropdown extends StatelessWidget {
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Flexible(
             child: Text(cfg['label'] as String,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: color),
@@ -1720,7 +1720,7 @@ class _ActionTile extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: onTap == null ? _cTxtTert : _cTxt)),
@@ -1749,7 +1749,7 @@ class _ScoreRow extends StatelessWidget {
     return Row(children: [
       Expanded(flex: 2,
           child: Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 12, fontWeight: FontWeight.w600))),
       Expanded(
         flex: 3,
@@ -1772,7 +1772,7 @@ class _ScoreRow extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text('$score%',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: color)),
@@ -1793,7 +1793,7 @@ class _SectionHead extends StatelessWidget {
     Icon(icon, color: color, size: 17),
     const SizedBox(width: 7),
     Text(label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
             fontSize: 13, fontWeight: FontWeight.w700)),
   ]);
 }
@@ -1815,7 +1815,7 @@ class _Bullet extends StatelessWidget {
       const SizedBox(width: 9),
       Expanded(
         child: Text(text,
-            style: GoogleFonts.poppins(fontSize: 12, color: _cTxtSec)),
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec)),
       ),
     ]),
   );
@@ -1843,7 +1843,7 @@ class _EmptyResults extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text('No applicants found',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1E293B))),
@@ -1853,7 +1853,7 @@ class _EmptyResults extends StatelessWidget {
             child: Text(
               'Try adjusting your search or clearing filters.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 13, color: _cTxtSec),
+              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxtSec),
             ),
           ),
           const SizedBox(height: 24),
@@ -1861,7 +1861,7 @@ class _EmptyResults extends StatelessWidget {
             onPressed: onClear,
             icon: const Icon(Icons.clear_rounded, size: 16),
             label: Text('Clear filters',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 13, fontWeight: FontWeight.w600)),
             style: OutlinedButton.styleFrom(
               foregroundColor: _cPurple,

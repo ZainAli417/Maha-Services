@@ -159,7 +159,7 @@ class _AppBar extends StatelessWidget {
                 children: [
                   Text(
                     'Job Application Tracker',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 14 : 16,
                       fontWeight: FontWeight.w600,
                       color: _kTxtPrimary,
@@ -169,7 +169,7 @@ class _AppBar extends StatelessWidget {
                   if (!isMobile)
                     Text(
                       'Manage & Analyse Applicants',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
                         color: _kTxtSec,
                         height: 1.2,
@@ -196,7 +196,7 @@ class _AppBar extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       'Post',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -497,7 +497,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
           padding: const EdgeInsets.only(top: 4),
           child: Text(
             '${_filteredIds.length} position${_filteredIds.length == 1 ? '' : 's'}',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: _kTxtSec,
               fontWeight: FontWeight.w500,
@@ -539,14 +539,14 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   Widget _searchField(bool isMobile) {
     return TextField(
       controller: _searchCtrl,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: isMobile ? 13 : 14,
         color: _kTxtPrimary,
       ),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search, color: _kTxtSec, size: 18),
         hintText: 'Search positions…',
-        hintStyle: GoogleFonts.poppins(
+        hintStyle: GoogleFonts.plusJakartaSans(
           color: _kTxtTert,
           fontSize: isMobile ? 12 : 13,
         ),
@@ -583,12 +583,12 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
       itemBuilder: (_) => [
         PopupMenuItem(
           value: '',
-          child: Text('All $label', style: GoogleFonts.poppins(fontSize: 13)),
+          child: Text('All $label', style: GoogleFonts.plusJakartaSans(fontSize: 13)),
         ),
         ...opts.map(
           (o) => PopupMenuItem(
             value: o,
-            child: Text(o, style: GoogleFonts.poppins(fontSize: 13)),
+            child: Text(o, style: GoogleFonts.plusJakartaSans(fontSize: 13)),
           ),
         ),
       ],
@@ -611,7 +611,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
             const SizedBox(width: 6),
             Text(
               active ? value : label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: active ? _kPrimary : _kTxtSec,
@@ -659,7 +659,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
             const SizedBox(width: 6),
             Text(
               'Sort',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: _kTxtSec,
@@ -683,7 +683,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
           ],
           Text(
             lbl,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
               color: sel ? _kPrimary : _kTxtPrimary,
@@ -710,7 +710,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
           const SizedBox(width: 6),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: _kTxtPrimary,
@@ -719,7 +719,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
           const SizedBox(width: 4),
           Text(
             label,
-            style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec),
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _kTxtSec),
           ),
         ],
       ),
@@ -741,7 +741,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
         children: [
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: _kPrimary,
@@ -807,7 +807,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                     children: [
                       Text(
                         'Filters',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: _kTxtPrimary,
@@ -824,7 +824,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                         },
                         child: Text(
                           'Clear all',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             color: _kAccent,
                             fontWeight: FontWeight.w600,
@@ -856,7 +856,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                   // Sort
                   Text(
                     'Sort by',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: _kTxtSec,
@@ -894,7 +894,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                               ),
                               child: Text(
                                 e.value,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   fontWeight: sel
                                       ? FontWeight.w600
@@ -932,7 +932,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                       },
                       child: Text(
                         'Apply Filters',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -960,7 +960,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: _kTxtSec,
@@ -992,7 +992,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                 ),
                 child: Text(
                   'All',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: current.isEmpty
                         ? FontWeight.w600
@@ -1022,7 +1022,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                   ),
                   child: Text(
                     o,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: sel ? FontWeight.w600 : FontWeight.w500,
                       color: sel ? _kPrimary : _kTxtSec,
@@ -1066,7 +1066,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
               const SizedBox(height: 20),
               Text(
                 'No jobs found',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: _kTxtPrimary,
@@ -1075,7 +1075,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
               const SizedBox(height: 6),
               Text(
                 'Adjust your filters or post a new position',
-                style: GoogleFonts.poppins(fontSize: 14, color: _kTxtSec),
+                style: GoogleFonts.plusJakartaSans(fontSize: 14, color: _kTxtSec),
               ),
             ],
           ),
@@ -1405,7 +1405,7 @@ class _Job_CardsState extends State<Job_Cards>
         const SizedBox(height: 6),
         Text(
           'Failed to load',
-          style: GoogleFonts.poppins(fontSize: 11, color: _kTxtSec),
+          style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _kTxtSec),
         ),
       ],
     ),
@@ -1537,7 +1537,7 @@ class _Job_CardsState extends State<Job_Cards>
                                 children: [
                                   Text(
                                     title,
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
                                       color: _kTxtPrimary,
@@ -1558,7 +1558,7 @@ class _Job_CardsState extends State<Job_Cards>
                                     ),
                                     child: Text(
                                       company,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
                                         color: _kPrimary,
@@ -1595,7 +1595,7 @@ class _Job_CardsState extends State<Job_Cards>
                                     const SizedBox(width: 3),
                                     Text(
                                       ago,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w700,
                                         color: _kSuccess,
@@ -1633,7 +1633,7 @@ class _Job_CardsState extends State<Job_Cards>
                       padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
                       child: Text(
                         desc,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           color: _kTxtSec,
                           height: 1.55,
@@ -1649,7 +1649,7 @@ class _Job_CardsState extends State<Job_Cards>
                       padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
                       child: Text(
                         'Skills',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: _kTxtTert,
@@ -1678,7 +1678,7 @@ class _Job_CardsState extends State<Job_Cards>
                                   ),
                                   child: Text(
                                     s,
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                       color: _kTxtSec,
@@ -1701,7 +1701,7 @@ class _Job_CardsState extends State<Job_Cards>
                               ),
                               child: Text(
                                 '+${skills.length - 4}',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: _kAccent,
@@ -1755,7 +1755,7 @@ class _Job_CardsState extends State<Job_Cards>
 
                                   Text(
                                     '$appCount',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: appCount > 0
@@ -1767,7 +1767,7 @@ class _Job_CardsState extends State<Job_Cards>
 
                                   Text(
                                     'Applicant(s)',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: _kAccent,
@@ -1816,7 +1816,7 @@ class _Job_CardsState extends State<Job_Cards>
                                   const SizedBox(width: 6),
                                   Text(
                                     'View Job',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: Colors.white,
@@ -1859,7 +1859,7 @@ class _Job_CardsState extends State<Job_Cards>
     child: Center(
       child: Text(
         company.isNotEmpty ? company[0].toUpperCase() : 'C',
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: _kPrimary,
@@ -1884,7 +1884,7 @@ class _Job_CardsState extends State<Job_Cards>
           constraints: const BoxConstraints(maxWidth: 90),
           child: Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: _kTxtSec,
@@ -1923,7 +1923,7 @@ class _EmptyWidget extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             'No Positions Available',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade700,
@@ -1960,7 +1960,7 @@ class _ErrorWidget extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Something went wrong',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: Colors.red.shade700,
@@ -1970,7 +1970,7 @@ class _ErrorWidget extends StatelessWidget {
             Text(
               error,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: Colors.red.shade600,
               ),

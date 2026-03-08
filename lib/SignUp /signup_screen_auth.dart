@@ -247,7 +247,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               const SizedBox(width: 6),
               Text(
                 'LIVE',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: Colors.white70,
@@ -264,7 +264,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           ).createShader(bounds),
           child: Text(
             'Maha Services',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 42,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -276,7 +276,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         const SizedBox(height: 12),
         Text(
           'Next-gen recruitment powered by intelligent automation',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             color: Colors.white.withOpacity(0.6),
             height: 1.5,
@@ -327,7 +327,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               children: [
                 Text(
                   'Enterprise Grade',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -336,7 +336,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 const SizedBox(height: 2),
                 Text(
                   'AES-256 • Hash Algorithm',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     color: Colors.white.withOpacity(0.6),
                   ),
@@ -352,7 +352,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             ),
             child: Text(
               'ACTIVE',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF0F0F23),
@@ -404,7 +404,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       children: [
         Text(
           'CAPABILITIES',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: Colors.white.withOpacity(0.4),
@@ -608,7 +608,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               children: [
                 Text(
                   'Create Account',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: titleSize,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1E293B),
@@ -618,7 +618,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 const SizedBox(height: 3),
                 Text(
                   'Start your journey to find the perfect opportunity',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: subSize,
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
@@ -653,7 +653,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         if (!provider.isCaptchaVerified)
           Text(
             'Please verify that you are not a robot',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 12, color: Colors.grey.shade600),
           )
         else
@@ -663,7 +663,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               const SizedBox(width: 6),
               Text(
                 'Security verified',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   color: Colors.green,
                   fontWeight: FontWeight.w600,
@@ -723,7 +723,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 ? 'Create Recruiter Account'
                 : 'Create Job Seeker Account')
                 : 'Verify First',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w600,
               color: verified ? Colors.white : Colors.grey.shade500,
               fontSize: isWide ? 15 : 14,
@@ -816,13 +816,13 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             const SizedBox(height: 20),
             Text(
               'Creating Your Account',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 17, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Please wait...',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   color: Colors.grey.shade600, fontSize: 14),
             ),
           ],
@@ -917,7 +917,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   child: Text(
                     label,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: compact ? 13 : 14,
                       fontWeight: FontWeight.w600,
                       color: isSelected
@@ -954,7 +954,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1E293B),
@@ -969,11 +969,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           maxLines: maxLines,
           onChanged: onChanged,
           validator: validator,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: 14, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: GoogleFonts.plusJakartaSans(
               color: Colors.grey.shade400,
               fontSize: 13,
             ),
@@ -1089,7 +1089,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
                                   children: [
                                     Text(
                                       'Already have an account?',
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 13,
                                         color: Colors.grey.shade600,
                                       ),
@@ -1106,7 +1106,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
                                       ),
                                       child: Text(
                                         'Login',
-                                        style: GoogleFonts.poppins(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.indigo,
@@ -1166,7 +1166,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             'Maha Services',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1F2937),
@@ -1218,7 +1218,7 @@ class _CompactMetric extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -1228,7 +1228,7 @@ class _CompactMetric extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: Colors.white.withOpacity(0.6),
             ),
@@ -1265,7 +1265,7 @@ class _CompactFeature extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.white.withOpacity(0.85),
@@ -1292,7 +1292,7 @@ class _TrustBadge extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             color: Colors.white.withOpacity(0.5),
             fontWeight: FontWeight.w600,

@@ -24,14 +24,14 @@ class _T {
     double fs = 11,
     Color? c,
     FontWeight fw = FontWeight.w500,
-  }) => GoogleFonts.poppins
+  }) => GoogleFonts.plusJakartaSans
 (
     fontSize: fs,
     fontWeight: fw,
     color: c ?? textSec,
   );
 
-  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.poppins
+  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.plusJakartaSans
 (
     fontSize: fs,
     fontWeight: FontWeight.w600,
@@ -39,7 +39,7 @@ class _T {
   );
 
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.poppins
+      GoogleFonts.plusJakartaSans
 (fontSize: fs, color: c ?? textPri, height: 1.55);
 }
 
@@ -528,7 +528,7 @@ class _CandidateMiniCard extends StatelessWidget {
                       backgroundColor: _T.primary.withOpacity(0.12),
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : 'C',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: _T.primary,

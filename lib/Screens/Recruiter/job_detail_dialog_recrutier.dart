@@ -73,7 +73,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                   const CircularProgressIndicator(),
                   const SizedBox(height: 14),
                   Text('Loading job details…',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 13, color: _textSecondary)),
                 ],
               ),
@@ -95,7 +95,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                   const Icon(Icons.error_outline, size: 48, color: _dangerColor),
                   const SizedBox(height: 12),
                   Text('Job not found',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: _textPrimary)),
@@ -105,7 +105,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                     child: Text(
                       'This job may have been removed or archived.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 12, color: _textSecondary),
                     ),
                   ),
@@ -113,7 +113,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text('Close',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontWeight: FontWeight.w600)),
                   ),
                 ],
@@ -191,14 +191,14 @@ class JobDetailModal_recruiter extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(title,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: isMobile ? 15 : 20,
                                   fontWeight: FontWeight.w700,
                                   color: _textPrimary,
                                   height: 1.2)),
                           const SizedBox(height: 3),
                           Text(company,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   fontSize: isMobile ? 12 : 14,
                                   color: _textSecondary,
                                   fontWeight: FontWeight.w500)),
@@ -453,7 +453,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
         mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
         children: [
           Text('Job Status:',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
                   color: _textSecondary)),
           const SizedBox(width: 8),
@@ -479,7 +479,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             status == 'active' ? 'Active' : 'Paused',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 12 : 14,
                 fontWeight: FontWeight.w600,
                 color: status == 'active' ? _successColor : _textSecondary),
@@ -523,7 +523,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
       },
       icon: const Icon(Icons.archive_outlined, size: 18, color: _dangerColor),
       label: Text('Archive',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               color: _dangerColor,
               fontSize: isMobile ? 12 : 14,
               fontWeight: FontWeight.w600)),
@@ -549,7 +549,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
           Flexible(
             child: Text(label,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: _textPrimary)),
@@ -568,7 +568,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
             Icon(icon, size: 14, color: _textSecondary),
             const SizedBox(width: 6),
             Text(label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: _textSecondary)),
@@ -577,7 +577,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
           Text(value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: _textPrimary)),
@@ -590,7 +590,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: isMobile ? 8 : 12),
       child: Text(title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 13 : 16,
               fontWeight: FontWeight.w700,
               color: _textPrimary)),
@@ -607,7 +607,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
         border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 11 : 12,
               fontWeight: FontWeight.w500,
               color: color)),
@@ -622,14 +622,14 @@ class JobDetailModal_recruiter extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 11 : 13,
                   color: _textSecondary)),
           const SizedBox(width: 8),
           Flexible(
             child: Text(value,
                 textAlign: TextAlign.end,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 11 : 13,
                     fontWeight: FontWeight.w500,
                     color: _textPrimary)),
@@ -653,14 +653,14 @@ class JobDetailModal_recruiter extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('$label: ',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 10 : 12,
                   fontWeight: FontWeight.w600,
                   color: _textSecondary)),
           Flexible(
             child: Text(value,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 10 : 12,
                     fontWeight: FontWeight.w600,
                     color: _textPrimary)),
@@ -734,7 +734,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(e,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                               fontSize: isMobile ? 12 : 13,
                               color: _textPrimary)),
                     ),
@@ -779,7 +779,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title.toUpperCase(),
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 10 : 11,
                   fontWeight: FontWeight.w700,
                   color: _textSecondary,

@@ -152,7 +152,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
           // Title
           Text(
             'AI Analysis in Progress',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -180,7 +180,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
           // Info Text
           Text(
             'Analyzing candidate profiles...',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: const Color(0xFF94A3B8),
               fontWeight: FontWeight.w500,
@@ -228,7 +228,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               ),
               child: Text(
                 '${(provider.progress * 100).round()}%',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -274,7 +274,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
           const SizedBox(width: 10),
           Text(
             'Processing ${provider.processedCount} of ${provider.totalCount}',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               color: const Color(0xFF475569),
               fontWeight: FontWeight.w600,
@@ -334,7 +334,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               const SizedBox(height: 8),
               Text(
                 step['label'] as String,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   color: isActive ? const Color(0xFF8B5CF6) : const Color(0xFF94A3B8),
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
@@ -382,7 +382,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
             Flexible(
               child: Text(
                 _currentStatus,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   color: const Color(0xFF64748B),
                   fontWeight: FontWeight.w500,
@@ -432,7 +432,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
           const SizedBox(height: 20),
           Text(
             'Analysis Failed',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -451,7 +451,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
             child: Text(
               error,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: const Color(0xFF991B1B),
                 height: 1.4,
@@ -473,7 +473,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 ),
                 child: Text(
                   'Cancel',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
@@ -489,7 +489,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: Text(
                   'Retry',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),

@@ -27,11 +27,11 @@ class _T {
   static Color avatar(int i) => _avatarColors[i % _avatarColors.length];
 
   static TextStyle label({double fs = 11, Color? c, FontWeight fw = FontWeight.w500}) =>
-      GoogleFonts.poppins(fontSize: fs, fontWeight: fw, color: c ?? textSec);
+      GoogleFonts.plusJakartaSans(fontSize: fs, fontWeight: fw, color: c ?? textSec);
   static TextStyle head({double fs = 14, Color? c}) =>
-      GoogleFonts.poppins(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
+      GoogleFonts.plusJakartaSans(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? textPri);
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.poppins(fontSize: fs, color: c ?? textPri, height: 1.5);
+      GoogleFonts.plusJakartaSans(fontSize: fs, color: c ?? textPri, height: 1.5);
   static TextStyle mono({double fs = 14, Color? c, FontWeight fw = FontWeight.w700}) =>
       GoogleFonts.ibmPlexMono(fontSize: fs, fontWeight: fw, color: c ?? textPri);
 }

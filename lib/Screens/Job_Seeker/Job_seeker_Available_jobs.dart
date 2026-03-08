@@ -310,7 +310,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 const Icon(Icons.filter_list, color: Colors.white, size: 20),
                 const SizedBox(height: 4),
                 Text('$_activeFiltersCount',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
@@ -336,7 +336,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               const Icon(Icons.tune, size: 24, color: Color(0xFF374151)),
               const SizedBox(width: 12),
               Text('Filters & Search',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151))),
@@ -350,7 +350,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text('$_activeFiltersCount',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.white)),
@@ -482,7 +482,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   Expanded(
                     child: Text(
                       '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF374151)),
@@ -518,7 +518,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           children: [
             Text(
               '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF374151)),
@@ -552,7 +552,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           ),
           const SizedBox(width: 6),
           Text('${_filteredJobs.length} Active',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF10B981))),
@@ -577,7 +577,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           DropdownButton<String>(
             value: _selectedSortOption,
             underline: const SizedBox(),
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 14, color: const Color(0xFF64748B)),
             items: const [
               DropdownMenuItem(
@@ -612,7 +612,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             const SizedBox(height: 14),
             Text(
               'No jobs found',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 16 : 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[600]),
@@ -620,7 +620,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             const SizedBox(height: 6),
             Text(
               'Try adjusting your filters or search terms',
-              style: GoogleFonts.poppins(fontSize: isMobile ? 12 : 14, color: Colors.grey[500]),
+              style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 12 : 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -645,7 +645,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Search Jobs',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151))),
@@ -659,10 +659,10 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           child: TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
-            style: GoogleFonts.poppins(fontSize: 14),
+            style: GoogleFonts.plusJakartaSans(fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search jobs, companies, skills...',
-              hintStyle: GoogleFonts.poppins(
+              hintStyle: GoogleFonts.plusJakartaSans(
                   fontSize: 14, color: const Color(0xFF64748B)),
               prefixIcon:
               const Icon(Icons.search, size: 20, color: Color(0xFF64748B)),
@@ -691,7 +691,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151))),
@@ -706,7 +706,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Salary Range',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151))),
@@ -724,12 +724,12 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('\$${(_salaryRange.start / 1000).round()}k',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF374151))),
                   Text('\$${(_salaryRange.end / 1000).round()}k',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF374151))),
@@ -772,7 +772,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Benefits',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151))),
@@ -806,7 +806,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     benefit.length > 15
                         ? '${benefit.substring(0, 15)}...'
                         : benefit,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: isSelected
@@ -828,7 +828,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF374151))),
@@ -844,17 +844,17 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           child: DropdownButton<String>(
             value: value,
             hint: Text('All ${label}s',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 14, color: const Color(0xFF9CA3AF))),
             isExpanded: true,
             underline: const SizedBox(),
             style:
-            GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF374151)),
+            GoogleFonts.plusJakartaSans(fontSize: 14, color: const Color(0xFF374151)),
             items: [
               DropdownMenuItem<String>(
                 value: null,
                 child: Text('All ${label}s',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 14, color: const Color(0xFF9CA3AF))),
               ),
               ...items.map(
@@ -1037,7 +1037,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             children: [
                               Text(
                                 title,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: titleSize,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
@@ -1049,7 +1049,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               const SizedBox(height: 2),
                               Text(
                                 '$company • $department',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: subSize,
                                   fontWeight: FontWeight.w500,
                                   color: const Color(0xFF64748B),
@@ -1059,7 +1059,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               ),
                               Text(
                                 location,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: isMobile ? 10 : 12,
                                   color: const Color(0xFF64748B),
                                 ),
@@ -1073,7 +1073,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               //         size: 12, color: Color(0xFF64748B)),
                               //     const SizedBox(width: 3),
                               //     Text('${job['viewCount'] ?? 0} views',
-                              //         style: GoogleFonts.poppins(
+                              //         style: GoogleFonts.plusJakartaSans(
                               //             fontSize: 10,
                               //             color: const Color(0xFF64748B))),
                               //     const SizedBox(width: 10),
@@ -1081,7 +1081,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                               //         size: 12, color: Color(0xFF64748B)),
                               //     const SizedBox(width: 3),
                               //     Text('${job['applicationCount'] ?? 0} apps',
-                              //         style: GoogleFonts.poppins(
+                              //         style: GoogleFonts.plusJakartaSans(
                               //             fontSize: 10,
                               //             color: const Color(0xFF64748B))),
                               //   ],
@@ -1101,7 +1101,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             ),
                             child: Text(
                               '$postedAgo ago',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF003366),
@@ -1122,7 +1122,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             Icons.description,
                             Text(
                               description,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
                                 color: Colors.black87,
                                 height: 1.5,
@@ -1138,7 +1138,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             Icons.checklist,
                             Text(
                               responsibilities,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
                                 color: Colors.black87,
                                 height: 1.5,
@@ -1152,7 +1152,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                         if (skills.isNotEmpty) ...[
                           Text(
                             'Skills Required',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
@@ -1177,7 +1177,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     '+${skills.length - 4} more',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 10,
                                       color: Colors.grey.shade600,
                                       fontStyle: FontStyle.italic,
@@ -1231,7 +1231,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                         children: [
                                           Text(
                                             'View Details',
-                                            style: GoogleFonts.poppins(
+                                            style: GoogleFonts.plusJakartaSans(
                                               fontSize: isMobile ? 13 : 15,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.white,
@@ -1304,7 +1304,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                             Flexible(
                                               child: Text(
                                                 already ? 'Applied' : 'Apply Now',
-                                                style: GoogleFonts.poppins(
+                                                style: GoogleFonts.plusJakartaSans(
                                                   fontSize: isMobile ? 12 : 15,
                                                   fontWeight: FontWeight.w600,
                                                   color: already ? Colors.grey[700] : Colors.white,
@@ -1382,7 +1382,7 @@ class _CompactJobCardState extends State<CompactJobCard>
               // Title
               Text(
                 'Application Submitted!',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -1394,7 +1394,7 @@ class _CompactJobCardState extends State<CompactJobCard>
               // Subtitle
               Text(
                 'Your profile has been shared with the recruiter.\nOnly shortlisted candidates will be notified for an interview session.',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   color: Colors.grey[700],
                   height: 1.4,
@@ -1418,7 +1418,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                   onPressed: () => Navigator.of(ctx).pop(),
                   child: Text(
                     'OK',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -1444,7 +1444,7 @@ class _CompactJobCardState extends State<CompactJobCard>
               const SizedBox(width: 6),
               Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -1478,7 +1478,7 @@ class _ModernChip extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: color,

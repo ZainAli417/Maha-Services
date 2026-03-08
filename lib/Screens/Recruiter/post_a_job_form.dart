@@ -244,7 +244,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               children: [
                 Text(
                   'Post a Position',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: _isMobile ? 15 : 18,
                     fontWeight: FontWeight.w600,
                     color: _textDark,
@@ -253,7 +253,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                 if (!_isMobile)
                   Text(
                     'Fill in the details below to publish a new listing',
-                    style: GoogleFonts.poppins(fontSize: 12, color: _textMid),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _textMid),
                   ),
               ],
             ),
@@ -273,7 +273,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           //       children: [
           //         const Icon(Icons.arrow_back_ios_new_rounded, size: 13, color: _accent),
           //         const SizedBox(width: 4),
-          //         Text('Back', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: _accent)),
+          //         Text('Back', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600, color: _accent)),
           //       ],
           //     ),
           //   ),
@@ -762,7 +762,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                     const SizedBox(height: 2),
                     Text(
                       'Emblem',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 9,
                         color: _textMid,
                         fontWeight: FontWeight.w500,
@@ -785,7 +785,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             children: [
               Text(
                 'Unit Identification',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: _isMobile ? 14 : 16,
                   fontWeight: FontWeight.w600,
                   color: _textDark,
@@ -794,7 +794,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               const SizedBox(height: 2),
               Text(
                 'Tap the circle to upload your unit emblem',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: _isMobile ? 11 : 12,
                   color: _textMid,
                 ),
@@ -808,7 +808,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             icon: const Icon(Icons.edit_rounded, size: 14, color: _accent),
             label: Text(
               'Change',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: _accent,
                 fontWeight: FontWeight.w600,
@@ -843,7 +843,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         const SizedBox(width: 8),
         Text(
           title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: _isMobile ? 13 : 15,
             fontWeight: FontWeight.w600,
             color: _textDark,
@@ -890,7 +890,7 @@ class _PostJobScreenState extends State<PostJobScreen>
       validator: validator,
       focusNode: fn,
       keyboardType: keyboard,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
         color: _surfaceDark,
         fontWeight: FontWeight.w500,
@@ -931,16 +931,16 @@ class _PostJobScreenState extends State<PostJobScreen>
           borderRadius: BorderRadius.circular(radius),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.8),
         ),
-        labelStyle: GoogleFonts.poppins(
+        labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
           fontWeight: FontWeight.w500,
         ),
-        hintStyle: GoogleFonts.poppins(
+        hintStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid.withOpacity(0.7),
         ),
-        errorStyle: GoogleFonts.poppins(
+        errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           color: Colors.redAccent,
           fontWeight: FontWeight.w500,
@@ -971,7 +971,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               value: i,
               child: Text(
                 i,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: _isMobile ? 12 : 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -981,7 +981,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           )
           .toList(),
       onChanged: onChange,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
         color: _surfaceDark,
         fontWeight: FontWeight.w500,
@@ -1016,7 +1016,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           borderRadius: BorderRadius.circular(radius),
           borderSide: const BorderSide(color: _primary, width: 1.8),
         ),
-        labelStyle: GoogleFonts.poppins(
+        labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
           fontWeight: FontWeight.w500,
@@ -1038,7 +1038,7 @@ class _PostJobScreenState extends State<PostJobScreen>
       key: ValueKey('dl_${provider.tempDeadline}'),
       validator: (_) =>
           provider.tempDeadline.isEmpty ? 'Deadline required' : null,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
         color: _surfaceDark,
         fontWeight: FontWeight.w500,
@@ -1106,12 +1106,12 @@ class _PostJobScreenState extends State<PostJobScreen>
           borderRadius: BorderRadius.circular(radius),
           borderSide: const BorderSide(color: _primary, width: 1.8),
         ),
-        labelStyle: GoogleFonts.poppins(
+        labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
           fontWeight: FontWeight.w500,
         ),
-        errorStyle: GoogleFonts.poppins(
+        errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           color: Colors.redAccent,
           fontWeight: FontWeight.w500,
@@ -1138,7 +1138,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             const SizedBox(width: 6),
             Text(
               title,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: _isMobile ? 12 : 13,
                 fontWeight: FontWeight.w600,
                 color: _textDark,
@@ -1181,7 +1181,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                     ],
                     Text(
                       item,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 11 : 12,
                         fontWeight: on ? FontWeight.w600 : FontWeight.w500,
                         color: on ? color : _textMid,
@@ -1273,7 +1273,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                     const SizedBox(width: 10),
                     Text(
                       _isMobile ? 'Post Position' : 'Post Position Now',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 14 : 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -1301,7 +1301,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             Expanded(
               child: Text(
                 msg,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -1375,7 +1375,7 @@ class _PostJobAIFloatingChatState extends State<_PostJobAIFloatingChat> {
                     const SizedBox(width: 8),
                     Text(
                       'Recruite.AI',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

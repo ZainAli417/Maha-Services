@@ -54,7 +54,7 @@ class _C {
 
   static TextStyle p(double size,
       {FontWeight fw = FontWeight.w600, Color color = t1}) =>
-      GoogleFonts.poppins(fontSize: size, fontWeight: fw, color: color);
+      GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: fw, color: color);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

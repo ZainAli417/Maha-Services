@@ -182,7 +182,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
               children: [
                 Text(
                   'MAHA SERVICES',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF0F172A),
@@ -192,7 +192,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                 const SizedBox(height: 2),
                 Text(
                   'Recruiter Portal',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF64748B),
@@ -233,7 +233,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
             child: Center(
               child: Text(
                 initials.isNotEmpty ? initials : 'JS',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -252,7 +252,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                     Flexible(
                       child: Text(
                         name.capitalize(),
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF0F172A),
@@ -271,7 +271,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                 const SizedBox(height: 2),
                 Text(
                   'Recruiter',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF64748B),
@@ -290,7 +290,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
       padding: const EdgeInsets.only(left: 12, bottom: 4),
       child: Text(
         label,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: const Color(0xFF94A3B8),
@@ -353,7 +353,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                   Expanded(
                     child: Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                         color: isActive
@@ -372,7 +372,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       ),
                       child: Text(
                         badge,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -416,7 +416,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                     const SizedBox(width: 8),
                     Text(
                       'Logout',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.red.shade600,
@@ -431,7 +431,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
           // Copyright
           Text(
             '© 2025 Maha Services',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: Colors.grey.shade500,
             ),
@@ -460,18 +460,18 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
             const SizedBox(width: 12),
             Text(
               'Confirm Logout',
-              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w700),
+              style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
             ),
           ],
         ),
         content: Text(
           'Are you sure you want to logout from your account?',
-          style: GoogleFonts.poppins(fontSize: 14),
+          style: GoogleFonts.plusJakartaSans(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -504,7 +504,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
             ),
             child: Text(
               'Logout',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
           ),
 

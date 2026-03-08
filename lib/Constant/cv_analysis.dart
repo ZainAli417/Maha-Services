@@ -112,7 +112,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   void _showSnackBar(BuildContext ctx, String msg, {bool isError = false}) {
     ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(
-        content: Text(msg, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+        content: Text(msg, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500)),
         backgroundColor: isError ? kErrorRed : kSuccessGreen,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -280,7 +280,7 @@ class _CompactHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text('CV Analyzer',
-                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
                     ),
                   ],
                 ),
@@ -464,7 +464,7 @@ class _InputPanel extends StatelessWidget {
                   ),
                   label: Text(
                     isLoading ? 'Analyzing…' : 'Analyze CV',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 13 : 14,
                         fontWeight: FontWeight.w600),
                   ),
@@ -485,7 +485,7 @@ class _InputPanel extends StatelessWidget {
                 icon: const Icon(Icons.refresh_rounded, size: 16),
                 label: Text(
                   'Reset',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 13 : 14,
                       fontWeight: FontWeight.w600),
                 ),
@@ -512,11 +512,11 @@ class _InputPanel extends StatelessWidget {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: GoogleFonts.poppins(
+      style: GoogleFonts.plusJakartaSans(
           fontSize: isMobile ? 13 : 14, color: kTextPrimary),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(
+        hintStyle: GoogleFonts.plusJakartaSans(
             color: kTextSecondary.withOpacity(0.6),
             fontSize: isMobile ? 12 : 14),
         filled: true,
@@ -558,7 +558,7 @@ class _SectionLabel extends StatelessWidget {
         Flexible(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: kTextPrimary,
@@ -609,7 +609,7 @@ class _FileUploadZone extends StatelessWidget {
                 children: [
                   Text(
                     pickedFile!.name,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 13, fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -617,7 +617,7 @@ class _FileUploadZone extends StatelessWidget {
                   if (pickedFile!.size > 0)
                     Text(
                       _formatSize(pickedFile!.size),
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 11, color: kTextSecondary),
                     ),
                 ],
@@ -658,7 +658,7 @@ class _FileUploadZone extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Tap to browse CVs/Resumes',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: kAccentBlue,
@@ -667,7 +667,7 @@ class _FileUploadZone extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               'PDF files only',
-              style: GoogleFonts.poppins(fontSize: 11, color: kTextSecondary),
+              style: GoogleFonts.plusJakartaSans(fontSize: 11, color: kTextSecondary),
             ),
           ],
         ),
@@ -726,7 +726,7 @@ class _JobSelectorState extends State<_JobSelector> {
               value: _selectedJobId,
               hint: Text(
                 'Browse public jobs to auto-fill...',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: widget.isMobile ? 12 : 14,
                   color: kTextSecondary.withOpacity(0.6),
                 ),
@@ -736,7 +736,7 @@ class _JobSelectorState extends State<_JobSelector> {
                   value: job['id'],
                   child: Text(
                     '${job['title']} @ ${job['company']}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: widget.isMobile ? 13 : 14,
                       color: kTextPrimary,
                     ),
@@ -804,7 +804,7 @@ class _ResultsPanel extends StatelessWidget {
             children: [
               Text(
                 'Analysis Results',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 14 : 16,
                   fontWeight: FontWeight.w600,
                   color: kTextPrimary,
@@ -859,7 +859,7 @@ class _CompactScoreBadge extends StatelessWidget {
         children: [
           Text(
             '${score.toStringAsFixed(0)}%',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 13, fontWeight: FontWeight.w700, color: color),
           ),
           const SizedBox(width: 5),
@@ -869,7 +869,7 @@ class _CompactScoreBadge extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ],
@@ -897,7 +897,7 @@ class _InsightsSection extends StatelessWidget {
             const SizedBox(width: 7),
             Text(
               'AI Insights',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 13 : 14,
                 fontWeight: FontWeight.w600,
                 color: kTextPrimary,
@@ -912,7 +912,7 @@ class _InsightsSection extends StatelessWidget {
           config: MarkdownConfig(
             configs: [
               PConfig(
-                textStyle: GoogleFonts.poppins(
+                textStyle: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
                   fontWeight: FontWeight.w400,
                   color: kTextSecondary,
@@ -958,7 +958,7 @@ class _HighlightsSection extends StatelessWidget {
             const SizedBox(width: 7),
             Text(
               'Key Highlights',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 13 : 14,
                 fontWeight: FontWeight.w600,
                 color: kTextPrimary,
@@ -973,7 +973,7 @@ class _HighlightsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10)),
               child: Text(
                 '${highlights.length}',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: kTextSecondary),
@@ -1023,7 +1023,7 @@ class _HighlightRow extends StatelessWidget {
               children: [
                 Text(
                   highlight['text'] ?? '',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 12 : 13,
                     fontWeight: FontWeight.w500,
                     color: kTextPrimary,
@@ -1034,7 +1034,7 @@ class _HighlightRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     highlight['detail'],
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 11 : 12,
                       color: kTextSecondary,
                       height: 1.4,
@@ -1097,7 +1097,7 @@ class _EmptyState extends StatelessWidget {
             SizedBox(height: isMobile ? 12 : 16),
             Text(
               'No analysis yet',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 14 : 15,
                 fontWeight: FontWeight.w500,
                 color: kTextSecondary,
@@ -1106,7 +1106,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'Upload a CV and tap Analyze',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
                   color: kTextSecondary.withOpacity(0.7)),
             ),
@@ -1145,14 +1145,14 @@ class _ErrorDisplay extends StatelessWidget {
               children: [
                 Text(
                   'Analysis Failed',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: kErrorRed),
                 ),
                 const SizedBox(height: 4),
                 Text(error,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 12, color: kTextSecondary)),
               ],
             ),
@@ -1222,7 +1222,7 @@ class _AIProcessingDialog extends StatelessWidget {
                       Text(
                         stageText,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: isMobile ? 13 : 15,
                           fontWeight: FontWeight.w600,
                           color: kTextPrimary,
@@ -1241,7 +1241,7 @@ class _AIProcessingDialog extends StatelessWidget {
                       const SizedBox(height: 10),
                       Text(
                         '${(progress * 100).toStringAsFixed(0)}%',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: kTextSecondary),

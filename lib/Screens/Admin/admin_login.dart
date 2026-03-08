@@ -188,7 +188,7 @@ class _NavBar extends StatelessWidget {
                   if (!isMobile) ...[
                     const SizedBox(width: 10),
                     Text('ADMIN PORTAL',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.4,
@@ -236,7 +236,7 @@ class _LeftPanel extends StatelessWidget {
           isMobile
               ? 'Admin Control Panel'
               : 'Admin Control Panel',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 30 : 44,
               fontWeight: FontWeight.w800,
               height: 1.18,
@@ -251,7 +251,7 @@ class _LeftPanel extends StatelessWidget {
           'Manage your platform with powerful tools and '
               'comprehensive analytics. Access user management, '
               'system settings, and real-time monitoring.',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 13 : 15,
               height: 1.65,
               color: _slate),
@@ -293,7 +293,7 @@ class _LeftPanel extends StatelessWidget {
               Container(width: 32, height: 2, color: _indigo),
               const SizedBox(width: 12),
               Text('TRUSTED ADMIN DASHBOARD',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.6,
@@ -339,7 +339,7 @@ class _PillBadge extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 7),
           Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.3,
@@ -405,7 +405,7 @@ class _FeatureChipState extends State<_FeatureChip> {
             ),
             const SizedBox(width: 10),
             Text(widget.label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: _ink)),
@@ -426,12 +426,12 @@ class _StatItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(value,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: _indigo)),
         Text(label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 11, color: _slate, fontWeight: FontWeight.w500)),
       ],
     );
@@ -485,13 +485,13 @@ class _FormCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Sign In',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           color: _ink,
                           height: 1.1)),
                   Text('Access your admin dashboard',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 12, color: _slate)),
                 ],
               ),
@@ -557,7 +557,7 @@ class _FormCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(prov.errorMessage!,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             color: _errText,
                             fontWeight: FontWeight.w500)),
@@ -591,7 +591,7 @@ class _FormCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Text('SECURED BY',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 10,
                         letterSpacing: 1.4,
                         fontWeight: FontWeight.w600,
@@ -653,7 +653,7 @@ class _FieldState extends State<_Field> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(widget.label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: _ink,
@@ -679,11 +679,11 @@ class _FieldState extends State<_Field> {
               obscureText: widget.obscure,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 14, color: _ink),
               decoration: InputDecoration(
                 hintText: widget.hint,
-                hintStyle: GoogleFonts.poppins(
+                hintStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: _slate.withOpacity(0.55)),
                 prefixIcon: Padding(
@@ -786,7 +786,7 @@ class _SignInButtonState extends State<_SignInButton> {
                   ),
                   const SizedBox(width: 12),
                   Text('Signing in…',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white)),
@@ -796,7 +796,7 @@ class _SignInButtonState extends State<_SignInButton> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Sign In to Dashboard',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white)),
@@ -843,7 +843,7 @@ class _TextLinkState extends State<_TextLink> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Text(widget.label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: _hovered ? _indigo : _slate,
@@ -870,7 +870,7 @@ class _Badge extends StatelessWidget {
         Icon(icon, size: 14, color: _slate.withOpacity(0.55)),
         const SizedBox(width: 5),
         Text(label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 color: _slate.withOpacity(0.65),
                 fontWeight: FontWeight.w500)),
@@ -922,7 +922,7 @@ class _OutlineButtonState extends State<_OutlineButton> {
                   color: _hovered ? _indigo : _slate),
               const SizedBox(width: 7),
               Text(widget.label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: _hovered ? _indigo : _slate)),

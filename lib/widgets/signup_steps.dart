@@ -156,9 +156,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Welcome Aboard! 🚀', style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Welcome Aboard! 🚀', style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Choose your role to unlock tailored features', style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey.shade600)),
+        Text('Choose your role to unlock tailored features', style: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.grey.shade600)),
         const SizedBox(height: 32),
         _roleCard('Job Seeker', 'Find your dream job', Icons.work_outline_rounded, role == 'Job Seeker', primaryColor),
         const SizedBox(height: 16),
@@ -202,9 +202,9 @@ class SignUpSteps {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
+                    Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600)),
+                    Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
                   ],
                 ),
               ),
@@ -228,9 +228,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Please provide your $label', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+        Text('Please provide your $label', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
         const SizedBox(height: 32),
         SignUpWidgets.elegantTextField(controller: controller, label: hint, icon: icon, keyboardType: keyboard),
       ],
@@ -241,9 +241,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Secure Your Account 🔒', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Secure Your Account 🔒', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Create a strong password to protect your account', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+        Text('Create a strong password to protect your account', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
         const SizedBox(height: 32),
         SignUpWidgets.elegantTextField(
           controller: passwordController,
@@ -275,9 +275,9 @@ class SignUpSteps {
       builder: (context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Personal Information', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          Text('Personal Information', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
           const SizedBox(height: 8),
-          Text('Help us know you better', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+          Text('Help us know you better', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
           const SizedBox(height: 32),
 
           // 1. Father's Name Field
@@ -323,7 +323,7 @@ class SignUpSteps {
                   const SizedBox(width: 16),
                   Text(
                     dob == null ? 'Select Date of Birth' : dob!.toLocal().toIso8601String().split('T').first,
-                    style: GoogleFonts.poppins(fontSize: 15, color: dob == null ? Colors.grey.shade600 : Colors.grey.shade800),
+                    style: GoogleFonts.plusJakartaSans(fontSize: 15, color: dob == null ? Colors.grey.shade600 : Colors.grey.shade800),
                   ),
                 ],
               ),
@@ -340,9 +340,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Profile Photo 📸', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Profile Photo 📸', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('A professional photo makes a great first impression', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+        Text('A professional photo makes a great first impression', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
         const SizedBox(height: 32),
         Center(
           child: Column(
@@ -365,7 +365,7 @@ class SignUpSteps {
                 child: ElevatedButton.icon(
                   onPressed: onPickImage,
                   icon: const Icon(Icons.upload_file_rounded),
-                  label: Text(imageDataUrl == null ? 'Upload Photo' : 'Change Photo', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  label: Text(imageDataUrl == null ? 'Upload Photo' : 'Change Photo', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
@@ -376,7 +376,7 @@ class SignUpSteps {
                 ),
               ),
               const SizedBox(height: 12),
-              Text('Max size: 2MB • JPG, PNG', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade500)),
+              Text('Max size: 2MB • JPG, PNG', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade500)),
             ],
           ),
         ),
@@ -395,9 +395,9 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Education 🎓', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text('Education 🎓', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
                   const SizedBox(height: 4),
-                  Text('Add your academic background', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+                  Text('Add your academic background', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -406,7 +406,7 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAddEducation,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -452,12 +452,12 @@ class SignUpSteps {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(edu['degree'] ?? '', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(edu['degree'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
-                          Text(edu['institution'] ?? '', style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600)),
+                          Text(edu['institution'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
                           if (edu['from']!.isNotEmpty || edu['to']!.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text('${edu['from']} - ${edu['to']}', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade500)),
+                            Text('${edu['from']} - ${edu['to']}', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade500)),
                           ],
                         ],
                       ),
@@ -486,9 +486,9 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Work Experience 💼', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text('Work Experience 💼', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
                   const SizedBox(height: 4),
-                  Text('Showcase your professional journey', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+                  Text('Showcase your professional journey', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -497,7 +497,7 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAddExperience,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: secondaryColor,
                   foregroundColor: Colors.white,
@@ -543,9 +543,9 @@ class SignUpSteps {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(exp['title'] ?? '', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(exp['title'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
-                          if (exp['duration']!.isNotEmpty) Text(exp['duration'] ?? '', style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade600)),
+                          if (exp['duration']!.isNotEmpty) Text(exp['duration'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
                         ],
                       ),
                     ),
@@ -566,9 +566,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Your Skills ⚡', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Your Skills ⚡', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Add skills that make you stand out', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+        Text('Add skills that make you stand out', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -601,7 +601,7 @@ class SignUpSteps {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('No skills added yet', style: GoogleFonts.poppins(color: Colors.grey.shade500)),
+              child: Text('No skills added yet', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade500)),
             ),
           )
         else
@@ -620,7 +620,7 @@ class SignUpSteps {
                 children: [
                   Icon(Icons.verified_rounded, size: 16, color: accentColor),
                   const SizedBox(width: 8),
-                  Text(s, style: GoogleFonts.poppins(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
+                  Text(s, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
                   const SizedBox(width: 8),
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
@@ -680,9 +680,9 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+                  Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -691,7 +691,7 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color,
                   foregroundColor: Colors.white,
@@ -722,7 +722,7 @@ class SignUpSteps {
                 children: [
                   Icon(icon, size: 16, color: color),
                   const SizedBox(width: 8),
-                  Text(s, style: GoogleFonts.poppins(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
+                  Text(s, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
                   const SizedBox(width: 8),
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
@@ -786,9 +786,9 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Almost There! ✨', style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Almost There! ✨', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Review your information before submitting', style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600)),
+        Text('Review your information before submitting', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
         const SizedBox(height: 24),
 
         // --- Paginator/Carousel Area ---

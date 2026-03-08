@@ -120,7 +120,7 @@ class _CVGeneratorButtonState extends State<CVGeneratorButton> {
                 const SizedBox(width: 12),
                 Text(
                   _isGenerating ? 'Preparing...' : 'Download CV',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
@@ -192,9 +192,9 @@ class ProfessionalCVGenerator {
     final pdf = pw.Document();
 
     // Load fonts
-    final ttfRegular = await PdfGoogleFonts.poppinsRegular();
-    final ttfBold = await PdfGoogleFonts.poppinsBold();
-    final ttfItalic = await PdfGoogleFonts.poppinsItalic();
+    final ttfRegular = await PdfGoogleFonts.plusJakartaSansRegular();
+    final ttfBold = await PdfGoogleFonts.plusJakartaSansBold();
+    final ttfItalic = await PdfGoogleFonts.plusJakartaSansItalic();
 
     // Load Material Icons font for PDF icons
     pw.Font? iconFont;

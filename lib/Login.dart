@@ -11,6 +11,7 @@
 // All other code is 100% preserved.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -295,7 +296,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
               ),
               const SizedBox(width: 6),
               Text('LIVE',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: Colors.white70,
@@ -308,7 +309,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           shaderCallback: (bounds) => const LinearGradient(
               colors: [Colors.white, Color(0xFFb8c5ff)]).createShader(bounds),
           child: Text('Maha Services',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 42,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -318,7 +319,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         const SizedBox(height: 12),
         Text(
           'Next-gen recruitment powered by intelligent automation',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               fontSize: 13, color: Colors.white.withOpacity(0.6), height: 1.5),
         ),
       ],
@@ -366,13 +367,13 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Enterprise Grade',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Colors.white)),
                   const SizedBox(height: 2),
                   Text('AES-256 • Hash Algorithm',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           color: Colors.white.withOpacity(0.6))),
                 ],
@@ -385,7 +386,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                   color: const Color(0xFF4ade80),
                   borderRadius: BorderRadius.circular(100)),
               child: Text('ACTIVE',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F0F23),
@@ -429,7 +430,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('CAPABILITIES',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 color: Colors.white.withOpacity(0.4),
@@ -529,14 +530,14 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Welcome Back!',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                     fontSize: headerFontSize,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF1F2937),
                                     letterSpacing: -0.5)),
                             const SizedBox(height: 2),
                             Text('Sign in to continue your journey',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                     color: const Color(0xFF6B7280),
                                     fontSize: subFontSize,
                                     fontWeight: FontWeight.w400)),
@@ -592,7 +593,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                   tapTargetSize:
                                   MaterialTapTargetSize.shrinkWrap),
                               child: Text('Forgot password?',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF6366F1),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600)),
@@ -645,7 +646,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                 MainAxisAlignment.center,
                                 children: [
                                   Text('Log In',
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 15)),
                                   const SizedBox(width: 8),
@@ -670,7 +671,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text("Don't have an account?",
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                   color: const Color(0xFF6B7280),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400)),
@@ -682,41 +683,44 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                                 tapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap),
                             child: Text('Sign Up',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                     color: const Color(0xFF6366F1),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700)),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 25),
-                     Center(child:
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Are you an Admin?",
-                              style: GoogleFonts.poppins(
-                                  color: const Color(0xFF9CA3AF),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5)),
-                          TextButton(
-                            onPressed: () => context.go('/admin'),
-                            style: TextButton.styleFrom(
-                                padding: const EdgeInsets.only(left: 6),
-                                minimumSize: Size.zero,
-                                tapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap),
-                            child: Text('Click Here',
-                                style: GoogleFonts.poppins(
-                                    color: const Color(0xFF4B5563),
-                                    fontSize: 13,
-                                    decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.w800)),
-                          ),
-                        ],
-                      ),
-                       )
+                        const SizedBox(height: 25),
+                      if(!kIsWeb)
+
+                        Center(child:
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Are you an Admin?",
+                                style: GoogleFonts.plusJakartaSans(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5)),
+                            TextButton(
+                              onPressed: () => context.go('/admin'),
+                              style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.only(left: 6),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap),
+                              child: Text('Click Here',
+                                  style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF4B5563),
+                                      fontSize: 13,
+                                      decoration: TextDecoration.underline,
+                                      fontWeight: FontWeight.w800)),
+                            ),
+                          ],
+                        ),
+                        )
+
                     ],
                   ),
                 ],
@@ -732,7 +736,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
   Widget _fieldLabel(String text) {
     return Text(text,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1F2937)));
@@ -745,7 +749,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.poppins(color: const Color(0xFF9CA3AF)),
+      hintStyle: GoogleFonts.plusJakartaSans(color: const Color(0xFF9CA3AF)),
       prefixIcon: prefix,
       suffixIcon: suffix,
       filled: true,
@@ -780,7 +784,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
       style:
-      GoogleFonts.poppins(fontSize: 15, color: const Color(0xFF1F2937)),
+      GoogleFonts.plusJakartaSans(fontSize: 15, color: const Color(0xFF1F2937)),
       decoration: _inputDecoration(
         hint: 'you@example.com',
         prefix: const Icon(Icons.email_rounded,
@@ -801,7 +805,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (_) => _onLogin(),
       style:
-      GoogleFonts.poppins(fontSize: 15, color: const Color(0xFF1F2937)),
+      GoogleFonts.plusJakartaSans(fontSize: 15, color: const Color(0xFF1F2937)),
       decoration: _inputDecoration(
         hint: '••••••••',
         prefix: const Icon(Icons.lock_rounded,
@@ -859,7 +863,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                       : const Color(0xFF6B7280)),
               SizedBox(width: compact ? 6 : 8),
               Text(value,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       color: selected
                           ? Colors.white
                           : const Color(0xFF6B7280),
@@ -909,14 +913,14 @@ class _CompactMetric extends StatelessWidget {
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 12),
           Text(value,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                   height: 1)),
           const SizedBox(height: 4),
           Text(label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 11, color: Colors.white.withOpacity(0.6))),
         ],
       ),
@@ -947,7 +951,7 @@ class _CompactFeature extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Text(title,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: Colors.white.withOpacity(0.85))),
@@ -969,7 +973,7 @@ class _TrustBadge extends StatelessWidget {
         Icon(icon, color: Colors.white.withOpacity(0.5), size: 16),
         const SizedBox(width: 6),
         Text(label,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 color: Colors.white.withOpacity(0.5),
                 fontWeight: FontWeight.w600)),

@@ -17,7 +17,7 @@ class _T {
   static const white     = Colors.white;
 
   static TextStyle label(double size, {Color color = navy}) =>
-      GoogleFonts.poppins(fontSize: size, fontWeight: FontWeight.w600, color: color, letterSpacing: -0.1);
+      GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: FontWeight.w600, color: color, letterSpacing: -0.1);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ class HeaderNav extends StatelessWidget {
   // ── Shared: Brand text ──
   Widget _buildBrandText(double size) {
     return Text('Maha Services',
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: size,
           fontWeight: FontWeight.w700,
           color: _T.navy,

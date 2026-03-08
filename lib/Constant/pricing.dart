@@ -154,7 +154,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 const SizedBox(width: 8),
                 Text(
                   'PRICING PLANS',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF6366F1),
@@ -167,7 +167,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           const SizedBox(height: 24),
           Text(
             'Choose Your Perfect Plan',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 32 : 48,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -181,7 +181,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             width: isMobile ? double.infinity : 600,
             child: Text(
               'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 16 : 18,
                 fontWeight: FontWeight.w400,
                 color: const Color(0xFF64748B),
@@ -260,7 +260,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               const SizedBox(width: 8),
               Text(
                 type['label'] as String,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: isSelected ? Colors.white : const Color(0xFF64748B),
@@ -322,7 +322,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           children: [
             Text(
               label,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: isActive ? Colors.white : const Color(0xFF64748B),
@@ -339,7 +339,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 ),
                 child: Text(
                   'Save 20%',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -634,7 +634,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                         ),
                         child: Text(
                           'MOST POPULAR',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -645,7 +645,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     if (isPopular) const SizedBox(height: 20),
                     Text(
                       plan['title'],
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
@@ -655,7 +655,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     const SizedBox(height: 4),
                     Text(
                       plan['subtitle'],
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF64748B),
@@ -668,7 +668,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       children: [
                         Text(
                           '\$',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A),
@@ -690,7 +690,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                           child: Text(
                             plan['price'],
                             key: ValueKey(plan['price']),
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 56,
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF0F172A),
@@ -704,7 +704,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     const SizedBox(height: 8),
                     Text(
                       plan['period'],
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF64748B),
@@ -790,7 +790,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 15,
           fontWeight: FontWeight.w600,
           color: isPrimary ? Colors.white : const Color(0xFF0F172A),
@@ -825,7 +825,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: included ? const Color(0xFF334155) : const Color(
@@ -847,7 +847,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             'Frequently asked questions',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 28 : 32,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF0F172A),
@@ -895,7 +895,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             question,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0F172A),
@@ -905,7 +905,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           const SizedBox(height: 8),
           Text(
             answer,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: const Color(0xFF64748B),
@@ -1024,7 +1024,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       children: [
         Text(
           'MAHA SERVICES',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: titleFontSize,
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -1033,7 +1033,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         SizedBox(height: isMobile ? 10 : 16),
         Text(
           'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             color: const Color(0xFF9CA3AF),
             fontSize: descFontSize,
             height: 1.8,
@@ -1111,7 +1111,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             ),
             child: Text(
               '⚡ PROVEN SUCCESS',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: provenFontSize,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -1123,7 +1123,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           Text(
             'Trusted by Industry Leaders',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: titleFontSize,
               fontWeight: FontWeight.w800,
               color: Colors.white,
@@ -1133,7 +1133,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           Text(
             'Real numbers, real impact - see how we transform hiring',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: subtitleFontSize,
               color: Colors.white.withOpacity(0.7),
               fontWeight: FontWeight.w500,
@@ -1194,7 +1194,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             children: [
               Text(
                 value,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: valueFontSize,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
@@ -1202,7 +1202,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               ),
               Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: labelFontSize,
                   color: Colors.white.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
@@ -1234,7 +1234,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             '© 2026 Maha Services. All rights reserved.',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               color: const Color(0xFF6B7280),
               fontSize: copyrightFontSize,
             ),
@@ -1260,7 +1260,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 const SizedBox(width: 4),
                 Text(
                   'Powered by AI',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF6366F1),
                     fontSize: aiFontSize,
                     fontWeight: FontWeight.w600,
@@ -1276,7 +1276,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         children: [
           Text(
             '© 2025 Maha Services. All rights reserved.',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               color: const Color(0xFF6B7280),
               fontSize: copyrightFontSize,
             ),
@@ -1300,7 +1300,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 const SizedBox(width: 6),
                 Text(
                   'Powered by AI',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF6366F1),
                     fontSize: aiFontSize,
                     fontWeight: FontWeight.w600,

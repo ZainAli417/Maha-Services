@@ -285,7 +285,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Certifications',
                         Icons.verified_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with certifications', style: GoogleFonts.poppins(fontSize: 14)),
+                          title: Text('Only candidates with certifications', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
                           value: _tempHasCertifications,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -301,7 +301,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Publications',
                         Icons.article_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with publications', style: GoogleFonts.poppins(fontSize: 14)),
+                          title: Text('Only candidates with publications', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
                           value: _tempHasPublications,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -317,7 +317,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Awards & Recognition',
                         Icons.emoji_events_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with awards', style: GoogleFonts.poppins(fontSize: 14)),
+                          title: Text('Only candidates with awards', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
                           value: _tempHasAwards,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -397,7 +397,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               children: [
                 Text(
                   'Advanced Filters',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF0F172A),
@@ -405,7 +405,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                 ),
                 Text(
                   '${_activeFiltersCount} filters active',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: Color(0xFF64748B),
                   ),
@@ -435,7 +435,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               SizedBox(width: 8),
               Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF0F172A),
@@ -468,7 +468,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           value: value,
           isExpanded: true,
           icon: Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
-          style: GoogleFonts.poppins(fontSize: 14, color: Color(0xFF0F172A)),
+          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Color(0xFF0F172A)),
           items: items.map((item) {
             return DropdownMenuItem(
               value: item,
@@ -503,7 +503,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           backgroundColor: Color(0xFFF8FAFC),
           selectedColor: Color(0xFF8B5CF6).withOpacity(0.2),
           checkmarkColor: Color(0xFF8B5CF6),
-          labelStyle: GoogleFonts.poppins(
+          labelStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             color: isSelected ? Color(0xFF8B5CF6) : Color(0xFF64748B),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -555,7 +555,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               _tempDateRange == null
                   ? 'Select date range'
                   : '${_tempDateRange!.start.toString().split(' ')[0]} - ${_tempDateRange!.end.toString().split(' ')[0]}',
-              style: GoogleFonts.poppins(fontSize: 14, color: Color(0xFF0F172A)),
+              style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Color(0xFF0F172A)),
             ),
             Spacer(),
             if (_tempDateRange != null)
@@ -603,7 +603,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               ),
               child: Text(
                 'Reset All',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF64748B),
@@ -625,7 +625,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               ),
               child: Text(
                 'Apply Filters',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

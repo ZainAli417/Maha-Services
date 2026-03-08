@@ -125,7 +125,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             return AlertDialog(
               title: Text(
                 'Select Month & Year',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -148,7 +148,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         ),
                         Text(
                           '$selectedYear',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                           ),
@@ -192,7 +192,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               child: Center(
                                 child: Text(
                                   _getMonthName(month),
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                     color: isSelected
@@ -214,7 +214,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'Cancel',
-                    style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B)),
                   ),
                 ),
                 ElevatedButton(
@@ -228,7 +228,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                   child: Text(
                     'OK',
-                    style: GoogleFonts.poppins(color: Colors.white),
+                    style: GoogleFonts.plusJakartaSans(color: Colors.white),
                   ),
                 ),
               ],
@@ -250,7 +250,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         return AlertDialog(
           title: Text(
             'Select Year',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -565,7 +565,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 children: [
                   Text(
                     'Profile',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 14 : 18,
                       fontWeight: FontWeight.w600,
                       color: kTextPrimary,
@@ -575,7 +575,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   if (!isMobile)
                     Text(
                       'One Click Profile Analyzer & CV Builder',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         color: kTextSecondary,
                         height: 1.2,
@@ -611,7 +611,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         children: [
           Text(
            'Step ${_currentStep + 1} of ${_stepTitles.length}',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 11 : 13,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF6366F1),
@@ -725,7 +725,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       SizedBox(width: isMobile ? 4 : 8),
                       Text(
                         _stepTitles[index],
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: isMobile ? 12: 14,
                           fontWeight: isActive
                               ? FontWeight.w600
@@ -800,7 +800,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 12),
           //     Text(
           //       'Personal Information',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 18,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF0F172A),
@@ -876,7 +876,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     if (!_isMobile)
                       Text(
                         'Upload Profile Photo',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF64748B),
@@ -1096,7 +1096,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             const SizedBox(width: 8),
             Text(
               'Skills',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF475569),
@@ -1124,7 +1124,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 children: [
                   Text(
                     e.value,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       color: const Color(0xFF6366F1),
                       fontWeight: FontWeight.w500,
@@ -1152,7 +1152,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 controller: prov.skillController,
                 decoration: InputDecoration(
                   hintText: 'Add a skill',
-                  hintStyle: GoogleFonts.poppins(
+                  hintStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: const Color(0xFF94A3B8),
                   ),
@@ -1174,7 +1174,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     borderSide: const BorderSide(color: Color(0xFF6366F1)),
                   ),
                 ),
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: GoogleFonts.plusJakartaSans(fontSize: 14),
               ),
             ),
             const SizedBox(width: 12),
@@ -1211,7 +1211,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 12),
           //     Text(
           //       'Education Background',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 18,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF0F172A),
@@ -1354,7 +1354,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Education',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -1371,7 +1371,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             SizedBox(height: _isMobile ? 16 : 24),
             Text(
               'Added Education',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: _isMobile ? 13 : 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -1410,7 +1410,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           Text(
                             item['institutionName']?.toString() ??
                                 'Institution',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF0F172A),
@@ -1419,7 +1419,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           const SizedBox(height: 4),
                           Text(
                             '${item['duration'] ?? ''} • ${item['majorSubjects'] ?? ''}',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               color: const Color(0xFF64748B),
                             ),
@@ -1460,7 +1460,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 12),
           //     Text(
           //       'Professional Profile',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 18,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF0F172A),
@@ -1497,7 +1497,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 8),
           //     Text(
           //       'Professional Record',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 15,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF475569),
@@ -1521,7 +1521,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   const SizedBox(width: 8),
                   Text(
                     'Service Status',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF475569),
@@ -1544,7 +1544,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         : null,
                     hint: Text(
                       'Select status',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         color: const Color(0xFF94A3B8),
                       ),
@@ -1555,7 +1555,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         value: value,
                         child: Text(
                           value == 'serving' ? 'Currently Serving' : 'Retired',
-                          style: GoogleFonts.poppins(fontSize: 14),
+                          style: GoogleFonts.plusJakartaSans(fontSize: 14),
                         ),
                       );
                     }).toList(),
@@ -1656,7 +1656,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 12),
           //     Text(
           //       'Professional Experience',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 18,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF0F172A),
@@ -1951,7 +1951,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Experience',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -1974,7 +1974,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               const SizedBox(width: 8),
               Text(
                 'Supporting Documents (Optional)',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF64748B),
@@ -1985,7 +1985,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 8),
           Text(
             'Upload certificates, commendations, or supporting documents (Max 5MB each)',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: const Color(0xFF64748B),
             ),
@@ -2014,7 +2014,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Upload Document',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 12 : 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6366F1),
@@ -2049,7 +2049,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Expanded(
                       child: Text(
                         doc['name']?.toString() ?? 'Document',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           color: const Color(0xFF0F172A),
                         ),
@@ -2075,7 +2075,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             const SizedBox(height: 24),
             Text(
               'Added Experience',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -2140,7 +2140,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               if (role.isNotEmpty)
                                 Text(
                                   role,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: _isMobile ? 14 : 16,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF0F172A),
@@ -2158,7 +2158,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     const SizedBox(width: 6),
                                     Text(
                                       rank,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: _isMobile ? 11 : 13,
                                         fontWeight: FontWeight.w500,
                                         color: const Color(0xFF6366F1),
@@ -2180,7 +2180,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     Flexible(
                                       child: Text(
                                         organization,
-                                        style: GoogleFonts.poppins(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: _isMobile ? 11 : 13,
                                           color: const Color(0xFF475569),
                                         ),
@@ -2201,7 +2201,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     const SizedBox(width: 6),
                                     Text(
                                       command,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         color: const Color(0xFF64748B),
                                       ),
@@ -2221,7 +2221,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     const SizedBox(width: 6),
                                     Text(
                                       location,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         color: const Color(0xFF64748B),
                                       ),
@@ -2241,7 +2241,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     const SizedBox(width: 6),
                                     Text(
                                       duration,
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12,
                                         color: const Color(0xFF64748B),
                                       ),
@@ -2282,7 +2282,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               const SizedBox(width: 6),
                               Text(
                                 aircraftType,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: const Color(0xFF475569),
@@ -2310,7 +2310,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               const SizedBox(width: 6),
                               Text(
                                 '$flightHours hrs',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: const Color(0xFF475569),
@@ -2327,7 +2327,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       const SizedBox(height: 12),
                       Text(
                         duties,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           height: 1.6,
                           color: const Color(0xFF475569),
@@ -2359,7 +2359,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //     const SizedBox(width: 12),
           //     Text(
           //       'Certifications',
-          //       style: GoogleFonts.poppins(
+          //       style: GoogleFonts.plusJakartaSans(
           //         fontSize: 18,
           //         fontWeight: FontWeight.w600,
           //         color: const Color(0xFF0F172A),
@@ -2411,7 +2411,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     SizedBox(width: _isMobile ? 6 : 8),
                     Text(
                       'Add Certification',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -2433,7 +2433,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               const SizedBox(width: 8),
               Text(
                 'Supporting Documents (Optional)',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF64748B),
@@ -2444,7 +2444,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 8),
           Text(
             'Upload certification copies or supporting documents (Max 5MB each)',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: const Color(0xFF64748B),
             ),
@@ -2473,7 +2473,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     const SizedBox(width: 8),
                     Text(
                       'Upload Document',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6366F1),
@@ -2508,7 +2508,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Expanded(
                       child: Text(
                         doc['name']?.toString() ?? 'Document',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           color: const Color(0xFF0F172A),
                         ),
@@ -2535,7 +2535,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             const SizedBox(height: 24),
             Text(
               'Added Certifications',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -2577,7 +2577,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         children: [
                           Text(
                             name,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF0F172A),
@@ -2595,7 +2595,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 const SizedBox(width: 4),
                                 Text(
                                   organization,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12,
                                     color: const Color(0xFF64748B),
                                   ),
@@ -2693,7 +2693,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               SizedBox(width: isMobile ? 8 : 12),
               Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 15 : 18,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -2709,7 +2709,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   controller: controller,
                   decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle: GoogleFonts.poppins(
+                    hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 12 : 13,
                       color: const Color(0xFF94A3B8),
                     ),
@@ -2732,7 +2732,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       borderSide: const BorderSide(color: Color(0xFF6366F1)),
                     ),
                   ),
-                  style: GoogleFonts.poppins(fontSize: isMobile ? 13 : 14),
+                  style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 13 : 14),
                 ),
               ),
               SizedBox(width: isMobile ? 8 : 12),
@@ -2756,7 +2756,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             SizedBox(height: isMobile ? 16 : 24),
             Text(
               'Added $title',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 13 : 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -2790,7 +2790,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Expanded(
                       child: Text(
                         e.value,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: isMobile ? 11 : 13,
                           color: const Color(0xFF0F172A),
                         ),
@@ -2831,7 +2831,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               const SizedBox(width: 12),
               Text(
                 'Documents',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0F172A),
@@ -2862,7 +2862,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     const SizedBox(width: 8),
                     Text(
                       'Upload Document',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -2879,7 +2879,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             const SizedBox(height: 24),
             Text(
               'Uploaded Documents',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF0F172A),
@@ -2917,7 +2917,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         children: [
                           Text(
                             item['name']?.toString() ?? 'Document',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF0F172A),
@@ -2926,7 +2926,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           const SizedBox(height: 4),
                           Text(
                             item['contentType']?.toString() ?? '',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               color: const Color(0xFF64748B),
                             ),
@@ -3029,7 +3029,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     SizedBox(width: isMobile ? 4 : 8),
                     Text(
                       isMobile ? 'Back' : 'Previous',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 12 : 14,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF475569),
@@ -3072,7 +3072,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       SizedBox(width: isMobile ? 4 : 8),
                       Text(
                         isDirty ? (isMobile ? 'Save' : 'Save Changes') : 'Saved',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: isMobile ? 11 : 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -3108,7 +3108,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               const SizedBox(width: 12),
                               Text(
                                 'Unsaved Changes',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -3117,14 +3117,14 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           ),
                           content: Text(
                             'You have unsaved changes. Do you want to save them before proceeding?',
-                            style: GoogleFonts.poppins(fontSize: 14),
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
                               child: Text(
                                 'Discard',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   color: const Color(0xFFEF4444),
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -3150,7 +3150,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               ),
                               child: Text(
                                 'Save & Continue',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -3180,7 +3180,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       children: [
                         Text(
                           'Next',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: isMobile ? 11 : 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -3218,7 +3218,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         const SizedBox(width: 4),
                         Text(
                           'Stats',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF6366F1),
@@ -3294,7 +3294,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             Flexible(
               child: Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 11 : 13,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF475569),
@@ -3310,7 +3310,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint ?? label,
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 12 : 13,
               color: const Color(0xFF94A3B8),
             ),
@@ -3336,7 +3336,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               ),
             ),
           ),
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: isMobile ? 12 : 14,
             color: const Color(0xFF0F172A),
           ),
@@ -3534,7 +3534,7 @@ void showTopNotification(
               Expanded(
                 child: Text(
                   message,
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.white),
                 ),
               ),
             ],

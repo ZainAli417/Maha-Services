@@ -86,7 +86,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
               const SizedBox(width: 10),
               Text(
                 "Applications",
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Colors.blueGrey[900],
@@ -144,7 +144,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                                   value: value > 0 ? value : 0.001,
                                   title: values[i] > 0 ? '${(values[i] / total * 100).toStringAsFixed(0)}%' : '',
                                   radius: radius,
-                                  titleStyle: GoogleFonts.poppins(
+                                  titleStyle: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.white,
@@ -172,7 +172,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                               ).createShader(bounds),
                               child: Text(
                                 _touchedIndex == -1 ? '$total' : '${values[_touchedIndex]}',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
@@ -181,7 +181,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                             ),
                             Text(
                               _touchedIndex == -1 ? 'Total' : labels[_touchedIndex],
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10,
                                 color: Colors.blueGrey[500],
                                 fontWeight: FontWeight.w600,
@@ -279,7 +279,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                     Expanded(
                       child: Text(
                         label,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.blueGrey[800],
@@ -291,7 +291,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                       children: [
                         Text(
                           '$value',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: gradient[1],
@@ -299,7 +299,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                         ),
                         Text(
                           '$percentage%',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 9,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey[400],
@@ -345,7 +345,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
           const SizedBox(height: 14),
           Text(
             "No Applications",
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.grey[600],
@@ -354,7 +354,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
           const SizedBox(height: 4),
           Text(
             "Start applying to track progress",
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: Colors.grey[400],
             ),

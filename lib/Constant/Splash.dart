@@ -84,7 +84,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
   }
 
   void _initializeTextStyles() {
-    _logoTextStyle = GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14);
+    _logoTextStyle = GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14);
   }
 
   @override
@@ -276,7 +276,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Get Started',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: btnFont,
                           fontWeight: FontWeight.w600,
                           color: Colors.white)),
@@ -342,7 +342,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Get Started',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: navBtnFont,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
@@ -368,7 +368,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Admin Panel',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: navBtnFont,
                         fontWeight: FontWeight.w600,
                         color: Colors.white)),
@@ -635,7 +635,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(portal.number,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: numberFontSize,
                         fontWeight: FontWeight.w800,
                         color: Colors.white)),
@@ -657,7 +657,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           ),
           SizedBox(height: isMobile ? 14 : 24),
           Text(portal.title,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: titleFontSize,
                   fontWeight: FontWeight.w600,
                   color: isDarkMode
@@ -665,7 +665,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                       : const Color(0xFF1F2937))),
           SizedBox(height: isMobile ? 3 : 8),
           Text(portal.subtitle,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: subtitleFontSize,
                   color: isDarkMode
                       ? const Color(0xFF94A3B8)
@@ -701,7 +701,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item.title,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                                 fontSize: itemTitleFontSize,
                                 fontWeight: FontWeight.w600,
                                 color: isDarkMode
@@ -709,7 +709,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                                     : const Color(0xFF1F2937))),
                         const SizedBox(height: 2),
                         Text(item.description,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.plusJakartaSans(
                                 fontSize: itemDescFontSize,
                                 color: isDarkMode
                                     ? const Color(0xFF64748B)
@@ -781,14 +781,14 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('MAHA SERVICES',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.w600,
                 color: Colors.white)),
         SizedBox(height: isMobile ? 8 : 16),
         Text(
           'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
               color: const Color(0xFF9CA3AF),
               fontSize: descFontSize,
               height: 1.8),
@@ -841,7 +841,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           ? Column(
         children: [
           Text('© 2026 Maha Services. All rights reserved.',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF6B7280),
                   fontSize: copyrightFont)),
           const SizedBox(height: 10),
@@ -852,7 +852,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text('© 2025 Maha Services. All rights reserved.',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF6B7280),
                   fontSize: copyrightFont)),
           _buildAIBadge(aiFont, aiIconSize),
@@ -879,7 +879,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               color: const Color(0xFF6366F1), size: iconSize),
           const SizedBox(width: 4),
           Text('Powered by AI',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF6366F1),
                   fontSize: fontSize,
                   fontWeight: FontWeight.w600)),
@@ -925,7 +925,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                     size: badgeIconSize),
                 SizedBox(width: isMobile ? 6 : 10),
                 Text(badge,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                         color: const Color(0xFF7233FB),
                         fontSize: badgeFont,
                         fontWeight: FontWeight.w600,
@@ -936,7 +936,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           SizedBox(height: isMobile ? 12 : 24),
           Text(title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: titleFont,
                   fontWeight: FontWeight.w900,
                   color: isDarkMode
@@ -946,7 +946,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           SizedBox(height: isMobile ? 8 : 16),
           Text(subtitle,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: subtitleFont,
                   color: isDarkMode
                       ? const Color(0xFF94A3B8)
@@ -982,7 +982,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: Text('⚡ PROVEN SUCCESS',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: provenFont,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -991,14 +991,14 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           SizedBox(height: isMobile ? 12 : 20),
           Text('Trusted by Industry Leaders',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: titleFont,
                   fontWeight: FontWeight.w800,
                   color: Colors.white)),
           SizedBox(height: isMobile ? 8 : 12),
           Text('Real numbers, real impact - see how we transform hiring',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: subtitleFont,
                   color: Colors.white.withOpacity(0.7),
                   fontWeight: FontWeight.w500)),
@@ -1057,12 +1057,12 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(value,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: valueFont,
                       fontWeight: FontWeight.w800,
                       color: Colors.white)),
               Text(label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: labelFont,
                       color: Colors.white.withOpacity(0.6),
                       fontWeight: FontWeight.w500)),

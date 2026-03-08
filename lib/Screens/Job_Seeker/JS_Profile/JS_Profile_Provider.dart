@@ -582,7 +582,7 @@ class ProfileProvider_NEW extends ChangeNotifier {
                         Expanded(
                           child: Text(
                             message,
-                            style: GoogleFonts.poppins(fontSize: 13, color: Colors.white),
+                            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.white),
                           ),
                         ),
                       ],

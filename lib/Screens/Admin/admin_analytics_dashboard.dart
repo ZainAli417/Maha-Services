@@ -34,7 +34,7 @@ class _C {
 
   static TextStyle p(double size,
       {FontWeight fw = FontWeight.w600, Color color = t1}) =>
-      GoogleFonts.poppins(fontSize: size, fontWeight: fw, color: color);
+      GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: fw, color: color);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -134,7 +134,7 @@ class _AdminAnalyticsDashboardScreenState
               children: [
                 Text(
                   'Insights Dashboard',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 16 : 20,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF0F172A),
@@ -142,7 +142,7 @@ class _AdminAnalyticsDashboardScreenState
                 ),
                 Text(
                   'View Your Platform Performance at a Glance',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF64748B),

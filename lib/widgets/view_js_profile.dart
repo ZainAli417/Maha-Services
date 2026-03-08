@@ -21,13 +21,13 @@ class _T {
 
   // Text styles — defined once, reused via const
   static TextStyle label({double fs = 11, Color? c, FontWeight fw = FontWeight.w500}) =>
-      GoogleFonts.poppins(fontSize: fs, fontWeight: fw, color: c ?? cSec);
+      GoogleFonts.plusJakartaSans(fontSize: fs, fontWeight: fw, color: c ?? cSec);
 
   static TextStyle head({double fs = 14, Color? c}) =>
-      GoogleFonts.poppins(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? c0);
+      GoogleFonts.plusJakartaSans(fontSize: fs, fontWeight: FontWeight.w700, color: c ?? c0);
 
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.poppins(fontSize: fs, fontWeight: FontWeight.w400,
+      GoogleFonts.plusJakartaSans(fontSize: fs, fontWeight: FontWeight.w400,
           color: c ?? c1, height: 1.6);
 }
 

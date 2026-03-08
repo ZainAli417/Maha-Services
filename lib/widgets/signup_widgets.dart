@@ -83,7 +83,7 @@ class SignUpWidgets {
                               Expanded(
                                 child: Text(
                                   'Begin Your Professional Journey',
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 42,
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -114,7 +114,7 @@ class SignUpWidgets {
                     ),
                     child: Text(
                       'Join thousands of professionals who have found their dream opportunities through our platform.',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         color: Colors.white,
                         fontSize: 16,
                         height: 1.5,
@@ -161,8 +161,8 @@ class SignUpWidgets {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('50K+', style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Active Users', style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('50K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                                        Text('Active Users', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -206,8 +206,8 @@ class SignUpWidgets {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('10K+', style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Jobs Posted', style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('10K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                                        Text('Jobs Posted', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -251,8 +251,8 @@ class SignUpWidgets {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('500+', style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Companies', style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('500+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                                        Text('Companies', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -289,7 +289,7 @@ class SignUpWidgets {
                         Expanded(
                           child: Text(
                             'Trusted platform — verified employers and secure hiring',
-                            style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.95), fontSize: 14),
+                            style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.95), fontSize: 14),
                           ),
                         ),
                       ],
@@ -338,7 +338,7 @@ class SignUpWidgets {
                   if (isStacked) ...[
                     Text(
                       'Create Account',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
@@ -347,7 +347,7 @@ class SignUpWidgets {
                     const SizedBox(height: 8),
                     Text(
                       'Start your journey with us today',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 15,
                         color: Colors.grey.shade600,
                       ),
@@ -386,7 +386,7 @@ class SignUpWidgets {
                             icon: const Icon(Icons.arrow_back_rounded),
                             label: Text(
                               'Back',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -424,7 +424,7 @@ class SignUpWidgets {
                                 step == totalSteps
                                     ? 'Complete Registration'
                                     : 'Continue',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 15,
                                 ),
@@ -462,11 +462,11 @@ class SignUpWidgets {
           children: [
             Text(
               'Step ${step + 1} of ${steps.length}',
-              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: primaryColor),
+              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: primaryColor),
             ),
             Text(
               '${(progress * 100).toInt()}% Complete',
-              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -509,8 +509,8 @@ class SignUpWidgets {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(steps[step]!.title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text(steps[step]!.subtitle, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600)),
+                  Text(steps[step]!.title, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(steps[step]!.subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade600)),
                 ],
               ),
             ],
@@ -540,10 +540,10 @@ class SignUpWidgets {
         keyboardType: keyboardType,
         obscureText: obscure,
         maxLines: maxLines,
-        style: GoogleFonts.poppins(fontSize: 15),
+        style: GoogleFonts.plusJakartaSans(fontSize: 15),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.poppins(color: Colors.grey.shade600),
+          labelStyle: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600),
           prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 22),
           suffixIcon: suffix,
           border: InputBorder.none,
@@ -578,7 +578,7 @@ class SignUpWidgets {
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 12),
-              Text(title, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 16),
@@ -595,12 +595,12 @@ class SignUpWidgets {
                 children: [
                   SizedBox(
                     width: 140,
-                    child: Text('${e.key}:', style: GoogleFonts.poppins(color: Colors.grey.shade600, fontSize: 14)),
+                    child: Text('${e.key}:', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600, fontSize: 14)),
                   ),
                   Expanded(
                     child: Text(
                       e.value.toString(),
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14),
+                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14),
                     ),
                   ),
                 ],
@@ -626,7 +626,7 @@ class SignUpWidgets {
           children: [
             Icon(icon, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            Text(message, style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+            Text(message, style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
           ],
         ),
       ),
@@ -663,7 +663,7 @@ class SignUpDialogs {
                     child: Icon(Icons.school_outlined, color: primaryColor, size: 24),
                   ),
                   const SizedBox(width: 16),
-                  Text('Add Education', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600)),
+                  Text('Add Education', style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
                 ],
               ),
               const SizedBox(height: 24),
@@ -684,7 +684,7 @@ class SignUpDialogs {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -705,7 +705,7 @@ class SignUpDialogs {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: Text('Add Education', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    child: Text('Add Education', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -743,7 +743,7 @@ class SignUpDialogs {
                     child: Icon(Icons.work_outline_rounded, color: secondaryColor, size: 24),
                   ),
                   const SizedBox(width: 16),
-                  Text('Add Experience', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600)),
+                  Text('Add Experience', style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
                 ],
               ),
               const SizedBox(height: 24),
@@ -758,7 +758,7 @@ class SignUpDialogs {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -778,7 +778,7 @@ class SignUpDialogs {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: Text('Add Experience', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    child: Text('Add Experience', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -809,7 +809,7 @@ class SignUpDialogs {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.w600)),
+              Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
               const SizedBox(height: 24),
               SignUpWidgets.elegantTextField(controller: controller, label: fieldLabel, icon: Icons.edit_outlined),
               const SizedBox(height: 24),
@@ -818,7 +818,7 @@ class SignUpDialogs {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -835,7 +835,7 @@ class SignUpDialogs {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
-                    child: Text('Add', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    child: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),

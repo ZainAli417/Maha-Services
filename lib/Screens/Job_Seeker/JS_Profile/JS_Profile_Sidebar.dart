@@ -179,7 +179,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 children: [
                   Text(
                     'Profile Strength',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),
@@ -188,7 +188,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   const SizedBox(height: 4),
                   Text(
                     _getScoreLabel(totalScore),
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 10 : 12,
                       fontWeight: FontWeight.w500,
                       color: scoreColor,
@@ -207,7 +207,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 ),
                 child: Text(
                   '$totalScore%',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 11 : 14,
                     fontWeight: FontWeight.w700,
                     color: scoreColor,
@@ -249,7 +249,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       children: [
         Text(
           'Quick Stats',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: isMobile ? 13 : 15,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF111827),
@@ -292,7 +292,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   SizedBox(height: isMobile ? 2 : 4),
                   Text(
                     s['val'] as String,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 13 : 16,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF111827),
@@ -300,7 +300,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   ),
                   Text(
                     s['label'] as String,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 8 : 10,
                       color: const Color(0xFF6B7280),
                     ),
@@ -339,7 +339,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Completeness Breakdown',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
@@ -386,7 +386,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   children: [
                     Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF374151),
@@ -394,7 +394,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     ),
                     Text(
                       '${(percent * 100).toInt()}%',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 9 : 11,
                         fontWeight: FontWeight.w600,
                         color: isComplete ? color : const Color(0xFF9CA3AF),
@@ -459,7 +459,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Top Skills',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
@@ -484,7 +484,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 ),
                 child: Text(
                   skill,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 9 : 11,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1E40AF),
@@ -498,7 +498,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               padding: EdgeInsets.only(top: isMobile ? 8 : 12),
               child: Text(
                 '+ ${widget.provider.skillsList.length - 8} more skills hidden',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 9 : 11,
                   color: const Color(0xFF6B7280),
                   fontStyle: FontStyle.italic,
@@ -536,7 +536,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Contact Info',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF111827),
@@ -556,7 +556,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             const Divider(height: 30),
             Text(
               'About Me',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 11 : 13,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF374151),
@@ -567,13 +567,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               duration: const Duration(milliseconds: 300),
               firstChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               secondChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.poppins(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
               ),
               crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             ),
@@ -586,7 +586,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   children: [
                     Text(
                       _isExpanded ? 'Show Less' : 'Read Full Bio',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF3B82F6),
@@ -630,7 +630,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 9 : 10,
                     color: const Color(0xFF9CA3AF),
                     height: 1.0,
@@ -639,7 +639,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 10 : 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF1F2937),

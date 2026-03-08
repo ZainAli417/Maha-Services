@@ -123,9 +123,9 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
     final doc = pw.Document();
 
     // Load fonts
-    final ttfRegular = await PdfGoogleFonts.poppinsRegular();
-    final ttfBold = await PdfGoogleFonts.poppinsBold();
-    final ttfMedium = await PdfGoogleFonts.poppinsMedium();
+    final ttfRegular = await PdfGoogleFonts.plusJakartaSansRegular();
+    final ttfBold = await PdfGoogleFonts.plusJakartaSansBold();
+    final ttfMedium = await PdfGoogleFonts.plusJakartaSansMedium();
 
     // Fetch profile image
     pw.MemoryImage? profileImage;

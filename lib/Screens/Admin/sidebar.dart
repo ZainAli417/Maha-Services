@@ -134,7 +134,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text('Recruiter Requests',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
@@ -175,7 +175,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                         ),
                         child: Text(
                           '$count',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -207,7 +207,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(label,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF94A3B8),
@@ -223,7 +223,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text('Soon',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -256,11 +256,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('MAHA SERVICES',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700,
                       color: const Color(0xFF0F172A), letterSpacing: 0.3)),
                 const SizedBox(height: 2),
                 Text('Admin Portal',
-                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500,
                       color: const Color(0xFF64748B))),
               ],
             ),
@@ -274,7 +274,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
     return Padding(
       padding: const EdgeInsets.only(left: 12, bottom: 4),
       child: Text(label,
-        style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w700,
+        style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w700,
             color: const Color(0xFF94A3B8), letterSpacing: 1)),
     );
   }
@@ -317,7 +317,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(label,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
@@ -345,18 +345,18 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   context: context,
                   builder: (context) => AlertDialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    title: Text('Confirm Logout', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                    content: Text('Are you sure you want to logout?', style: GoogleFonts.poppins()),
+                    title: Text('Confirm Logout', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                    content: Text('Are you sure you want to logout?', style: GoogleFonts.plusJakartaSans()),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: Text('Cancel', style: GoogleFonts.poppins(color: Colors.grey.shade600)),
+                        child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
                         style: TextButton.styleFrom(backgroundColor: Colors.red.shade50),
                         child: Text('Logout',
-                          style: GoogleFonts.poppins(color: Colors.red.shade600, fontWeight: FontWeight.w600)),
+                          style: GoogleFonts.plusJakartaSans(color: Colors.red.shade600, fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
@@ -378,7 +378,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                     Icon(Icons.logout_rounded, size: 16, color: Colors.red.shade600),
                     const SizedBox(width: 8),
                     Text('Logout',
-                      style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
+                      style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
                   ],
                 ),
               ),
@@ -386,7 +386,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
           ),
           const SizedBox(height: 12),
           Text('© 2025 Maha Services',
-            style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey.shade500),
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: Colors.grey.shade500),
             textAlign: TextAlign.center),
         ],
       ),
@@ -421,7 +421,7 @@ class AdminProfile extends StatelessWidget {
             ),
             child: Center(
               child: Text(name.substring(0, 1).toUpperCase(),
-                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ),
           const SizedBox(width: 12),
@@ -433,7 +433,7 @@ class AdminProfile extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(name.capitalize(),
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600,
+                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600,
                             color: const Color(0xFF0F172A)),
                         overflow: TextOverflow.ellipsis),
                     ),
@@ -443,7 +443,7 @@ class AdminProfile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text('Super Admin',
-                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500,
+                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500,
                       color: const Color(0xFF64748B))),
               ],
             ),

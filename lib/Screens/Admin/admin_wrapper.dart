@@ -105,14 +105,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(_selectedMenu,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 15, fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A), height: 1.2,
                     ),
                   ),
                   if (sub.isNotEmpty)
                     Text(sub,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 11, fontWeight: FontWeight.w400,
                         color: const Color(0xFF94A3B8), height: 1.3,
                       ),

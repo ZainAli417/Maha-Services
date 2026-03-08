@@ -171,7 +171,7 @@
 //                       children: [
 //                         Icon(Icons.card_giftcard, color: _primary, size: 24),
 //                         const SizedBox(width: 12),
-//                         Text('Select Benefits', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: _textPrimary)),
+//                         Text('Select Benefits', style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: _textPrimary)),
 //                         const Spacer(),
 //                         IconButton(
 //                           icon: const Icon(Icons.close, size: 20),
@@ -191,7 +191,7 @@
 //                           final isSelected = tempSelected.contains(benefit);
 //                           return CheckboxListTile(
 //                             value: isSelected,
-//                             title: Text(benefit, style: GoogleFonts.poppins(fontSize: 14, color: _textPrimary)),
+//                             title: Text(benefit, style: GoogleFonts.plusJakartaSans(fontSize: 14, color: _textPrimary)),
 //                             activeColor: _primary,
 //                             controlAffinity: ListTileControlAffinity.leading,
 //                             contentPadding: EdgeInsets.zero,
@@ -222,7 +222,7 @@
 //                               padding: const EdgeInsets.symmetric(vertical: 12),
 //                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //                             ),
-//                             child: Text('Clear', style: GoogleFonts.poppins(color: _textSecondary, fontWeight: FontWeight.w500)),
+//                             child: Text('Clear', style: GoogleFonts.plusJakartaSans(color: _textSecondary, fontWeight: FontWeight.w500)),
 //                           ),
 //                         ),
 //                         const SizedBox(width: 12),
@@ -242,7 +242,7 @@
 //                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 //                               elevation: 0,
 //                             ),
-//                             child: Text('Apply', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+//                             child: Text('Apply', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontWeight: FontWeight.w600)),
 //                           ),
 //                         ),
 //                       ],
@@ -396,7 +396,7 @@
 //                       const SizedBox(width: 4),
 //                       Text(
 //                         trend,
-//                         style: GoogleFonts.poppins(
+//                         style: GoogleFonts.plusJakartaSans(
 //                           fontSize: 11,
 //                           fontWeight: FontWeight.w600,
 //                           color: trendUp ? _accent : _error,
@@ -410,7 +410,7 @@
 //           const SizedBox(height: 16),
 //           Text(
 //             value,
-//             style: GoogleFonts.poppins(
+//             style: GoogleFonts.plusJakartaSans(
 //               fontSize: 28,
 //               fontWeight: FontWeight.w700,
 //               color: _textPrimary,
@@ -420,7 +420,7 @@
 //           const SizedBox(height: 4),
 //           Text(
 //             label,
-//             style: GoogleFonts.poppins(
+//             style: GoogleFonts.plusJakartaSans(
 //               fontSize: 13,
 //               color: _textSecondary,
 //               fontWeight: FontWeight.w500,
@@ -474,7 +474,7 @@
 //               const SizedBox(width: 8),
 //               Text(
 //                 'Applications Trend',
-//                 style: GoogleFonts.poppins(
+//                 style: GoogleFonts.plusJakartaSans(
 //                   fontSize: 16,
 //                   fontWeight: FontWeight.w600,
 //                   color: _textPrimary,
@@ -489,7 +489,7 @@
 //                 ),
 //                 child: Text(
 //                   '7 Days',
-//                   style: GoogleFonts.poppins(
+//                   style: GoogleFonts.plusJakartaSans(
 //                     fontSize: 11,
 //                     fontWeight: FontWeight.w600,
 //                     color: _accent,
@@ -522,7 +522,7 @@
 //                             padding: const EdgeInsets.only(top: 8),
 //                             child: Text(
 //                               days[value.toInt()],
-//                               style: GoogleFonts.poppins(
+//                               style: GoogleFonts.plusJakartaSans(
 //                                 fontSize: 11,
 //                                 color: _textSecondary,
 //                               ),
@@ -540,7 +540,7 @@
 //                       getTitlesWidget: (value, meta) {
 //                         return Text(
 //                           '${value.toInt()}',
-//                           style: GoogleFonts.poppins(
+//                           style: GoogleFonts.plusJakartaSans(
 //                             fontSize: 11,
 //                             color: _textSecondary,
 //                           ),
@@ -614,7 +614,7 @@
 //               const SizedBox(width: 8),
 //               Text(
 //                 'Job Status',
-//                 style: GoogleFonts.poppins(
+//                 style: GoogleFonts.plusJakartaSans(
 //                   fontSize: 16,
 //                   fontWeight: FontWeight.w600,
 //                   color: _textPrimary,
@@ -641,7 +641,7 @@
 //                             padding: const EdgeInsets.only(top: 8),
 //                             child: Text(
 //                               statusData[value.toInt()].$1,
-//                               style: GoogleFonts.poppins(
+//                               style: GoogleFonts.plusJakartaSans(
 //                                 fontSize: 11,
 //                                 color: _textSecondary,
 //                                 fontWeight: FontWeight.w500,
@@ -660,7 +660,7 @@
 //                       getTitlesWidget: (value, meta) {
 //                         return Text(
 //                           value.toInt().toString(),
-//                           style: GoogleFonts.poppins(
+//                           style: GoogleFonts.plusJakartaSans(
 //                             fontSize: 11,
 //                             color: _textSecondary,
 //                           ),
@@ -725,7 +725,7 @@
 //               const SizedBox(width: 8),
 //               Text(
 //                 'Top Jobs',
-//                 style: GoogleFonts.poppins(
+//                 style: GoogleFonts.plusJakartaSans(
 //                   fontSize: 16,
 //                   fontWeight: FontWeight.w600,
 //                   color: _textPrimary,
@@ -751,7 +751,7 @@
 //                     ),
 //                     child: Text(
 //                       '${index + 1}',
-//                       style: GoogleFonts.poppins(
+//                       style: GoogleFonts.plusJakartaSans(
 //                         fontSize: 13,
 //                         fontWeight: FontWeight.w700,
 //                         color: index == 0 ? _warning : _textSecondary,
@@ -765,7 +765,7 @@
 //                       children: [
 //                         Text(
 //                           job.$1,
-//                           style: GoogleFonts.poppins(
+//                           style: GoogleFonts.plusJakartaSans(
 //                             fontSize: 13,
 //                             fontWeight: FontWeight.w600,
 //                             color: _textPrimary,
@@ -776,7 +776,7 @@
 //                         const SizedBox(height: 2),
 //                         Text(
 //                           '${job.$2} applications',
-//                           style: GoogleFonts.poppins(
+//                           style: GoogleFonts.plusJakartaSans(
 //                             fontSize: 11,
 //                             color: _textSecondary,
 //                           ),
@@ -846,7 +846,7 @@
 //                     children: [
 //                       Text(
 //                         'Recruiter Dashboard',
-//                         style: GoogleFonts.poppins(
+//                         style: GoogleFonts.plusJakartaSans(
 //                           fontSize: 18,
 //                           fontWeight: FontWeight.w700,
 //                           color: _textPrimary,
@@ -862,7 +862,7 @@
 //                         ),
 //                         child: Text(
 //                           'PRO',
-//                           style: GoogleFonts.poppins(
+//                           style: GoogleFonts.plusJakartaSans(
 //                             fontSize: 9,
 //                             fontWeight: FontWeight.w700,
 //                             color: Colors.white,
@@ -873,7 +873,7 @@
 //                   ),
 //                   Text(
 //                     'Discover and manage candidates',
-//                     style: GoogleFonts.poppins(
+//                     style: GoogleFonts.plusJakartaSans(
 //                       fontSize: 11,
 //                       color: _textSecondary,
 //                       fontWeight: FontWeight.w400,
@@ -938,7 +938,7 @@
 //               const SizedBox(width: 8),
 //               Text(
 //                 'Post a Job',
-//                 style: GoogleFonts.poppins(
+//                 style: GoogleFonts.plusJakartaSans(
 //                   fontSize: 13,
 //                   fontWeight: FontWeight.w700,
 //                   color: Colors.white,
@@ -981,7 +981,7 @@
 //                     const SizedBox(width: 6),
 //                     Text(
 //                       'Post A Job',
-//                       style: GoogleFonts.poppins(
+//                       style: GoogleFonts.plusJakartaSans(
 //                         fontSize: 12,
 //                         fontWeight: FontWeight.w600,
 //                         color: Colors.white,
@@ -1033,8 +1033,8 @@
 //           Column(
 //             crossAxisAlignment: CrossAxisAlignment.start,
 //             children: [
-//               Text(value, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w800, color: _textPrimary)),
-//               Text(label, style: GoogleFonts.poppins(fontSize: 10, color: _textSecondary, fontWeight: FontWeight.w500)),
+//               Text(value, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w800, color: _textPrimary)),
+//               Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 10, color: _textSecondary, fontWeight: FontWeight.w500)),
 //             ],
 //           ),
 //         ],
@@ -1061,7 +1061,7 @@
 //                 flex: 3,
 //                 child: TextField(
 //                   controller: _searchController,
-//                   style: GoogleFonts.poppins(
+//                   style: GoogleFonts.plusJakartaSans(
 //                     fontSize: 14,
 //                     color: _textPrimary,
 //                   ),
@@ -1072,7 +1072,7 @@
 //                       size: 20,
 //                     ),
 //                     hintText: 'Search jobs, companies, skills...',
-//                     hintStyle: GoogleFonts.poppins(
+//                     hintStyle: GoogleFonts.plusJakartaSans(
 //                       color: _textSecondary,
 //                       fontSize: 14,
 //                     ),
@@ -1127,7 +1127,7 @@
 //               spacing: 8,
 //               runSpacing: 8,
 //               children: _selectedBenefits.map((b) => Chip(
-//                 label: Text(b, style: GoogleFonts.poppins(fontSize: 12, color: _primary)),
+//                 label: Text(b, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _primary)),
 //                 deleteIcon: Icon(Icons.close, size: 16, color: _primary),
 //                 onDeleted: () {
 //                   setState(() => _selectedBenefits.remove(b));
@@ -1164,7 +1164,7 @@
 //             const SizedBox(width: 6),
 //             Text(
 //               value.isEmpty ? label : value,
-//               style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: value.isNotEmpty ? _primary : _textSecondary),
+//               style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: value.isNotEmpty ? _primary : _textSecondary),
 //             ),
 //             const SizedBox(width: 4),
 //             Icon(Icons.arrow_drop_down, size: 18, color: value.isNotEmpty ? _primary : _textSecondary),
@@ -1187,7 +1187,7 @@
 //                   padding: const EdgeInsets.only(right: 8),
 //                   child: Icon(Icons.check, size: 16, color: _primary),
 //                 ),
-//               Text('All', style: GoogleFonts.poppins(fontSize: 13, fontWeight: value.isEmpty ? FontWeight.w600 : FontWeight.w400)),
+//               Text('All', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: value.isEmpty ? FontWeight.w600 : FontWeight.w400)),
 //             ],
 //           ),
 //         ),
@@ -1200,7 +1200,7 @@
 //                   padding: const EdgeInsets.only(right: 8),
 //                   child: Icon(Icons.check, size: 16, color: _primary),
 //                 ),
-//               Text(i, style: GoogleFonts.poppins(fontSize: 13, fontWeight: value == i ? FontWeight.w600 : FontWeight.w400)),
+//               Text(i, style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: value == i ? FontWeight.w600 : FontWeight.w400)),
 //             ],
 //           ),
 //         )),
@@ -1225,7 +1225,7 @@
 //             const SizedBox(width: 6),
 //             Text(
 //               _selectedBenefits.isEmpty ? 'Benefits' : 'Benefits (${_selectedBenefits.length})',
-//               style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: _selectedBenefits.isNotEmpty ? _primary : _textSecondary),
+//               style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: _selectedBenefits.isNotEmpty ? _primary : _textSecondary),
 //             ),
 //           ],
 //         ),
@@ -1248,7 +1248,7 @@
 //           children: [
 //             Icon(Icons.sort, size: 16, color: _textSecondary),
 //             const SizedBox(width: 6),
-//             Text('Sort', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500, color: _textSecondary)),
+//             Text('Sort', style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w500, color: _textSecondary)),
 //           ],
 //         ),
 //       ),
@@ -1257,9 +1257,9 @@
 //         _applyFilters();
 //       },
 //       itemBuilder: (context) => [
-//         PopupMenuItem(value: 'newest', child: Text('Newest First', style: GoogleFonts.poppins(fontSize: 13))),
-//         PopupMenuItem(value: 'oldest', child: Text('Oldest First', style: GoogleFonts.poppins(fontSize: 13))),
-//         PopupMenuItem(value: 'company', child: Text('Company A→Z', style: GoogleFonts.poppins(fontSize: 13))),
+//         PopupMenuItem(value: 'newest', child: Text('Newest First', style: GoogleFonts.plusJakartaSans(fontSize: 13))),
+//         PopupMenuItem(value: 'oldest', child: Text('Oldest First', style: GoogleFonts.plusJakartaSans(fontSize: 13))),
+//         PopupMenuItem(value: 'company', child: Text('Company A→Z', style: GoogleFonts.plusJakartaSans(fontSize: 13))),
 //       ],
 //     );
 //   }
@@ -1287,9 +1287,9 @@
 //               child: Icon(Icons.search_off_rounded, size: 64, color: _textSecondary.withOpacity(0.5)),
 //             ),
 //             const SizedBox(height: 24),
-//             Text('No jobs found', style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5)),
+//             Text('No jobs found', style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5)),
 //             const SizedBox(height: 8),
-//             Text('Try adjusting your filters or search terms', style: GoogleFonts.poppins(fontSize: 15, color: _textSecondary)),
+//             Text('Try adjusting your filters or search terms', style: GoogleFonts.plusJakartaSans(fontSize: 15, color: _textSecondary)),
 //           ],
 //         ),
 //       ));
@@ -1566,7 +1566,7 @@
 //                             children: [
 //                               Text(
 //                                 title,
-//                                 style: GoogleFonts.poppins(
+//                                 style: GoogleFonts.plusJakartaSans(
 //                                   fontSize: 15,
 //                                   fontWeight: FontWeight.w700,
 //                                   color: _textPrimary,
@@ -1584,7 +1584,7 @@
 //                                   Flexible(
 //                                     child: Text(
 //                                       company,
-//                                       style: GoogleFonts.poppins(
+//                                       style: GoogleFonts.plusJakartaSans(
 //                                         fontSize: 12,
 //                                         fontWeight: FontWeight.w500,
 //                                         color: _textSecondary,
@@ -1604,7 +1604,7 @@
 //                                   Flexible(
 //                                     child: Text(
 //                                       location,
-//                                       style: GoogleFonts.poppins(
+//                                       style: GoogleFonts.plusJakartaSans(
 //                                         fontSize: 12,
 //                                         fontWeight: FontWeight.w500,
 //                                         color: _textSecondary,
@@ -1635,7 +1635,7 @@
 //                                 const SizedBox(width: 4),
 //                                 Text(
 //                                   postedAgo,
-//                                   style: GoogleFonts.poppins(
+//                                   style: GoogleFonts.plusJakartaSans(
 //                                     fontSize: 10,
 //                                     fontWeight: FontWeight.w600,
 //                                     color: _success,
@@ -1653,7 +1653,7 @@
 //                       const SizedBox(height: 10),
 //                       Text(
 //                         description,
-//                         style: GoogleFonts.poppins(
+//                         style: GoogleFonts.plusJakartaSans(
 //                           fontSize: 12,
 //                           color: _textSecondary,
 //                           height: 1.4,
@@ -1688,7 +1688,7 @@
 //                             ),
 //                             child: Text(
 //                               skill,
-//                               style: GoogleFonts.poppins(
+//                               style: GoogleFonts.plusJakartaSans(
 //                                 fontSize: 10,
 //                                 fontWeight: FontWeight.w600,
 //                                 color: colorPair[0],
@@ -1731,7 +1731,7 @@
 //                                       const SizedBox(width: 6),
 //                                       Text(
 //                                         'Details',
-//                                         style: GoogleFonts.poppins(
+//                                         style: GoogleFonts.plusJakartaSans(
 //                                           fontSize: 12,
 //                                           fontWeight: FontWeight.w600,
 //                                           color: Colors.white,
@@ -1767,7 +1767,7 @@
 //                                     const SizedBox(width: 6),
 //                                     Text(
 //                                       'View Applicants',
-//                                       style: GoogleFonts.poppins(
+//                                       style: GoogleFonts.plusJakartaSans(
 //                                         fontSize: 12,
 //                                         fontWeight: FontWeight.w600,
 //                                         color: _accent,
