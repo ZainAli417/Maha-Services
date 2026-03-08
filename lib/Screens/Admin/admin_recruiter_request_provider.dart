@@ -711,6 +711,11 @@ class AdminProvider extends ChangeNotifier {
         'phone':    pp['contactNumber']?.toString() ?? pp['phone']?.toString() ??
             pp['phoneNumber']?.toString() ?? jsData['phone']?.toString() ??
             userData['phone']?.toString() ?? '',
+        'job_title': prof['job_title']?.toString() ?? prof['jobTitle']?.toString() ??
+            jsData['job_title']?.toString() ?? jsData['jobTitle']?.toString() ??
+            hint['job_title']?.toString() ?? '',
+        'company':   prof['company']?.toString() ?? jsData['company']?.toString() ??
+            hint['company']?.toString() ?? '',
         'user_data': {...hint, ...jsData},
       };
       _candidateCache[doc.id]    = _CacheEntry(result, DateTime.now());
@@ -734,6 +739,10 @@ class AdminProvider extends ChangeNotifier {
         'name':     data['name']?.toString() ?? data['displayName']?.toString() ?? doc.id,
         'email':    data['email']?.toString() ?? '',
         'phone':    data['phone']?.toString() ?? '',
+        'job_title': data['job_title']?.toString() ?? data['jobTitle']?.toString() ??
+            hint['job_title']?.toString() ?? '',
+        'company':   data['company']?.toString() ?? data['org']?.toString() ??
+            hint['company']?.toString() ?? '',
         'user_data': {...hint, ...data},
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
@@ -769,6 +778,10 @@ class AdminProvider extends ChangeNotifier {
       'email':    hint['email']?.toString() ?? pp['email']?.toString() ?? ud['email']?.toString() ?? '',
       'phone':    hint['phone']?.toString() ?? hint['contactNumber']?.toString() ??
           pp['phone']?.toString() ?? pp['contactNumber']?.toString() ?? '',
+      'job_title': prof['job_title']?.toString() ?? prof['jobTitle']?.toString() ??
+          hint['job_title']?.toString() ?? hint['jobTitle']?.toString() ?? '',
+      'company':   prof['company']?.toString() ?? hint['company']?.toString() ??
+          hint['org']?.toString() ?? '',
       'user_data': hint,
     };
   }
@@ -855,6 +868,9 @@ class AdminProvider extends ChangeNotifier {
           (snap) {
         bool hasChanges = false;
         for (final change in snap.docChanges) {
+          // Skip if we have pending local writes to avoid flickering
+          if (change.doc.metadata.hasPendingWrites) continue;
+
           final data        = _normalizeMap(change.doc.data());
           final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
           final total       = data['total_candidates'] != null
@@ -880,18 +896,33 @@ class AdminProvider extends ChangeNotifier {
             if (idx != -1) {
               requests[idx] = entry;
               hasChanges = true;
-              // FIX: NEVER evict the cache for the currently-selected request
-              // from the realtime listener — the optimistic patch already kept
-              // it up-to-date. Evicting here is what caused the bottom sheet
-              // to crash after a status change fired a Firestore event.
-              if (_selectedRequestId != change.doc.id) {
+
+              // ── FIX: If the selected request modified on server, patch the cache
+              // instead of just leaving it stale or evicting.
+              if (_selectedRequestId == change.doc.id) {
+                final cached = _requestDetailsCache[change.doc.id];
+                if (cached != null) {
+                  try {
+                    final details = Map<String, dynamic>.from(cached.data);
+                    final reqDoc  = Map<String, dynamic>.from(
+                        (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+                    // Update only the document data from the heartbeat
+                    reqDoc['data'] = data;
+                    details['request_doc'] = reqDoc;
+                    _requestDetailsCache[change.doc.id] = _CacheEntry(details, DateTime.now());
+                    debugPrint('⚡ Realtime patch for selected request: ${change.doc.id}');
+                  } catch (e) {
+                    debugPrint('⚠️ Failed to patch selected request cache: $e');
+                    _requestDetailsCache.remove(change.doc.id);
+                  }
+                }
+              } else {
+                // Not selected? Safe to evict so it re-fetches next time.
                 _requestDetailsCache.remove(change.doc.id);
               }
-              // If it IS selected, the in-memory patch done in
-              // updateRequestStatus / optimisticCandidateStatusUpdate
-              // is already the source of truth — do nothing.
             }
-          } else if (change.type == DocumentChangeType.removed) {
+          }
+ else if (change.type == DocumentChangeType.removed) {
             requests.removeWhere((r) => r['id'] == change.doc.id);
             _requestDetailsCache.remove(change.doc.id);
             hasChanges = true;

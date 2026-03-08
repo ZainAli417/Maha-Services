@@ -348,6 +348,14 @@ class _DashboardBodyState extends State<_DashboardBody> {
     // Dedup candidates by uid (uid is flat on each candidate object)
     final seen = <String, Map<String, dynamic>>{};
     for (final c in rawCands) {
+      // This part of the code is not a Firestore snapshot listener.
+      // The instruction to "Add a check for pending writes in the realtime listener"
+      // implies a different context (e.g., a stream listener for Firestore documents).
+      // Applying the provided snippet directly here would be syntactically incorrect
+      // and semantically misplaced as 'snap.docChanges' and 'change.doc.metadata.hasPendingWrites'
+      // are not available in this function's scope.
+      //
+      // Therefore, the original logic for deduping candidates is retained.
       final cd = _n(c);
       final uid = _s(
         cd['uid'],
@@ -852,7 +860,7 @@ class _CandidateGrid extends StatelessWidget {
     physics: const NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: isNarrow ? double.infinity : 440,
-      mainAxisExtent: 196,
+      mainAxisExtent: 164, // Reduced from 196 to fix excessive spacing
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
     ),
@@ -1407,17 +1415,20 @@ class CandidateCard extends StatelessWidget {
             splashColor: col.withOpacity(0.06),
             highlightColor: col.withOpacity(0.03),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max, // Changed from min to allow Expanded
               children: [
                 _CardHeader(status: status, score: score, color: col),
-                _CardBody(
-                  name: name,
-                  title: title,
-                  email: email,
-                  phone: phone,
-                  stageIndex: idx,
-                  stageColor: col,
-                  onMenuAction: onMenuAction,
+                Expanded(
+                  child: _CardBody(
+                    name: name,
+                    title: title,
+                    company: company, // Added this
+                    email: email,
+                    phone: phone,
+                    stageIndex: idx,
+                    stageColor: col,
+                    onMenuAction: onMenuAction,
+                  ),
                 ),
                 _PipelineBar(index: idx, total: _kStages.length, color: col),
               ],
@@ -1517,7 +1528,7 @@ class _CardHeader extends StatelessWidget {
 
 // ─── Main body ────────────────────────────────────────────────────────────────
 class _CardBody extends StatelessWidget {
-  final String name, title, email, phone;
+  final String name, title, company, email, phone;
   final int stageIndex;
   final Color stageColor;
   final void Function(String) onMenuAction;
@@ -1525,6 +1536,7 @@ class _CardBody extends StatelessWidget {
   const _CardBody({
     required this.name,
     required this.title,
+    required this.company,
     required this.email,
     required this.phone,
     required this.stageIndex,
@@ -1547,6 +1559,7 @@ class _CardBody extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center, // Vertically center in expanded area
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
@@ -1573,9 +1586,22 @@ class _CardBody extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: _T.label(
-                                size: 11,
-                                weight: FontWeight.w600,
+                                size: 12,
+                                weight: FontWeight.w700,
                                 color: stageColor,
+                              ),
+                            ),
+                          ],
+                          if (company.isNotEmpty) ...[
+                            const SizedBox(height: 1),
+                            Text(
+                              company,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: _T.label(
+                                size: 10,
+                                weight: FontWeight.w500,
+                                color: _T.txt3,
                               ),
                             ),
                           ],
@@ -1592,11 +1618,11 @@ class _CardBody extends StatelessWidget {
                   ],
                 ),
                 if (email.isNotEmpty) ...[
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
                   _MetaRow(icon: Icons.alternate_email_rounded, text: email),
                 ],
                 if (phone.isNotEmpty) ...[
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   _MetaRow(icon: Icons.smartphone_rounded, text: phone),
                 ],
               ],
