@@ -945,6 +945,34 @@ class AdminProvider extends ChangeNotifier {
     String? performedBy,
   }) async {
     if (_disposed) return false;
+
+    // ── FIX: Patch the memory and notify IMMEDIATELY for instant UI ───────
+    final idx = requests.indexWhere((r) => r['id'] == requestId);
+    if (idx != -1) {
+      requests[idx]['status'] = newStatus;
+      requests[idx]['last_updated_at'] = DateTime.now();
+    }
+
+    final cached = _requestDetailsCache[requestId];
+    if (cached != null) {
+      try {
+        final details = Map<String, dynamic>.from(cached.data);
+        final reqDoc  = Map<String, dynamic>.from(
+            (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+        final reqData = Map<String, dynamic>.from(
+            (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
+        reqData['status']          = newStatus;
+        reqData['last_updated_at'] = DateTime.now().toIso8601String();
+        reqDoc['data']             = reqData;
+        details['request_doc']     = reqDoc;
+        _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
+        debugPrint('⚡ Optimistic request-status patch (pre-write): $requestId → $newStatus');
+      } catch (e) {
+        debugPrint('⚠️ Failed to patch request-status cache: $e');
+      }
+    }
+    _safeNotify();
+
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
@@ -960,44 +988,12 @@ class AdminProvider extends ChangeNotifier {
         'created_at': now,
       });
       await batch.commit();
-      if (_disposed) return true;
-
-      // ── FIX: Patch the request list in-memory ─────────────────────────────
-      final idx = requests.indexWhere((r) => r['id'] == requestId);
-      if (idx != -1) {
-        requests[idx]['status'] = newStatus;
-        requests[idx]['last_updated_at'] = DateTime.now();
-      }
-
-      // ── FIX: Patch the cached details in-memory (same technique as
-      // optimisticCandidateStatusUpdate) so the currently-open bottom sheet
-      // does NOT lose its data. Previously we called .remove() here which
-      // caused the sheet to see null details and crash.
-      final cached = _requestDetailsCache[requestId];
-      if (cached != null) {
-        try {
-          final details = Map<String, dynamic>.from(cached.data);
-          final reqDoc  = Map<String, dynamic>.from(
-              (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
-          final reqData = Map<String, dynamic>.from(
-              (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
-          reqData['status']          = newStatus;
-          reqData['last_updated_at'] = DateTime.now().toIso8601String();
-          reqDoc['data']             = reqData;
-          details['request_doc']     = reqDoc;
-          _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
-          debugPrint('⚡ Optimistic request-status patch: $requestId → $newStatus');
-        } catch (e) {
-          debugPrint('⚠️ Failed to patch request-status cache: $e');
-          // Fallback: evict; next open will re-fetch cleanly
-          _requestDetailsCache.remove(requestId);
-        }
-      }
-
-      _safeNotify();
       return true;
     } catch (e) {
       debugPrint('❌ updateRequestStatus error: $e');
+      // On failure: invalidate cache so next reload restores server state
+      _requestDetailsCache.remove(requestId);
+      _safeNotify();
       return false;
     }
   }

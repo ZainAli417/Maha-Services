@@ -420,13 +420,17 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 _StatusDropdown(
                   current: status,
                   onChanged: (ns) async {
+                    // Capture messenger before await to avoid deactivated context error
+                    final sm = ScaffoldMessenger.maybeOf(ctx);
                     final ok = await prov.updateRequestStatus(
                       requestId: reqId,
                       newStatus: ns,
                       performedBy: 'admin_dashboard',
                     );
-                    if (!mounted) return;
-                    _toast(ctx, ok ? 'Status → $ns' : 'Update failed', ok);
+                    if (!mounted) return; // Check if still in tree
+                    if (sm != null) {
+                      _showInstantToast(sm, ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed', ok);
+                    }
                   },
                 ),
               ],
@@ -484,20 +488,30 @@ class _DashboardBodyState extends State<_DashboardBody> {
   // ── Toast ─────────────────────────────────────────────────────────────────
 
   void _toast(BuildContext ctx, String msg, bool ok) {
-    ScaffoldMessenger.maybeOf(ctx)
-      ?..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            msg,
-            style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+    if (!mounted) return;
+    final sm = ScaffoldMessenger.maybeOf(ctx);
+    if (sm != null) _showInstantToast(sm, msg, ok);
+  }
+
+  void _showInstantToast(ScaffoldMessengerState sm, String msg, bool ok) {
+    try {
+      sm
+        ?..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              msg,
+              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: ok ? _C.success : _C.danger,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          backgroundColor: ok ? _C.success : _C.danger,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
+        );
+    } catch (e) {
+      debugPrint('⚠️ Toast error: $e');
+    }
   }
 
   // ── Mobile bottom-sheet for request detail ────────────────────────────────
