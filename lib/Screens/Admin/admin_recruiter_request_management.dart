@@ -38,7 +38,54 @@ class _C {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Root Screen
+//  URL Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+class _UrlUtil {
+  /// Returns a human-readable label for any URL.
+  static String label(String url, {bool isDoc = false}) {
+    if (url.isEmpty) return 'Link';
+    try {
+      final uri = Uri.parse(url);
+      // Firebase Storage / GCS → extract file name
+      if (url.contains('firebasestorage.googleapis.com') ||
+          url.contains('storage.googleapis.com')) {
+        final raw = uri.pathSegments.last.split('?').first;
+        final decoded = Uri.decodeComponent(raw);
+        // path segments can contain %2F-encoded slashes
+        final name = decoded.split('%2F').last;
+        return name.isNotEmpty ? name : 'Document';
+      }
+      // Drive / Dropbox / common doc hosts
+      if (url.contains('drive.google.com'))  return 'Google Drive';
+      if (url.contains('dropbox.com'))       return 'Dropbox';
+      if (url.contains('docs.google.com'))   return 'Google Docs';
+      if (url.contains('linkedin.com'))      return 'LinkedIn';
+      if (url.contains('github.com'))        return 'GitHub';
+      if (url.contains('twitter.com') ||
+          url.contains('x.com'))             return 'X / Twitter';
+      // Generic: show clean host
+      final host = uri.host.replaceFirst('www.', '');
+      return host.isNotEmpty ? host : url;
+    } catch (_) {
+      return url.length > 36 ? '${url.substring(0, 33)}…' : url;
+    }
+  }
+
+  /// Icon for a given URL.
+  static IconData icon(String url, {bool isDoc = false}) {
+    if (isDoc) return Icons.description_outlined;
+    if (url.contains('linkedin.com'))  return Icons.people_alt_outlined;
+    if (url.contains('github.com'))    return Icons.code_rounded;
+    if (url.contains('drive.google')) return Icons.folder_outlined;
+    if (url.contains('dropbox.com'))   return Icons.cloud_outlined;
+    if (url.contains('twitter.com') ||
+        url.contains('x.com'))         return Icons.tag_rounded;
+    return Icons.link_rounded;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Root Screen  — single Scaffold; body wraps the responsive body widget
 // ─────────────────────────────────────────────────────────────────────────────
 class AdminDashboardScreen2 extends StatefulWidget {
   const AdminDashboardScreen2({super.key});
@@ -57,23 +104,23 @@ class _AdminDashboardScreen2State extends State<AdminDashboardScreen2> {
   }
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
+  Widget build(BuildContext context) => Scaffold(
     backgroundColor: _C.bg,
-    body: AdminDashboardBody(),
+    body: SafeArea(child: const _AdminDashboardBody()),
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Dashboard Body
+//  Dashboard Body  — no extra Scaffold, no double SafeArea
 // ─────────────────────────────────────────────────────────────────────────────
-class AdminDashboardBody extends StatefulWidget {
-  const AdminDashboardBody({super.key});
+class _AdminDashboardBody extends StatefulWidget {
+  const _AdminDashboardBody();
 
   @override
-  State<AdminDashboardBody> createState() => _AdminDashboardBodyState();
+  State<_AdminDashboardBody> createState() => _AdminDashboardBodyState();
 }
 
-class _AdminDashboardBodyState extends State<AdminDashboardBody> {
+class _AdminDashboardBodyState extends State<_AdminDashboardBody> {
   bool _loadingDetails = false;
   final _listCtrl   = ScrollController();
   final _detailCtrl = ScrollController();
@@ -89,8 +136,6 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
 
   Map<String, dynamic> _norm(dynamic m) => AdminProvider.normalizeMapStatic(m);
 
-  /// FIX: safely extract string URLs from a list that may contain
-  /// either String elements or Map<String,dynamic> elements.
   List<String> _safeDocList(dynamic field) {
     if (field == null) return [];
     if (field is! List) return [];
@@ -100,15 +145,12 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
       if (e is String && e.isNotEmpty) {
         result.add(e);
       } else if (e is Map) {
-        // Try common URL keys in order of likelihood
         final url = e['url']?.toString().trim() ??
             e['uri']?.toString().trim() ??
             e['link']?.toString().trim() ??
             e['path']?.toString().trim() ??
             e['downloadUrl']?.toString().trim() ??
-            e['fileUrl']?.toString().trim() ??
-            '';
-        // Fallback: first value that looks like a URL
+            e['fileUrl']?.toString().trim() ?? '';
         if (url.isNotEmpty) {
           result.add(url);
         } else {
@@ -128,20 +170,9 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
   List<String> _safeStringList(dynamic field) {
     if (field == null) return [];
     if (field is List) {
-      return field
-          .map((e) => e?.toString() ?? '')
-          .where((s) => s.isNotEmpty)
-          .toList();
+      return field.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
     }
     return [];
-  }
-
-  Color _statusColor(dynamic status) {
-    final s = status?.toString().toLowerCase() ?? '';
-    if (s == 'active' || s == 'approved') return _C.success;
-    if (s == 'pending')                    return _C.warning;
-    if (s == 'rejected' || s == 'closed') return _C.danger;
-    return _C.primary;
   }
 
   Future<void> _openDetails(BuildContext ctx, String requestId) async {
@@ -156,38 +187,26 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
 
   @override
   Widget build(BuildContext context) {
-    final prov = Provider.of<AdminProvider>(context);
+    final prov = context.watch<AdminProvider>();
     return LayoutBuilder(
       builder: (ctx, constraints) {
-        final w = constraints.maxWidth;
-        final isDesktop = w >= _BP.tablet;
+        final w          = constraints.maxWidth;
+        final isDesktop  = w >= _BP.tablet;
 
-        return Scaffold(
-          backgroundColor: _C.bg,
-          body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: isDesktop
-                      ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: w < _BP.desktop ? 340 : 400,
-                        child: _buildList(ctx, prov, isDesktop: true),
-                      ),
-                      const VerticalDivider(width: 1, color: _C.border),
-                      Expanded(child: _buildDetails(ctx, prov)),
-                    ],
-                  )
-                      : _buildList(ctx, prov, isDesktop: false),
-                ),
-              ],
-            ),
-          ),
-        );
+        if (isDesktop) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: w < _BP.desktop ? 340 : 400,
+                child: _buildList(ctx, prov, isDesktop: true),
+              ),
+              const VerticalDivider(width: 1, color: _C.border),
+              Expanded(child: _buildDetails(ctx, prov)),
+            ],
+          );
+        }
+        return _buildList(ctx, prov, isDesktop: false);
       },
     );
   }
@@ -196,15 +215,16 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
 
   Widget _buildList(BuildContext ctx, AdminProvider prov,
       {required bool isDesktop}) {
-    return Container(
+    return ColoredBox(
       color: _C.bg,
       child: Column(
         children: [
+          // ── Compact header — no excess vertical padding ──
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
             child: Row(children: [
               Text('REQUESTS',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: _C.txt3,
@@ -213,6 +233,8 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
               _LiveBadge(),
             ]),
           ),
+          // ── Slim divider ──
+          const Divider(height: 1, color: _C.border),
           Expanded(
             child: prov.requests.isEmpty
                 ? _EmptyList(loading: prov.loading)
@@ -221,7 +243,7 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
               thumbVisibility: isDesktop,
               child: ListView.separated(
                 controller: _listCtrl,
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 20),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 20),
                 itemCount: prov.requests.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 6),
                 itemBuilder: (ctx, i) {
@@ -236,11 +258,8 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
                       : (ca?.toString() ?? '-');
 
                   return _RequestTile(
-                    id: id,
-                    email: email,
-                    total: total,
-                    status: stat,
-                    date: date,
+                    id: id, email: email, total: total,
+                    status: stat, date: date,
                     selected: id == prov.selectedRequestId,
                     onTap: () => isDesktop
                         ? _openDetails(ctx, id)
@@ -262,15 +281,13 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
       return const Center(
           child: CircularProgressIndicator(strokeWidth: 2, color: _C.primary));
     }
-    if (prov.selectedRequestId == null) {
-      return const _Placeholder();
-    }
+    if (prov.selectedRequestId == null) return const _Placeholder();
     if (prov.selectedRequestDetails == null) {
       return Center(
           child: Text('No details loaded',
-              style: GoogleFonts.inter(color: _C.txt3)));
+              style: GoogleFonts.poppins(color: _C.txt3)));
     }
-    return Container(
+    return ColoredBox(
       color: _C.bg,
       child: Scrollbar(
         controller: _detailCtrl,
@@ -327,7 +344,7 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
     final cands = seen.values.toList();
 
     final rawStatuses = _norm(reqData['candidate_statuses']);
-    final statusMap = <String, String>{};
+    final statusMap   = <String, String>{};
     rawStatuses.forEach((k, v) {
       if (k.toString().isNotEmpty) statusMap[k.toString().toLowerCase()] = v?.toString() ?? '';
     });
@@ -339,63 +356,44 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
         children: [
           // ── Top bar ──
           Wrap(
-            spacing: 12,
-            runSpacing: 12,
+            spacing: 12, runSpacing: 12,
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Request #$reqId',
-                    style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: _C.txt1)),
+                    style: GoogleFonts.poppins(
+                        fontSize: 18, fontWeight: FontWeight.w700, color: _C.txt1)),
                 const SizedBox(height: 4),
                 Row(mainAxisSize: MainAxisSize.min, children: [
                   const Icon(Icons.schedule_rounded, size: 13, color: _C.txt3),
                   const SizedBox(width: 5),
-                  Text(dateStr,
-                      style: GoogleFonts.inter(
-                          fontSize: 12, color: _C.txt3)),
+                  Text(dateStr, style: GoogleFonts.poppins(fontSize: 12, color: _C.txt3)),
                 ]),
               ]),
               _StatusDropdown(
-                  current: status,
-                  onChanged: (ns) async {
-                    final ok = await prov.updateRequestStatus(
-                        requestId: reqId,
-                        newStatus: ns,
-                        performedBy: 'admin_dashboard');
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-                        content: Text(ok ? 'Status → $ns' : 'Update failed'),
-                        backgroundColor: ok ? _C.success : _C.danger,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8))));
-                  }),
+                current: status,
+                onChanged: (ns) async {
+                  final ok = await prov.updateRequestStatus(
+                      requestId: reqId,
+                      newStatus: ns,
+                      performedBy: 'admin_dashboard');
+                  if (!mounted) return;
+                  _showToast(ctx, ok ? 'Status → $ns' : 'Update failed', ok);
+                },
+              ),
             ],
           ),
 
           const SizedBox(height: 24),
-
-          // ── Recruiter card ──
-          _RecruiterCard(
-              name: rName,
-              email: rEmail,
-              company: rCompany,
-              notes: notes),
-
+          _RecruiterCard(name: rName, email: rEmail, company: rCompany, notes: notes),
           const SizedBox(height: 28),
 
-          // ── Candidates header ──
           Row(children: [
             Text('CANDIDATES',
-                style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: _C.txt3,
-                    letterSpacing: 1.5)),
+                style: GoogleFonts.poppins(
+                    fontSize: 11, fontWeight: FontWeight.w700,
+                    color: _C.txt3, letterSpacing: 1.5)),
             const SizedBox(width: 10),
             _CountBadge(count: cands.length),
           ]),
@@ -411,68 +409,73 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
               reqId: reqId,
               prov: prov,
               norm: _norm,
-              safeDocList: _safeDocList,
               showCV: (c) => _showCV(ctx, c),
               mountedCheck: () => mounted,
+              showToast: (msg, ok) {
+                if (mounted) _showToast(ctx, msg, ok);
+              },
             ),
-
           const SizedBox(height: 48),
         ],
       );
     });
   }
 
+  // ── Toast helper (doesn't touch navigator/route stack) ────────────────────
+
+  void _showToast(BuildContext ctx, String msg, bool success) {
+    final messenger = ScaffoldMessenger.maybeOf(ctx);
+    if (messenger == null) return;
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+          content: Text(msg, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+          backgroundColor: success ? _C.success : _C.danger,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))));
+  }
+
   // ── Mobile Modal ─────────────────────────────────────────────────────────
 
   void _showModal(BuildContext ctx, AdminProvider prov, String requestId) {
-    // Capture future BEFORE opening sheet — prevents FutureBuilder reset bug
-    final future = prov.fetchRequestDetails(requestId: requestId);
+    prov.selectRequest(requestId);
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => FutureBuilder<Map<String, dynamic>?>(
-        future: future,
-        builder: (ctx2, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return _ModalShell(
-                height: 220,
-                child: const Center(
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _C.primary)));
-          }
-          if (snap.hasError || snap.data == null) {
-            return _ModalShell(
-                height: 180,
-                child: Center(
-                    child: Text(
-                        snap.hasError
-                            ? 'Error: ${snap.error}'
-                            : 'Failed to load',
-                        style: GoogleFonts.inter(color: _C.txt3),
-                        textAlign: TextAlign.center)));
-          }
-          return DraggableScrollableSheet(
-            initialChildSize: 0.92,
-            minChildSize: 0.5,
-            maxChildSize: 0.97,
-            builder: (_, sc) => Container(
-              decoration: const BoxDecoration(
-                  color: _C.bg,
-                  borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(20))),
-              child: ClipRRect(
-                borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
-                child: CustomScrollView(
-                  controller: sc,
-                  slivers: [
+      builder: (_) => ChangeNotifierProvider.value(
+        value: prov,
+        child: Consumer<AdminProvider>(
+          builder: (ctx2, provSnap, _) {
+            if (provSnap.loading && provSnap.selectedRequestDetails == null) {
+              return _ModalShell(height: 220,
+                  child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2, color: _C.primary)));
+            }
+            final details = provSnap.selectedRequestDetails;
+            if (details == null) {
+              return _ModalShell(height: 180,
+                  child: Center(child: Text('Failed to load',
+                      style: GoogleFonts.poppins(color: _C.txt3),
+                      textAlign: TextAlign.center)));
+            }
+            return DraggableScrollableSheet(
+              initialChildSize: 0.92,
+              minChildSize: 0.5,
+              maxChildSize: 0.97,
+              builder: (_, sc) => Container(
+                decoration: const BoxDecoration(
+                    color: _C.bg,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: CustomScrollView(controller: sc, slivers: [
                     SliverToBoxAdapter(
                       child: Center(
                         child: Container(
                             margin: const EdgeInsets.only(top: 12, bottom: 8),
-                            width: 36,
-                            height: 4,
+                            width: 36, height: 4,
                             decoration: BoxDecoration(
                                 color: _C.border,
                                 borderRadius: BorderRadius.circular(2))),
@@ -481,20 +484,20 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                       sliver: SliverToBoxAdapter(
-                        child: _buildDetailContent(ctx2, prov, snap.data!),
+                        child: _buildDetailContent(ctx2, provSnap, details),
                       ),
                     ),
-                  ],
+                  ]),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  // ── CV Dialog ────────────────────────────────────────────────────────────
+  // ── CV Bottom Sheet (replaces Dialog) ────────────────────────────────────
 
   void _showCV(BuildContext ctx, Map<String, dynamic> candidate) {
     final raw     = _norm(candidate['user_data'] ?? candidate);
@@ -522,19 +525,26 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
     final summary  = gVal('summary', ['personalProfile','summary'], '');
     final goals    = gVal('objectives', ['personalProfile','objectives'], '');
 
-    final eduList     = (raw['educationalProfile']     ?? raw['educational_profile'] ?? []) as List;
-    final expList     = (raw['professionalExperience'] ?? raw['professional_experience'] ?? []) as List;
-    final certList    = (raw['certifications'] ?? []) as List;
-    final skills      = _safeStringList(raw['skills'] ?? persPro['skills']);
-    final socialLinks = _safeStringList(raw['social_links'] ?? raw['socialLinks'] ?? persPro['socialLinks']);
-    // ── BUG FIX: use _safeDocList instead of .cast<String>() ──────────────
-    final expDocs     = _safeDocList(raw['experienceDocuments'] ?? raw['experience_documents']);
-    final pubs        = _safeStringList(raw['publications']);
-    final awards      = _safeStringList(raw['awards']);
+    final eduList  = (raw['educationalProfile'] ?? raw['educational_profile'] ?? []) as List;
+    final expList  = (raw['professionalExperience'] ?? raw['professional_experience'] ?? []) as List;
+    final certList = (raw['certifications'] ?? []) as List;
+    final skills   = _safeStringList(raw['skills'] ?? persPro['skills']);
+    final socialLinks = _safeStringList(
+        raw['social_links'] ?? raw['socialLinks'] ?? persPro['socialLinks']);
+    final expDocs  = _safeDocList(
+      raw['experienceDocuments'] ?? raw['experience_documents'] ??
+          candidate['experienceDocuments'] ?? candidate['experience_documents'],
+    );
+    final pubs   = _safeStringList(raw['publications']);
+    final awards = _safeStringList(raw['awards']);
 
-    showDialog(
+    // ── Open as bottom sheet instead of dialog ────────────────────────────
+    showModalBottomSheet(
       context: ctx,
-      builder: (_) => _CVDialog(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _CVSheet(
         name: name, email: email, phone: phone,
         nationality: nation, dob: dob, secondaryEmail: secEmail,
         summary: summary, objectives: goals,
@@ -554,49 +564,6 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
 //  COMPONENTS
 // ═════════════════════════════════════════════════════════════════════════════
 
-// ── Header ────────────────────────────────────────────────────────────────────
-// class _Header extends StatelessWidget {
-//   final bool isDesktop;
-//   const _Header({required this.isDesktop});
-//
-//   @override
-//   Widget build(BuildContext ctx) {
-//     return Container(
-//       height: 64,
-//       color: _C.surface,
-//       padding: EdgeInsets.symmetric(
-//           horizontal: isDesktop ? 28 : 16),
-//       child: Row(children: [
-//         Container(
-//           padding: const EdgeInsets.all(8),
-//           decoration: BoxDecoration(
-//               color: _C.primaryLt,
-//               borderRadius: BorderRadius.circular(8)),
-//           child: const Icon(Icons.admin_panel_settings_rounded,
-//               color: _C.primary, size: 20),
-//         ),
-//         const SizedBox(width: 12),
-//         Expanded(
-//           child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text('Request Management',
-//                     style: GoogleFonts.inter(
-//                         fontSize: isDesktop ? 16 : 14,
-//                         fontWeight: FontWeight.w700,
-//                         color: _C.txt1)),
-//                 Text('Real-time recruiter monitoring',
-//                     style: GoogleFonts.inter(
-//                         fontSize: 11,
-//                         color: _C.txt3)),
-//               ]),
-//         ),
-//       ]),
-//     );
-//   }
-// }
-
 // ── Live Badge ────────────────────────────────────────────────────────────────
 class _LiveBadge extends StatelessWidget {
   @override
@@ -607,16 +574,12 @@ class _LiveBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _C.success.withOpacity(.2))),
     child: Row(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-          width: 6, height: 6,
-          decoration: const BoxDecoration(
-              color: _C.success, shape: BoxShape.circle)),
+      Container(width: 6, height: 6,
+          decoration: const BoxDecoration(color: _C.success, shape: BoxShape.circle)),
       const SizedBox(width: 5),
       Text('LIVE',
-          style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _C.success)),
+          style: GoogleFonts.poppins(
+              fontSize: 10, fontWeight: FontWeight.w700, color: _C.success)),
     ]),
   );
 }
@@ -628,16 +591,11 @@ class _CountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) => Container(
-    padding:
-    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    decoration: BoxDecoration(
-        color: _C.primaryLt,
-        borderRadius: BorderRadius.circular(12)),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(color: _C.primaryLt, borderRadius: BorderRadius.circular(12)),
     child: Text('$count',
-        style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: _C.primary)),
+        style: GoogleFonts.poppins(
+            fontSize: 11, fontWeight: FontWeight.w700, color: _C.primary)),
   );
 }
 
@@ -650,27 +608,23 @@ class _EmptyList extends StatelessWidget {
   Widget build(BuildContext ctx) {
     if (loading) {
       return const Center(
-          child: CircularProgressIndicator(
-              strokeWidth: 2, color: _C.primary));
+          child: CircularProgressIndicator(strokeWidth: 2, color: _C.primary));
     }
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-              color: _C.surface,
-              shape: BoxShape.circle,
+              color: _C.surface, shape: BoxShape.circle,
               border: Border.all(color: _C.border)),
           child: const Icon(Icons.inbox_outlined, size: 32, color: _C.txt4),
         ),
         const SizedBox(height: 16),
         Text('No Requests',
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w600, color: _C.txt2)),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w600, color: _C.txt2)),
         const SizedBox(height: 4),
         Text('New items appear here automatically',
-            style: GoogleFonts.inter(
-                fontSize: 12, color: _C.txt3)),
+            style: GoogleFonts.poppins(fontSize: 12, color: _C.txt3)),
       ]),
     );
   }
@@ -681,33 +635,26 @@ class _Placeholder extends StatelessWidget {
   const _Placeholder();
 
   @override
-  Widget build(BuildContext ctx) {
-    return Container(
-      color: _C.bg,
-      child: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-                color: _C.surface,
-                shape: BoxShape.circle,
-                border: Border.all(color: _C.border)),
-            child: const Icon(Icons.touch_app_outlined,
-                size: 28, color: _C.txt4),
-          ),
-          const SizedBox(height: 20),
-          Text('Select a request',
-              style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: _C.txt2)),
-          const SizedBox(height: 4),
-          Text('View details and manage candidates',
-              style: GoogleFonts.inter(fontSize: 13, color: _C.txt3)),
-        ]),
-      ),
-    );
-  }
+  Widget build(BuildContext ctx) => ColoredBox(
+    color: _C.bg,
+    child: Center(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+              color: _C.surface, shape: BoxShape.circle,
+              border: Border.all(color: _C.border)),
+          child: const Icon(Icons.touch_app_outlined, size: 28, color: _C.txt4),
+        ),
+        const SizedBox(height: 20),
+        Text('Select a request',
+            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600, color: _C.txt2)),
+        const SizedBox(height: 4),
+        Text('View details and manage candidates',
+            style: GoogleFonts.poppins(fontSize: 13, color: _C.txt3)),
+      ]),
+    ),
+  );
 }
 
 // ── Modal Shell ───────────────────────────────────────────────────────────────
@@ -721,8 +668,7 @@ class _ModalShell extends StatelessWidget {
     height: height,
     decoration: const BoxDecoration(
         color: _C.surface,
-        borderRadius:
-        BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
     child: child,
   );
 }
@@ -733,17 +679,14 @@ class _EmptyCandidates extends StatelessWidget {
   Widget build(BuildContext ctx) => Container(
     padding: const EdgeInsets.all(40),
     decoration: BoxDecoration(
-        color: _C.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: _C.surface, borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _C.border)),
     child: Center(
       child: Column(children: [
-        const Icon(Icons.people_outline,
-            size: 32, color: _C.txt4),
+        const Icon(Icons.people_outline, size: 32, color: _C.txt4),
         const SizedBox(height: 12),
         Text('No candidates attached',
-            style: GoogleFonts.inter(
-                color: _C.txt3, fontWeight: FontWeight.w500)),
+            style: GoogleFonts.poppins(color: _C.txt3, fontWeight: FontWeight.w500)),
       ]),
     ),
   );
@@ -757,20 +700,16 @@ class _CandidateGrid extends StatelessWidget {
   final String reqId;
   final AdminProvider prov;
   final Map<String, dynamic> Function(dynamic) norm;
-  final List<String> Function(dynamic) safeDocList;
   final void Function(Map<String, dynamic>) showCV;
   final bool Function() mountedCheck;
+  final void Function(String msg, bool ok) showToast;
 
   const _CandidateGrid({
-    required this.candidates,
-    required this.statusMap,
-    required this.isNarrow,
-    required this.reqId,
-    required this.prov,
-    required this.norm,
-    required this.safeDocList,
-    required this.showCV,
-    required this.mountedCheck,
+    required this.candidates, required this.statusMap,
+    required this.isNarrow,   required this.reqId,
+    required this.prov,       required this.norm,
+    required this.showCV,     required this.mountedCheck,
+    required this.showToast,
   });
 
   @override
@@ -805,35 +744,24 @@ class _CandidateGrid extends StatelessWidget {
         final cTitle = pick('title', 'professionalProfile');
 
         return _CandidateCard(
+          key: ValueKey('${reqId}_$canon'),
           name: cName, email: cEmail, phone: cPhone,
           title: cTitle, status: cStat,
           onTap: () => showCV(c),
-          onMenuAction: (action) async {
-            if (action == 'open_cv') {
-              // BUG FIX: use safeDocList instead of .cast<String>()
-              final docs = safeDocList(rd['experienceDocuments']);
-              final url  = docs.isNotEmpty ? docs.first : '';
-              ScaffoldMessenger.of(ctx2).showSnackBar(SnackBar(
-                  content: Text(
-                      url.isNotEmpty ? 'CV: $url' : 'No CV on file'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8))));
-              return;
-            }
-            await Future.delayed(const Duration(milliseconds: 100));
-            final ok = await prov.updateCandidateStatus(
-                requestId: reqId,
-                candidateUid: cUid,
-                status: action,
-                performedBy: 'admin_dashboard');
-            if (!mountedCheck()) return;
-            ScaffoldMessenger.of(ctx2).showSnackBar(SnackBar(
-                content: Text(ok ? 'Status → $action' : 'Update failed'),
-                backgroundColor: ok ? _C.success : _C.danger,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8))));
+          onMenuAction: (action) {
+            // 1. Optimistic update — instant UI response, zero rebuild lag
+            prov.optimisticCandidateStatusUpdate(reqId, cUid, action);
+
+            // 2. Background Firestore write — fire and forget
+            prov.updateCandidateStatus(
+              requestId: reqId,
+              candidateUid: cUid,
+              status: action,
+              performedBy: 'admin_dashboard',
+            ).then((ok) {
+              if (!mountedCheck()) return;
+              showToast(ok ? 'Status → $action' : 'Update failed', ok);
+            });
           },
         );
       },
@@ -851,16 +779,16 @@ class _RequestTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const _RequestTile({
-    required this.id, required this.email,
-    required this.total, required this.status,
-    required this.date, required this.selected,
+    required this.id,       required this.email,
+    required this.total,    required this.status,
+    required this.date,     required this.selected,
     required this.onTap,
   });
 
   Color _color() {
     final s = status.toLowerCase();
     if (s == 'active' || s == 'approved') return _C.success;
-    if (s == 'pending')  return _C.warning;
+    if (s == 'pending')                    return _C.warning;
     if (s == 'rejected' || s == 'closed') return _C.danger;
     return _C.primary;
   }
@@ -883,28 +811,25 @@ class _RequestTile extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('REQ #$id',
-                  style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                  style: GoogleFonts.poppins(
+                      fontSize: 12, fontWeight: FontWeight.w700,
                       color: selected ? _C.primary : _C.txt1)),
-              Text(date,
-                  style: GoogleFonts.inter(fontSize: 10, color: _C.txt3)),
+              Text(date, style: GoogleFonts.poppins(fontSize: 10, color: _C.txt3)),
             ]),
             const SizedBox(height: 6),
             Text(email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.poppins(
                     fontSize: 13, color: _C.txt2, fontWeight: FontWeight.w500)),
             const SizedBox(height: 10),
             Row(children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                    color: c.withOpacity(.1),
-                    borderRadius: BorderRadius.circular(4)),
+                    color: c.withOpacity(.1), borderRadius: BorderRadius.circular(4)),
                 child: Text(status.toUpperCase(),
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.poppins(
                         fontSize: 10, fontWeight: FontWeight.w700, color: c)),
               ),
               const Spacer(),
@@ -912,9 +837,8 @@ class _RequestTile extends StatelessWidget {
                   size: 13, color: selected ? _C.primary : _C.txt3),
               const SizedBox(width: 4),
               Text('$total',
-                  style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  style: GoogleFonts.poppins(
+                      fontSize: 12, fontWeight: FontWeight.w600,
                       color: selected ? _C.primary : _C.txt2)),
             ]),
           ]),
@@ -944,44 +868,34 @@ class _RecruiterCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
+              blurRadius: 8, offset: const Offset(0, 2))
         ]),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('RECRUITER',
-          style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _C.txt3,
-              letterSpacing: 1.4)),
+          style: GoogleFonts.poppins(
+              fontSize: 10, fontWeight: FontWeight.w700,
+              color: _C.txt3, letterSpacing: 1.4)),
       const SizedBox(height: 14),
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _Avatar(name: name, size: 52),
         const SizedBox(width: 14),
         Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SelectableText(name,
-                style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: _C.txt1)),
+                style: GoogleFonts.poppins(
+                    fontSize: 16, fontWeight: FontWeight.w700, color: _C.txt1)),
             const SizedBox(height: 3),
             SelectableText(email,
-                style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: _C.primary,
-                    fontWeight: FontWeight.w500)),
+                style: GoogleFonts.poppins(
+                    fontSize: 13, color: _C.primary, fontWeight: FontWeight.w500)),
             if (company.isNotEmpty) ...[
               const SizedBox(height: 4),
               Row(children: [
-                const Icon(Icons.business_outlined,
-                    size: 13, color: _C.txt3),
+                const Icon(Icons.business_outlined, size: 13, color: _C.txt3),
                 const SizedBox(width: 5),
                 Flexible(
                     child: Text(company,
-                        style: GoogleFonts.inter(
-                            fontSize: 12, color: _C.txt2))),
+                        style: GoogleFonts.poppins(fontSize: 12, color: _C.txt2))),
               ]),
             ],
           ]),
@@ -996,11 +910,9 @@ class _RecruiterCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
               child: Text(notes,
-                  style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: _C.txt2,
-                      height: 1.6,
-                      fontStyle: FontStyle.italic))),
+                  style: GoogleFonts.poppins(
+                      fontSize: 13, color: _C.txt2,
+                      height: 1.6, fontStyle: FontStyle.italic))),
         ]),
       ],
     ]),
@@ -1024,21 +936,18 @@ class _Avatar extends StatelessWidget {
       decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: url.isEmpty
-              ? const LinearGradient(
-              colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)])
+              ? const LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)])
               : null,
           image: url.isNotEmpty
-              ? DecorationImage(
-              image: NetworkImage(url), fit: BoxFit.cover)
+              ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)
               : null),
       child: url.isEmpty
-          ? Center(
-          child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: size * .38,
-                  fontWeight: FontWeight.w700)))
+          ? Center(child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: size * .38,
+              fontWeight: FontWeight.w700)))
           : null,
     );
   }
@@ -1054,9 +963,9 @@ class _StatusDropdown extends StatelessWidget {
 
   Color _c(String s) {
     final st = s.toLowerCase();
-    if (st == 'active')   return _C.success;
-    if (st == 'pending')  return _C.warning;
-    if (st == 'rejected' || st == 'closed') return _C.danger;
+    if (st == 'active')                        return _C.success;
+    if (st == 'pending')                       return _C.warning;
+    if (st == 'rejected' || st == 'closed')   return _C.danger;
     return _C.primary;
   }
 
@@ -1075,15 +984,13 @@ class _StatusDropdown extends StatelessWidget {
                 height: 40,
                 child: Row(children: [
                   Container(width: 8, height: 8,
-                      decoration: BoxDecoration(
-                          color: _c(s), shape: BoxShape.circle)),
+                      decoration: BoxDecoration(color: _c(s), shape: BoxShape.circle)),
                   const SizedBox(width: 10),
-                  Text(s, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  Text(s, style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
                 ]),
               )).toList(),
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
             color: col.withOpacity(.1),
             borderRadius: BorderRadius.circular(8),
@@ -1093,7 +1000,7 @@ class _StatusDropdown extends StatelessWidget {
               decoration: BoxDecoration(color: col, shape: BoxShape.circle)),
           const SizedBox(width: 8),
           Text(current.toUpperCase(),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.poppins(
                   fontSize: 12, fontWeight: FontWeight.w700, color: col)),
           const SizedBox(width: 6),
           Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: col),
@@ -1113,8 +1020,8 @@ class _CandidateCard extends StatelessWidget {
 
   const _CandidateCard({
     super.key,
-    required this.name, required this.email, required this.phone,
-    required this.title, required this.status,
+    required this.name,   required this.email,   required this.phone,
+    required this.title,  required this.status,
     required this.onMenuAction, required this.onTap,
   });
 
@@ -1130,7 +1037,7 @@ class _CandidateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
-    const stages = ['Shortlist','Screening','Interview','Technical','Offer','Hired'];
+    const stages = ['Shortlist','Screening','interview','Technical','Offer','Hired'];
     final disp = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
     final idx  = stages.map((e) => e.toLowerCase()).toList().indexOf(disp);
     final col  = _color();
@@ -1143,8 +1050,7 @@ class _CandidateCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
                 color: Colors.black.withOpacity(.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3))
+                blurRadius: 10, offset: const Offset(0, 3))
           ]),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -1156,32 +1062,25 @@ class _CandidateCard extends StatelessWidget {
             child: Column(children: [
               // Status header
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: const BoxDecoration(
                     color: _C.bg,
-                    border: Border(
-                        bottom: BorderSide(color: _C.divider))),
+                    border: Border(bottom: BorderSide(color: _C.divider))),
                 child: Row(children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 7, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
                         color: col.withOpacity(.1),
                         borderRadius: BorderRadius.circular(5),
-                        border:
-                        Border.all(color: col.withOpacity(.2))),
+                        border: Border.all(color: col.withOpacity(.2))),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Container(width: 5, height: 5,
-                          decoration: BoxDecoration(
-                              color: col, shape: BoxShape.circle)),
+                          decoration: BoxDecoration(color: col, shape: BoxShape.circle)),
                       const SizedBox(width: 5),
                       Text(status.toUpperCase(),
-                          style: GoogleFonts.inter(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: col,
-                              letterSpacing: .5)),
+                          style: GoogleFonts.poppins(
+                              fontSize: 9, fontWeight: FontWeight.w700,
+                              color: col, letterSpacing: .5)),
                     ]),
                   ),
                 ]),
@@ -1194,44 +1093,29 @@ class _CandidateCard extends StatelessWidget {
                     _CandAvatar(name: name, color: col),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(name, maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: GoogleFonts.inter(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 14,
-                                                color: _C.txt1)),
-                                        if (title.isNotEmpty)
-                                          Text(title, maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 12,
-                                                  color: col,
-                                                  fontWeight: FontWeight.w600)),
-                                      ])),
-                                  _CandAction(
-                                      stages: stages,
-                                      idx: idx,
-                                      color: col,
-                                      onMenuAction: onMenuAction),
-                                ]),
-                            const SizedBox(height: 5),
-                            _IconRow(
-                                icon: Icons.email_outlined,
-                                text: email),
-                            if (phone.isNotEmpty)
-                              _IconRow(
-                                  icon: Icons.phone_android_outlined,
-                                  text: phone),
-                          ]),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Expanded(child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14, color: _C.txt1)),
+                                if (title.isNotEmpty)
+                                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 12, color: col, fontWeight: FontWeight.w600)),
+                              ])),
+                              _CandAction(
+                                  stages: stages, idx: idx, color: col,
+                                  onMenuAction: onMenuAction),
+                            ]),
+                        const SizedBox(height: 5),
+                        _IconRow(icon: Icons.email_outlined, text: email),
+                        if (phone.isNotEmpty)
+                          _IconRow(icon: Icons.phone_android_outlined, text: phone),
+                      ]),
                     ),
                   ]),
                   const SizedBox(height: 10),
@@ -1255,22 +1139,15 @@ class _CandAvatar extends StatelessWidget {
   Widget build(BuildContext ctx) => Container(
     width: 40, height: 40,
     decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [color.withOpacity(.7), color]),
+        gradient: LinearGradient(colors: [color.withOpacity(.7), color]),
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(
-              color: color.withOpacity(.25),
-              blurRadius: 6,
-              offset: const Offset(0, 2))
+          BoxShadow(color: color.withOpacity(.25), blurRadius: 6, offset: const Offset(0, 2))
         ]),
-    child: Center(
-        child: Text(
-            name.isNotEmpty ? name[0].toUpperCase() : 'C',
-            style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 16))),
+    child: Center(child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'C',
+        style: GoogleFonts.poppins(
+            color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16))),
   );
 }
 
@@ -1281,28 +1158,37 @@ class _CandAction extends StatelessWidget {
   final void Function(String) onMenuAction;
   const _CandAction({
     required this.stages, required this.idx,
-    required this.color, required this.onMenuAction,
+    required this.color,  required this.onMenuAction,
   });
 
   @override
   Widget build(BuildContext ctx) {
-
-
+    if (idx < 0 || idx >= stages.length - 1) {
+      return PopupMenuButton<String>(
+        padding: EdgeInsets.zero,
+        icon: Icon(Icons.more_horiz_rounded, size: 18, color: color),
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        onSelected: onMenuAction,
+        itemBuilder: (_) => stages.map((s) => PopupMenuItem(
+          value: s.toLowerCase(),
+          height: 38,
+          child: Text(s, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w500)),
+        )).toList(),
+      );
+    }
     return GestureDetector(
       onTap: () => onMenuAction(stages[idx + 1].toLowerCase()),
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
             color: color.withOpacity(.1),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: color.withOpacity(.2))),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Text('NEXT',
-              style: GoogleFonts.inter(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  color: color)),
+              style: GoogleFonts.poppins(
+                  fontSize: 9, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(width: 3),
           Icon(Icons.arrow_forward_rounded, size: 12, color: color),
         ]),
@@ -1322,14 +1208,10 @@ class _IconRow extends StatelessWidget {
     child: Row(mainAxisSize: MainAxisSize.min, children: [
       Icon(icon, size: 12, color: _C.txt3),
       const SizedBox(width: 5),
-      Flexible(
-          child: Text(text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: _C.txt2,
-                  fontWeight: FontWeight.w500))),
+      Flexible(child: Text(text,
+          maxLines: 1, overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.poppins(
+              fontSize: 11, color: _C.txt2, fontWeight: FontWeight.w500))),
     ]),
   );
 }
@@ -1360,164 +1242,242 @@ class _Pipeline extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  CV DIALOG
+//  CV BOTTOM SHEET  (replaces CVDialog)
 // ─────────────────────────────────────────────────────────────────────────────
-class _CVDialog extends StatelessWidget {
+class _CVSheet extends StatelessWidget {
   final String name, email, phone, nationality, dob;
   final String secondaryEmail, summary, objectives, avatarUrl;
   final List<String> skills, socialLinks, expDocs, publications, awards;
   final Map<String, dynamic> professionalProfile;
   final List<Map<String, dynamic>> experienceList, educationList, certifications;
 
-  const _CVDialog({
-    required this.name, required this.email, required this.phone,
-    required this.nationality, required this.dob,
-    required this.secondaryEmail, required this.summary,
-    required this.objectives, required this.avatarUrl,
-    required this.skills, required this.socialLinks,
-    required this.expDocs, required this.publications,
-    required this.awards, required this.professionalProfile,
+  const _CVSheet({
+    required this.name,           required this.email,
+    required this.phone,          required this.nationality,
+    required this.dob,            required this.secondaryEmail,
+    required this.summary,        required this.objectives,
+    required this.avatarUrl,      required this.skills,
+    required this.socialLinks,    required this.expDocs,
+    required this.publications,   required this.awards,
+    required this.professionalProfile,
     required this.experienceList, required this.educationList,
     required this.certifications,
   });
 
   @override
   Widget build(BuildContext ctx) {
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: 860,
-            maxHeight: MediaQuery.of(ctx).size.height * .92),
-        child: Column(children: [
-          // ── Header ──
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 24, 16, 24),
-            decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight)),
-            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              _Avatar(name: name, size: 72, imageUrl: avatarUrl),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SelectableText(name.toUpperCase(),
-                      style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: .4)),
-                  const SizedBox(height: 10),
-                  Wrap(spacing: 18, runSpacing: 8, children: [
-                    if (email.isNotEmpty) _HdrItem(Icons.email_outlined, email),
-                    if (phone.isNotEmpty)
-                      _HdrItem(Icons.phone_android_outlined, phone),
-                  ]),
+    return DraggableScrollableSheet(
+      initialChildSize: 0.93,
+      minChildSize: 0.5,
+      maxChildSize: 0.97,
+      builder: (_, sc) {
+        return Container(
+          decoration: const BoxDecoration(
+              color: _C.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: Column(children: [
+              // Drag handle
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 4),
+                  child: Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                        color: _C.border, borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+              ),
+              // ── CV Header ──
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 16, 16, 20),
+                decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight)),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  _Avatar(name: name, size: 64, imageUrl: avatarUrl),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      SelectableText(name.toUpperCase(),
+                          style: GoogleFonts.poppins(
+                              color: Colors.white, fontSize: 18,
+                              fontWeight: FontWeight.w800, letterSpacing: .4)),
+                      const SizedBox(height: 8),
+                      Wrap(spacing: 16, runSpacing: 6, children: [
+                        if (email.isNotEmpty) _HdrItem(Icons.email_outlined, email),
+                        if (phone.isNotEmpty) _HdrItem(Icons.phone_android_outlined, phone),
+                      ]),
+                    ]),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ]),
               ),
-              IconButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white70)),
+              // ── CV Content ──
+              Expanded(
+                child: CustomScrollView(
+                  controller: sc,
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 48),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          _CVSection('PERSONAL', Icons.person_outline, _C.primary, [
+                            _CVRow('Nationality', nationality),
+                            _CVRow('Date of Birth', dob),
+                            if (secondaryEmail.isNotEmpty) _CVRow('Secondary Email', secondaryEmail),
+                            if (summary.isNotEmpty) _CVRow('Summary', summary, multiline: true),
+                            if (objectives.isNotEmpty) _CVRow('Objectives', objectives, multiline: true),
+                          ]),
+                          if (skills.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('SKILLS', Icons.auto_awesome_outlined, _C.success, [
+                              Wrap(spacing: 8, runSpacing: 8,
+                                  children: skills.map((s) => _Badge(s, _C.success)).toList()),
+                            ]),
+                          ],
+                          if (socialLinks.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('LINKS', Icons.link_rounded, const Color(0xFF06B6D4), [
+                              Wrap(spacing: 8, runSpacing: 8,
+                                  children: socialLinks
+                                      .map((l) => _StyledLinkChip(url: l, color: const Color(0xFF06B6D4)))
+                                      .toList()),
+                            ]),
+                          ],
+                          if (professionalProfile.isNotEmpty &&
+                              (professionalProfile['summary']?.toString() ?? '').isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('PROFESSIONAL', Icons.work_history_outlined,
+                                const Color(0xFF8B5CF6), [
+                                  _CVRow('Summary',
+                                      professionalProfile['summary'].toString(), multiline: true),
+                                ]),
+                          ],
+                          if (experienceList.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('EXPERIENCE', Icons.business_center_outlined,
+                                const Color(0xFF3B82F6),
+                                experienceList.map(_ExpCard.new).toList()),
+                          ],
+                          if (educationList.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('EDUCATION', Icons.school_outlined,
+                                _C.warning, educationList.map(_EduCard.new).toList()),
+                          ],
+                          if (certifications.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('CERTIFICATIONS', Icons.verified_outlined,
+                                const Color(0xFFEC4899),
+                                certifications.map((c) => _CertCard(
+                                  title: c['name']?.toString() ??
+                                      c['certificationName']?.toString() ?? 'Certification',
+                                  subtitle: c['organization']?.toString() ??
+                                      c['issuingAuthority']?.toString(),
+                                )).toList()),
+                          ],
+                          if (expDocs.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('DOCUMENTS', Icons.attach_file_rounded,
+                                const Color(0xFF059669), [
+                                  Wrap(spacing: 8, runSpacing: 8,
+                                      children: expDocs
+                                          .map((d) => _StyledLinkChip(
+                                          url: d,
+                                          color: const Color(0xFF059669),
+                                          isDoc: true))
+                                          .toList()),
+                                ]),
+                          ],
+                          if (publications.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            _CVSection('PUBLICATIONS', Icons.article_outlined,
+                                const Color(0xFF0EA5E9), [
+                                  Wrap(spacing: 8, runSpacing: 8,
+                                      children: publications
+                                          .map((p) => _StyledLinkChip(
+                                          url: p,
+                                          color: const Color(0xFF0EA5E9)))
+                                          .toList()),
+                                ]),
+                          ],
+                        ]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ]),
           ),
-          // ── Content ──
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(28, 24, 28, 40),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _CVSection('PERSONAL', Icons.person_outline, _C.primary, [
-                  _CVRow('Nationality', nationality),
-                  _CVRow('Date of Birth', dob),
-                  if (secondaryEmail.isNotEmpty)
-                    _CVRow('Alt Email', secondaryEmail),
-                  if (summary.isNotEmpty)
-                    _CVRow('Summary', summary, multiline: true),
-                  if (objectives.isNotEmpty)
-                    _CVRow('Objectives', objectives, multiline: true),
-                ]),
-                if (skills.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('SKILLS', Icons.auto_awesome_outlined,
-                      _C.success, [
-                        Wrap(spacing: 8, runSpacing: 8,
-                            children: skills
-                                .map((s) => _Badge(s, _C.success))
-                                .toList()),
-                      ]),
-                ],
-                if (socialLinks.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('LINKS', Icons.link_rounded,
-                      const Color(0xFF06B6D4), [
-                        Wrap(spacing: 10, runSpacing: 8,
-                            children: socialLinks
-                                .map((l) => _LinkChip(l, const Color(0xFF06B6D4)))
-                                .toList()),
-                      ]),
-                ],
-                if (professionalProfile.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('PROFESSIONAL', Icons.work_history_outlined,
-                      const Color(0xFF8B5CF6), [
-                        if ((professionalProfile['status']?.toString() ?? '').isNotEmpty)
-                          _CVRow('Status', professionalProfile['status'].toString()),
-                        if ((professionalProfile['summary']?.toString() ?? '').isNotEmpty)
-                          _CVRow('Summary',
-                              professionalProfile['summary'].toString(),
-                              multiline: true),
-                      ]),
-                ],
-                if (experienceList.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('EXPERIENCE', Icons.business_center_outlined,
-                      const Color(0xFF3B82F6),
-                      experienceList.map(_ExpCard.new).toList()),
-                ],
-                if (educationList.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('EDUCATION', Icons.school_outlined,
-                      _C.warning,
-                      educationList.map(_EduCard.new).toList()),
-                ],
-                if (certifications.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('CERTIFICATIONS', Icons.verified_outlined,
-                      const Color(0xFFEC4899),
-                      certifications
-                          .map((c) => _CertCard(
-                        title: c['name']?.toString() ??
-                            c['certificationName']?.toString() ??
-                            'Certification',
-                        subtitle: c['organization']?.toString() ??
-                            c['issuingAuthority']?.toString(),
-                      ))
-                          .toList()),
-                ],
-                if (expDocs.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  _CVSection('DOCUMENTS', Icons.attach_file_rounded,
-                      const Color(0xFF059669), [
-                        Wrap(spacing: 10, runSpacing: 8,
-                            children: expDocs
-                                .map((d) => _LinkChip(d, const Color(0xFF059669),
-                                isDoc: true))
-                                .toList()),
-                      ]),
-                ],
-              ]),
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  STYLED LINK CHIP  (replaces _LinkChip — shows readable label, not raw URL)
+// ─────────────────────────────────────────────────────────────────────────────
+class _StyledLinkChip extends StatelessWidget {
+  final String url;
+  final Color color;
+  final bool isDoc;
+  const _StyledLinkChip({required this.url, required this.color, this.isDoc = false});
+
+  @override
+  Widget build(BuildContext ctx) {
+    final lbl  = _UrlUtil.label(url, isDoc: isDoc);
+    final icon = _UrlUtil.icon(url, isDoc: isDoc);
+
+    return Tooltip(
+      message: url,
+      waitDuration: const Duration(milliseconds: 600),
+      child: InkWell(
+        onTap: () {
+          // Integrate url_launcher here when available:
+          // launchUrl(Uri.parse(url));
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+              color: color.withOpacity(.07),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withOpacity(.25))),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: Text(lbl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                      fontSize: 12, color: color,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationColor: color.withOpacity(.4))),
             ),
-          ),
-        ]),
+            const SizedBox(width: 4),
+            Icon(Icons.open_in_new_rounded, size: 11, color: color.withOpacity(.5)),
+          ]),
+        ),
       ),
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CV Sub-components
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _HdrItem extends StatelessWidget {
   final IconData icon;
@@ -1529,10 +1489,8 @@ class _HdrItem extends StatelessWidget {
       Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, color: Colors.white60, size: 13),
         const SizedBox(width: 6),
-        Flexible(
-            child: SelectableText(text,
-                style: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 13))),
+        Flexible(child: SelectableText(text,
+            style: GoogleFonts.poppins(color: Colors.white, fontSize: 12))),
       ]);
 }
 
@@ -1547,23 +1505,19 @@ class _CVSection extends StatelessWidget {
   Widget build(BuildContext ctx) => Column(
       crossAxisAlignment: CrossAxisAlignment.start, children: [
     Row(children: [
-      Icon(icon, color: color, size: 18),
+      Icon(icon, color: color, size: 17),
       const SizedBox(width: 10),
       Text(title,
-          style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: _C.txt1,
-              letterSpacing: 1.4)),
+          style: GoogleFonts.poppins(
+              fontSize: 11, fontWeight: FontWeight.w800,
+              color: _C.txt1, letterSpacing: 1.4)),
       const SizedBox(width: 14),
       const Expanded(child: Divider(height: 1, color: _C.border)),
     ]),
     const SizedBox(height: 14),
     Padding(
-        padding: const EdgeInsets.only(left: 28),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: children)),
+        padding: const EdgeInsets.only(left: 26),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children)),
   ]);
 }
 
@@ -1577,17 +1531,12 @@ class _CVRow extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 10),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label.toUpperCase(),
-          style: GoogleFonts.inter(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              color: _C.txt3,
-              letterSpacing: 1)),
+          style: GoogleFonts.poppins(
+              fontSize: 9, fontWeight: FontWeight.w700,
+              color: _C.txt3, letterSpacing: 1)),
       const SizedBox(height: 3),
       SelectableText(value,
-          style: GoogleFonts.inter(
-              fontSize: 13,
-              color: _C.txt2,
-              height: 1.5)),
+          style: GoogleFonts.poppins(fontSize: 13, color: _C.txt2, height: 1.5)),
     ]),
   );
 }
@@ -1599,50 +1548,14 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) => Container(
-    padding:
-    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
         color: color.withOpacity(.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withOpacity(.2))),
     child: Text(text,
-        style: GoogleFonts.inter(
-            fontSize: 12,
-            color: color,
-            fontWeight: FontWeight.w600)),
-  );
-}
-
-class _LinkChip extends StatelessWidget {
-  final String url;
-  final Color color;
-  final bool isDoc;
-  const _LinkChip(this.url, this.color, {this.isDoc = false});
-
-  @override
-  Widget build(BuildContext ctx) => InkWell(
-    onTap: () {},
-    child: Container(
-      padding:
-      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-          color: color.withOpacity(.06),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color.withOpacity(.25))),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(isDoc ? Icons.description_outlined : Icons.link_rounded,
-            size: 13, color: color),
-        const SizedBox(width: 6),
-        Flexible(
-            child: Text(
-                url.length > 32 ? '${url.substring(0, 29)}…' : url,
-                style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: color,
-                    decoration: TextDecoration.underline),
-                overflow: TextOverflow.ellipsis)),
-      ]),
-    ),
+        style: GoogleFonts.poppins(
+            fontSize: 12, color: color, fontWeight: FontWeight.w600)),
   );
 }
 
@@ -1653,36 +1566,26 @@ class _ExpCard extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     final role = exp['role']?.toString() ??
-        exp['jobTitle']?.toString() ??
-        exp['position']?.toString() ?? 'Role';
-    final org = exp['organization']?.toString() ??
-        exp['companyName']?.toString() ??
-        exp['company']?.toString() ?? '';
-    final dur = exp['duration']?.toString() ??
+        exp['jobTitle']?.toString() ?? exp['position']?.toString() ?? 'Role';
+    final org  = exp['organization']?.toString() ??
+        exp['companyName']?.toString() ?? exp['company']?.toString() ?? '';
+    final dur  = exp['duration']?.toString() ??
         '${exp['startDate'] ?? ''} – ${exp['endDate'] ?? 'Present'}';
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-          color: _C.surface,
-          borderRadius: BorderRadius.circular(10),
+          color: _C.surface, borderRadius: BorderRadius.circular(10),
           border: Border.all(color: _C.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(role,
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: _C.txt1)),
+        Text(role, style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700, fontSize: 14, color: _C.txt1)),
         if (org.isNotEmpty)
-          Text(org,
-              style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13)),
+          Text(org, style: GoogleFonts.poppins(
+              color: const Color(0xFF3B82F6),
+              fontWeight: FontWeight.w600, fontSize: 13)),
         const SizedBox(height: 3),
-        Text(dur,
-            style: GoogleFonts.inter(
-                fontSize: 11, color: _C.txt3)),
+        Text(dur, style: GoogleFonts.poppins(fontSize: 11, color: _C.txt3)),
       ]),
     );
   }
@@ -1694,28 +1597,19 @@ class _EduCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
-    final deg  = edu['degree']?.toString() ??
-        edu['majorSubjects']?.toString() ?? 'Degree';
-    final inst = edu['institution']?.toString() ??
-        edu['institutionName']?.toString() ?? '';
+    final deg  = edu['degree']?.toString() ?? edu['majorSubjects']?.toString() ?? 'Degree';
+    final inst = edu['institution']?.toString() ?? edu['institutionName']?.toString() ?? '';
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-          color: _C.warningLt,
-          borderRadius: BorderRadius.circular(8),
+          color: _C.warningLt, borderRadius: BorderRadius.circular(8),
           border: Border.all(color: _C.warning.withOpacity(.2))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(inst,
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                color: _C.txt1)),
-        Text(deg,
-            style: GoogleFonts.inter(
-                fontSize: 12,
-                color: _C.warning,
-                fontWeight: FontWeight.w600)),
+        Text(inst, style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700, fontSize: 13, color: _C.txt1)),
+        Text(deg, style: GoogleFonts.poppins(
+            fontSize: 12, color: _C.warning, fontWeight: FontWeight.w600)),
       ]),
     );
   }
@@ -1733,25 +1627,16 @@ class _CertCard extends StatelessWidget {
     decoration: BoxDecoration(
         color: const Color(0xFFFDF4FF),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: const Color(0xFFEC4899).withOpacity(.2))),
+        border: Border.all(color: const Color(0xFFEC4899).withOpacity(.2))),
     child: Row(children: [
-      const Icon(Icons.verified_rounded,
-          color: Color(0xFFEC4899), size: 15),
+      const Icon(Icons.verified_rounded, color: Color(0xFFEC4899), size: 15),
       const SizedBox(width: 10),
-      Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title,
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    color: _C.txt1)),
-            if (subtitle != null)
-              Text(subtitle!,
-                  style: GoogleFonts.inter(
-                      fontSize: 11, color: _C.txt2)),
-          ])),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700, fontSize: 13, color: _C.txt1)),
+        if (subtitle != null)
+          Text(subtitle!, style: GoogleFonts.poppins(fontSize: 11, color: _C.txt2)),
+      ])),
     ]),
   );
 }

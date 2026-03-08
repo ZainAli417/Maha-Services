@@ -1,14 +1,13 @@
-// admin_recruiter_request_provider.dart  — FIXED
-// ─── Summary of fixes ────────────────────────────────────────────────────────
-// FIX 1: fetchRequestDetails now tries ALL common candidate field names:
-//         candidates, candidate_ids, matched_candidates, seekers, job_seekers,
-//         assignedCandidates, matched_seekers, seeker_ids, candidate_list
-// FIX 2: Per-candidate UID extraction now tries all common key names.
-// FIX 3: Candidates are NEVER silently dropped — if uid is missing, a
-//         stable fallback key (email or generated index) is used so the
-//         candidate still appears in the UI as "Unknown User".
-// FIX 4: _batchFetchCandidates falls back to 'users' collection when a uid
-//         is not found in Job_Seeker, instead of only creating a blank card.
+// admin_recruiter_request_provider.dart
+// ─── Fixes in this version ───────────────────────────────────────────────────
+// FIX 1: optimisticCandidateStatusUpdate() — instant in-memory cache update so
+//         the UI responds immediately with zero lag or rebuild cascade.
+// FIX 2: updateCandidateStatus() — fires Firestore write, does NOT re-fetch
+//         details afterwards. Cache is only invalidated on failure so the
+//         optimistic state is preserved on success and restored on error.
+// FIX 3: _safeNotify() guards against calling notifyListeners during build.
+// FIX 4: selectRequest() skips re-fetch when details are already cached.
+// All prior fixes (exhaustive candidate/field scanning, fallbacks, etc.) kept.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:async';
@@ -16,101 +15,95 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class AdminProvider extends ChangeNotifier {
-  // ── Form controllers (unchanged) ─────────────────────────────────────────
-  final _formKey         = GlobalKey<FormState>();
-  final _nameController  = TextEditingController();
-  final _emailController = TextEditingController();
+  // ── Form controllers ──────────────────────────────────────────────────────
+  final _formKey            = GlobalKey<FormState>();
+  final _nameController     = TextEditingController();
+  final _emailController    = TextEditingController();
   final _passwordController = TextEditingController();
-  final _roleController  = TextEditingController();
+  final _roleController     = TextEditingController();
   final _userLevelController = TextEditingController();
 
   String? _editingUserId;
   bool    _isLoading = false;
   String  _message   = '';
 
-  GlobalKey<FormState> get formKey           => _formKey;
-  TextEditingController get nameController   => _nameController;
-  TextEditingController get emailController  => _emailController;
-  TextEditingController get passwordController => _passwordController;
-  TextEditingController get roleController   => _roleController;
+  GlobalKey<FormState> get formKey              => _formKey;
+  TextEditingController get nameController      => _nameController;
+  TextEditingController get emailController     => _emailController;
+  TextEditingController get passwordController  => _passwordController;
+  TextEditingController get roleController      => _roleController;
   TextEditingController get userLevelController => _userLevelController;
-  String? get editingUserId => _editingUserId;
-  bool    get isLoading     => _isLoading;
-  String  get message       => _message;
+  String? get editingUserId  => _editingUserId;
+  bool    get isLoading      => _isLoading;
+  String  get message        => _message;
 
-  // ── User management (unchanged) ─────────────────────────────────────────
+  // ── User management ───────────────────────────────────────────────────────
   Future<bool> addOrEditUser() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      _isLoading = true;
-      _message   = '';
-      _safeNotify();
-      try {
-        String uid;
-        DocumentReference userDocRef;
-        if (_editingUserId == null) {
-          FirebaseApp tempApp;
-          try {
-            tempApp = Firebase.app('TemporaryUserCreator');
-          } catch (_) {
-            tempApp = await Firebase.initializeApp(
-              name: 'TemporaryUserCreator',
-              options: Firebase.app().options,
-            );
-          }
-          final tempAuth = FirebaseAuth.instanceFor(app: tempApp);
-          final cred = await tempAuth.createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
+    if (!(_formKey.currentState?.validate() ?? false)) return false;
+    _isLoading = true;
+    _message   = '';
+    _safeNotify();
+    try {
+      if (_editingUserId == null) {
+        FirebaseApp tempApp;
+        try {
+          tempApp = Firebase.app('TemporaryUserCreator');
+        } catch (_) {
+          tempApp = await Firebase.initializeApp(
+            name: 'TemporaryUserCreator',
+            options: Firebase.app().options,
           );
-          uid = cred.user!.uid;
-          await tempAuth.signOut();
-          userDocRef = _firestore.collection('users').doc(uid);
-          await userDocRef.set({
-            'name': _nameController.text.trim(),
-            'email': _emailController.text.trim(),
-            'uid': uid,
-            'role': _roleController.text.trim(),
-            'isNew': 'yes',
-            'account_status': 'active',
-            'user_lvl': _userLevelController.text.trim(),
-            'created_at': FieldValue.serverTimestamp(),
-          });
-        } else {
-          userDocRef = _firestore.collection('users').doc(_editingUserId);
-          await userDocRef.update({
-            'name': _nameController.text.trim(),
-            'role': _roleController.text.trim(),
-            'user_lvl': _userLevelController.text.trim(),
-          });
-          uid = _editingUserId!;
         }
-        _message = _editingUserId == null ? 'User added successfully' : 'User updated successfully';
+        final tempAuth = FirebaseAuth.instanceFor(app: tempApp);
+        final cred = await tempAuth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        final uid = cred.user!.uid;
+        await tempAuth.signOut();
+        await _firestore.collection('users').doc(uid).set({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'uid': uid,
+          'role': _roleController.text.trim(),
+          'isNew': 'yes',
+          'account_status': 'active',
+          'user_lvl': _userLevelController.text.trim(),
+          'created_at': FieldValue.serverTimestamp(),
+        });
         _candidateCache.remove(uid);
-        _recruiterCache.remove(uid);
         _emailToUidCache.remove(_emailController.text.trim());
-        clearForm();
-        return true;
-      } catch (e) {
-        _message = 'Error: $e';
-        debugPrint('❌ addOrEditUser error: $e');
-        return false;
-      } finally {
-        _isLoading = false;
-        _safeNotify();
+      } else {
+        await _firestore.collection('users').doc(_editingUserId).update({
+          'name': _nameController.text.trim(),
+          'role': _roleController.text.trim(),
+          'user_lvl': _userLevelController.text.trim(),
+        });
+        _candidateCache.remove(_editingUserId);
+        _recruiterCache.remove(_editingUserId);
       }
+      _message = _editingUserId == null ? 'User added successfully' : 'User updated successfully';
+      clearForm();
+      return true;
+    } catch (e) {
+      _message = 'Error: $e';
+      debugPrint('❌ addOrEditUser error: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      _safeNotify();
     }
-    return false;
   }
 
-  Future<void> suspendUser(String firestoreDocId, String currentStatus) async {
+  Future<void> suspendUser(String docId, String currentStatus) async {
     final newStatus = currentStatus == 'active' ? 'suspended' : 'active';
     try {
-      await _firestore.collection('users').doc(firestoreDocId)
-          .update({'account_status': newStatus});
+      await _firestore.collection('users').doc(docId).update({'account_status': newStatus});
     } catch (e) {
-      debugPrint('❌ Error suspending user: $e');
+      debugPrint('❌ suspendUser error: $e');
     }
     _safeNotify();
   }
@@ -120,18 +113,17 @@ class AdminProvider extends ChangeNotifier {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } catch (e) {
-      debugPrint('❌ Error resetting password: $e');
+      debugPrint('❌ resetPassword error: $e');
     }
   }
 
-  void editUser(Map<String, dynamic> userData, String firestoreDocId,
-      {String? resolvedName}) {
-    _nameController.text  = resolvedName ?? userData['name'] ?? '';
-    _emailController.text = userData['email'] ?? '';
-    _roleController.text  = userData['role'] ?? '';
+  void editUser(Map<String, dynamic> userData, String docId, {String? resolvedName}) {
+    _nameController.text      = resolvedName ?? userData['name'] ?? '';
+    _emailController.text     = userData['email'] ?? '';
+    _roleController.text      = userData['role'] ?? '';
     _userLevelController.text = userData['user_lvl'] ?? '';
     _passwordController.clear();
-    _editingUserId = firestoreDocId;
+    _editingUserId = docId;
     _safeNotify();
   }
 
@@ -166,7 +158,6 @@ class AdminProvider extends ChangeNotifier {
 
   StreamSubscription<QuerySnapshot>? _requestsSub;
   final Map<String, Completer<Map<String, dynamic>?>> _pendingFetches = {};
-  Timer? _notifyTimer;
 
   String? _selectedRequestId;
   String? get selectedRequestId => _selectedRequestId;
@@ -176,20 +167,36 @@ class AdminProvider extends ChangeNotifier {
     return _requestDetailsCache[_selectedRequestId]?.data;
   }
 
+  /// Selects a request and fetches details only if not already cached.
   Future<void> selectRequest(String requestId) async {
     if (_selectedRequestId == requestId) return;
     _selectedRequestId = requestId;
     _safeNotify();
-    if (!_requestDetailsCache.containsKey(requestId)) {
+
+    final cached = _requestDetailsCache[requestId];
+    final isFresh = cached != null &&
+        DateTime.now().difference(cached.timestamp) < _cacheTTL;
+    if (!isFresh) {
       await fetchRequestDetails(requestId: requestId);
     }
   }
 
+  // ── Safe notify: never calls during a build frame ─────────────────────────
   void _safeNotify() {
     if (_disposed) return;
-    Future.microtask(() {
-      if (!_disposed) notifyListeners();
-    });
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.transientCallbacks) {
+      // We're mid-frame — defer to post-frame
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    } else {
+      // Safe to notify now
+      Future.microtask(() {
+        if (!_disposed) notifyListeners();
+      });
+    }
   }
 
   // =========================================================================
@@ -197,14 +204,14 @@ class AdminProvider extends ChangeNotifier {
   // =========================================================================
 
   Map<String, dynamic> _normalizeMap(dynamic m) {
-    if (m == null) return <String, dynamic>{};
+    if (m == null) return {};
     if (m is Map<String, dynamic>) return m;
     if (m is Map) {
       final out = <String, dynamic>{};
       m.forEach((k, v) => out[k?.toString() ?? ''] = v);
       return out;
     }
-    return <String, dynamic>{};
+    return {};
   }
 
   List<dynamic> _normalizeList(dynamic list) {
@@ -220,154 +227,106 @@ class AdminProvider extends ChangeNotifier {
     return parts.isNotEmpty ? parts.last : str;
   }
 
-  // =========================================================================
-  // FIX 1 — extractCandidateEntries
-  // Tries every common field name a recruiter app might use when creating a
-  // request. This is the root cause of "0 candidates shown."
-  // =========================================================================
+  // ── Exhaustive candidate field scanner ───────────────────────────────────
   List<dynamic> _extractCandidateEntries(Map<String, dynamic> data) {
-    // All field names ever used across the recruiter app
     const candidateFields = [
-      'candidates',
-      'candidate_ids',
-      'matched_candidates',
-      'matched_seekers',
-      'seekers',
-      'seeker_ids',
-      'job_seekers',
-      'jobSeekers',
-      'assignedCandidates',
-      'assigned_candidates',
-      'candidate_list',
-      'candidateList',
-      'users',
-      'applicants',
+      'candidates', 'candidate_ids', 'matched_candidates',
+      'matched_seekers', 'seekers', 'seeker_ids',
+      'job_seekers', 'jobSeekers', 'assignedCandidates',
+      'assigned_candidates', 'candidate_list', 'candidateList',
+      'users', 'applicants',
     ];
-
     final merged = <dynamic>[];
     for (final field in candidateFields) {
       final val = data[field];
       if (val != null) {
         final list = _normalizeList(val);
         if (list.isNotEmpty) {
-          debugPrint('✅ Found ${list.length} candidates under field "$field"');
+          debugPrint('✅ Found ${list.length} candidates under "$field"');
           merged.addAll(list);
         }
       }
     }
     if (merged.isEmpty) {
-      // Last resort: log ALL keys so the developer can see exactly what's in the doc
-      debugPrint(
-          '⚠️ No candidate entries found. Document keys: ${data.keys.toList()}');
+      debugPrint('⚠️ No candidate entries found. Keys: ${data.keys.toList()}');
     }
     return merged;
   }
 
-  // =========================================================================
-  // FIX 2 — extractCandidateUid
-  // Tries every common key name for the UID inside a candidate map.
-  // NEVER returns empty — falls back to email, then a generated key.
-  // =========================================================================
+  // ── Exhaustive UID extractor — never returns empty ────────────────────────
   String _extractCandidateUid(Map<String, dynamic> n, int fallbackIndex) {
     const uidKeys = [
-      'uid',
-      'user_id',
-      'userId',
-      'id',
-      'jobSeekerId',
-      'job_seeker_id',
-      'seekerUid',
-      'seeker_uid',
-      'candidate_uid',
-      'candidateUid',
-      'user_uid',
-      'userUid',
-      'docId',
-      'doc_id',
+      'uid', 'user_id', 'userId', 'id', 'jobSeekerId',
+      'job_seeker_id', 'seekerUid', 'seeker_uid',
+      'candidate_uid', 'candidateUid', 'user_uid', 'userUid',
+      'docId', 'doc_id',
     ];
-
     for (final key in uidKeys) {
       final v = n[key]?.toString().trim() ?? '';
-      if (v.isNotEmpty && v.toLowerCase() != 'null') {
-        return _lastSegment(v);
-      }
+      if (v.isNotEmpty && v.toLowerCase() != 'null') return _lastSegment(v);
     }
-
-    // Fallback 1: email (used as key, resolved to uid later if needed)
     final email = n['email']?.toString().trim() ?? '';
-    if (email.isNotEmpty && email.contains('@')) {
-      debugPrint('⚠️ Using email as uid fallback for candidate $fallbackIndex');
-      return email;
-    }
-
-    // Fallback 2: stable index key (guarantees this candidate is NOT silently dropped)
+    if (email.isNotEmpty && email.contains('@')) return email;
     final generated = '__candidate_$fallbackIndex';
-    debugPrint('⚠️ No uid/email found for candidate $fallbackIndex, using "$generated". '
-        'Available keys: ${n.keys.toList()}');
+    debugPrint('⚠️ No uid/email for candidate $fallbackIndex, '
+        'using "$generated". Keys: ${n.keys.toList()}');
     return generated;
   }
 
   // =========================================================================
-  // FETCH ALL REQUESTS (unchanged logic, just cleaner)
+  // FETCH ALL REQUESTS
   // =========================================================================
 
   Future<void> fetchAllRequests({bool realtime = false}) async {
     if (loading) return;
     loading = true;
     _safeNotify();
-    debugPrint('🔍 Admin: fetchAllRequests(realtime=$realtime)');
+    debugPrint('🔍 fetchAllRequests(realtime=$realtime)');
 
     try {
-      final snap = await _firestore
-          .collection('recruiter_requests')
-          .orderBy('created_at', descending: true)
-          .get(const GetOptions(source: Source.cache))
-          .catchError((_) => _firestore
-          .collection('recruiter_requests')
-          .orderBy('created_at', descending: true)
-          .get(const GetOptions(source: Source.server)));
+      QuerySnapshot snap;
+      try {
+        snap = await _firestore
+            .collection('recruiter_requests')
+            .orderBy('created_at', descending: true)
+            .get(const GetOptions(source: Source.cache));
+      } catch (_) {
+        snap = await _firestore
+            .collection('recruiter_requests')
+            .orderBy('created_at', descending: true)
+            .get(const GetOptions(source: Source.server));
+      }
 
       debugPrint('🔎 Found ${snap.docs.length} request docs');
-
-      final List<Map<String, dynamic>> tmp = [];
-      final Set<String> recruiterIds = {};
+      final tmp         = <Map<String, dynamic>>[];
+      final recruiterIds = <String>{};
 
       for (final d in snap.docs) {
-        final data = _normalizeMap(d.data());
-        final recruiterId =
-        (data['recruiter_id'] ?? data['recruiter'] ?? data['recruiter_uid'] ?? '')
-            .toString();
-        final recruiterEmail =
-        (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString();
-
-        // Count using stored field OR fallback to counting the actual array
-        int totalCandidates = 0;
-        if (data['total_candidates'] != null) {
-          totalCandidates = int.tryParse(data['total_candidates'].toString()) ?? 0;
-        } else {
-          final entries = _extractCandidateEntries(data);
-          totalCandidates = entries.length;
-        }
+        final data          = _normalizeMap(d.data());
+        final recruiterId   = (data['recruiter_id'] ?? data['recruiter'] ?? data['recruiter_uid'] ?? '').toString();
+        final recruiterEmail = (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString();
+        final total         = data['total_candidates'] != null
+            ? int.tryParse(data['total_candidates'].toString()) ?? 0
+            : _extractCandidateEntries(data).length;
 
         tmp.add({
           'id': d.id,
           'recruiter_id': recruiterId,
           'recruiter_email': recruiterEmail,
-          'total_candidates': totalCandidates,
+          'total_candidates': total,
           'status': (data['status'] ?? 'pending').toString(),
           'created_at': data['created_at'],
           'notes': data['notes'] ?? '',
           'raw': data,
         });
-
         if (recruiterId.isNotEmpty) recruiterIds.add(recruiterId);
       }
 
       requests = tmp;
-      debugPrint('✅ Admin: loaded ${requests.length} request(s)');
+      debugPrint('✅ Loaded ${requests.length} request(s)');
       if (recruiterIds.isNotEmpty) _batchPrefetchRecruiters(recruiterIds.toList());
     } catch (e, st) {
-      debugPrint('❌ fetchAllRequests failed: $e\n$st');
+      debugPrint('❌ fetchAllRequests error: $e\n$st');
       requests = [];
     } finally {
       loading = false;
@@ -378,7 +337,7 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
-  // FETCH REQUEST DETAILS — FIXED
+  // FETCH REQUEST DETAILS
   // =========================================================================
 
   Future<Map<String, dynamic>?> fetchRequestDetails({
@@ -386,7 +345,6 @@ class AdminProvider extends ChangeNotifier {
   }) async {
     debugPrint('🔍 fetchRequestDetails: $requestId');
 
-    // Cache check
     if (_requestDetailsCache.containsKey(requestId)) {
       final cached = _requestDetailsCache[requestId]!;
       if (DateTime.now().difference(cached.timestamp) < _cacheTTL) {
@@ -396,7 +354,6 @@ class AdminProvider extends ChangeNotifier {
       _requestDetailsCache.remove(requestId);
     }
 
-    // Dedup in-flight
     if (_pendingFetches.containsKey(requestId)) {
       debugPrint('⏳ Already fetching $requestId, waiting…');
       return _pendingFetches[requestId]!.future;
@@ -408,61 +365,49 @@ class AdminProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final snap = await _firestore
-          .collection('recruiter_requests')
-          .doc(requestId)
-          .get(const GetOptions(source: Source.cache))
-          .catchError((_) => _firestore
-          .collection('recruiter_requests')
-          .doc(requestId)
-          .get(const GetOptions(source: Source.server)));
+      DocumentSnapshot snap;
+      try {
+        snap = await _firestore.collection('recruiter_requests').doc(requestId)
+            .get(const GetOptions(source: Source.cache));
+      } catch (_) {
+        snap = await _firestore.collection('recruiter_requests').doc(requestId)
+            .get(const GetOptions(source: Source.server));
+      }
 
       if (_disposed) { completer.complete(null); return null; }
-
       if (!snap.exists) {
         debugPrint('⚠️ Request doc $requestId does not exist');
         completer.complete(null);
         return null;
       }
 
-      final data = _normalizeMap(snap.data());
+      final data        = _normalizeMap(snap.data());
       debugPrint('📄 Request doc keys: ${data.keys.toList()}');
+      final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
+      final rawEntries  = _extractCandidateEntries(data);
+      debugPrint('📋 Raw candidate entries: ${rawEntries.length}');
 
-      final recruiterId =
-      (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
-
-      // ── FIX 1: use the exhaustive field scanner ───────────────────────────
-      final rawEntries = _extractCandidateEntries(data);
-      debugPrint('📋 Raw candidate entries found: ${rawEntries.length}');
-
-      // ── Build unique candidates map ───────────────────────────────────────
-      final uniqueCandidates = <String, String>{}; // key → uid
+      final uniqueCandidates = <String, String>{};
       final candidateHints   = <String, Map<String, dynamic>>{};
 
       for (int i = 0; i < rawEntries.length; i++) {
         final entry = rawEntries[i];
         String rawUid = '';
         Map<String, dynamic> hint = {};
-
         try {
           if (entry is Map) {
             hint   = _normalizeMap(entry);
-            // ── FIX 2: exhaustive uid key search, never returns empty ──────
             rawUid = _extractCandidateUid(hint, i);
           } else if (entry is String) {
             rawUid = entry.trim();
           } else if (entry is DocumentReference) {
             rawUid = entry.id;
-            debugPrint(
-                '📎 DocumentReference candidate: path=${entry.path} id=${entry.id}');
           }
         } catch (e) {
           debugPrint('⚠️ Error reading candidate entry $i: $e');
-          rawUid = '__candidate_$i'; // never discard
+          rawUid = '__candidate_$i';
         }
-
         if (rawUid.isEmpty) rawUid = '__candidate_$i';
-
         final uid = _lastSegment(rawUid);
         final key = uid.toLowerCase();
         if (!uniqueCandidates.containsKey(key)) {
@@ -471,15 +416,13 @@ class AdminProvider extends ChangeNotifier {
         }
       }
 
-      debugPrint('👥 Unique candidate UIDs to fetch: ${uniqueCandidates.values.toList()}');
+      debugPrint('👥 Unique candidate UIDs: ${uniqueCandidates.values.toList()}');
 
       final recruiterInfo    = await _fetchRecruiterInfo(recruiterId);
       if (_disposed) { completer.complete(null); return null; }
 
       final candidateDetails = await _batchFetchCandidates(
-        uniqueCandidates.values.toList(),
-        hints: candidateHints,
-      );
+          uniqueCandidates.values.toList(), hints: candidateHints);
       if (_disposed) { completer.complete(null); return null; }
 
       debugPrint('✅ Candidates resolved: ${candidateDetails.length}');
@@ -507,9 +450,47 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
-  // BATCH FETCH CANDIDATES — FIXED
-  // FIX 3: also tries 'users' collection when uid not found in Job_Seeker.
-  // FIX 4: never discards candidates — always produces at minimum a fallback card.
+  // OPTIMISTIC CANDIDATE STATUS UPDATE
+  //
+  // Updates the in-memory cache IMMEDIATELY so the UI (pipeline bar, status
+  // badge, etc.) reflects the new state without any round-trip or rebuild
+  // cascade. Call this before firing the Firestore write.
+  // =========================================================================
+
+  void optimisticCandidateStatusUpdate(
+      String requestId, String candidateUid, String status) {
+    if (_disposed) return;
+    final cached = _requestDetailsCache[requestId];
+    if (cached == null) return;
+
+    try {
+      // Deep-copy the nested maps we need to mutate
+      final details = Map<String, dynamic>.from(cached.data);
+      final reqDoc  = Map<String, dynamic>.from(
+          (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+      final reqData = Map<String, dynamic>.from(
+          (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
+      final statuses = Map<String, dynamic>.from(
+          (reqData['candidate_statuses'] as Map?)?.cast<String, dynamic>() ?? {});
+
+      final normalized =
+      status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+      statuses[candidateUid.toLowerCase()] = normalized;
+
+      reqData['candidate_statuses'] = statuses;
+      reqDoc['data']                = reqData;
+      details['request_doc']        = reqDoc;
+
+      _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
+      _safeNotify();
+      debugPrint('⚡ Optimistic update: $candidateUid → $normalized');
+    } catch (e) {
+      debugPrint('⚠️ optimisticCandidateStatusUpdate error: $e');
+    }
+  }
+
+  // =========================================================================
+  // BATCH FETCH CANDIDATES
   // =========================================================================
 
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
@@ -519,11 +500,9 @@ class AdminProvider extends ChangeNotifier {
       }) async {
     if (candidateIds.isEmpty) return [];
 
-    // Separate real IDs from generated fallback keys
     final realIds     = candidateIds.where((id) => !id.startsWith('__candidate_')).toList();
     final fallbackIds = candidateIds.where((id) => id.startsWith('__candidate_')).toList();
 
-    // Build fallback cards immediately for generated-key entries (no Firestore needed)
     final fallbackCards = fallbackIds.map((id) {
       final hint = _normalizeMap(hints?[id]);
       return _buildFallbackCard(id, hint);
@@ -531,9 +510,8 @@ class AdminProvider extends ChangeNotifier {
 
     if (realIds.isEmpty) return fallbackCards;
 
-    // Cache split
-    final uncachedIds    = <String>[];
-    final cachedResults  = <Map<String, dynamic>>[];
+    final uncachedIds   = <String>[];
+    final cachedResults = <Map<String, dynamic>>[];
 
     for (final id in realIds) {
       if (_candidateCache.containsKey(id)) {
@@ -552,152 +530,100 @@ class AdminProvider extends ChangeNotifier {
     debugPrint('📥 Fetching ${uncachedIds.length} candidates from Firestore');
     final fetchedResults = <Map<String, dynamic>>[];
 
-    final batches = <List<String>>[];
-    for (var i = 0; i < uncachedIds.length; i += batchSize) {
-      final end = (i + batchSize).clamp(0, uncachedIds.length);
-      batches.add(uncachedIds.sublist(i, end));
-    }
+    Future<List<List<T>>> _batchSplit<T>(List<T> items) async =>
+        [for (var i = 0; i < items.length; i += batchSize)
+          items.sublist(i, (i + batchSize).clamp(0, items.length))];
 
     try {
-      // ── Step A: query Job_Seeker by document ID ───────────────────────────
-      final jobSeekerResults = await Future.wait(batches.map((batch) async {
+      // Step A: Job_Seeker by docId
+      for (final batch in await _batchSplit(uncachedIds)) {
         try {
           final snap = await _firestore
               .collection('Job_Seeker')
               .where(FieldPath.documentId, whereIn: batch)
               .get();
-          return _parseJobSeekerDocs(snap.docs, hints);
+          fetchedResults.addAll(_parseJobSeekerDocs(snap.docs, hints));
         } catch (e) {
-          debugPrint('⚠️ Job_Seeker batch query error: $e');
-          return <Map<String, dynamic>>[];
+          debugPrint('⚠️ Job_Seeker docId batch error: $e');
         }
-      }));
-
-      for (final batch in jobSeekerResults) {
-        fetchedResults.addAll(batch);
       }
 
-      // ── Step B: for IDs not found by docId, try querying by uid field ────
-      final foundInJobSeekerDocId =
-          fetchedResults.map((c) => c['uid'].toString()).toSet();
-      final missingAfterDocId =
-          uncachedIds.where((id) => !foundInJobSeekerDocId.contains(id)).toList();
-
-      if (missingAfterDocId.isNotEmpty) {
-        debugPrint('🔍 ${missingAfterDocId.length} IDs not found by docId, trying uid field query');
-        final uidFieldBatches = <List<String>>[];
-        for (var i = 0; i < missingAfterDocId.length; i += batchSize) {
-          final end = (i + batchSize).clamp(0, missingAfterDocId.length);
-          uidFieldBatches.add(missingAfterDocId.sublist(i, end));
-        }
-        final uidFieldResults = await Future.wait(uidFieldBatches.map((batch) async {
+      // Step B: Job_Seeker by uid field
+      final foundB = fetchedResults.map((c) => c['uid'].toString()).toSet();
+      final missingB = uncachedIds.where((id) => !foundB.contains(id)).toList();
+      if (missingB.isNotEmpty) {
+        for (final batch in await _batchSplit(missingB)) {
           try {
             final snap = await _firestore
                 .collection('Job_Seeker')
                 .where('uid', whereIn: batch)
                 .get();
-            return _parseJobSeekerDocs(snap.docs, hints);
+            fetchedResults.addAll(_parseJobSeekerDocs(snap.docs, hints));
           } catch (e) {
-            debugPrint('⚠️ Job_Seeker uid-field query error: $e');
-            return <Map<String, dynamic>>[];
+            debugPrint('⚠️ Job_Seeker uid-field batch error: $e');
           }
-        }));
-        for (final batch in uidFieldResults) {
-          fetchedResults.addAll(batch);
         }
       }
 
-      // ── Step C: for any IDs not found in Job_Seeker at all, try 'users' ──
-      final foundInJobSeeker =
-          fetchedResults.map((c) => c['uid'].toString()).toSet();
-      final stillMissing =
-          uncachedIds.where((id) => !foundInJobSeeker.contains(id)).toList();
-
-      if (stillMissing.isNotEmpty) {
-        debugPrint(
-            '🔍 ${stillMissing.length} IDs not in Job_Seeker, trying "users" collection by docId');
-
-        final userBatches = <List<String>>[];
-        for (var i = 0; i < stillMissing.length; i += batchSize) {
-          final end = (i + batchSize).clamp(0, stillMissing.length);
-          userBatches.add(stillMissing.sublist(i, end));
-        }
-
-        final usersResults = await Future.wait(userBatches.map((batch) async {
+      // Step C: users collection by docId
+      final foundC = fetchedResults.map((c) => c['uid'].toString()).toSet();
+      final missingC = uncachedIds.where((id) => !foundC.contains(id)).toList();
+      if (missingC.isNotEmpty) {
+        debugPrint('🔍 ${missingC.length} not in Job_Seeker, trying "users"');
+        for (final batch in await _batchSplit(missingC)) {
           try {
             final snap = await _firestore
                 .collection('users')
                 .where(FieldPath.documentId, whereIn: batch)
                 .get();
-            return _parseUsersDocs(snap.docs, hints);
+            fetchedResults.addAll(_parseUsersDocs(snap.docs, hints));
           } catch (e) {
-            debugPrint('⚠️ users batch query error: $e');
-            return <Map<String, dynamic>>[];
+            debugPrint('⚠️ users docId batch error: $e');
           }
-        }));
-
-        for (final batch in usersResults) {
-          fetchedResults.addAll(batch);
         }
 
-        // Also try users collection by uid field
-        final foundInUsers = fetchedResults.map((c) => c['uid'].toString()).toSet();
-        final missingFromUsers = stillMissing.where((id) => !foundInUsers.contains(id)).toList();
-        if (missingFromUsers.isNotEmpty) {
-          final userUidBatches = <List<String>>[];
-          for (var i = 0; i < missingFromUsers.length; i += batchSize) {
-            final end = (i + batchSize).clamp(0, missingFromUsers.length);
-            userUidBatches.add(missingFromUsers.sublist(i, end));
-          }
-          final userUidResults = await Future.wait(userUidBatches.map((batch) async {
+        // Step D: users collection by uid field
+        final foundD = fetchedResults.map((c) => c['uid'].toString()).toSet();
+        final missingD = missingC.where((id) => !foundD.contains(id)).toList();
+        if (missingD.isNotEmpty) {
+          for (final batch in await _batchSplit(missingD)) {
             try {
               final snap = await _firestore
                   .collection('users')
                   .where('uid', whereIn: batch)
                   .get();
-              return _parseUsersDocs(snap.docs, hints);
+              fetchedResults.addAll(_parseUsersDocs(snap.docs, hints));
             } catch (e) {
-              debugPrint('⚠️ users uid-field query error: $e');
-              return <Map<String, dynamic>>[];
+              debugPrint('⚠️ users uid-field batch error: $e');
             }
-          }));
-          for (final batch in userUidResults) {
-            fetchedResults.addAll(batch);
           }
         }
       }
 
-      // ── Step D: anything still missing → build from hint or show fallback ─
-      final foundAll =
-          fetchedResults.map((c) => c['uid'].toString()).toSet();
+      // Step E: email-based lookup + fallback cards for anything still missing
+      final foundAll = fetchedResults.map((c) => c['uid'].toString()).toSet();
       for (final id in uncachedIds) {
-        if (!foundAll.contains(id)) {
-          // Also try email-based lookup if the id looks like an email
-          if (id.contains('@')) {
-            debugPrint('🔍 "$id" looks like email, trying email lookup');
-            try {
-              final emailSnap = await _firestore
-                  .collection('Job_Seeker')
-                  .where('email', isEqualTo: id)
-                  .limit(1)
-                  .get();
-              if (emailSnap.docs.isNotEmpty) {
-                final parsed = _parseJobSeekerDocs(emailSnap.docs, hints);
-                if (parsed.isNotEmpty) {
-                  fetchedResults.addAll(parsed);
-                  continue;
-                }
-              }
-            } catch (e) {
-              debugPrint('⚠️ email lookup error: $e');
+        if (foundAll.contains(id)) continue;
+        if (id.contains('@')) {
+          debugPrint('🔍 "$id" looks like email, trying email lookup');
+          try {
+            final snap = await _firestore
+                .collection('Job_Seeker')
+                .where('email', isEqualTo: id)
+                .limit(1)
+                .get();
+            if (snap.docs.isNotEmpty) {
+              final parsed = _parseJobSeekerDocs(snap.docs, hints);
+              if (parsed.isNotEmpty) { fetchedResults.addAll(parsed); continue; }
             }
+          } catch (e) {
+            debugPrint('⚠️ email lookup error: $e');
           }
-          debugPrint('⚠️ "$id" not found in any collection — using hint fallback');
-          final hint = _normalizeMap(hints?[id]);
-          final card = _buildFallbackCard(id, hint);
-          fetchedResults.add(card);
-          _candidateCache[id] = _CacheEntry(card, DateTime.now());
         }
+        debugPrint('⚠️ "$id" not found in any collection — building fallback card');
+        final card = _buildFallbackCard(id, _normalizeMap(hints?[id]));
+        fetchedResults.add(card);
+        _candidateCache[id] = _CacheEntry(card, DateTime.now());
       }
     } catch (e) {
       debugPrint('❌ _batchFetchCandidates outer error: $e');
@@ -717,63 +643,41 @@ class AdminProvider extends ChangeNotifier {
     for (final doc in docs) {
       final jsData = _normalizeMap(doc.data());
       final userData = _normalizeMap(jsData['user_data'] ?? {});
-
-      // Try multiple paths for personalProfile (nested or flat)
-      final personalProfile = _normalizeMap(
-        jsData['personalProfile'] ??
-            jsData['personal_profile'] ??
-            userData['personalProfile'] ??
-            userData['personal_profile'] ??
-            {},
+      final pp = _normalizeMap(
+        jsData['personalProfile'] ?? jsData['personal_profile'] ??
+            userData['personalProfile'] ?? userData['personal_profile'] ?? {},
       );
-
-      // The actual uid may be stored as a field, not just the doc id
-      final storedUid = jsData['uid']?.toString() ??
-          jsData['user_id']?.toString() ??
-          userData['uid']?.toString() ??
-          doc.id;
-
-      // Exhaustive name resolution: check personalProfile, professionalProfile, flat, userData
-      final professionalProfile = _normalizeMap(
+      final prof = _normalizeMap(
           jsData['professionalProfile'] ?? jsData['professional_profile'] ?? {});
-      final name = personalProfile['name']?.toString()?.trim().isNotEmpty == true
-          ? personalProfile['name'].toString().trim()
-          : personalProfile['fullName']?.toString()?.trim().isNotEmpty == true
-              ? personalProfile['fullName'].toString().trim()
-              : personalProfile['firstName']?.toString()?.trim().isNotEmpty == true
-                  ? '${personalProfile['firstName']} ${personalProfile['lastName'] ?? ''}'.trim()
-                  : jsData['name']?.toString()?.trim().isNotEmpty == true
-                      ? jsData['name'].toString().trim()
-                      : userData['name']?.toString()?.trim().isNotEmpty == true
-                          ? userData['name'].toString().trim()
-                          : professionalProfile['name']?.toString()?.trim().isNotEmpty == true
-                              ? professionalProfile['name'].toString().trim()
-                              : doc.id;
+      final storedUid = jsData['uid']?.toString() ??
+          jsData['user_id']?.toString() ?? userData['uid']?.toString() ?? doc.id;
 
-      final email = personalProfile['email']?.toString() ??
-          personalProfile['emailAddress']?.toString() ??
-          jsData['email']?.toString() ??
-          userData['email']?.toString() ??
-          '';
-      final phone = personalProfile['contactNumber']?.toString() ??
-          personalProfile['phone']?.toString() ??
-          personalProfile['contact_number']?.toString() ??
-          personalProfile['phoneNumber']?.toString() ??
-          jsData['phone']?.toString() ??
-          userData['phone']?.toString() ??
-          '';
+      String resolveName() {
+        for (final src in [pp, jsData, userData, prof]) {
+          for (final key in ['name', 'fullName', 'full_name', 'displayName']) {
+            final v = src[key]?.toString().trim() ?? '';
+            if (v.isNotEmpty && v.toLowerCase() != 'null') return v;
+          }
+          final fn = src['firstName']?.toString().trim() ?? '';
+          final ln = src['lastName']?.toString().trim() ?? '';
+          if (fn.isNotEmpty) return '$fn $ln'.trim();
+        }
+        return doc.id;
+      }
 
-      final hint = _normalizeMap(hints?[doc.id] ?? hints?[storedUid] ?? {});
+      final hint   = _normalizeMap(hints?[doc.id] ?? hints?[storedUid] ?? {});
       final result = {
-        'uid': storedUid,
-        'doc_id': doc.id,
-        'name': name,
-        'email': email,
-        'phone': phone,
+        'uid':      storedUid,
+        'doc_id':   doc.id,
+        'name':     resolveName(),
+        'email':    pp['email']?.toString() ?? pp['emailAddress']?.toString() ??
+            jsData['email']?.toString() ?? userData['email']?.toString() ?? '',
+        'phone':    pp['contactNumber']?.toString() ?? pp['phone']?.toString() ??
+            pp['phoneNumber']?.toString() ?? jsData['phone']?.toString() ??
+            userData['phone']?.toString() ?? '',
         'user_data': {...hint, ...jsData},
       };
-      // Cache by both doc.id and storedUid so either lookup hits
-      _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
+      _candidateCache[doc.id]    = _CacheEntry(result, DateTime.now());
       if (storedUid != doc.id) {
         _candidateCache[storedUid] = _CacheEntry(result, DateTime.now());
       }
@@ -790,10 +694,10 @@ class AdminProvider extends ChangeNotifier {
       final data = _normalizeMap(doc.data());
       final hint = _normalizeMap(hints?[doc.id]);
       final result = {
-        'uid':   doc.id,
-        'name':  data['name']?.toString() ?? data['displayName']?.toString() ?? doc.id,
-        'email': data['email']?.toString() ?? '',
-        'phone': data['phone']?.toString() ?? '',
+        'uid':      doc.id,
+        'name':     data['name']?.toString() ?? data['displayName']?.toString() ?? doc.id,
+        'email':    data['email']?.toString() ?? '',
+        'phone':    data['phone']?.toString() ?? '',
         'user_data': {...hint, ...data},
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
@@ -802,16 +706,11 @@ class AdminProvider extends ChangeNotifier {
     return results;
   }
 
-  Map<String, dynamic> _buildFallbackCard(
-      String uid, Map<String, dynamic> hint) {
-    // Deep-search for name in nested structures
-    final pp = _normalizeMap(
-        hint['personalProfile'] ?? hint['personal_profile'] ?? {});
-    final prof = _normalizeMap(
-        hint['professionalProfile'] ?? hint['professional_profile'] ?? {});
-    final ud = _normalizeMap(hint['user_data'] ?? {});
-    final udPp = _normalizeMap(
-        ud['personalProfile'] ?? ud['personal_profile'] ?? {});
+  Map<String, dynamic> _buildFallbackCard(String uid, Map<String, dynamic> hint) {
+    final pp   = _normalizeMap(hint['personalProfile'] ?? hint['personal_profile'] ?? {});
+    final prof = _normalizeMap(hint['professionalProfile'] ?? hint['professional_profile'] ?? {});
+    final ud   = _normalizeMap(hint['user_data'] ?? {});
+    final udPp = _normalizeMap(ud['personalProfile'] ?? ud['personal_profile'] ?? {});
 
     String resolveName() {
       for (final src in [pp, udPp, hint, ud, prof]) {
@@ -819,35 +718,27 @@ class AdminProvider extends ChangeNotifier {
           final v = src[key]?.toString().trim() ?? '';
           if (v.isNotEmpty && v.toLowerCase() != 'null') return v;
         }
-        // Try firstName + lastName combo
         final fn = src['firstName']?.toString().trim() ?? '';
         final ln = src['lastName']?.toString().trim() ?? '';
         if (fn.isNotEmpty) return '$fn $ln'.trim();
       }
-      // Last resort: use email prefix
-      final email = hint['email']?.toString().trim() ??
-          pp['email']?.toString().trim() ?? '';
+      final email = hint['email']?.toString().trim() ?? pp['email']?.toString().trim() ?? '';
       if (email.contains('@')) return email.split('@').first;
       return uid.startsWith('__') ? 'Unknown Candidate' : uid;
     }
 
-    final resolvedName = resolveName();
     return {
-      'uid':   uid,
-      'name':  resolvedName,
-      'email': hint['email']?.toString() ??
-          pp['email']?.toString() ??
-          ud['email']?.toString() ?? '',
-      'phone': hint['phone']?.toString() ??
-          hint['contactNumber']?.toString() ??
-          pp['phone']?.toString() ??
-          pp['contactNumber']?.toString() ?? '',
+      'uid':      uid,
+      'name':     resolveName(),
+      'email':    hint['email']?.toString() ?? pp['email']?.toString() ?? ud['email']?.toString() ?? '',
+      'phone':    hint['phone']?.toString() ?? hint['contactNumber']?.toString() ??
+          pp['phone']?.toString() ?? pp['contactNumber']?.toString() ?? '',
       'user_data': hint,
     };
   }
 
   // =========================================================================
-  // FETCH RECRUITER INFO (unchanged)
+  // FETCH RECRUITER INFO
   // =========================================================================
 
   Future<Map<String, dynamic>?> _fetchRecruiterInfo(String recruiterId) async {
@@ -858,23 +749,20 @@ class AdminProvider extends ChangeNotifier {
       _recruiterCache.remove(recruiterId);
     }
     try {
-      final snap = await _firestore
-          .collection('recruiter')
-          .doc(recruiterId)
-          .get(const GetOptions(source: Source.cache))
-          .catchError((_) => _firestore
-          .collection('recruiter')
-          .doc(recruiterId)
-          .get(const GetOptions(source: Source.server)));
+      DocumentSnapshot snap;
+      try {
+        snap = await _firestore.collection('recruiter').doc(recruiterId)
+            .get(const GetOptions(source: Source.cache));
+      } catch (_) {
+        snap = await _firestore.collection('recruiter').doc(recruiterId)
+            .get(const GetOptions(source: Source.server));
+      }
       if (!snap.exists) return null;
       final data     = _normalizeMap(snap.data());
       final userData = data.containsKey('user_data') && data['user_data'] != null
           ? _normalizeMap(data['user_data'])
-          : {
-        'name':    data['name']    ?? data['displayName'] ?? '',
-        'email':   data['email']   ?? '',
-        'company': data['company'] ?? data['org'] ?? '',
-      };
+          : {'name': data['name'] ?? data['displayName'] ?? '',
+        'email': data['email'] ?? '', 'company': data['company'] ?? data['org'] ?? ''};
       _recruiterCache[recruiterId] = _CacheEntry(userData, DateTime.now());
       return userData;
     } catch (e) {
@@ -884,26 +772,25 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
-  // BATCH PREFETCH RECRUITERS (unchanged)
+  // BATCH PREFETCH RECRUITERS
   // =========================================================================
 
   Future<void> _batchPrefetchRecruiters(List<String> recruiterIds) async {
     const batchSize = 10;
-    final batches = <List<String>>[];
-    for (var i = 0; i < recruiterIds.length; i += batchSize) {
-      final end = (i + batchSize).clamp(0, recruiterIds.length);
-      batches.add(recruiterIds.sublist(i, end));
-    }
+    final batches = [for (var i = 0; i < recruiterIds.length; i += batchSize)
+      recruiterIds.sublist(i, (i + batchSize).clamp(0, recruiterIds.length))];
     try {
       await Future.wait(batches.map((batch) async {
-        final snap = await _firestore
-            .collection('recruiter')
-            .where(FieldPath.documentId, whereIn: batch)
-            .get(const GetOptions(source: Source.cache))
-            .catchError((_) => _firestore
-            .collection('recruiter')
-            .where(FieldPath.documentId, whereIn: batch)
-            .get(const GetOptions(source: Source.server)));
+        QuerySnapshot snap;
+        try {
+          snap = await _firestore.collection('recruiter')
+              .where(FieldPath.documentId, whereIn: batch)
+              .get(const GetOptions(source: Source.cache));
+        } catch (_) {
+          snap = await _firestore.collection('recruiter')
+              .where(FieldPath.documentId, whereIn: batch)
+              .get(const GetOptions(source: Source.server));
+        }
         for (final doc in snap.docs) {
           final data     = _normalizeMap(doc.data());
           final userData = data.containsKey('user_data') && data['user_data'] != null
@@ -919,7 +806,7 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
-  // REALTIME LISTENER (unchanged)
+  // REALTIME LISTENER
   // =========================================================================
 
   void _startRealtimeListener() {
@@ -934,23 +821,19 @@ class AdminProvider extends ChangeNotifier {
         for (final change in snap.docChanges) {
           final data        = _normalizeMap(change.doc.data());
           final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
-          int totalCandidates = 0;
-          if (data['total_candidates'] != null) {
-            totalCandidates = int.tryParse(data['total_candidates'].toString()) ?? 0;
-          } else {
-            totalCandidates = _extractCandidateEntries(data).length;
-          }
+          final total       = data['total_candidates'] != null
+              ? int.tryParse(data['total_candidates'].toString()) ?? 0
+              : _extractCandidateEntries(data).length;
+
           final entry = {
-            'id': change.doc.id,
-            'recruiter_id': recruiterId,
-            'recruiter_email':
-            (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString(),
-            'total_candidates': totalCandidates,
+            'id': change.doc.id, 'recruiter_id': recruiterId,
+            'recruiter_email': (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString(),
+            'total_candidates': total,
             'status': (data['status'] ?? 'pending').toString(),
             'created_at': data['created_at'],
-            'notes': data['notes'] ?? '',
-            'raw': data,
+            'notes': data['notes'] ?? '', 'raw': data,
           };
+
           if (change.type == DocumentChangeType.added) {
             if (!requests.any((r) => r['id'] == change.doc.id)) {
               requests.insert(0, entry);
@@ -961,9 +844,10 @@ class AdminProvider extends ChangeNotifier {
             if (idx != -1) {
               requests[idx] = entry;
               hasChanges = true;
-              _requestDetailsCache.remove(change.doc.id);
-              if (_selectedRequestId == change.doc.id) {
-                fetchRequestDetails(requestId: change.doc.id);
+              // Only invalidate + re-fetch if NOT the currently selected
+              // request (the optimistic update already covers that case).
+              if (_selectedRequestId != change.doc.id) {
+                _requestDetailsCache.remove(change.doc.id);
               }
             }
           } else if (change.type == DocumentChangeType.removed) {
@@ -979,7 +863,7 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
-  // UPDATE OPERATIONS (unchanged)
+  // UPDATE REQUEST STATUS
   // =========================================================================
 
   Future<bool> updateRequestStatus({
@@ -999,23 +883,20 @@ class AdminProvider extends ChangeNotifier {
         'last_updated_by': performedBy ?? 'admin',
       });
       batch.set(ref.collection('audit').doc(), {
-        'action': 'update_status',
-        'status': newStatus,
-        'note': note ?? '',
-        'performed_by': performedBy ?? 'admin',
+        'action': 'update_status', 'status': newStatus,
+        'note': note ?? '', 'performed_by': performedBy ?? 'admin',
         'created_at': now,
       });
       await batch.commit();
       if (_disposed) return true;
+
       final idx = requests.indexWhere((r) => r['id'] == requestId);
       if (idx != -1) {
         requests[idx]['status'] = newStatus;
         requests[idx]['last_updated_at'] = DateTime.now();
       }
+      // Invalidate so next open gets fresh details, but don't re-fetch now
       _requestDetailsCache.remove(requestId);
-      if (_selectedRequestId == requestId) {
-        await fetchRequestDetails(requestId: requestId);
-      }
       _safeNotify();
       return true;
     } catch (e) {
@@ -1023,6 +904,14 @@ class AdminProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  // =========================================================================
+  // UPDATE CANDIDATE STATUS
+  //
+  // CHANGED: No longer calls fetchRequestDetails after a successful write.
+  // The UI has already been updated via optimisticCandidateStatusUpdate().
+  // On failure we invalidate the cache so the next open restores server state.
+  // =========================================================================
 
   Future<bool> updateCandidateStatus({
     required String requestId,
@@ -1032,14 +921,18 @@ class AdminProvider extends ChangeNotifier {
     String? performedBy,
   }) async {
     if (_disposed) return false;
+    final normalized =
+    status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
+
+      // Read current candidates array for the Firestore update
       final snap = await ref.get();
       if (_disposed || !snap.exists) return false;
+
       final data       = snap.data() as Map<String, dynamic>;
-      final candidates = List.from(data['candidates'] ?? []);
-      final normalized = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+      final candidates = List<dynamic>.from(data['candidates'] ?? []);
       for (int i = 0; i < candidates.length; i++) {
         final c = _normalizeMap(candidates[i]);
         if (c['uid'] == candidateUid) {
@@ -1047,6 +940,7 @@ class AdminProvider extends ChangeNotifier {
           break;
         }
       }
+
       final batch = _firestore.batch();
       batch.update(ref, {
         'candidate_statuses.$candidateUid': normalized,
@@ -1057,28 +951,30 @@ class AdminProvider extends ChangeNotifier {
       batch.set(ref.collection('audit').doc(), {
         'action': 'update_candidate_status',
         'candidate_uid': candidateUid,
-        'status': status,
+        'status': normalized,
         'note': note ?? '',
         'performed_by': performedBy ?? 'admin',
         'created_at': now,
       });
       await batch.commit();
-      if (_disposed) return true;
-      _requestDetailsCache.remove(requestId);
-      if (_selectedRequestId == requestId) {
-        await fetchRequestDetails(requestId: requestId);
-      } else {
-        _safeNotify();
-      }
+
+      // Success: optimistic cache already reflects the new state — do nothing.
+      debugPrint('✅ Firestore write confirmed: $candidateUid → $normalized');
       return true;
     } catch (e) {
       debugPrint('❌ updateCandidateStatus error: $e');
+      // On failure: invalidate cache so next open restores correct state
+      _requestDetailsCache.remove(requestId);
+      // If currently viewing this request, quietly re-fetch in background
+      if (!_disposed && _selectedRequestId == requestId) {
+        fetchRequestDetails(requestId: requestId);
+      }
       return false;
     }
   }
 
   // =========================================================================
-  // CACHE MANAGEMENT (unchanged)
+  // CACHE MANAGEMENT
   // =========================================================================
 
   void clearCaches() {
@@ -1099,14 +995,14 @@ class AdminProvider extends ChangeNotifier {
   // =========================================================================
 
   static Map<String, dynamic> normalizeMapStatic(dynamic m) {
-    if (m == null) return <String, dynamic>{};
+    if (m == null) return {};
     if (m is Map<String, dynamic>) return m;
     if (m is Map) {
       final out = <String, dynamic>{};
       m.forEach((k, v) => out[k?.toString() ?? ''] = v);
       return out;
     }
-    return <String, dynamic>{};
+    return {};
   }
 
   Future<String> fetchUnifiedName(String uid, String role) async {
@@ -1124,7 +1020,8 @@ class AdminProvider extends ChangeNotifier {
         final doc = await _firestore.collection('recruiter').doc(uid).get();
         if (doc.exists) {
           final data = _normalizeMap(doc.data());
-          final name = _normalizeMap(data['user_data'])['name']?.toString() ?? data['name']?.toString() ?? 'Unknown Recruiter';
+          final name = _normalizeMap(data['user_data'])['name']?.toString() ??
+              data['name']?.toString() ?? 'Unknown Recruiter';
           _recruiterCache[uid] = _CacheEntry({'name': name}, DateTime.now());
           return name;
         }
@@ -1153,7 +1050,6 @@ class AdminProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    _notifyTimer?.cancel();
     _requestsSub?.cancel();
     _nameController.dispose();
     _emailController.dispose();
@@ -1170,7 +1066,7 @@ class AdminProvider extends ChangeNotifier {
   }
 }
 
-// ─── Cache entry ──────────────────────────────────────────────────────────────
+// ── Cache entry ───────────────────────────────────────────────────────────────
 class _CacheEntry {
   final Map<String, dynamic> data;
   final DateTime timestamp;
