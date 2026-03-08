@@ -429,22 +429,25 @@ class _DashboardBodyState extends State<_DashboardBody> {
           }
           return DraggableScrollableSheet(
             initialChildSize: 0.92, minChildSize: 0.5, maxChildSize: 0.97,
-            builder: (_, sc) => Container(
-              decoration: const BoxDecoration(
-                  color: _C.bg,
-                  borderRadius:
-                  BorderRadius.vertical(top: Radius.circular(20))),
-              child: ClipRRect(
-                borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
-                child: CustomScrollView(controller: sc, slivers: [
-                  SliverToBoxAdapter(child: _dragHandle()),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-                    sliver: SliverToBoxAdapter(
-                        child: _buildDetailContent(ctx2, snap, det)),
-                  ),
-                ]),
+            builder: (_, sc) => ClipRRect(
+              borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(20)),
+              child: ScaffoldMessenger(
+                child: Scaffold(
+                  backgroundColor: _C.bg,
+                  body: CustomScrollView(controller: sc, slivers: [
+                    SliverToBoxAdapter(child: _dragHandle()),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+                      sliver: SliverToBoxAdapter(
+                        child: Builder(
+                          builder: (sheetCtx) =>
+                              _buildDetailContent(sheetCtx, snap, det),
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
               ),
             ),
           );
@@ -482,12 +485,26 @@ class _DashboardBodyState extends State<_DashboardBody> {
   //     status                                        → excluded (on card only)
 
   void _showCV(BuildContext ctx, Map<String, dynamic> candidate) {
-    // candidate IS the flat object from candidates[]
-    // Provider may have wrapped it in user_data — handle both
-    final flat = _n(candidate['user_data'] ?? candidate);
-    // If user_data is a different structure (from Job_Seeker), prefer the
-    // original candidate when its 'name' field is present
-    final cand = (_s(candidate['name']).isNotEmpty) ? _n(candidate) : flat;
+    // MERGE user_data into top level so ALL fields are accessible
+    // regardless of whether data came from the rich embedded path
+    // or the thin Job_Seeker/users lookup path.
+    final raw = _n(candidate);
+    final userData = _n(raw['user_data']);
+    // user_data fields as base; top-level fields override
+    final cand = <String, dynamic>{...userData, ...raw};
+    cand.remove('user_data');
+
+    debugPrint('═══════════════════════════════════════════════════════');
+    debugPrint('📋 CV SHEET — keys: ${cand.keys.toList()}');
+    debugPrint('📋 name=${cand['name']}, email=${cand['email']}');
+    debugPrint('📋 nationality=${cand['nationality']}, dob=${cand['dob']}');
+    debugPrint('📋 skills=${cand['skills']}');
+    debugPrint('📋 eduProfile type=${cand['educationalProfile']?.runtimeType}');
+    debugPrint('📋 profExp type=${cand['professionalExperience']?.runtimeType}');
+    debugPrint('📋 certs type=${cand['certifications']?.runtimeType}');
+    debugPrint('📋 match_score=${_n(cand['match_score']).keys.toList()}');
+    debugPrint('📋 expDocs=${cand['experienceDocuments']}');
+    debugPrint('═══════════════════════════════════════════════════════');
 
     showModalBottomSheet(
       context: ctx,
@@ -1237,6 +1254,7 @@ class _CVSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext ctx) {
+    debugPrint('🔍 _CVSheet.build — ${cand.keys.length} keys received');
     // ── Flat field extraction (matches the real DB schema) ─────────────────
     final name        = str(cand['name'],             'Unknown');
     final email       = str(cand['email']);
@@ -1264,12 +1282,12 @@ class _CVSheet extends StatelessWidget {
     final awards      = strList(cand['awards']);
     final publications= strList(cand['publications']);
 
-    final eduList  = ((cand['educationalProfile']    as List?) ?? [])
-        .map((e) => norm(e)).toList();
-    final expList  = ((cand['professionalExperience'] as List?) ?? [])
-        .map((e) => norm(e)).toList();
-    final certList = ((cand['certifications']          as List?) ?? [])
-        .map((e) => norm(e)).toList();
+    final eduList  = (cand['educationalProfile'] is List
+        ? (cand['educationalProfile'] as List) : []).map((e) => norm(e)).toList();
+    final expList  = (cand['professionalExperience'] is List
+        ? (cand['professionalExperience'] as List) : []).map((e) => norm(e)).toList();
+    final certList = (cand['certifications'] is List
+        ? (cand['certifications'] as List) : []).map((e) => norm(e)).toList();
 
     // experienceDocuments: [{"NOC": "url"}, {"Letter": "url"}]
     final expDocs = namedLinks(
@@ -1793,96 +1811,89 @@ class _MatchScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     final col = _col(overall);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: col.withOpacity(.04),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: col.withOpacity(.2))),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // ── Top row: circle + sub-scores ──
-        Row(children: [
-          Container(
-            width: 62, height: 62,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: col.withOpacity(.1),
-                border: Border.all(color: col.withOpacity(.3), width: 2)),
-            child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('$overall',
-                  style: GoogleFonts.inter(
-                      fontSize: 22, fontWeight: FontWeight.w900, color: col)),
-              Text('%', style: GoogleFonts.inter(fontSize: 9, color: col)),
-            ])),
-          ),
-          const SizedBox(width: 16),
-          Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (recommendation.isNotEmpty)
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: col.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(6)),
-                child: Text(recommendation,
-                    style: GoogleFonts.inter(
-                        fontSize: 12, fontWeight: FontWeight.w700,
-                        color: col)),
-              ),
-            const SizedBox(height: 10),
-            Row(children: [
-              _Sub('Skills',     skillMatch, const Color(0xFF3B82F6)),
-              const SizedBox(width: 12),
-              _Sub('Education',  eduMatch,   _C.warning),
-              const SizedBox(width: 12),
-              _Sub('Experience', expMatch,   const Color(0xFF8B5CF6)),
-            ]),
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // ── Top row: circle + sub-scores ──
+      Row(children: [
+        Container(
+          width: 62, height: 62,
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: col.withOpacity(.1),
+              border: Border.all(color: col.withOpacity(.3), width: 2)),
+          child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text('$overall',
+                style: GoogleFonts.inter(
+                    fontSize: 22, fontWeight: FontWeight.w900, color: col)),
+            Text('%', style: GoogleFonts.inter(fontSize: 9, color: col)),
           ])),
-        ]),
-
-        // ── Strengths ──
-        if (strengths.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: _C.border),
+        ),
+        const SizedBox(width: 16),
+        Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (recommendation.isNotEmpty)
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                  color: col.withOpacity(.12),
+                  borderRadius: BorderRadius.circular(6)),
+              child: Text(recommendation,
+                  style: GoogleFonts.inter(
+                      fontSize: 12, fontWeight: FontWeight.w700,
+                      color: col)),
+            ),
           const SizedBox(height: 10),
-          Text('STRENGTHS',
-              style: GoogleFonts.inter(
-                  fontSize: 9, fontWeight: FontWeight.w800,
-                  color: _C.success, letterSpacing: .8)),
-          const SizedBox(height: 6),
-          ...strengths.map((s) => _BulletRow(s, _C.success,
-              Icons.check_circle_outline_rounded)),
-        ],
-
-        // ── Weaknesses ──
-        if (weaknesses.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Text('WEAKNESSES',
-              style: GoogleFonts.inter(
-                  fontSize: 9, fontWeight: FontWeight.w800,
-                  color: _C.danger, letterSpacing: .8)),
-          const SizedBox(height: 6),
-          ...weaknesses.map((w) => _BulletRow(w, _C.danger,
-              Icons.highlight_off_rounded)),
-        ],
-
-        // ── Analysis ──
-        if (analysis.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          const Divider(height: 1, color: _C.border),
-          const SizedBox(height: 8),
-          Text('ANALYSIS',
-              style: GoogleFonts.inter(
-                  fontSize: 9, fontWeight: FontWeight.w800,
-                  color: _C.txt3, letterSpacing: .8)),
-          const SizedBox(height: 5),
-          SelectableText(analysis,
-              style: GoogleFonts.inter(
-                  fontSize: 12, color: _C.txt2, height: 1.5)),
-        ],
+          Row(children: [
+            _Sub('Skills',     skillMatch, const Color(0xFF3B82F6)),
+            const SizedBox(width: 12),
+            _Sub('Education',  eduMatch,   _C.warning),
+            const SizedBox(width: 12),
+            _Sub('Experience', expMatch,   const Color(0xFF8B5CF6)),
+          ]),
+        ])),
       ]),
-    );
+
+      // ── Strengths ──
+      if (strengths.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        const Divider(height: 1, color: _C.border),
+        const SizedBox(height: 10),
+        Text('STRENGTHS',
+            style: GoogleFonts.inter(
+                fontSize: 9, fontWeight: FontWeight.w800,
+                color: _C.success, letterSpacing: .8)),
+        const SizedBox(height: 6),
+        ...strengths.map((s) => _BulletRow(s, _C.success,
+            Icons.check_circle_outline_rounded)),
+      ],
+
+      // ── Weaknesses ──
+      if (weaknesses.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        Text('WEAKNESSES',
+            style: GoogleFonts.inter(
+                fontSize: 9, fontWeight: FontWeight.w800,
+                color: _C.danger, letterSpacing: .8)),
+        const SizedBox(height: 6),
+        ...weaknesses.map((w) => _BulletRow(w, _C.danger,
+            Icons.highlight_off_rounded)),
+      ],
+
+      // ── Analysis ──
+      if (analysis.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        const Divider(height: 1, color: _C.border),
+        const SizedBox(height: 8),
+        Text('ANALYSIS',
+            style: GoogleFonts.inter(
+                fontSize: 9, fontWeight: FontWeight.w800,
+                color: _C.txt3, letterSpacing: .8)),
+        const SizedBox(height: 5),
+        SelectableText(analysis,
+            style: GoogleFonts.inter(
+                fontSize: 12, color: _C.txt2, height: 1.5)),
+      ],
+    ]);
   }
 }
 
