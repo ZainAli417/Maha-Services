@@ -31,9 +31,9 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
         final initials = provider.initials;
 
         final sidebarWidth = widget.isDrawer
-        // Mobile: Reduced to 60% width, clamped between 200 and 250
-            ? (MediaQuery.of(context).size.width * 0.40).clamp(200.0, 250.0)
-            : 260.0; // Desktop: Stays the same
+        // Mobile: Narrower drawer, clamped between 180 and 230
+            ? (MediaQuery.of(context).size.width * 0.35).clamp(180.0, 230.0)
+            : 240.0; // Desktop: Reduced from 260 to 240
         return Container(
           width: sidebarWidth,
           decoration: BoxDecoration(
@@ -120,26 +120,26 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                         onTap: () => context.go('/request-box'),
                       ),
 
-                      const SizedBox(height: 20),
-                      _buildSectionLabel('ACCOUNT'),
-                      const SizedBox(height: 8),
-                      _buildMenuItem(
-                         icon: Icons.work_outline,
-                         activeIcon: Icons.work,
-                         label: 'Settings',
-                         index: 5,
-                         isActive: widget.activeIndex == 5,
-                         onTap: () => context.go('/Settings'),
-                       ),
-
-                      _buildMenuItem(
-                        icon: Icons.help_outline,
-                        activeIcon: Icons.help,
-                        label: 'Help & Support',
-                        index: 6,
-                        isActive: widget.activeIndex == 6,
-                        onTap: () => context.go('/help'),
-                      ),
+                      // const SizedBox(height: 20),
+                      // _buildSectionLabel('ACCOUNT'),
+                      // const SizedBox(height: 8),
+                      // _buildMenuItem(
+                      //    icon: Icons.work_outline,
+                      //    activeIcon: Icons.work,
+                      //    label: 'Settings',
+                      //    index: 5,
+                      //    isActive: widget.activeIndex == 5,
+                      //    onTap: () => context.go('/Settings'),
+                      //  ),
+                      //
+                      // _buildMenuItem(
+                      //   icon: Icons.help_outline,
+                      //   activeIcon: Icons.help,
+                      //   label: 'Help & Support',
+                      //   index: 6,
+                      //   isActive: widget.activeIndex == 6,
+                      //   onTap: () => context.go('/help'),
+                      // ),
                     ],
                   ),
                 ),

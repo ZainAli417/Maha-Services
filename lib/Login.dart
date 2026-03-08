@@ -663,30 +663,61 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
                   SizedBox(height: isWide ? 32 : 20),
 
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("Don't have an account?",
-                            style: GoogleFonts.poppins(
-                                color: const Color(0xFF6B7280),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400)),
-                        TextButton(
-                          onPressed: () => context.go('/admin'),
-                          style: TextButton.styleFrom(
-                              padding: const EdgeInsets.only(left: 4),
-                              minimumSize: Size.zero,
-                              tapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap),
-                          child: Text('Sign Up',
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Don't have an account?",
                               style: GoogleFonts.poppins(
-                                  color: const Color(0xFF6366F1),
+                                  color: const Color(0xFF6B7280),
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w700)),
-                        ),
-                      ],
-                    ),
+                                  fontWeight: FontWeight.w400)),
+                          TextButton(
+                            onPressed: () => context.go('/register'),
+                            style: TextButton.styleFrom(
+                                padding: const EdgeInsets.only(left: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap),
+                            child: Text('Sign Up',
+                                style: GoogleFonts.poppins(
+                                    color: const Color(0xFF6366F1),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 25),
+                     Center(child:
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Are you an Admin?",
+                              style: GoogleFonts.poppins(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5)),
+                          TextButton(
+                            onPressed: () => context.go('/admin'),
+                            style: TextButton.styleFrom(
+                                padding: const EdgeInsets.only(left: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap),
+                            child: Text('Click Here',
+                                style: GoogleFonts.poppins(
+                                    color: const Color(0xFF4B5563),
+                                    fontSize: 13,
+                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.w800)),
+                          ),
+                        ],
+                      ),
+                       )
+                    ],
                   ),
                 ],
               ),

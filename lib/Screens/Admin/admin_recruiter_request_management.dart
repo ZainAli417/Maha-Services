@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'admin_recruiter_request_provider.dart';
 
@@ -1926,106 +1927,109 @@ class _CVSheet extends StatelessWidget {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Column(
             children: [
-              // drag handle
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10, bottom: 6),
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: _C.border,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-
-              // ── Dark header ──
+              // ── Header Area (Dark) ──
               Container(
-                padding: const EdgeInsets.fromLTRB(20, 14, 14, 20),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
                   children: [
-                    _Avatar(
-                      name: name,
-                      size: 68,
-                      imageUrl: picUrl.isNotEmpty ? picUrl : null,
+                    // drag handle
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 10, bottom: 4),
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
+                    // Header Info
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 14, 20),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SelectableText(
-                            name.toUpperCase(),
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: .4,
-                            ),
+                          _Avatar(
+                            name: name,
+                            size: 68,
+                            imageUrl: picUrl.isNotEmpty ? picUrl : null,
                           ),
-                          if (jobTitle.isNotEmpty ||
-                              currentRole.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              jobTitle.isNotEmpty ? jobTitle : currentRole,
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF818CF8),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                          if (company.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
-                                  Icons.business_outlined,
-                                  color: Colors.white38,
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  company,
+                                SelectableText(
+                                  name.toUpperCase(),
                                   style: GoogleFonts.inter(
-                                    color: Colors.white60,
-                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: .4,
                                   ),
+                                ),
+                                if (jobTitle.isNotEmpty || currentRole.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    jobTitle.isNotEmpty ? jobTitle : currentRole,
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF818CF8),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                                if (company.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.business_outlined,
+                                        color: Colors.white38,
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        company,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white60,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 16,
+                                  runSpacing: 6,
+                                  children: [
+                                    if (email.isNotEmpty) _HdrItem(Icons.email_outlined, email),
+                                    if (phone.isNotEmpty) _HdrItem(Icons.phone_android_outlined, phone),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 16,
-                            runSpacing: 6,
-                            children: [
-                              if (email.isNotEmpty)
-                                _HdrItem(Icons.email_outlined, email),
-                              if (phone.isNotEmpty)
-                                _HdrItem(Icons.phone_android_outlined, phone),
-                            ],
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white60,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                           ),
                         ],
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white60,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
@@ -2105,22 +2109,33 @@ class _CVSheet extends StatelessWidget {
                             // ── Match Score ──
                             if (hasScore) ...[
                               const SizedBox(height: 22),
-                              _Sec(
-                                'MATCH SCORE',
-                                Icons.analytics_outlined,
-                                const Color(0xFF0EA5E9),
-                                [
-                                  _MatchScoreCard(
-                                    overall: overallSc,
-                                    recommendation: rec,
-                                    skillMatch: skillMatch,
-                                    eduMatch: eduMatch,
-                                    expMatch: expMatch,
-                                    strengths: strengths,
-                                    weaknesses: weaknesses,
-                                    analysis: analysis,
+                              Row(
+                                children: [
+                                  Icon(Icons.analytics_outlined, color: const Color(0xFF0EA5E9), size: 17),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'MATCH SCORE',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: _C.txt1,
+                                      letterSpacing: 1.4,
+                                    ),
                                   ),
+                                  const SizedBox(width: 14),
+                                  const Expanded(child: Divider(height: 1, color: _C.border)),
                                 ],
+                              ),
+                              const SizedBox(height: 14),
+                              _MatchScoreCard(
+                                overall: overallSc,
+                                recommendation: rec,
+                                skillMatch: skillMatch,
+                                eduMatch: eduMatch,
+                                expMatch: expMatch,
+                                strengths: strengths,
+                                weaknesses: weaknesses,
+                                analysis: analysis,
                               ),
                             ],
 
@@ -2600,8 +2615,10 @@ class _LinkChip extends StatelessWidget {
     waitDuration: const Duration(milliseconds: 500),
     child: InkWell(
       onTap: () {
-        // Wire url_launcher:
-        // launchUrl(Uri.parse(url.startsWith('http') ? url : 'https://$url'));
+        final uri = Uri.tryParse(url.startsWith('http') ? url : 'https://$url');
+        if (uri != null) {
+          launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       },
       borderRadius: BorderRadius.circular(8),
       child: Container(
@@ -2642,6 +2659,7 @@ class _LinkChip extends StatelessWidget {
       ),
     ),
   );
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
