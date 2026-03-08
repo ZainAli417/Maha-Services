@@ -16,6 +16,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 
 class AdminProvider extends ChangeNotifier {
   // ── Form controllers ──────────────────────────────────────────────────────
@@ -1068,6 +1069,36 @@ class AdminProvider extends ChangeNotifier {
       return out;
     }
     return {};
+  }
+
+  static String formatDate(dynamic timestamp, [String fallback = '-']) {
+    if (timestamp == null) return fallback;
+    if (timestamp is Timestamp) {
+      return DateFormat('MMM d, yyyy').format(timestamp.toDate());
+    }
+    if (timestamp is DateTime) {
+      return DateFormat('MMM d, yyyy').format(timestamp);
+    }
+    if (timestamp is String && timestamp.isNotEmpty) {
+      final d = DateTime.tryParse(timestamp);
+      if (d != null) return DateFormat('MMM d, yyyy').format(d);
+    }
+    return timestamp.toString().isNotEmpty ? timestamp.toString() : fallback;
+  }
+
+  static String formatDateTime(dynamic timestamp, [String fallback = '-']) {
+    if (timestamp == null) return fallback;
+    if (timestamp is Timestamp) {
+      return DateFormat('MMM d, yyyy · h:mm a').format(timestamp.toDate());
+    }
+    if (timestamp is DateTime) {
+      return DateFormat('MMM d, yyyy · h:mm a').format(timestamp);
+    }
+    if (timestamp is String && timestamp.isNotEmpty) {
+      final d = DateTime.tryParse(timestamp);
+      if (d != null) return DateFormat('MMM d, yyyy · h:mm a').format(d);
+    }
+    return timestamp.toString().isNotEmpty ? timestamp.toString() : fallback;
   }
 
   Future<String> fetchUnifiedName(String uid, String role) async {
