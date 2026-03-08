@@ -418,14 +418,49 @@ class AdminProvider extends ChangeNotifier {
 
       debugPrint('👥 Unique candidate UIDs: ${uniqueCandidates.values.toList()}');
 
-      final recruiterInfo    = await _fetchRecruiterInfo(recruiterId);
-      if (_disposed) { completer.complete(null); return null; }
+      // ── FIX: If the raw entries are rich Map objects (already contain full
+      // profile data from the recruiter_requests/candidates[] array), use them
+      // directly instead of fetching thin records from Job_Seeker / users.
+      // A "rich" entry is one that has at least 'name' OR 'skills' OR
+      // 'professionalExperience' — i.e. it's more than just a UID reference.
+      bool allEntriesAreRichObjects = rawEntries.isNotEmpty &&
+          rawEntries.every((e) {
+            if (e is! Map) return false;
+            final m = _normalizeMap(e);
+            return m.containsKey('name') ||
+                m.containsKey('skills') ||
+                m.containsKey('professionalExperience') ||
+                m.containsKey('experienceDocuments');
+          });
 
-      final candidateDetails = await _batchFetchCandidates(
-          uniqueCandidates.values.toList(), hints: candidateHints);
-      if (_disposed) { completer.complete(null); return null; }
+      List<Map<String, dynamic>> candidateDetails;
+
+      if (allEntriesAreRichObjects) {
+        debugPrint('✅ candidates[] contains full profile objects — using directly');
+        // Use the embedded data as-is; normalise each entry
+        final seen = <String>{};
+        candidateDetails = [];
+        for (final e in rawEntries) {
+          final m   = _normalizeMap(e);
+          final uid = _extractCandidateUid(m, candidateDetails.length);
+          if (seen.contains(uid.toLowerCase())) continue;
+          seen.add(uid.toLowerCase());
+          // Ensure 'uid' key is present for downstream widgets
+          final card = {...m, 'uid': uid};
+          candidateDetails.add(card);
+          // Cache so _batchFetchCandidates can reuse if needed later
+          _candidateCache[uid] = _CacheEntry(card, DateTime.now());
+        }
+      } else {
+        candidateDetails = await _batchFetchCandidates(
+            uniqueCandidates.values.toList(), hints: candidateHints);
+        if (_disposed) { completer.complete(null); return null; }
+      }
 
       debugPrint('✅ Candidates resolved: ${candidateDetails.length}');
+
+      final recruiterInfo = await _fetchRecruiterInfo(recruiterId);
+      if (_disposed) { completer.complete(null); return null; }
 
       final result = <String, dynamic>{
         'request_doc': {'id': snap.id, 'data': data},
@@ -844,11 +879,16 @@ class AdminProvider extends ChangeNotifier {
             if (idx != -1) {
               requests[idx] = entry;
               hasChanges = true;
-              // Only invalidate + re-fetch if NOT the currently selected
-              // request (the optimistic update already covers that case).
+              // FIX: NEVER evict the cache for the currently-selected request
+              // from the realtime listener — the optimistic patch already kept
+              // it up-to-date. Evicting here is what caused the bottom sheet
+              // to crash after a status change fired a Firestore event.
               if (_selectedRequestId != change.doc.id) {
                 _requestDetailsCache.remove(change.doc.id);
               }
+              // If it IS selected, the in-memory patch done in
+              // updateRequestStatus / optimisticCandidateStatusUpdate
+              // is already the source of truth — do nothing.
             }
           } else if (change.type == DocumentChangeType.removed) {
             requests.removeWhere((r) => r['id'] == change.doc.id);
@@ -890,13 +930,38 @@ class AdminProvider extends ChangeNotifier {
       await batch.commit();
       if (_disposed) return true;
 
+      // ── FIX: Patch the request list in-memory ─────────────────────────────
       final idx = requests.indexWhere((r) => r['id'] == requestId);
       if (idx != -1) {
         requests[idx]['status'] = newStatus;
         requests[idx]['last_updated_at'] = DateTime.now();
       }
-      // Invalidate so next open gets fresh details, but don't re-fetch now
-      _requestDetailsCache.remove(requestId);
+
+      // ── FIX: Patch the cached details in-memory (same technique as
+      // optimisticCandidateStatusUpdate) so the currently-open bottom sheet
+      // does NOT lose its data. Previously we called .remove() here which
+      // caused the sheet to see null details and crash.
+      final cached = _requestDetailsCache[requestId];
+      if (cached != null) {
+        try {
+          final details = Map<String, dynamic>.from(cached.data);
+          final reqDoc  = Map<String, dynamic>.from(
+              (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+          final reqData = Map<String, dynamic>.from(
+              (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
+          reqData['status']          = newStatus;
+          reqData['last_updated_at'] = DateTime.now().toIso8601String();
+          reqDoc['data']             = reqData;
+          details['request_doc']     = reqDoc;
+          _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
+          debugPrint('⚡ Optimistic request-status patch: $requestId → $newStatus');
+        } catch (e) {
+          debugPrint('⚠️ Failed to patch request-status cache: $e');
+          // Fallback: evict; next open will re-fetch cleanly
+          _requestDetailsCache.remove(requestId);
+        }
+      }
+
       _safeNotify();
       return true;
     } catch (e) {
