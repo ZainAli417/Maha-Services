@@ -1127,36 +1127,42 @@ class AdminProvider extends ChangeNotifier {
     }
     return timestamp.toString().isNotEmpty ? timestamp.toString() : fallback;
   }
+Future<String> fetchUnifiedName(String uid) async {
+    if (_candidateCache.containsKey(uid)) {
+      return _candidateCache[uid]!.data['name'] ?? 'Unknown Job Seeker';
+    }
+    if (_recruiterCache.containsKey(uid)) {
+      return _recruiterCache[uid]!.data['name'] ?? 'Unknown Recruiter';
+    }
 
-  Future<String> fetchUnifiedName(String uid, String role) async {
-    final r = role.toLowerCase().trim();
     try {
-      if (r == 'admin' || r == 'superadmin') {
-        if (_candidateCache.containsKey(uid)) return _candidateCache[uid]!.data['name'] ?? 'Unknown Admin';
+      if (uid.startsWith('rec_') || uid.startsWith('R_') || uid.length > 28) {
+        // try recruiter first
         final doc = await _firestore.collection('users').doc(uid).get();
-        final name = doc.data()?['name'] ?? 'Unknown Admin';
-        _candidateCache[uid] = _CacheEntry({'name': name}, DateTime.now());
-        return name;
-      }
-      if (r == 'recruiter') {
-        if (_recruiterCache.containsKey(uid)) return _recruiterCache[uid]!.data['name'] ?? 'Unknown Recruiter';
-        final doc = await _firestore.collection('recruiter').doc(uid).get();
         if (doc.exists) {
           final data = _normalizeMap(doc.data());
-          final name = _normalizeMap(data['user_data'])['name']?.toString() ??
-              data['name']?.toString() ?? 'Unknown Recruiter';
-          _recruiterCache[uid] = _CacheEntry({'name': name}, DateTime.now());
+          final name = data['name']?.toString() ?? 'Unknown Recruiter';
+          
+          // FIX: Cache the entire map and inject the uid
+          data['uid'] ??= uid;
+          data['name'] = name;
+          _recruiterCache[uid] = _CacheEntry(data, DateTime.now());
+          
           return name;
         }
       }
-      if (r == 'job seeker' || r == 'job_seeker') {
-        if (_candidateCache.containsKey(uid)) return _candidateCache[uid]!.data['name'] ?? 'Unknown Job Seeker';
+      {
         final doc = await _firestore.collection('Job_Seeker').doc(uid).get();
         if (doc.exists) {
           final data = _normalizeMap(doc.data());
           final pp   = _normalizeMap(data['personalProfile'] ?? data['personal_profile'] ?? {});
           final name = pp['name']?.toString() ?? data['name']?.toString() ?? 'Unknown Job Seeker';
-          _candidateCache[uid] = _CacheEntry({'name': name}, DateTime.now());
+          
+          // FIX: Cache the entire map and inject the uid
+          data['uid'] ??= uid;
+          data['name'] = name;
+          _candidateCache[uid] = _CacheEntry(data, DateTime.now());
+          
           return name;
         }
       }

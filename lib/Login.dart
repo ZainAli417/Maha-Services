@@ -508,7 +508,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                       padding: const EdgeInsets.only(bottom: 30),
                       child: Center(
                         child: Image.asset('images/logo.png',
-                            height: 150, fit: BoxFit.fill),
+                            height: 90, fit: BoxFit.fill),
                       ),
                     ),
                   Row(

@@ -562,7 +562,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     final userLevel = data['user_lvl'] ?? 'basic';
 
     return FutureBuilder<String>(
-      future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
+      future: provider.fetchUnifiedName(data['uid'] ?? docId),
       builder: (context, snapshot) {
         if (!mounted) return const SizedBox.shrink();
         final displayName = (snapshot.data != null && snapshot.data != 'Unknown User')
@@ -735,7 +735,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: FutureBuilder<String>(
-            future: provider.fetchUnifiedName(data['uid'] ?? docId, role),
+            future: provider.fetchUnifiedName(data['uid'] ?? docId),
             builder: (context, snapshot) {
               if (!mounted) return const SizedBox.shrink(); // ADD THIS
 
