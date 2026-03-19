@@ -19,12 +19,16 @@ class AdminAnalyticsProvider extends ChangeNotifier {
   int candidatesProcessed = 0;
 
   // Chart Data
+  final Map<String, int> _rawSkillFreqs = {};
   Map<String, int> skillFrequencies = {};
   Map<String, int> jobsByStatus = {'Open': 0, 'Closed': 0};
   Map<String, int> requestsByStatus = {'Pending': 0, 'Approved': 0, 'Rejected': 0};
   Map<String, int> topRecruiters = {};
   List<Map<String, dynamic>> recentRequests = [];
   List<Map<String, dynamic>> allJobs = [];
+
+  // Skill filter
+  Set<String> selectedSkills = {};
 
   // Realtime listeners
   StreamSubscription? _requestsSub;
@@ -48,6 +52,26 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     await _fetchAggregateKPIs();
+  }
+
+  void toggleSkill(String skill) {
+    if (selectedSkills.contains(skill)) {
+      selectedSkills.remove(skill);
+    } else {
+      selectedSkills.add(skill);
+    }
+    _updateSkillFrequencies();
+  }
+
+  void clearSkills() {
+    selectedSkills.clear();
+    _updateSkillFrequencies();
+  }
+
+  List<String> getAllRawSkills() {
+    final list = _rawSkillFreqs.keys.toList();
+    list.sort();
+    return list;
   }
 
   Future<void> _fetchAggregateKPIs() async {
@@ -89,11 +113,11 @@ class AdminAnalyticsProvider extends ChangeNotifier {
     _skillsSub?.cancel();
     _skillsSub = _firestore
         .collection('Job_Seeker')
-        .limit(100)
+        .limit(200)
         .snapshots()
         .listen((snap) {
       if (_disposed) return;
-      final Map<String, int> freqs = {};
+      _rawSkillFreqs.clear();
       for (var doc in snap.docs) {
         final data = doc.data();
         final userData = data['user_data'] as Map<String, dynamic>? ?? {};
@@ -110,14 +134,12 @@ class AdminAnalyticsProvider extends ChangeNotifier {
           final skillStr = s.toString().trim();
           if (skillStr.isNotEmpty) {
             final capSkill = skillStr[0].toUpperCase() + skillStr.substring(1).toLowerCase();
-            freqs[capSkill] = (freqs[capSkill] ?? 0) + 1;
+            _rawSkillFreqs[capSkill] = (_rawSkillFreqs[capSkill] ?? 0) + 1;
           }
         }
       }
 
-      final sortedKeys = freqs.keys.toList()..sort((a, b) => freqs[b]!.compareTo(freqs[a]!));
-      skillFrequencies = { for (var k in sortedKeys.take(8)) k : freqs[k]! };
-      _safeNotify();
+      _updateSkillFrequencies();
     });
 
     // 2. JOBS BY STATUS & LIST
@@ -221,6 +243,26 @@ class AdminAnalyticsProvider extends ChangeNotifier {
     if (!_disposed) {
       notifyListeners();
     }
+  }
+
+  void _updateSkillFrequencies() {
+    Map<String, int> filtered = {};
+    if (selectedSkills.isEmpty) {
+      filtered = Map.from(_rawSkillFreqs);
+    } else {
+      _rawSkillFreqs.forEach((key, value) {
+        if (selectedSkills.contains(key)) {
+          filtered[key] = value;
+        }
+      });
+    }
+
+    final sortedKeys = filtered.keys.toList()
+      ..sort((a, b) => filtered[b]!.compareTo(filtered[a]!));
+    skillFrequencies = {
+      for (var k in sortedKeys) k: filtered[k]!
+    };
+    _safeNotify();
   }
 
   @override

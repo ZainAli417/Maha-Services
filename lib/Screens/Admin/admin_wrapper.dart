@@ -130,11 +130,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildContent() {
     switch (_selectedMenu) {
       case 'Dashboard':
-        return const AdminAnalyticsDashboardScreen();
+        return AdminAnalyticsDashboardScreen(
+          onNavigate: (menu) {
+            if (_menuMeta.containsKey(menu)) {
+              setState(() => _selectedMenu = menu);
+            }
+          },
+        );
       case 'User Management':
         return const UserManagementSection();
       case 'Recruiter Requests':
-        return const AdminDashboardScreen2();
+        return const Admin_Recruiter_Request_screen();
       default:
         return const Center(child: Text('Select a menu item'));
     }

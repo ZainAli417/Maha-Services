@@ -68,14 +68,14 @@ class _U {
 // ─────────────────────────────────────────────────────────────────────────────
 //  Root Screen
 // ─────────────────────────────────────────────────────────────────────────────
-class AdminDashboardScreen2 extends StatefulWidget {
-  const AdminDashboardScreen2({super.key});
+class Admin_Recruiter_Request_screen extends StatefulWidget {
+  const Admin_Recruiter_Request_screen({super.key});
 
   @override
-  State<AdminDashboardScreen2> createState() => _AdminDashboardScreen2State();
+  State<Admin_Recruiter_Request_screen> createState() => _Admin_Recruiter_Request_screenState();
 }
 
-class _AdminDashboardScreen2State extends State<AdminDashboardScreen2> {
+class _Admin_Recruiter_Request_screenState extends State<Admin_Recruiter_Request_screen> {
   @override
   void initState() {
     super.initState();

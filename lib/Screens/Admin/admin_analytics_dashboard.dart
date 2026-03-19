@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 
 import 'admin_analytics_dashboard_Provider.dart';
 
@@ -41,7 +42,8 @@ class _C {
 //  SCREEN
 // ═══════════════════════════════════════════════════════════════════════════
 class AdminAnalyticsDashboardScreen extends StatefulWidget {
-  const AdminAnalyticsDashboardScreen({super.key});
+  final Function(String)? onNavigate;
+  const AdminAnalyticsDashboardScreen({super.key, this.onNavigate});
 
   @override
   State<AdminAnalyticsDashboardScreen> createState() =>
@@ -90,7 +92,8 @@ class _AdminAnalyticsDashboardScreenState
                           child: _MainContent(
                               prov: prov,
                               isWide: isWide,
-                              isMid: isMid),
+                              isMid: isMid,
+                              onNavigate: widget.onNavigate),
                         ),
                       ),
                       if (isWide) _RightPanel(prov: prov),
@@ -202,8 +205,9 @@ class _BarBtn extends StatelessWidget {
 class _MainContent extends StatelessWidget {
   final AdminAnalyticsProvider prov;
   final bool isWide, isMid;
+  final Function(String)? onNavigate;
   const _MainContent(
-      {required this.prov, required this.isWide, required this.isMid});
+      {required this.prov, required this.isWide, required this.isMid, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +242,7 @@ class _MainContent extends StatelessWidget {
         const SizedBox(height: 24),
 
         // KPI CARDS
-        _KpiGrid(prov: prov, isMid: isMid),
+        _KpiGrid(prov: prov, isMid: isMid, onNavigate: onNavigate),
         const SizedBox(height: 28),
 
         // USER BREAKDOWN
@@ -291,6 +295,219 @@ class _MainContent extends StatelessWidget {
   }
 }
 
+void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 500,
+          constraints: const BoxConstraints(maxHeight: 600),
+          decoration: BoxDecoration(
+            color: _C.surface,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20)],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // HEADER
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                decoration: const BoxDecoration(
+                  color: _C.tealLt,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: _C.teal,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.work_history_rounded, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Recent Jobs', style: _C.p(20, fw: FontWeight.w800, color: _C.teal)),
+                          Text('Overview of latest posted listings', style: _C.p(13, color: _C.t2)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: _C.t2),
+                      onPressed: () => Navigator.pop(context),
+                      splashRadius: 24,
+                    )
+                  ],
+                ),
+              ),
+              // BODY
+              Expanded(
+                child: prov.allJobs.isEmpty
+                    ? Center(child: Text('No jobs found.', style: _C.p(15, color: _C.t3)))
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: prov.allJobs.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, i) {
+                          final job = prov.allJobs[i];
+                          final status = (job['status'] ?? 'Open').toString();
+                          final isOpen = status.toLowerCase() == 'open';
+                          
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: _C.surface,
+                              border: Border.all(color: _C.border),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 8)],
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Left details
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(job['title'] ?? 'Untitled Job', style: _C.p(16, fw: FontWeight.w700)),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.business_center_rounded, size: 14, color: _C.t3),
+                                          const SizedBox(width: 4),
+                                          Expanded(child: Text(job['company'] ?? 'Unknown Company', style: _C.p(13, color: _C.t2), overflow: TextOverflow.ellipsis)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.location_on_rounded, size: 14, color: _C.t3),
+                                          const SizedBox(width: 4),
+                                          Text(job['location'] ?? 'Remote', style: _C.p(12, color: _C.t3)),
+                                          const SizedBox(width: 12),
+                                          const Icon(Icons.access_time_rounded, size: 14, color: _C.t3),
+                                          const SizedBox(width: 4),
+                                          Text(job['type'] ?? 'Full-time', style: _C.p(12, color: _C.t3)),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                // Right Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isOpen ? _C.emeraldL : _C.roseLt,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(status.toUpperCase(), 
+                                    style: _C.p(11, fw: FontWeight.w700, color: isOpen ? _C.emerald : _C.rose)
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          width: 350,
+          constraints: const BoxConstraints(maxHeight: 500),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filter Skills', style: _C.p(16, fw: FontWeight.w700)),
+                  if (prov.selectedSkills.isNotEmpty)
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 30),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () => prov.clearSkills(),
+                      child: Text('Clear', style: _C.p(14, color: _C.rose)),
+                    ),
+                ],
+              ),
+              const Divider(),
+              Expanded(
+                child: Consumer<AdminAnalyticsProvider>(
+                  builder: (context, p, _) {
+                    final allSkills = p.getAllRawSkills();
+                    if (allSkills.isEmpty) {
+                      return Center(child: Text('No skills available', style: _C.p(14, color: _C.t3)));
+                    }
+                    return Scrollbar(
+                      child: ListView.builder(
+                        itemCount: allSkills.length,
+                        itemBuilder: (context, i) {
+                          final skill = allSkills[i];
+                          return CheckboxListTile(
+                            title: Text(skill, style: _C.p(14, fw: FontWeight.w600)),
+                            value: p.selectedSkills.contains(skill),
+                            onChanged: (_) => p.toggleSkill(skill),
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            activeColor: _C.indigo,
+                            dense: true,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _C.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Done', style: _C.p(14, fw: FontWeight.w700, color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  KPI GRID
 // ═══════════════════════════════════════════════════════════════════════════
@@ -300,7 +517,8 @@ class _KD {
   final String label, sub;
   final int value;
   final Color accent, bg;
-  const _KD(this.icon, this.label, this.value, this.sub, this.accent, this.bg);
+  final VoidCallback? onTap;
+  const _KD(this.icon, this.label, this.value, this.sub, this.accent, this.bg, {this.onTap});
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -313,20 +531,19 @@ class _KD {
 class _KpiGrid extends StatelessWidget {
   final AdminAnalyticsProvider prov;
   final bool isMid;
-  const _KpiGrid({required this.prov, required this.isMid});
+  final Function(String)? onNavigate;
+  const _KpiGrid({required this.prov, required this.isMid, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
     final items = [
       _KD(Icons.groups_rounded, 'Total Users', prov.totalUsers,
           '${prov.totalJobSeekers} seekers · ${prov.totalRecruiters} recruiters',
-          _C.indigo, _C.indigoLt),
+          _C.indigo, _C.indigoLt, onTap: () => onNavigate?.call('User Management')),
       _KD(Icons.work_rounded, 'Jobs Posted', prov.totalJobs,
-          'Public listings', _C.teal, _C.tealLt),
+          'Public listings', _C.teal, _C.tealLt, onTap: () => _showJobsPopup(context, prov)),
       _KD(Icons.inbox_rounded, 'Requests', prov.totalRequests,
-          'From recruiters', _C.amber, _C.amberLt),
-      _KD(Icons.verified_rounded, 'Processed', prov.candidatesProcessed,
-          'Approved / closed', _C.violet, _C.violetLt),
+          'From recruiters', _C.amber, _C.amberLt, onTap: () => onNavigate?.call('Recruiter Requests')),
     ];
 
     // Desktop — existing single-row behaviour
@@ -403,8 +620,29 @@ class _KpiCardVertical extends StatelessWidget {
               child: Icon(d.icon,
                   color: d.accent, size: compact ? 15 : 18),
             ),
-            Icon(Icons.trending_up_rounded,
-                color: d.accent.withOpacity(0.35), size: 15),
+            if (d.onTap != null)
+              InkWell(
+                onTap: d.onTap,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: d.bg,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('View', style: _C.p(10, color: d.accent, fw: FontWeight.w700)),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 8, color: d.accent),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Icon(Icons.trending_up_rounded,
+                  color: d.accent.withOpacity(0.35), size: 15),
           ]),
           SizedBox(height: compact ? 10 : 14),
           TweenAnimationBuilder<int>(
@@ -476,14 +714,36 @@ class _KpiCardHorizontal extends StatelessWidget {
         )),
 
         // Animated count — right-aligned
-        TweenAnimationBuilder<int>(
-          tween: IntTween(begin: 0, end: d.value),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeOutCubic,
-          builder: (_, v, __) => Text(
-            _fmt(v),
-            style: _C.p(22, fw: FontWeight.w800, color: d.accent),
-          ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (d.onTap != null) ...[
+              InkWell(
+                onTap: d.onTap,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('View', style: _C.p(10, color: d.accent, fw: FontWeight.w700)),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_ios_rounded, size: 8, color: d.accent),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: d.value),
+              duration: const Duration(milliseconds: 1200),
+              curve: Curves.easeOutCubic,
+              builder: (_, v, __) => Text(
+                _fmt(v),
+                style: _C.p(22, fw: FontWeight.w800, color: d.accent),
+              ),
+            ),
+          ],
         ),
       ]),
     );
@@ -682,14 +942,47 @@ class _SkillsChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardHead(
-            icon: Icons.bar_chart_rounded,
-            title: 'In-Demand Skills',
-            sub: 'Top ${skills.length} from job seeker profiles',
-            badge: _Chip(
-                label: 'Profiles',
-                icon: Icons.people_rounded,
-                color: _C.teal),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: _CardHead(
+                  icon: Icons.bar_chart_rounded,
+                  title: 'Candidates Skills',
+                  sub: 'Top ${skills.length} from job seeker profiles',
+                  // badge: _Chip(
+                  //     label: 'Profiles',
+                  //     icon: Icons.people_rounded,
+                  //     color: _C.teal),
+                ),
+              ),
+              // Multi-select Skills
+              InkWell(
+                onTap: () => _showMultiSelectSkills(context, prov),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: prov.selectedSkills.isNotEmpty ? _C.indigoLt : _C.surface,
+                    border: Border.all(color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.border),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.filter_list_rounded, size: 16, color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.t3),
+                      const SizedBox(width: 6),
+                      Text(
+                        prov.selectedSkills.isNotEmpty 
+                          ? '${prov.selectedSkills.length} Selected'
+                          : 'Select Skills',
+                        style: _C.p(12, fw: FontWeight.w600, color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.t2)
+                      ),
+                    ]
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           Expanded(

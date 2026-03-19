@@ -528,7 +528,6 @@ class AdminProvider extends ChangeNotifier {
   // =========================================================================
   // BATCH FETCH CANDIDATES
   // =========================================================================
-
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
       List<String> candidateIds, {
         Map<String, Map<String, dynamic>>? hints,
@@ -553,10 +552,24 @@ class AdminProvider extends ChangeNotifier {
       if (_candidateCache.containsKey(id)) {
         final cached = _candidateCache[id]!;
         if (DateTime.now().difference(cached.timestamp) < _cacheTTL) {
-          cachedResults.add(cached.data);
-          continue;
+
+          // --- STRICT CACHE VALIDATION ---
+          // Prevent shallow maps or fallbacks from blocking a real fetch
+          final data = cached.data;
+          final pp = _normalizeMap(data['personalProfile'] ?? data['personal_profile'] ?? {});
+          final name = pp['name']?.toString() ?? data['name']?.toString() ?? '';
+          final isFallback = name.toLowerCase().contains('unknown');
+
+          if (name.isNotEmpty && !isFallback) {
+            cachedResults.add(data);
+            continue; // Data is fully valid, safe to skip fetch
+          } else {
+            debugPrint('⚠️ Cached candidate $id is incomplete/shallow. Forcing re-fetch.');
+            _candidateCache.remove(id); // Clear the bad cache entry
+          }
+        } else {
+          _candidateCache.remove(id); // Clear expired cache
         }
-        _candidateCache.remove(id);
       }
       uncachedIds.add(id);
     }
@@ -669,7 +682,6 @@ class AdminProvider extends ChangeNotifier {
     debugPrint('✅ Total candidates resolved: ${all.length}');
     return all;
   }
-
   // ── Parse helpers ─────────────────────────────────────────────────────────
 
   List<Map<String, dynamic>> _parseJobSeekerDocs(

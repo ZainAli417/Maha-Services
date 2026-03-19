@@ -9,9 +9,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Constant/Forget Password.dart';
 import 'Constant/cv_analysis.dart';
 import 'Constant/pricing.dart';
+import 'Screens/Admin/admin_analytics_dashboard.dart';
 import 'Screens/Admin/admin_wrapper.dart';
 import 'Screens/Admin/admin_recruiter_request_management.dart';
 import 'Screens/Admin/admin_login.dart';
+import 'Screens/Admin/user_management_section.dart';
 import 'Screens/Job_Seeker/JS_Profile/JS_Profile.dart';
 import 'Login.dart';
 import 'Screens/Job_Seeker/job_hub.dart';
@@ -242,7 +244,6 @@ final GoRouter router = GoRouter(
     // Admin
     GoRoute(path: '/admin', pageBuilder: (c, s) => _fadePage(const AdminLoginScreen(), s)),
     GoRoute(path: '/admin_dashboard', pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen(), s)),
-    GoRoute(path: '/admin_dashboard2', pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen2(), s)),
 
     // Job Seeker
     GoRoute(path: '/dashboard', pageBuilder: (c, s) => _fadePage(const job_seeker_dashboard(), s)),
