@@ -36,16 +36,20 @@ dependencies:
   image_picker_for_web: ^3.1.0
   image_picker: ^1.2.0
   flutter_dotenv: ^6.0.0
-  file_picker: ^10.3.3
+  file_picker: ^11.0.2
   mime: ^2.0.0
   tuple: any
   path_provider: any
   flutter_quill: ^11.5.0
+  flutter_localizations:
+    sdk: flutter
 
 
 
   archive: any
   xml: any
+  rxdart: any
+  http_parser: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

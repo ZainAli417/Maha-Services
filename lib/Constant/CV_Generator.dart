@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import '../Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
 
 class CVGeneratorButton extends StatefulWidget {
-  const CVGeneratorButton({Key? key}) : super(key: key);
+  const CVGeneratorButton({super.key});
 
   @override
   State<CVGeneratorButton> createState() => _CVGeneratorButtonState();
@@ -78,7 +78,7 @@ class _CVGeneratorButtonState extends State<CVGeneratorButton> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.3),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -204,7 +204,7 @@ class ProfessionalCVGenerator {
       );
       iconFont = pw.Font.ttf(iconData);
     } catch (e) {
-      print('Icon font not found: $e');
+      debugPrint('Icon font not found: $e');
     }
 
     // Colorful watermark logo
@@ -223,7 +223,7 @@ class ProfessionalCVGenerator {
           profileImage = pw.MemoryImage(response.bodyBytes);
         }
       } catch (e) {
-        print('Failed to load profile image: $e');
+        debugPrint('Failed to load profile image: $e');
       }
     }
 

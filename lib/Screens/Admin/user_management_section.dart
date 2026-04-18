@@ -131,7 +131,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -214,7 +214,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               borderRadius: BorderRadius.circular(10),
             ),
             elevation: 0,
-            shadowColor: const Color(0xFF4F46E5).withOpacity(0.4),
+            shadowColor: const Color(0xFF4F46E5).withValues(alpha: 0.4),
           ).copyWith(
             elevation: WidgetStateProperty.resolveWith<double>(
                   (states) => states.contains(WidgetState.hovered) ? 4 : 0,
@@ -379,7 +379,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.03),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -434,7 +434,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.04),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -486,7 +486,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       controller: _scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       itemCount: users.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final doc = users[index];
                         final data = doc.data() as Map<String, dynamic>;
@@ -790,7 +790,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4F46E5).withOpacity(0.15),
+                  color: const Color(0xFF4F46E5).withValues(alpha: 0.15),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -861,7 +861,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           decoration: BoxDecoration(
             color: roleConfig['bgColor'],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: roleConfig['color']!.withOpacity(0.15)),
+            border: Border.all(color: roleConfig['color']!.withValues(alpha: 0.15)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -896,7 +896,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
     if (isPremium) {
       bgColor = const Color(0xFFFFFBEB);
-      borderColor = const Color(0xFFFCD34D).withOpacity(0.5);
+      borderColor = const Color(0xFFFCD34D).withValues(alpha: 0.5);
       iconColor = const Color(0xFFF59E0B);
       textColor = const Color(0xFFB45309);
       icon = Icons.workspace_premium_rounded;
@@ -946,7 +946,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           color: isActive ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? const Color(0xFF6EE7B7).withOpacity(0.5) : const Color(0xFFFCA5A5).withOpacity(0.5),
+            color: isActive ? const Color(0xFF6EE7B7).withValues(alpha: 0.5) : const Color(0xFFFCA5A5).withValues(alpha: 0.5),
           ),
         ),
         child: Row(
@@ -1023,7 +1023,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.15),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.15),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -1035,15 +1035,15 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(6),
-          hoverColor: color.withOpacity(0.1),
-          splashColor: color.withOpacity(0.2),
+          hoverColor: color.withValues(alpha: 0.1),
+          splashColor: color.withValues(alpha: 0.2),
           child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
+              color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: color.withOpacity(0.15)),
+              border: Border.all(color: color.withValues(alpha: 0.15)),
             ),
             child: Icon(icon, size: 16, color: color),
           ),
@@ -1276,7 +1276,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (dialogContext) {
         String selectedRole = existingData?['role'] ?? 'Job Seeker';
         String selectedLevel = existingData?['user_lvl'] ?? 'basic';
@@ -1295,7 +1295,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -1311,7 +1311,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         gradient: LinearGradient(
                           colors: [
                             const Color(0xFF4F46E5),
-                            const Color(0xFF6366F1).withOpacity(0.9),
+                            const Color(0xFF6366F1).withValues(alpha: 0.9),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -1326,7 +1326,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -1354,7 +1354,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                   isEdit ? 'Update user information' : 'Create new account',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 13,
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                   ),
                                 ),
                               ],
@@ -1367,7 +1367,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                             },
                             icon: const Icon(Icons.close, color: Colors.white, size: 22),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.2),
+                              backgroundColor: Colors.white.withValues(alpha: 0.2),
                               padding: const EdgeInsets.all(8),
                             ),
                           ),
@@ -1582,7 +1582,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             boxShadow: isSelected
                 ? [
               BoxShadow(
-                color: const Color(0xFF4F46E5).withOpacity(0.1),
+                color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1630,7 +1630,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: DropdownButtonFormField<String>(
-        value: selectedLevel,
+        initialValue: selectedLevel,
         focusColor: null,
         style: GoogleFonts.plusJakartaSans(
           fontSize: 14,
@@ -1715,7 +1715,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   void _showResetPasswordDialog(BuildContext context, AdminProvider provider, String email) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
@@ -1725,7 +1725,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 40,
                 offset: const Offset(0, 20),
               ),
@@ -1741,7 +1741,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1918,6 +1918,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ],
     );
   }
+  @override
   void dispose() {
     // Stop animations first before disposing
     _fadeController.stop();

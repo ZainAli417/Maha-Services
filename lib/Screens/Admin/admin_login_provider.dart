@@ -45,7 +45,7 @@ class AdminAuthProvider extends ChangeNotifier {
       _emailError == null &&
           _passwordError == null &&
           emailController.text.trim().isNotEmpty &&
-          passwordController.text.isNotEmpty;
+          passwordController.text.trim().isNotEmpty;
 
   AdminAuthProvider() {
     _initializeListeners();
@@ -120,7 +120,7 @@ class AdminAuthProvider extends ChangeNotifier {
 
   /// Internal password validation
   String? _validatePasswordInternal(String? value) {
-    if (value == null || value.isEmpty) {
+    if (value == null || value.trim().isEmpty) {
       return 'Password is required';
     }
     if (value.length < 6) {
@@ -162,7 +162,7 @@ class AdminAuthProvider extends ChangeNotifier {
     // Check cache first
     if (_isCacheValid() && _adminCache.containsKey(uid)) {
       if (kDebugMode) {
-        print('Admin check: Using cached result for $uid');
+        debugPrint('Admin check: Using cached result for $uid');
       }
       return _adminCache[uid]!;
     }
@@ -199,7 +199,7 @@ class AdminAuthProvider extends ChangeNotifier {
       return false;
     } catch (e) {
       if (kDebugMode) {
-        print('Admin check error: $e');
+        debugPrint('Admin check error: $e');
       }
       return false;
     }
@@ -210,7 +210,7 @@ class AdminAuthProvider extends ChangeNotifier {
     // Prevent multiple simultaneous sign-in attempts
     if (_isLoading) {
       if (kDebugMode) {
-        print('Sign-in already in progress');
+        debugPrint('Sign-in already in progress');
       }
       return false;
     }
@@ -234,7 +234,7 @@ class AdminAuthProvider extends ChangeNotifier {
       // Attempt sign-in with timeout
       final signInFuture = _auth.signInWithEmailAndPassword(
         email: email,
-        password: password,
+        password: password.trim(),
       );
 
       final cred = await signInFuture.timeout(
@@ -268,7 +268,7 @@ class AdminAuthProvider extends ChangeNotifier {
       _passwordError = null;
 
       if (kDebugMode) {
-        print('Admin sign-in successful for: $email');
+        debugPrint('Admin sign-in successful for: $email');
       }
 
       return true;
@@ -280,19 +280,19 @@ class AdminAuthProvider extends ChangeNotifier {
       // Comprehensive error handling with user-friendly messages
       _errorMessage = _getAuthErrorMessage(ex);
       if (kDebugMode) {
-        print('FirebaseAuth error: ${ex.code} - ${ex.message}');
+        debugPrint('FirebaseAuth error: ${ex.code} - ${ex.message}');
       }
       return false;
     } on FirebaseException catch (ex) {
       _errorMessage = 'Database error: ${ex.message ?? "Unknown error"}';
       if (kDebugMode) {
-        print('Firestore error: ${ex.code} - ${ex.message}');
+        debugPrint('Firestore error: ${ex.code} - ${ex.message}');
       }
       return false;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred. Please try again.';
       if (kDebugMode) {
-        print('Unexpected sign-in error: $e');
+        debugPrint('Unexpected sign-in error: $e');
       }
       return false;
     } finally {
@@ -340,11 +340,11 @@ class AdminAuthProvider extends ChangeNotifier {
       clearValidationErrors();
       clearError();
       if (kDebugMode) {
-        print('Admin signed out successfully');
+        debugPrint('Admin signed out successfully');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Sign-out error: $e');
+        debugPrint('Sign-out error: $e');
       }
     }
   }

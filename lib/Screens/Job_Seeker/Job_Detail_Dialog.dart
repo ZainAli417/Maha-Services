@@ -190,7 +190,7 @@ class JobDetailModal extends StatelessWidget {
             ? const BorderRadius.vertical(top: Radius.circular(28))
             : BorderRadius.circular(16),
         boxShadow: isMobile ? null : [
-          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 40, offset: const Offset(0, 16)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 40, offset: const Offset(0, 16)),
         ],
       ),
       child: Column(
@@ -240,14 +240,14 @@ class JobDetailModal extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: _slate200, width: 1.5),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 2)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
                         ],
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(13),
                         child: logoUrl.isNotEmpty
                             ? Image.network(logoUrl, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _logoPlaceholder())
+                            errorBuilder: (_, _, _) => _logoPlaceholder())
                             : _logoPlaceholder(),
                       ),
                     ),
@@ -294,7 +294,7 @@ class JobDetailModal extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: _white.withOpacity(0.7),
+                            color: _white.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(color: _slate200),
                           ),
@@ -479,7 +479,7 @@ class JobDetailModal extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: accent.withOpacity(0.15)),
+        border: Border.all(color: accent.withValues(alpha: 0.15)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 15, color: accent),
@@ -495,7 +495,7 @@ class JobDetailModal extends StatelessWidget {
 
   Widget _statBadge(IconData icon, String text, Color color) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(icon, size: 14, color: color.withOpacity(0.7)),
+      Icon(icon, size: 14, color: color.withValues(alpha: 0.7)),
       const SizedBox(width: 4),
       Text(text, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: color)),
     ]);
@@ -505,7 +505,7 @@ class JobDetailModal extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(label,
@@ -520,7 +520,7 @@ class JobDetailModal extends StatelessWidget {
         color: _white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: _slate200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 1))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 1))],
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 15, color: _slate400),
@@ -565,7 +565,7 @@ class JobDetailModal extends StatelessWidget {
         color: _white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _slate200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -586,9 +586,9 @@ class JobDetailModal extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [_indigoSoft, _indigoSoft.withOpacity(0.6)]),
+        gradient: LinearGradient(colors: [_indigoSoft, _indigoSoft.withValues(alpha: 0.6)]),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _indigo.withOpacity(0.12)),
+        border: Border.all(color: _indigo.withValues(alpha: 0.12)),
       ),
       child: Text(label,
           style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _indigo)),
@@ -601,7 +601,7 @@ class JobDetailModal extends StatelessWidget {
       decoration: BoxDecoration(
         color: _amberBg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _amber.withOpacity(0.15)),
+        border: Border.all(color: _amber.withValues(alpha: 0.15)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(Icons.laptop_mac_rounded, size: 13, color: _amber),

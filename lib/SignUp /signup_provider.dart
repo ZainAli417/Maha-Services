@@ -1,7 +1,6 @@
 // lib/SignUp/signup_provider.dart
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -237,8 +236,8 @@ class SignupProvider extends ChangeNotifier {
   }
 
   bool validatePasswords() {
-    final p = passwordController.text;
-    final cp = confirmPasswordController.text;
+    final p = passwordController.text.trim();
+    final cp = confirmPasswordController.text.trim();
     if (p.isEmpty || cp.isEmpty) {
       passwordError = 'Password and confirm password are required';
     } else if (p.length < 8) {
@@ -308,7 +307,7 @@ class SignupProvider extends ChangeNotifier {
     return _executeWithLoading(() async {
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
-        password: passwordController.text,
+        password: passwordController.text.trim(),
       );
       final uid = cred.user?.uid;
       if (uid == null) throw Exception('Failed to obtain user id');
@@ -316,6 +315,7 @@ class SignupProvider extends ChangeNotifier {
       await _saveUserData(uid, _buildRecruiterData(uid));
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'uid': uid,
+        'name': nameController.text.trim(),
         'email': emailController.text.trim(),
         'role': role,
         'isNew': 'no',
@@ -339,7 +339,7 @@ class SignupProvider extends ChangeNotifier {
     final success = await _executeWithLoading(() async {
       final uc = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
-        password: passwordController.text,
+        password: passwordController.text.trim(),
       );
       final uid = uc.user?.uid;
       if (uid == null) throw Exception('Unable to obtain user id');
@@ -358,6 +358,7 @@ class SignupProvider extends ChangeNotifier {
 
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'role': role,
+        'name': nameController.text.trim(),
         'email': emailController.text.trim(),
         'isNew': isNewValue,
         'uid': uid,
@@ -392,13 +393,19 @@ class SignupProvider extends ChangeNotifier {
       await _saveUserData(user.uid, _buildManualUserData(user.uid));
 
       try {
+        final updateData = <String, dynamic>{
+          'isNew': 'no',
+          'profileCompletedAt': FieldValue.serverTimestamp(),
+        };
+        // Sync name to users collection if available
+        final profileName = nameController.text.trim();
+        if (profileName.isNotEmpty) {
+          updateData['name'] = profileName;
+        }
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .update({
-          'isNew': 'no',
-          'profileCompletedAt': FieldValue.serverTimestamp(),
-        });
+            .update(updateData);
         debugPrint('✅ isNew → "no" for ${user.uid}');
       } catch (e) {
         debugPrint('❌ createJobSeekerProfile update failed: $e');
@@ -425,10 +432,15 @@ class SignupProvider extends ChangeNotifier {
       await _saveUserData(uid, _buildCvUserData(uid, result, user.email ?? ''));
 
       try {
-        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        final cvUpdateData = <String, dynamic>{
           'isNew': 'no',
           'profileCompletedAt': FieldValue.serverTimestamp(),
-        });
+        };
+        final cvName = nameController.text.trim();
+        if (cvName.isNotEmpty) {
+          cvUpdateData['name'] = cvName;
+        }
+        await FirebaseFirestore.instance.collection('users').doc(uid).update(cvUpdateData);
         debugPrint('✅ isNew → "no" for $uid');
       } catch (e) {
         debugPrint('⚠️ Falling back to set merge: $e');

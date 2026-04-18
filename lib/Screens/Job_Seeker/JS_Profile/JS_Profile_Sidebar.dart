@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../../Constant/CV_Generator.dart';
 import 'JS_Profile_Provider.dart';
 
@@ -131,7 +130,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -160,10 +159,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -202,8 +201,8 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: scoreColor.withOpacity(0.1),
-                  border: Border.all(color: scoreColor.withOpacity(0.2), width: 2),
+                  color: scoreColor.withValues(alpha: 0.1),
+                  border: Border.all(color: scoreColor.withValues(alpha: 0.2), width: 2),
                 ),
                 child: Text(
                   '$totalScore%',
@@ -276,10 +275,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -324,7 +323,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -371,7 +370,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             width: isMobile ? 6 : 8,
             height: isMobile ? 6 : 8,
             decoration: BoxDecoration(
-              color: isComplete ? color : Colors.grey.withOpacity(0.3),
+              color: isComplete ? color : Colors.grey.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
           ),
@@ -444,7 +443,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -521,7 +520,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),

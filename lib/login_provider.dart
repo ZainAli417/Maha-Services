@@ -101,7 +101,9 @@ class LoginProvider with ChangeNotifier {
     final n = role.trim().toLowerCase();
     if (['recruiter', 'employer'].contains(n)) return 'recruiter';
     if (['job_seeker', 'jobseeker', 'job seeker', 'candidate',
-      'job_seeker', 'job seeker'].contains(n)) return 'Job Seeker';
+      'job_seeker', 'job seeker'].contains(n)) {
+      return 'Job Seeker';
+    }
     return n;
   }
 
@@ -132,7 +134,7 @@ class LoginProvider with ChangeNotifier {
       // ── Step 1: Firebase Auth sign-in ──────────────────────────────────────
       final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
-        password: password,
+        password: password.trim(),
       );
 
       final user = cred.user;
@@ -167,8 +169,8 @@ class LoginProvider with ChangeNotifier {
         if (isJobSeeker) _isNewUser(user.uid),
       ]);
 
-      final roleVerified = results[0] as bool;
-      final isNew        = isJobSeeker ? (results[1] as bool) : false;
+      final roleVerified = results[0];
+      final isNew        = isJobSeeker ? results[1] : false;
 
       // ── FIX 3: sign out ONLY when role is not verified ────────────────────
       //

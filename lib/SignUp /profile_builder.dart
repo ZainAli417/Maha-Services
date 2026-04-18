@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -422,7 +421,7 @@ class _Stepper extends StatelessWidget {
                 boxShadow: isActive
                     ? [
                   BoxShadow(
-                      color: _T.primary.withOpacity(0.22),
+                      color: _T.primary.withValues(alpha: 0.22),
                       blurRadius: 8,
                       offset: const Offset(0, 3))
                 ]
@@ -561,12 +560,12 @@ class _MethodCardState extends State<_MethodCard> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
                 color: _hov
-                    ? widget.color.withOpacity(0.45)
+                    ? widget.color.withValues(alpha: 0.45)
                     : _T.border),
             boxShadow: _hov
                 ? [
               BoxShadow(
-                  color: widget.color.withOpacity(0.1),
+                  color: widget.color.withValues(alpha: 0.1),
                   blurRadius: 14,
                   offset: const Offset(0, 4))
             ]
@@ -578,7 +577,7 @@ class _MethodCardState extends State<_MethodCard> {
             Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.09),
+                  color: widget.color.withValues(alpha: 0.09),
                   borderRadius: BorderRadius.circular(10)),
               child:
               Icon(widget.icon, size: 20, color: widget.color),
@@ -608,7 +607,7 @@ class _MethodCardState extends State<_MethodCard> {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                             color:
-                            widget.color.withOpacity(0.09),
+                            widget.color.withValues(alpha: 0.09),
                             borderRadius:
                             BorderRadius.circular(10)),
                         child: Icon(widget.icon,
@@ -1807,7 +1806,7 @@ class _ProfileAvatar extends StatelessWidget {
     decoration: BoxDecoration(
       shape: BoxShape.circle,
       border: Border.all(
-          color: Colors.white.withOpacity(0.3), width: 2),
+          color: Colors.white.withValues(alpha: 0.3), width: 2),
       image: bytes != null
           ? DecorationImage(
           image: MemoryImage(bytes!), fit: BoxFit.cover)
@@ -1816,7 +1815,7 @@ class _ProfileAvatar extends StatelessWidget {
     child: bytes == null
         ? Icon(Icons.person_rounded,
         size: size * 0.5,
-        color: Colors.white.withOpacity(0.5))
+        color: Colors.white.withValues(alpha: 0.5))
         : null,
   );
 }
@@ -1901,7 +1900,7 @@ class _AutoField extends StatelessWidget {
             .toLowerCase()
             .contains(v.text.toLowerCase())),
         onSelected: onSelected,
-        fieldViewBuilder: (_, c, focus, __) {
+        fieldViewBuilder: (_, c, focus, _) {
           if (c.text != ctrl.text) c.text = ctrl.text;
           return TextFormField(
               controller: c,
@@ -2067,7 +2066,7 @@ class _PrimaryBtnState extends State<_PrimaryBtn> {
           boxShadow: _hov
               ? [
             BoxShadow(
-                color: widget.color.withOpacity(0.28),
+                color: widget.color.withValues(alpha: 0.28),
                 blurRadius: 12,
                 offset: const Offset(0, 5))
           ]
@@ -2161,7 +2160,7 @@ class _SkillTag extends StatelessWidget {
       color: _T.indigo10,
       borderRadius: BorderRadius.circular(20),
       border:
-      Border.all(color: _T.primary.withOpacity(0.28)),
+      Border.all(color: _T.primary.withValues(alpha: 0.28)),
     ),
     child: Row(mainAxisSize: MainAxisSize.min, children: [
       Text(label,

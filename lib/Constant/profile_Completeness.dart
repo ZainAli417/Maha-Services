@@ -44,7 +44,7 @@ class ProfileCompletenessCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -59,7 +59,7 @@ class ProfileCompletenessCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: scoreColor.withOpacity(0.1),
+                  color: scoreColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(Icons.bar_chart_sharp,
@@ -97,7 +97,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: scoreColor.withOpacity(0.3),
+                      color: scoreColor.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -144,7 +144,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                shadowColor: const Color(0xFF6366F1).withOpacity(0.4),
+                shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
                 elevation: 4,
               ),
               icon: const Icon(

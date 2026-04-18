@@ -176,7 +176,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF667eea).withOpacity(0.4),
+                      const Color(0xFF667eea).withValues(alpha: 0.4),
                       Colors.transparent,
                     ],
                   ),
@@ -199,7 +199,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFf093fb).withOpacity(0.3),
+                      const Color(0xFFf093fb).withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
@@ -219,10 +219,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea).withOpacity(0.15),
+            color: const Color(0xFF667eea).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: const Color(0xFF667eea).withOpacity(0.3),
+              color: const Color(0xFF667eea).withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -237,7 +237,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4ade80).withOpacity(0.5),
+                      color: const Color(0xFF4ade80).withValues(alpha: 0.5),
                       blurRadius: 6,
                       spreadRadius: 1,
                     ),
@@ -278,7 +278,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           'Next-gen recruitment powered by intelligent automation',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             height: 1.5,
           ),
         ),
@@ -294,12 +294,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.03),
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.03),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
       ),
       child: Row(
         children: [
@@ -312,7 +312,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withOpacity(0.4),
+                  color: const Color(0xFF667eea).withValues(alpha: 0.4),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -338,7 +338,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   'AES-256 • Hash Algorithm',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -407,7 +407,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             letterSpacing: 1.3,
           ),
         ),
@@ -429,17 +429,17 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           const _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
-          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+          Container(width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
           const _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
-          Container(width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+          Container(width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
           const _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
         ],
       ),
@@ -504,9 +504,16 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             textInputAction: TextInputAction.next,
             errorText: p.passwordError,
             isWide: isWide,
+            helperText: 'Spaces are not allowed and will be removed',
+            onChanged: (v) {
+              if (p.confirmPasswordController.text.isNotEmpty) {
+                _formKeyAccount.currentState?.validate();
+              }
+            },
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Password required';
-              if (v.length < 8) return 'Minimum 8 characters';
+              final val = v?.trim() ?? '';
+              if (val.isEmpty) return 'Password required';
+              if (val.length < 8) return 'Minimum 8 characters';
               return null;
             },
             suffixIcon: IconButton(
@@ -531,9 +538,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             textInputAction: TextInputAction.done,
             errorText: p.passwordError,
             isWide: isWide,
+            onChanged: (v) => _formKeyAccount.currentState?.validate(),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Confirm your password';
-              if (v != p.passwordController.text) return 'Passwords must match';
+              final val = v?.trim() ?? '';
+              if (val.isEmpty) return 'Confirm your password';
+              if (val != p.passwordController.text.trim()) return 'Passwords must match';
               return null;
             },
             suffixIcon: IconButton(
@@ -569,15 +578,15 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1).withOpacity(0.1),
-            const Color(0xFF8B5CF6).withOpacity(0.05),
+            const Color(0xFF6366F1).withValues(alpha: 0.1),
+            const Color(0xFF8B5CF6).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF6366F1).withOpacity(0.2),
+          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -592,7 +601,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -697,14 +706,14 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           boxShadow: verified
               ? [
             BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
           ]
               : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -885,7 +894,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         boxShadow: isSelected
             ? [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.3),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -948,6 +957,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
     void Function(String)? onChanged,
     int maxLines = 1,
     Widget? suffixIcon,
+    String? helperText,
+    AutovalidateMode? autovalidateMode,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -969,6 +980,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           maxLines: maxLines,
           onChanged: onChanged,
           validator: validator,
+          autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
           style: GoogleFonts.plusJakartaSans(
               fontSize: 14, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
@@ -977,14 +989,20 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               color: Colors.grey.shade400,
               fontSize: 13,
             ),
+            helperText: helperText,
+            helperStyle: GoogleFonts.plusJakartaSans(
+              color: const Color(0xFF6366F1),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
             prefixIcon: Container(
               margin: EdgeInsets.all(isWide ? 12 : 10),
               padding: EdgeInsets.all(isWide ? 10 : 8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF6366F1).withOpacity(0.15),
-                    const Color(0xFF8B5CF6).withOpacity(0.15),
+                    const Color(0xFF6366F1).withValues(alpha: 0.15),
+                    const Color(0xFF8B5CF6).withValues(alpha: 0.15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(10),
@@ -1032,7 +1050,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
 
   @override
   Widget build(BuildContext context) {
-    return const _SignUp_ScreenInner();
+    return _SignUp_ScreenInner();
   }
 }
 
@@ -1150,7 +1168,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
                 width: 32,
                 height: 32,
                 fit: BoxFit.contain,
-                errorBuilder: (ctx, _, __) => Container(
+                errorBuilder: (ctx, _, _) => Container(
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
@@ -1204,12 +1222,12 @@ class _CompactMetric extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.02),
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.02),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1230,7 +1248,7 @@ class _CompactMetric extends StatelessWidget {
             label,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -1254,13 +1272,13 @@ class _CompactFeature extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white.withOpacity(0.12),
-                Colors.white.withOpacity(0.04),
+                Colors.white.withValues(alpha: 0.12),
+                Colors.white.withValues(alpha: 0.04),
               ],
             ),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: Colors.white.withOpacity(0.9), size: 16),
+          child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 16),
         ),
         const SizedBox(width: 12),
         Text(
@@ -1268,7 +1286,7 @@ class _CompactFeature extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.85),
+            color: Colors.white.withValues(alpha: 0.85),
           ),
         ),
       ],
@@ -1288,13 +1306,13 @@ class _TrustBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.5), size: 16),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.5), size: 16),
         const SizedBox(width: 6),
         Text(
           label,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             fontWeight: FontWeight.w600,
           ),
         ),

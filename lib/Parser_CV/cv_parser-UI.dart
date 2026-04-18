@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -150,7 +149,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
   Future<void> _handleFileSelection() async {
     setState(() => _errorMsg = null);
     try {
-      final res = await FilePicker.platform.pickFiles(
+      final res = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'docx', 'txt'],
         withData: kIsWeb,
@@ -379,13 +378,13 @@ class _CvUploadSectionState extends State<CvUploadSection>
             boxShadow: _isHoveringUpload
                 ? [
               BoxShadow(
-                  color: BrandColors.indigo.withOpacity(0.08),
+                  color: BrandColors.indigo.withValues(alpha: 0.08),
                   blurRadius: 24,
                   offset: const Offset(0, 8))
             ]
                 : [
               BoxShadow(
-                  color: BrandColors.slate950.withOpacity(0.02),
+                  color: BrandColors.slate950.withValues(alpha: 0.02),
                   blurRadius: 8,
                   offset: const Offset(0, 2))
             ],
@@ -429,12 +428,12 @@ class _CvUploadSectionState extends State<CvUploadSection>
             TweenAnimationBuilder(
               tween: Tween<double>(begin: 0, end: 1),
               duration: const Duration(seconds: 2),
-              builder: (_, double v, __) => Container(
+              builder: (_, double v, _) => Container(
                 width: 120 + v * 20, height: 120 + v * 20,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: BrandColors.indigo.withOpacity(0.2 * (1 - v)),
+                      color: BrandColors.indigo.withValues(alpha: 0.2 * (1 - v)),
                       width: 2),
                 ),
               ),
@@ -442,12 +441,12 @@ class _CvUploadSectionState extends State<CvUploadSection>
             TweenAnimationBuilder(
               tween: Tween<double>(begin: 0, end: 1),
               duration: const Duration(milliseconds: 1500),
-              builder: (_, double v, __) => Container(
+              builder: (_, double v, _) => Container(
                 width: 100 + v * 15, height: 100 + v * 15,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: BrandColors.indigo.withOpacity(0.3 * (1 - v)),
+                      color: BrandColors.indigo.withValues(alpha: 0.3 * (1 - v)),
                       width: 2),
                 ),
               ),
@@ -460,7 +459,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
                 border: Border.all(color: BrandColors.slate200, width: 2),
                 boxShadow: [
                   BoxShadow(
-                      color: BrandColors.indigo.withOpacity(0.15),
+                      color: BrandColors.indigo.withValues(alpha: 0.15),
                       blurRadius: 20,
                       offset: const Offset(0, 8))
                 ],
@@ -615,7 +614,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
                       vertical: isMob ? 7 : 10),
                   decoration: BoxDecoration(
                     color: selected
-                        ? BrandColors.indigo.withOpacity(0.08)
+                        ? BrandColors.indigo.withValues(alpha: 0.08)
                         : BrandColors.slate50,
                     borderRadius: BorderRadius.circular(9),
                     border: Border.all(
@@ -779,7 +778,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
           border: Border.all(color: BrandColors.slate200),
           boxShadow: [
             BoxShadow(
-                color: BrandColors.slate950.withOpacity(0.05),
+                color: BrandColors.slate950.withValues(alpha: 0.05),
                 blurRadius: 30,
                 offset: const Offset(0, 15))
           ],
@@ -1362,7 +1361,7 @@ class _TopBar extends StatelessWidget {
                     ? [
                   BoxShadow(
                       color:
-                      BrandColors.indigo.withOpacity(0.28),
+                      BrandColors.indigo.withValues(alpha: 0.28),
                       blurRadius: 10,
                       offset: const Offset(0, 3))
                 ]
@@ -1415,7 +1414,7 @@ class _TopBar extends StatelessWidget {
       color: BrandColors.white,
       borderRadius: BorderRadius.circular(20),
       border:
-      Border.all(color: BrandColors.emerald.withOpacity(0.5)),
+      Border.all(color: BrandColors.emerald.withValues(alpha: 0.5)),
     ),
     child: Row(mainAxisSize: MainAxisSize.min, children: [
       const Icon(Icons.auto_awesome,
@@ -1471,7 +1470,9 @@ class _LoadingDotsState extends State<_LoadingDots>
 
   @override
   void dispose() {
-    for (final c in _ctrls) c.dispose();
+    for (final c in _ctrls) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -1480,7 +1481,7 @@ class _LoadingDotsState extends State<_LoadingDots>
     mainAxisSize: MainAxisSize.min,
     children: List.generate(3, (i) => AnimatedBuilder(
       animation: _anims[i],
-      builder: (_, __) => Padding(
+      builder: (_, _) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2),
         child: Transform.translate(
           offset: Offset(0, -4 * _anims[i].value),
@@ -1488,7 +1489,7 @@ class _LoadingDotsState extends State<_LoadingDots>
             width: 4, height: 4,
             decoration: BoxDecoration(
               color: BrandColors.slate400
-                  .withOpacity(0.4 + 0.6 * _anims[i].value),
+                  .withValues(alpha: 0.4 + 0.6 * _anims[i].value),
               shape: BoxShape.circle,
             ),
           ),

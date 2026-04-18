@@ -97,9 +97,9 @@ class _ShortlistingState extends State<Shortlisting>
       builder: (ctx, bc) {
         final w = bc.maxWidth;
         final _Layout layout;
-        if (w < 600)
+        if (w < 600) {
           layout = _Layout.mobile;
-        else if (w < 960)
+        } else if (w < 960)
           layout = _Layout.tablet;
         else
           layout = _Layout.desktop;
@@ -136,7 +136,7 @@ class _ShortlistingState extends State<Shortlisting>
                         // Stream content
                         Expanded(
                           child: Consumer<JobSeekerProvider>(
-                            builder: (_, provider, __) =>
+                            builder: (_, provider, _) =>
                                 StreamBuilder<List<Map<String, dynamic>>>(
                                   stream: provider.allJobsStream,
                                   builder: (_, snap) {
@@ -155,8 +155,9 @@ class _ShortlistingState extends State<Shortlisting>
                                       );
                                     }
                                     final jobs = snap.data ?? [];
-                                    if (jobs.isEmpty)
+                                    if (jobs.isEmpty) {
                                       return const _EmptyJobsState();
+                                    }
                                     return _ShortlistingDashboard(jobs: jobs);
                                   },
                                 ),
@@ -244,7 +245,7 @@ class _HeaderIconBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(9),
     decoration: BoxDecoration(
-      color: _T.primary.withOpacity(0.1),
+      color: _T.primary.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(8),
     ),
     child: Icon(Icons.recent_actors_outlined, size: size, color: _T.primary),
@@ -582,7 +583,7 @@ class _JobListPanel extends StatelessWidget {
             controller: scrollCtrl,
             padding: EdgeInsets.zero,
             itemCount: jobs.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (_, i) {
               final job = jobs[i];
               final id = job['id'] as String?;
@@ -906,13 +907,13 @@ class _JobCardState extends State<_JobCard> {
           ),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: widget.isSelected ? _T.primary.withOpacity(0.05) : _T.white,
+            color: widget.isSelected ? _T.primary.withValues(alpha: 0.05) : _T.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: widget.isSelected
                   ? _T.primary
                   : _hovered
-                  ? _T.primary.withOpacity(0.35)
+                  ? _T.primary.withValues(alpha: 0.35)
                   : _T.border,
               width: widget.isSelected ? 1.5 : 1,
             ),
@@ -987,7 +988,7 @@ class _JobCardState extends State<_JobCard> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _T.primary.withOpacity(0.35),
+                            color: _T.primary.withValues(alpha: 0.35),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -1046,14 +1047,14 @@ class _LogoBox extends StatelessWidget {
           ? CachedNetworkImage(
               imageUrl: logoUrl!,
               fit: BoxFit.contain,
-              placeholder: (_, __) => const Padding(
+              placeholder: (_, _) => const Padding(
                 padding: EdgeInsets.all(12),
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: _T.primary,
                 ),
               ),
-              errorWidget: (_, __, ___) => const Icon(
+              errorWidget: (_, _, _) => const Icon(
                 Icons.business_rounded,
                 color: _T.textSec,
                 size: 22,
@@ -1110,7 +1111,7 @@ class _SkillPill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
     decoration: BoxDecoration(
-      color: _T.primary.withOpacity(0.07),
+      color: _T.primary.withValues(alpha: 0.07),
       borderRadius: BorderRadius.circular(5),
     ),
     child: Text(
@@ -1174,7 +1175,7 @@ class _NoResultsState extends StatelessWidget {
           child: Icon(
             Icons.search_off_rounded,
             size: 52,
-            color: _T.primary.withOpacity(0.55),
+            color: _T.primary.withValues(alpha: 0.55),
           ),
         ),
         const SizedBox(height: 20),
@@ -1228,7 +1229,7 @@ class _ErrorState extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF1F2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _T.red.withOpacity(0.25)),
+        border: Border.all(color: _T.red.withValues(alpha: 0.25)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1236,7 +1237,7 @@ class _ErrorState extends StatelessWidget {
           Icon(
             Icons.error_outline_rounded,
             size: 52,
-            color: _T.red.withOpacity(0.7),
+            color: _T.red.withValues(alpha: 0.7),
           ),
           const SizedBox(height: 14),
           Text('Something went wrong', style: _T.head(fs: 16, c: _T.red)),

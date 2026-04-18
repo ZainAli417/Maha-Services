@@ -61,7 +61,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -113,7 +113,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                   child: Container(
                     height: 80,
                     width: 80,
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -137,7 +137,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     // Assuming provider.login returns String? (null if success, string if error)
     final error = await provider.login(
       email: _email.text.trim(),
-      password: _password.text,
+      password: _password.text.trim(),
       expectedRole: 'Recruiter',
     );
 
@@ -354,7 +354,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
 
                                     // ─── Login Button ───
                                     Consumer<LoginProvider_Recruiter>(
-                                      builder: (_, provider, __) {
+                                      builder: (_, provider, _) {
                                         return Align(
                                           alignment: Alignment
                                               .center, // prevent full-width stretch
@@ -373,7 +373,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                                   (states) {
                                                     if (provider.isLoading) {
                                                       return primaryColor
-                                                          .withOpacity(0.7);
+                                                          .withValues(alpha: 0.7);
                                                     }
                                                     return primaryColor;
                                                   },

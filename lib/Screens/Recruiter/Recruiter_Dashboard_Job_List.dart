@@ -372,7 +372,7 @@
 //               Container(
 //                 padding: const EdgeInsets.all(8),
 //                 decoration: BoxDecoration(
-//                   color: _primary.withOpacity(0.1),
+//                   color: _primary.withValues(alpha: 0.1),
 //                   borderRadius: BorderRadius.circular(8),
 //                 ),
 //                 child: Icon(icon, color: _primary, size: 20),
@@ -382,7 +382,7 @@
 //                 Container(
 //                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 //                   decoration: BoxDecoration(
-//                     color: (trendUp! ? _accent : _error).withOpacity(0.1),
+//                     color: (trendUp! ? _accent : _error).withValues(alpha: 0.1),
 //                     borderRadius: BorderRadius.circular(6),
 //                   ),
 //                   child: Row(
@@ -484,7 +484,7 @@
 //               Container(
 //                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 //                 decoration: BoxDecoration(
-//                   color: _accent.withOpacity(0.1),
+//                   color: _accent.withValues(alpha: 0.1),
 //                   borderRadius: BorderRadius.circular(6),
 //                 ),
 //                 child: Text(
@@ -576,7 +576,7 @@
 //                     ),
 //                     belowBarData: BarAreaData(
 //                       show: true,
-//                       color: _accent.withOpacity(0.1),
+//                       color: _accent.withValues(alpha: 0.1),
 //                     ),
 //                   ),
 //                 ],
@@ -746,7 +746,7 @@
 //                     height: 28,
 //                     alignment: Alignment.center,
 //                     decoration: BoxDecoration(
-//                       color: index == 0 ? _warning.withOpacity(0.1) : _border,
+//                       color: index == 0 ? _warning.withValues(alpha: 0.1) : _border,
 //                       shape: BoxShape.circle,
 //                     ),
 //                     child: Text(
@@ -825,7 +825,7 @@
 //                 borderRadius: BorderRadius.circular(10),
 //                 boxShadow: [
 //                   BoxShadow(
-//                     color: _primary.withOpacity(0.25),
+//                     color: _primary.withValues(alpha: 0.25),
 //                     blurRadius: 10,
 //                     offset: const Offset(0, 4),
 //                   ),
@@ -926,7 +926,7 @@
 //             borderRadius: BorderRadius.circular(12),
 //             boxShadow: [
 //               BoxShadow(
-//                 color: _primary.withOpacity(0.3),
+//                 color: _primary.withValues(alpha: 0.3),
 //                 blurRadius: 12,
 //                 offset: const Offset(0, 4),
 //               ),
@@ -1004,12 +1004,12 @@
 //       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
 //       decoration: BoxDecoration(
 //         gradient: LinearGradient(
-//           colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+//           colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
 //           begin: Alignment.topLeft,
 //           end: Alignment.bottomRight,
 //         ),
 //         borderRadius: BorderRadius.circular(14),
-//         border: Border.all(color: color.withOpacity(0.2)),
+//         border: Border.all(color: color.withValues(alpha: 0.2)),
 //       ),
 //       child: Row(
 //         mainAxisSize: MainAxisSize.min,
@@ -1021,7 +1021,7 @@
 //               borderRadius: BorderRadius.circular(8),
 //               boxShadow: [
 //                 BoxShadow(
-//                   color: color.withOpacity(0.4),
+//                   color: color.withValues(alpha: 0.4),
 //                   blurRadius: 8,
 //                   offset: const Offset(0, 2),
 //                 ),
@@ -1080,7 +1080,7 @@
 //                     enabledBorder: OutlineInputBorder(
 //                       borderRadius: BorderRadius.circular(10),
 //                       borderSide: BorderSide(
-//                         color: _textSecondary.withOpacity(0.4),
+//                         color: _textSecondary.withValues(alpha: 0.4),
 //                         width: 1.2,
 //                       ),
 //                     ),
@@ -1133,7 +1133,7 @@
 //                   setState(() => _selectedBenefits.remove(b));
 //                   _applyFilters();
 //                 },
-//                 backgroundColor: _primary.withOpacity(0.1),
+//                 backgroundColor: _primary.withValues(alpha: 0.1),
 //                 side: BorderSide.none,
 //                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 //               )).toList(),
@@ -1153,7 +1153,7 @@
 //       child: Container(
 //         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
 //         decoration: BoxDecoration(
-//           color: value.isNotEmpty ? _primary.withOpacity(0.1) : _background,
+//           color: value.isNotEmpty ? _primary.withValues(alpha: 0.1) : _background,
 //           borderRadius: BorderRadius.circular(10),
 //           border: Border.all(color: value.isNotEmpty ? _primary : _border),
 //         ),
@@ -1214,7 +1214,7 @@
 //       child: Container(
 //         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
 //         decoration: BoxDecoration(
-//           color: _selectedBenefits.isNotEmpty ? _primary.withOpacity(0.1) : _background,
+//           color: _selectedBenefits.isNotEmpty ? _primary.withValues(alpha: 0.1) : _background,
 //           borderRadius: BorderRadius.circular(10),
 //           border: Border.all(color: _selectedBenefits.isNotEmpty ? _primary : _border),
 //         ),
@@ -1278,13 +1278,13 @@
 //               height: 120,
 //               decoration: BoxDecoration(
 //                 gradient: LinearGradient(
-//                   colors: [_primary.withOpacity(0.1), _accent.withOpacity(0.1)],
+//                   colors: [_primary.withValues(alpha: 0.1), _accent.withValues(alpha: 0.1)],
 //                   begin: Alignment.topLeft,
 //                   end: Alignment.bottomRight,
 //                 ),
 //                 borderRadius: BorderRadius.circular(30),
 //               ),
-//               child: Icon(Icons.search_off_rounded, size: 64, color: _textSecondary.withOpacity(0.5)),
+//               child: Icon(Icons.search_off_rounded, size: 64, color: _textSecondary.withValues(alpha: 0.5)),
 //             ),
 //             const SizedBox(height: 24),
 //             Text('No jobs found', style: GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w700, color: _textPrimary, letterSpacing: -0.5)),
@@ -1356,7 +1356,7 @@
 //     Navigator.of(context).push(
 //       PageRouteBuilder(
 //         opaque: false,
-//         barrierColor: Colors.black.withOpacity(0.55),
+//         barrierColor: Colors.black.withValues(alpha: 0.55),
 //         transitionDuration: const Duration(milliseconds: 300),
 //         reverseTransitionDuration: const Duration(milliseconds: 220),
 //         pageBuilder: (context, anim, secondaryAnim) {
@@ -1416,11 +1416,11 @@
 //                                   width: 36,
 //                                   height: 36,
 //                                   decoration: BoxDecoration(
-//                                     color: Colors.white.withOpacity(0.85),
+//                                     color: Colors.white.withValues(alpha: 0.85),
 //                                     shape: BoxShape.circle,
 //                                     boxShadow: [
 //                                       BoxShadow(
-//                                         color: Colors.black.withOpacity(0.1),
+//                                         color: Colors.black.withValues(alpha: 0.1),
 //                                         blurRadius: 6,
 //                                         offset: const Offset(0, 2),
 //                                       ),
@@ -1483,20 +1483,20 @@
 //           color: _surface,
 //           borderRadius: BorderRadius.circular(12),
 //           border: Border.all(
-//             color: _isHovered ? _primary.withOpacity(0.4) : _border,
+//             color: _isHovered ? _primary.withValues(alpha: 0.4) : _border,
 //             width: _isHovered ? 1.5 : 1,
 //           ),
 //           boxShadow: _isHovered
 //               ? [
 //             BoxShadow(
-//               color: _primary.withOpacity(0.08),
+//               color: _primary.withValues(alpha: 0.08),
 //               blurRadius: 16,
 //               offset: const Offset(0, 4),
 //             ),
 //           ]
 //               : [
 //             BoxShadow(
-//               color: Colors.black.withOpacity(0.03),
+//               color: Colors.black.withValues(alpha: 0.03),
 //               blurRadius: 4,
 //               offset: const Offset(0, 1),
 //             ),
@@ -1529,7 +1529,7 @@
 //                           height: 48,
 //                           decoration: BoxDecoration(
 //                             gradient: LinearGradient(
-//                               colors: [_primary.withOpacity(0.08), _accent.withOpacity(0.08)],
+//                               colors: [_primary.withValues(alpha: 0.08), _accent.withValues(alpha: 0.08)],
 //                               begin: Alignment.topLeft,
 //                               end: Alignment.bottomRight,
 //                             ),
@@ -1624,9 +1624,9 @@
 //                           Container(
 //                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 //                             decoration: BoxDecoration(
-//                               color: _success.withOpacity(0.1),
+//                               color: _success.withValues(alpha: 0.1),
 //                               borderRadius: BorderRadius.circular(6),
-//                               border: Border.all(color: _success.withOpacity(0.2)),
+//                               border: Border.all(color: _success.withValues(alpha: 0.2)),
 //                             ),
 //                             child: Row(
 //                               mainAxisSize: MainAxisSize.min,
@@ -1682,9 +1682,9 @@
 //                           return Container(
 //                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 //                             decoration: BoxDecoration(
-//                               color: colorPair[0].withOpacity(0.1),
+//                               color: colorPair[0].withValues(alpha: 0.1),
 //                               borderRadius: BorderRadius.circular(6),
-//                               border: Border.all(color: colorPair[0].withOpacity(0.2)),
+//                               border: Border.all(color: colorPair[0].withValues(alpha: 0.2)),
 //                             ),
 //                             child: Text(
 //                               skill,
@@ -1755,9 +1755,9 @@
 //                               child: Container(
 //                                 padding: const EdgeInsets.symmetric(vertical: 10),
 //                                 decoration: BoxDecoration(
-//                                   color: _accent.withOpacity(0.1),
+//                                   color: _accent.withValues(alpha: 0.1),
 //                                   borderRadius: BorderRadius.circular(8),
-//                                   border: Border.all(color: _accent.withOpacity(0.3), width: 1.2),
+//                                   border: Border.all(color: _accent.withValues(alpha: 0.3), width: 1.2),
 //                                 ),
 //                                 child: Row(
 //                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1806,7 +1806,7 @@
 //   @override
 //   void paint(Canvas canvas, Size size) {
 //     final paint = Paint()
-//       ..color = const Color(0xFF2563EB).withOpacity(isHovered ? 0.02 : 0.01)
+//       ..color = const Color(0xFF2563EB).withValues(alpha: isHovered ? 0.02 : 0.01)
 //       ..style = PaintingStyle.fill;
 //
 //     // Draw subtle dots pattern

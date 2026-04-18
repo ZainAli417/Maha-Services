@@ -144,7 +144,7 @@ class _job_hubState extends State<job_hub>
                                 Container(
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1E40AF).withOpacity(0.1),
+                                    color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(7),
                                   ),
                                   child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF1E40AF)),
@@ -343,7 +343,7 @@ class _job_hubState extends State<job_hub>
           Container(
             padding: EdgeInsets.all(isMobile ? 8 : 10),
             decoration: BoxDecoration(
-              color: kPrimaryBlue.withOpacity(0.1),
+              color: kPrimaryBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -461,12 +461,12 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.iconColor.withOpacity(0.08),
+                    color: widget.iconColor.withValues(alpha: 0.08),
                     blurRadius: 8 + _elevationAnimation.value,
                     offset: Offset(0, 2 + _elevationAnimation.value / 2),
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 1,
                     offset: const Offset(0, 1),
                   ),
@@ -614,24 +614,24 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
           end: Alignment.bottomRight,
           colors: [
             cloudWhite,
-            Colors.white.withOpacity(0.98),
-            cloudWhite.withOpacity(0.95),
+            Colors.white.withValues(alpha: 0.98),
+            cloudWhite.withValues(alpha: 0.95),
           ],
         ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: skyBlue.withOpacity(0.12),
+          color: skyBlue.withValues(alpha: 0.12),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: airForceBlue.withOpacity(0.06),
+            color: airForceBlue.withValues(alpha: 0.06),
             blurRadius: 24,
             offset: const Offset(0, 10),
             spreadRadius: -4,
           ),
           BoxShadow(
-            color: skyBlue.withOpacity(0.04),
+            color: skyBlue.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -664,10 +664,10 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: skyBlue.withOpacity(0.08),
+                color: skyBlue.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: skyBlue.withOpacity(0.18),
+                  color: skyBlue.withValues(alpha: 0.18),
                   width: 1,
                 ),
               ),
@@ -703,7 +703,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: successGreen.withOpacity(0.25),
+                              color: successGreen.withValues(alpha: 0.25),
                               blurRadius: 4,
                               spreadRadius: 1,
                             ),
@@ -731,10 +731,10 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: skyBlue.withOpacity(0.06),
+            color: skyBlue.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: skyBlue.withOpacity(0.12),
+              color: skyBlue.withValues(alpha: 0.12),
               width: 1,
             ),
           ),
@@ -777,20 +777,20 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
         borderRadius: BorderRadius.circular(28),
         color: isFocused ? Colors.white : Colors.grey[50],
         border: Border.all(
-          color: isFocused ? skyBlue.withOpacity(0.8) : Colors.grey.withOpacity(0.2),
+          color: isFocused ? skyBlue.withValues(alpha: 0.8) : Colors.grey.withValues(alpha: 0.2),
           width: isFocused ? 2.0 : 1,
         ),
         boxShadow: isFocused
             ? [
           BoxShadow(
-            color: skyBlue.withOpacity(0.08),
+            color: skyBlue.withValues(alpha: 0.08),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ]
             : [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -881,10 +881,10 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
       curve: Curves.easeInOut,
       margin: const EdgeInsets.all(6),
       child: Material(
-        color: hasText ? skyBlue : (isFocused ? skyBlue.withOpacity(0.1) : Colors.grey.shade200),
+        color: hasText ? skyBlue : (isFocused ? skyBlue.withValues(alpha: 0.1) : Colors.grey.shade200),
         borderRadius: BorderRadius.circular(24),
         elevation: hasText ? 2 : 0,
-        shadowColor: skyBlue.withOpacity(0.18),
+        shadowColor: skyBlue.withValues(alpha: 0.18),
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: hasText ? _handleSendMessage : _handleVoiceInput,
@@ -978,14 +978,14 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF07B67C), const Color(0xFF07B67C).withOpacity(0.85)],
+                  colors: [const Color(0xFF07B67C), const Color(0xFF07B67C).withValues(alpha: 0.85)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF07B67C).withOpacity(0.18),
+                    color: const Color(0xFF07B67C).withValues(alpha: 0.18),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -1045,7 +1045,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isAnalyzing ? Colors.grey.shade600 : const Color(0xFF1B365D),
                 elevation: _isAnalyzing ? 0 : 8,
-                shadowColor: const Color(0xFF1B365D).withOpacity(0.28),
+                shadowColor: const Color(0xFF1B365D).withValues(alpha: 0.28),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

@@ -176,7 +176,7 @@ void main() async {
       debugPrint('═══ Flutter Error ═══');
       debugPrint('${details.exception}');
       if (details.stack != null) {
-        debugPrint('${details.stack.toString().split('\n').take(8).join('\n')}');
+        debugPrint(details.stack.toString().split('\n').take(8).join('\n'));
       }
       debugPrint('═══════════════════');
     };

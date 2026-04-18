@@ -519,7 +519,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               padding: const EdgeInsets.only(top: 8, left: 4),
               child: Text(
                 'PULL DOWN LONG TO REFRESH DATA',
-                style: _C.p(9, fw: FontWeight.w500, color: _C.t3.withOpacity(0.7)),
+                style: _C.p(9, fw: FontWeight.w500, color: _C.t3.withValues(alpha: 0.7)),
               ),
             ),
         ],
@@ -809,7 +809,7 @@ class _RightPanel extends StatelessWidget {
                 : ListView.separated(
               padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
               itemCount: applications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) => _JobCard(app: applications[i]),
             ),
           ),
@@ -901,7 +901,7 @@ class _StatusBarChart extends StatelessWidget {
                 BarChartRodData(
                   toY: values[i],
                   gradient: LinearGradient(
-                    colors: [col.withOpacity(0.5), col],
+                    colors: [col.withValues(alpha: 0.5), col],
                     begin: Alignment.bottomCenter, end: Alignment.topCenter,
                   ),
                   width: 22,
@@ -1079,7 +1079,7 @@ class _KpiCard extends StatelessWidget {
                   tween: IntTween(begin: 0, end: d.value),
                   duration: const Duration(milliseconds: 900),
                   curve: Curves.easeOutExpo,
-                  builder: (_, v, __) => Text(
+                  builder: (_, v, _) => Text(
                     '$v',
                     style: _C.p(20, fw: FontWeight.w800),
                   ),
@@ -1092,7 +1092,7 @@ class _KpiCard extends StatelessWidget {
           ),
           // Subtle trend icon
           Icon(Icons.trending_up_rounded,
-              color: d.accent.withOpacity(0.25), size: 14),
+              color: d.accent.withValues(alpha: 0.25), size: 14),
         ],
       ),
     );
@@ -1269,12 +1269,12 @@ class _TrendChart extends StatelessWidget {
                   getTouchedSpotIndicator: (_, indices) =>
                       indices.map((_) => TouchedSpotIndicatorData(
                         FlLine(
-                          color: _C.indigo.withOpacity(0.3),
+                          color: _C.indigo.withValues(alpha: 0.3),
                           strokeWidth: 1.5,
                           dashArray: [4, 4],
                         ),
                         FlDotData(
-                          getDotPainter: (_, __, ___, ____) =>
+                          getDotPainter: (_, _, _, _) =>
                               FlDotCirclePainter(
                                 radius: 5,
                                 color: Colors.white,
@@ -1298,9 +1298,9 @@ class _TrendChart extends StatelessWidget {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          _C.indigo.withOpacity(0.18),
-                          _C.indigo.withOpacity(0.05),
-                          _C.indigo.withOpacity(0.0),
+                          _C.indigo.withValues(alpha: 0.18),
+                          _C.indigo.withValues(alpha: 0.05),
+                          _C.indigo.withValues(alpha: 0.0),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -1361,7 +1361,7 @@ class _DeptCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: (rate / 100).clamp(0.0, 1.0),
-                      backgroundColor: color.withOpacity(0.08),
+                      backgroundColor: color.withValues(alpha: 0.08),
                       valueColor: AlwaysStoppedAnimation(color),
                       minHeight: 4,
                     ),
@@ -1502,9 +1502,9 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: col.withOpacity(0.08),
+        color: col.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: col.withOpacity(0.25), width: 1.2),
+        border: Border.all(color: col.withValues(alpha: 0.25), width: 1.2),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 11, color: col),
@@ -1545,7 +1545,7 @@ class _PanelHdr extends StatelessWidget {
             Text(sub, style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
           ]),
         ),
-        if (badge != null) badge!,
+        ?badge,
       ]),
     );
   }
@@ -1609,9 +1609,9 @@ class _MiniStatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, color: color, size: 12),
@@ -1637,9 +1637,9 @@ class _FilterToggleBtn extends StatelessWidget {
             horizontal: compact ? 8 : 10,
             vertical: compact ? 6 : 7),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
+          color: color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: compact
             ? Icon(
@@ -1714,7 +1714,7 @@ class _DateRangeBtn extends StatelessWidget {
           color: _C.canvas,
           borderRadius: BorderRadius.circular(9),
           border: Border.all(
-              color: active ? _C.indigo.withOpacity(0.4) : _C.border),
+              color: active ? _C.indigo.withValues(alpha: 0.4) : _C.border),
         ),
         child: Row(children: [
           Icon(Icons.calendar_today_rounded,
@@ -1778,9 +1778,9 @@ class _OutlineBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
+          color: color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, color: color, size: 14),
@@ -1862,9 +1862,9 @@ class _Chip extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: tiny ? 6 : 9, vertical: tiny ? 2 : 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Text(label, style: _C.p(tiny ? 8 : 9, color: color)),
     );

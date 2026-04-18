@@ -10,15 +10,15 @@ android {
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
+    // Inside the android { ... } block
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    kotlin {
+        jvmToolchain(17)
     }
-
     defaultConfig {
         applicationId = "com.example.job_portal"
         minSdk = flutter.minSdkVersion

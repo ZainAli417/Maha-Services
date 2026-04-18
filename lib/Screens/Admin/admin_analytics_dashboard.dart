@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:go_router/go_router.dart';
 
 import 'admin_analytics_dashboard_Provider.dart';
 
@@ -120,7 +119,7 @@ class _AdminAnalyticsDashboardScreenState
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -236,7 +235,7 @@ class _MainContent extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            _Chip(label: 'Today', icon: Icons.calendar_today_rounded, color: _C.indigo),
+            _Chip(label: 'Today', icon: Icons.calendar_today_rounded, color: _C.indigo, tiny: false,),
           ],
         ),
         const SizedBox(height: 24),
@@ -357,7 +356,7 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
                     : ListView.separated(
                         padding: const EdgeInsets.all(24),
                         itemCount: prov.allJobs.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
                         itemBuilder: (context, i) {
                           final job = prov.allJobs[i];
                           final status = (job['status'] ?? 'Open').toString();
@@ -642,14 +641,14 @@ class _KpiCardVertical extends StatelessWidget {
               )
             else
               Icon(Icons.trending_up_rounded,
-                  color: d.accent.withOpacity(0.35), size: 15),
+                  color: d.accent.withValues(alpha: 0.35), size: 15),
           ]),
           SizedBox(height: compact ? 10 : 14),
           TweenAnimationBuilder<int>(
             tween: IntTween(begin: 0, end: d.value),
             duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutCubic,
-            builder: (_, v, __) => Text(_fmt(v),
+            builder: (_, v, _) => Text(_fmt(v),
                 style: _C.p(compact ? 20 : 26, fw: FontWeight.w800)),
           ),
           const SizedBox(height: 2),
@@ -738,7 +737,7 @@ class _KpiCardHorizontal extends StatelessWidget {
               tween: IntTween(begin: 0, end: d.value),
               duration: const Duration(milliseconds: 1200),
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => Text(
+              builder: (_, v, _) => Text(
                 _fmt(v),
                 style: _C.p(22, fw: FontWeight.w800, color: d.accent),
               ),
@@ -851,7 +850,7 @@ Widget _buildUserStatsGrid(List<_UD> stats) {
           border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1011,8 +1010,9 @@ class _SkillsChart extends StatelessWidget {
                       showTitles: true,
                       getTitlesWidget: (v, _) {
                         final i = v.toInt();
-                        if (i < 0 || i >= skills.length)
+                        if (i < 0 || i >= skills.length) {
                           return const SizedBox.shrink();
+                        }
                         final lbl = skills[i].length > 9
                             ? '${skills[i].substring(0, 7)}..'
                             : skills[i];
@@ -1056,7 +1056,7 @@ class _SkillsChart extends StatelessWidget {
                       BarChartRodData(
                         toY: counts[i].toDouble(),
                         gradient: LinearGradient(
-                          colors: [col.withOpacity(0.5), col],
+                          colors: [col.withValues(alpha: 0.5), col],
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                         ),
@@ -1133,7 +1133,7 @@ class _SkillsChart extends StatelessWidget {
 //                             width: 26,
 //                             height: 26,
 //                             decoration: BoxDecoration(
-//                                 color: col.withOpacity(0.1),
+//                                 color: col.withValues(alpha: 0.1),
 //                                 shape: BoxShape.circle),
 //                             alignment: Alignment.center,
 //                             child: Text('${i + 1}',
@@ -1154,7 +1154,7 @@ class _SkillsChart extends StatelessWidget {
 //                         borderRadius: BorderRadius.circular(4),
 //                         child: LinearProgressIndicator(
 //                           value: pct,
-//                           backgroundColor: col.withOpacity(0.08),
+//                           backgroundColor: col.withValues(alpha: 0.08),
 //                           valueColor: AlwaysStoppedAnimation(col),
 //                           minHeight: 4,
 //                         ),
@@ -1199,7 +1199,7 @@ class _RequestsLineCard extends StatelessWidget {
             icon: Icons.forward_to_inbox_rounded,
             title: 'Requests by Status',
             sub: 'Distribution across all requests',
-            badge: _Chip(label: '$total total', color: _C.indigo),
+            badge: _Chip(label: '$total total', color: _C.indigo,tiny: false,),
           ),
           const SizedBox(height: 16),
           if (!hasData)
@@ -1216,7 +1216,7 @@ class _RequestsLineCard extends StatelessWidget {
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipColor: (_) => _C.t1,
                       tooltipBorderRadius: BorderRadius.circular(8),
-                      getTooltipItem: (group, _, rod, __) {
+                      getTooltipItem: (group, _, rod, _) {
                         final i = group.x;
                         return BarTooltipItem(
                           '${i < labels.length ? labels[i] : ''}\n${rod.toY.round()}',
@@ -1231,8 +1231,9 @@ class _RequestsLineCard extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (v, _) {
                           final i = v.toInt();
-                          if (i < 0 || i >= labels.length)
+                          if (i < 0 || i >= labels.length) {
                             return const SizedBox.shrink();
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(labels[i],
@@ -1271,7 +1272,7 @@ class _RequestsLineCard extends StatelessWidget {
                         BarChartRodData(
                           toY: values[i],
                           gradient: LinearGradient(
-                            colors: [col.withOpacity(0.5), col],
+                            colors: [col.withValues(alpha: 0.5), col],
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                           ),
@@ -1345,7 +1346,7 @@ class _JobsBarCard extends StatelessWidget {
             icon: Icons.work_outline_rounded,
             title: 'Jobs by Status',
             sub: 'Open vs closed listings',
-            badge: _Chip(label: '$total total', color: _C.teal),
+            badge: _Chip(label: '$total total', color: _C.teal,tiny: false,),
           ),
           const SizedBox(height: 16),
           if (!hasData)
@@ -1363,7 +1364,7 @@ class _JobsBarCard extends StatelessWidget {
                       getTooltipColor: (_) => _C.t1,
                       tooltipBorderRadius:
                       const BorderRadius.all(Radius.circular(8)),
-                      getTooltipItem: (group, _, rod, __) {
+                      getTooltipItem: (group, _, rod, _) {
                         final i = group.x;
                         return BarTooltipItem(
                           '${i < labels.length ? labels[i] : ''}\n${rod.toY.round()}',
@@ -1378,8 +1379,9 @@ class _JobsBarCard extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (v, _) {
                           final i = v.toInt();
-                          if (i < 0 || i >= labels.length)
+                          if (i < 0 || i >= labels.length) {
                             return const SizedBox.shrink();
+                          }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(labels[i],
@@ -1422,7 +1424,7 @@ class _JobsBarCard extends StatelessWidget {
                         BarChartRodData(
                           toY: values[i],
                           gradient: LinearGradient(
-                            colors: [col.withOpacity(0.5), col],
+                            colors: [col.withValues(alpha: 0.5), col],
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                           ),
@@ -1499,7 +1501,7 @@ class _RightPanel extends StatelessWidget {
             badge: _Chip(
                 label: '${prov.totalJobs} total',
                 icon: Icons.numbers_rounded,
-                color: _C.teal),
+                color: _C.teal,tiny: true,),
           ),
           _JobsGlance(prov: prov),
 
@@ -1514,7 +1516,7 @@ class _RightPanel extends StatelessWidget {
             sub: 'Quick snapshot',
             badge: _Chip(
                 label: '${prov.totalRequests} total',
-                color: _C.amber),
+                color: _C.amber,tiny: false,),
           ),
           _RequestMetrics(prov: prov),
 
@@ -1546,7 +1548,7 @@ class _RightPanel extends StatelessWidget {
                 : ListView.separated(
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
               itemCount: prov.recentRequests.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
               itemBuilder: (_, i) =>
                   _RequestTile(r: prov.recentRequests[i]),
             ),
@@ -1593,7 +1595,7 @@ class _PanelHdr extends StatelessWidget {
               ],
             ),
           ),
-          if (badge != null) badge!,
+          ?badge,
         ],
       ),
     );
@@ -1722,7 +1724,7 @@ class _MiniTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: accent.withOpacity(0.15)),
+        border: Border.all(color: accent.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1871,7 +1873,7 @@ class _CardHead extends StatelessWidget {
             ],
           ),
         ),
-        if (badge != null) badge!,
+        ?badge,
       ],
     );
   }
@@ -1904,8 +1906,7 @@ class _Chip extends StatelessWidget {
   const _Chip(
       {required this.label,
         required this.color,
-        this.icon,
-        this.tiny = false});
+        this.icon, required this.tiny});
 
   @override
   Widget build(BuildContext context) {
@@ -1913,9 +1914,9 @@ class _Chip extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: tiny ? 8 : 10, vertical: tiny ? 3 : 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

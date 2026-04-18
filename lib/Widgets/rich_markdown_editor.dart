@@ -212,7 +212,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _showPreview ? _primary.withOpacity(0.1) : Colors.transparent,
+                        color: _showPreview ? _primary.withValues(alpha: 0.1) : Colors.transparent,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                           color: _showPreview ? _primary : _border,

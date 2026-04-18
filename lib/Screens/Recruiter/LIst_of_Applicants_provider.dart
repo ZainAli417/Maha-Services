@@ -485,8 +485,9 @@ class ApplicantsProvider with ChangeNotifier {
     }
 
     if (_isInitializing ||
-        (_initializedUid == user.uid && _subscription != null))
+        (_initializedUid == user.uid && _subscription != null)) {
       return;
+    }
 
     _isInitializing = true;
     _initializedUid = user.uid;
@@ -654,20 +655,23 @@ class ApplicantsProvider with ChangeNotifier {
 
     _filtered = _all.where((a) {
       if (hasQ && !a.searchIndex.contains(q)) return false;
-      if (chkStat && a.status.toLowerCase() != statusFilter.toLowerCase())
+      if (chkStat && a.status.toLowerCase() != statusFilter.toLowerCase()) {
         return false;
+      }
       if (chkJob && a.jobData?.title != jobFilter) return false;
       if (chkLoc && a.location != locationFilter) return false;
       if (chkEdu && a.education != educationFilter) return false;
       if (chkNat && a.nationality != nationalityFilter) return false;
       if (chkProf &&
           a.professionalStatus.toLowerCase() !=
-              professionalStatusFilter.toLowerCase())
+              professionalStatusFilter.toLowerCase()) {
         return false;
+      }
 
       if (a.experienceYears < experienceYearsRange.start ||
-          a.experienceYears > experienceYearsRange.end)
+          a.experienceYears > experienceYearsRange.end) {
         return false;
+      }
       if (hasCertifications && a.certifications.isEmpty) return false;
       if (hasPublications && a.publications.isEmpty) return false;
       if (hasAwards && a.awards.isEmpty) return false;
@@ -709,15 +713,17 @@ class ApplicantsProvider with ChangeNotifier {
         }
       }
 
-      if (chkSkill && skillsFilter.any((s) => !a.skills.contains(s)))
+      if (chkSkill && skillsFilter.any((s) => !a.skills.contains(s))) {
         return false;
+      }
 
       if (chkDate) {
         if (a.appliedAt.isBefore(appliedDateRange!.start) ||
             a.appliedAt.isAfter(
               appliedDateRange!.end.add(const Duration(days: 1)),
-            ))
+            )) {
           return false;
+        }
       }
 
       return true;

@@ -160,7 +160,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.work_outline,
                         _buildDropdownFilter(
                           value: _tempJobFilter,
-                          items: ['All', ...provider.availableJobs.toList()],
+                          items: ['All', ...provider.availableJobs],
                           onChanged: (val) => setState(() {
                             _tempJobFilter = val!;
                             _calculateActiveFilters();
@@ -209,7 +209,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.location_on_outlined,
                         _buildDropdownFilter(
                           value: _tempLocationFilter,
-                          items: ['All', ...provider.availableLocations.toList()],
+                          items: ['All', ...provider.availableLocations],
                           onChanged: (val) => setState(() {
                             _tempLocationFilter = val!;
                             _calculateActiveFilters();
@@ -223,7 +223,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.school_outlined,
                         _buildDropdownFilter(
                           value: _tempEducationFilter,
-                          items: ['All', ...provider.availableEducations.toList()],
+                          items: ['All', ...provider.availableEducations],
                           onChanged: (val) => setState(() {
                             _tempEducationFilter = val!;
                             _calculateActiveFilters();
@@ -237,7 +237,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.flag_outlined,
                         _buildDropdownFilter(
                           value: _tempNationalityFilter,
-                          items: ['All', ...provider.availableNationalities.toList()],
+                          items: ['All', ...provider.availableNationalities],
                           onChanged: (val) => setState(() {
                             _tempNationalityFilter = val!;
                             _calculateActiveFilters();
@@ -385,7 +385,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(0xFF8B5CF6).withOpacity(0.1),
+              color: Color(0xFF8B5CF6).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(Icons.filter_list, color: Color(0xFF8B5CF6), size: 24),
@@ -404,7 +404,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                   ),
                 ),
                 Text(
-                  '${_activeFiltersCount} filters active',
+                  '$_activeFiltersCount filters active',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: Color(0xFF64748B),
@@ -501,7 +501,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
             });
           },
           backgroundColor: Color(0xFFF8FAFC),
-          selectedColor: Color(0xFF8B5CF6).withOpacity(0.2),
+          selectedColor: Color(0xFF8B5CF6).withValues(alpha: 0.2),
           checkmarkColor: Color(0xFF8B5CF6),
           labelStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
@@ -583,7 +583,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: Offset(0, -5),
           ),

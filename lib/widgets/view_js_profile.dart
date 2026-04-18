@@ -85,8 +85,9 @@ class ViewApplicantDetails extends StatelessWidget {
     return LayoutBuilder(builder: (ctx, bc) {
       final sw = bc.maxWidth;
       final _Layout l;
-      if (sw < 600)      l = _Layout.mobile;
-      else if (sw < 960) l = _Layout.tablet;
+      if (sw < 600) {
+        l = _Layout.mobile;
+      } else if (sw < 960) l = _Layout.tablet;
       else               l = _Layout.desktop;
       final ld = _LayoutData(l, sw);
 
@@ -175,7 +176,7 @@ class _Header extends StatelessWidget {
               child: ClipOval(
                 child: applicant.pictureUrl.isNotEmpty
                     ? Image.network(applicant.pictureUrl, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         _InitAvatar(applicant.name, r))
                     : _InitAvatar(applicant.name, r),
               ),
@@ -825,10 +826,10 @@ class _DocTile extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(ld.isMobile ? 6 : 7),
               decoration: BoxDecoration(
-                color: const Color(0xFF0969DA).withOpacity(0.08),
+                color: const Color(0xFF0969DA).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                    color: const Color(0xFF0969DA).withOpacity(0.18)),
+                    color: const Color(0xFF0969DA).withValues(alpha: 0.18)),
               ),
               child: Icon(Icons.download_rounded,
                   size: ld.isMobile ? 14 : 16,
@@ -854,7 +855,7 @@ class _NumItem extends StatelessWidget {
         Container(
           width: 24, height: 24,
           decoration: BoxDecoration(
-              color: _T.cPur.withOpacity(0.1),
+              color: _T.cPur.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(5)),
           child: Center(child: Text('$num',
               style: _T.label(fs: 11, c: _T.cPur, fw: FontWeight.w700))),
@@ -948,9 +949,9 @@ class _StatBox extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: sm ? 7 : 10, vertical: sm ? 7 : 9),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
+        color: color.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(value, style: GoogleFonts.ibmPlexMono(
@@ -996,9 +997,9 @@ class _Chip extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: sm ? 6 : 8, vertical: 3),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.07),
+        color: c.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: c.withOpacity(0.15)),
+        border: Border.all(color: c.withValues(alpha: 0.15)),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: sm ? 10 : 12, color: c),
@@ -1024,7 +1025,7 @@ class _IconBox extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(p),
       decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(7)),
       child: Icon(icon, size: sz, color: color),
     );

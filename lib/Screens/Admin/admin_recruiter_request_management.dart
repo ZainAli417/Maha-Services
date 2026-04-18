@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -44,8 +43,9 @@ class _U {
     if (url.contains('github')) return Icons.code_rounded;
     if (url.contains('drive.google')) return Icons.folder_outlined;
     if (url.contains('dropbox')) return Icons.cloud_outlined;
-    if (url.contains('twitter') || url.contains('x.com'))
+    if (url.contains('twitter') || url.contains('x.com')) {
       return Icons.tag_rounded;
+    }
     return Icons.link_rounded;
   }
 
@@ -80,8 +80,9 @@ class _Admin_Recruiter_Request_screenState extends State<Admin_Recruiter_Request
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted)
+      if (mounted) {
         context.read<AdminProvider>().fetchAllRequests(realtime: true);
+      }
     });
   }
 
@@ -124,11 +125,12 @@ class _DashboardBodyState extends State<_DashboardBody> {
 
   List<String> _sl(dynamic f) {
     if (f == null) return [];
-    if (f is List)
+    if (f is List) {
       return f
           .map((e) => e?.toString() ?? '')
           .where((s) => s.isNotEmpty)
           .toList();
+    }
     return [];
   }
 
@@ -253,7 +255,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                       controller: _listCtrl,
                       padding: const EdgeInsets.fromLTRB(10, 8, 10, 20),
                       itemCount: prov.requests.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 6),
+                      separatorBuilder: (_, _) => const SizedBox(height: 6),
                       itemBuilder: (ctx, i) {
                         final r = _n(prov.requests[i]);
                         final id = _s(r['id']);
@@ -370,8 +372,9 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final rawStat = _n(reqData['candidate_statuses']);
     final statusMap = <String, String>{};
     rawStat.forEach((k, v) {
-      if (k.toString().isNotEmpty)
+      if (k.toString().isNotEmpty) {
         statusMap[k.toLowerCase()] = v?.toString() ?? '';
+      }
     });
 
     return LayoutBuilder(
@@ -497,7 +500,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
   void _showInstantToast(ScaffoldMessengerState sm, String msg, bool ok) {
     try {
       sm
-        ?..clearSnackBars()
+        ..clearSnackBars()
         ..showSnackBar(
           SnackBar(
             content: Text(
@@ -670,7 +673,7 @@ class _LiveBadge extends StatelessWidget {
     decoration: BoxDecoration(
       color: _C.successLt,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: _C.success.withOpacity(.2)),
+      border: Border.all(color: _C.success.withValues(alpha: .2)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -1008,7 +1011,7 @@ class _RequestTile extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: c.withOpacity(.1),
+                      color: c.withValues(alpha: .1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -1066,7 +1069,7 @@ class _RecruiterCard extends StatelessWidget {
       border: Border.all(color: _C.border),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(.03),
+          color: Colors.black.withValues(alpha: .03),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -1192,7 +1195,7 @@ class _Avatar extends StatelessWidget {
             ? DecorationImage(
                 image: NetworkImage(url),
                 fit: BoxFit.cover,
-                onError: (_, __) {},
+                onError: (_, _) {},
               )
             : null,
       ),
@@ -1264,9 +1267,9 @@ class _StatusDropdown extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: col.withOpacity(.1),
+          color: col.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: col.withOpacity(.25)),
+          border: Border.all(color: col.withValues(alpha: .25)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1427,8 +1430,8 @@ class CandidateCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            splashColor: col.withOpacity(0.06),
-            highlightColor: col.withOpacity(0.03),
+            splashColor: col.withValues(alpha: 0.06),
+            highlightColor: col.withValues(alpha: 0.03),
             child: Column(
               mainAxisSize: MainAxisSize.max, // Changed from min to allow Expanded
               children: [
@@ -1483,7 +1486,7 @@ class _CardHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
@@ -1515,7 +1518,7 @@ class _CardHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
               decoration: BoxDecoration(
-                color: sc.withOpacity(0.1),
+                color: sc.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
@@ -1654,7 +1657,7 @@ class second_Avatar extends StatelessWidget {
   final String name;
   final Color color;
 
-  const second_Avatar({required this.name, required this.color});
+  const second_Avatar({super.key, required this.name, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -1667,14 +1670,14 @@ class second_Avatar extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.75), color],
+          colors: [color.withValues(alpha: 0.75), color],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.22),
+            color: color.withValues(alpha: 0.22),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -1717,9 +1720,9 @@ class _ActionButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withOpacity(0.18)),
+            border: Border.all(color: color.withValues(alpha: 0.18)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -2223,7 +2226,7 @@ class _CVSheet extends StatelessWidget {
                                       color: _C.warningLt,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: _C.warning.withOpacity(.2),
+                                        color: _C.warning.withValues(alpha: .2),
                                       ),
                                     ),
                                     child: Column(
@@ -2475,7 +2478,7 @@ class _Sec extends StatelessWidget {
 /// Two-column info row — either widget may be null
 class _Row2 extends StatelessWidget {
   final Widget? left, right;
-  const _Row2(this.left, this.right, {super.key});
+  const _Row2(this.left, this.right);
 
   @override
   Widget build(BuildContext ctx) {
@@ -2568,9 +2571,9 @@ class _TextChip extends StatelessWidget {
   Widget build(BuildContext ctx) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
     decoration: BoxDecoration(
-      color: color.withOpacity(.08),
+      color: color.withValues(alpha: .08),
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: color.withOpacity(.22)),
+      border: Border.all(color: color.withValues(alpha: .22)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -2624,9 +2627,9 @@ class _LinkChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withOpacity(.07),
+          color: color.withValues(alpha: .07),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(.25)),
+          border: Border.all(color: color.withValues(alpha: .25)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2644,7 +2647,7 @@ class _LinkChip extends StatelessWidget {
                   color: color,
                   fontWeight: FontWeight.w600,
                   decoration: TextDecoration.underline,
-                  decorationColor: color.withOpacity(.4),
+                  decorationColor: color.withValues(alpha: .4),
                 ),
               ),
             ),
@@ -2652,7 +2655,7 @@ class _LinkChip extends StatelessWidget {
             Icon(
               Icons.open_in_new_rounded,
               size: 11,
-              color: color.withOpacity(.5),
+              color: color.withValues(alpha: .5),
             ),
           ],
         ),
@@ -2702,8 +2705,8 @@ class _MatchScoreCard extends StatelessWidget {
               height: 62,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: col.withOpacity(.1),
-                border: Border.all(color: col.withOpacity(.3), width: 2),
+                color: col.withValues(alpha: .1),
+                border: Border.all(color: col.withValues(alpha: .3), width: 2),
               ),
               child: Center(
                 child: Column(
@@ -2737,7 +2740,7 @@ class _MatchScoreCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: col.withOpacity(.12),
+                        color: col.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -2972,7 +2975,7 @@ class _EduCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _C.warningLt,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _C.warning.withOpacity(.2)),
+        border: Border.all(color: _C.warning.withValues(alpha: .2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3041,7 +3044,7 @@ class _CertCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: const Color(0xFFFDF4FF),
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: const Color(0xFFEC4899).withOpacity(.2)),
+      border: Border.all(color: const Color(0xFFEC4899).withValues(alpha: .2)),
     ),
     child: Row(
       children: [

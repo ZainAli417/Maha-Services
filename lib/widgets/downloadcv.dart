@@ -109,15 +109,15 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
         ? (userData['references'] as List).map((e) => e.toString()).toList()
         : <String>[];
 
-    print('📄 CV Data Debug:');
-    print('Name: $name');
-    print('Email: $email');
-    print('Phone: $phone');
-    print('Skills: ${skillsList.length}');
-    print('Education: ${educationList.length}');
-    print('Experience: ${experiences.length}');
-    print('Certifications: ${certifications.length}');
-    print('Summary: ${summary.isNotEmpty ? "Yes" : "No"}');
+    debugPrint('📄 CV Data Debug:');
+    debugPrint('Name: $name');
+    debugPrint('Email: $email');
+    debugPrint('Phone: $phone');
+    debugPrint('Skills: ${skillsList.length}');
+    debugPrint('Education: ${educationList.length}');
+    debugPrint('Experience: ${experiences.length}');
+    debugPrint('Certifications: ${certifications.length}');
+    debugPrint('Summary: ${summary.isNotEmpty ? "Yes" : "No"}');
 
     // Build PDF document
     final doc = pw.Document();
@@ -136,7 +136,7 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
           profileImage = pw.MemoryImage(resp.bodyBytes);
         }
       } catch (e) {
-        print('Failed to load profile image: $e');
+        debugPrint('Failed to load profile image: $e');
       }
     }
 

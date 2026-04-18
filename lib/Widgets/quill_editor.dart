@@ -148,7 +148,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                 boxShadow: _hasFocus
                     ? [
                   BoxShadow(
-                    color: _primary.withOpacity(0.08),
+                    color: _primary.withValues(alpha: 0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )

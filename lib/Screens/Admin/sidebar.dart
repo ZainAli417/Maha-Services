@@ -27,7 +27,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
         color: Colors.white,
         border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(2, 0)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(2, 0)),
         ],
       ),
       child: SafeArea(
@@ -107,11 +107,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: isSelected
-            ? const Color(0xFF6366F1).withOpacity(0.08)
+            ? const Color(0xFF6366F1).withValues(alpha: 0.08)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.transparent,
+          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.transparent,
         ),
       ),
       child: Material(
@@ -119,7 +119,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
         child: InkWell(
           onTap: () => widget.onMenuSelected('Recruiter Requests'),
           borderRadius: BorderRadius.circular(8),
-          splashColor: const Color(0xFF6366F1).withOpacity(0.1),
+          splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
           highlightColor: Colors.transparent,
           hoverColor: Colors.transparent,
           child: Padding(
@@ -167,7 +167,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEF4444).withOpacity(0.35),
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -290,11 +290,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: isSelected
-            ? const Color(0xFF6366F1).withOpacity(0.08)
+            ? const Color(0xFF6366F1).withValues(alpha: 0.08)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.transparent,
+          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.transparent,
         ),
       ),
       child: Material(
@@ -302,7 +302,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
         child: InkWell(
           onTap: () => widget.onMenuSelected(menuKey),
           borderRadius: BorderRadius.circular(8),
-          splashColor: const Color(0xFF6366F1).withOpacity(0.1),
+          splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
           highlightColor: Colors.transparent,
           hoverColor: Colors.transparent,
           child: Padding(

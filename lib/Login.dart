@@ -127,7 +127,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     try {
       final route = await provider.login(
         email: _email.text.trim().toLowerCase(),
-        password: _password.text,
+        password: _password.text.trim(),
         expectedRole: _role == 'Job Seeker' ? 'Job Seeker' : 'Recruiter',
       );
 
@@ -233,7 +233,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF667eea).withOpacity(0.4),
+                    const Color(0xFF667eea).withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -253,7 +253,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFf093fb).withOpacity(0.3),
+                    const Color(0xFFf093fb).withValues(alpha: 0.3),
                     Colors.transparent,
                   ],
                 ),
@@ -272,10 +272,10 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea).withOpacity(0.15),
+            color: const Color(0xFF667eea).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-                color: const Color(0xFF667eea).withOpacity(0.3), width: 1),
+                color: const Color(0xFF667eea).withValues(alpha: 0.3), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -288,7 +288,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                        color: const Color(0xFF4ade80).withOpacity(0.5),
+                        color: const Color(0xFF4ade80).withValues(alpha: 0.5),
                         blurRadius: 6,
                         spreadRadius: 1)
                   ],
@@ -320,7 +320,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         Text(
           'Next-gen recruitment powered by intelligent automation',
           style: GoogleFonts.plusJakartaSans(
-              fontSize: 13, color: Colors.white.withOpacity(0.6), height: 1.5),
+              fontSize: 13, color: Colors.white.withValues(alpha: 0.6), height: 1.5),
         ),
       ],
     );
@@ -336,12 +336,12 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.08),
-              Colors.white.withOpacity(0.03),
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.03),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
         ),
         child: Row(
           children: [
@@ -353,7 +353,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.4),
+                      color: const Color(0xFF667eea).withValues(alpha: 0.4),
                       blurRadius: 16,
                       offset: const Offset(0, 6))
                 ],
@@ -375,7 +375,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                   Text('AES-256 • Hash Algorithm',
                       style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
-                          color: Colors.white.withOpacity(0.6))),
+                          color: Colors.white.withValues(alpha: 0.6))),
                 ],
               ),
             ),
@@ -433,7 +433,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 letterSpacing: 1.3)),
         const SizedBox(height: 14),
         const _CompactFeature(
@@ -454,9 +454,9 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -464,11 +464,11 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           const _TrustBadge(
               icon: Icons.shield_outlined, label: '256-bit'),
           Container(
-              width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+              width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
           const _TrustBadge(
               icon: Icons.verified_outlined, label: 'SOC 2'),
           Container(
-              width: 1, height: 20, color: Colors.white.withOpacity(0.1)),
+              width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
           const _TrustBadge(
               icon: Icons.security_outlined, label: 'GDPR'),
         ],
@@ -606,7 +606,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
                         // Login Button
                         Consumer<LoginProvider>(
-                          builder: (_, provider, __) => Container(
+                          builder: (_, provider, _) => Container(
                             width: double.infinity,
                             height: btnHeight,
                             decoration: BoxDecoration(
@@ -619,7 +619,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                               boxShadow: [
                                 BoxShadow(
                                     color: const Color(0xFF6366F1)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10))
                               ],
@@ -847,7 +847,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             boxShadow: selected
                 ? [
               BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4))
             ]
@@ -900,12 +900,12 @@ class _CompactMetric extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.02)
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.02)
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +921,7 @@ class _CompactMetric extends StatelessWidget {
           const SizedBox(height: 4),
           Text(label,
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11, color: Colors.white.withOpacity(0.6))),
+                  fontSize: 11, color: Colors.white.withValues(alpha: 0.6))),
         ],
       ),
     );
@@ -941,20 +941,20 @@ class _CompactFeature extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
-              Colors.white.withOpacity(0.12),
-              Colors.white.withOpacity(0.04)
+              Colors.white.withValues(alpha: 0.12),
+              Colors.white.withValues(alpha: 0.04)
             ]),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon,
-              color: Colors.white.withOpacity(0.9), size: 16),
+              color: Colors.white.withValues(alpha: 0.9), size: 16),
         ),
         const SizedBox(width: 12),
         Text(title,
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.85))),
+                color: Colors.white.withValues(alpha: 0.85))),
       ],
     );
   }
@@ -970,12 +970,12 @@ class _TrustBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.5), size: 16),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.5), size: 16),
         const SizedBox(width: 6),
         Text(label,
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontWeight: FontWeight.w600)),
       ],
     );

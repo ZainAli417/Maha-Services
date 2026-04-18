@@ -125,8 +125,9 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         final profProfile = userData['professionalProfile'] as Map<String, dynamic>? ?? {};
 
         List<dynamic> skills = [];
-        if (data['skills'] is List) skills = data['skills'];
-        else if (personalProfile['skills'] is List) skills = personalProfile['skills'];
+        if (data['skills'] is List) {
+          skills = data['skills'];
+        } else if (personalProfile['skills'] is List) skills = personalProfile['skills'];
         else if (profProfile['skills'] is List) skills = profProfile['skills'];
         else if (userData['skills'] is List) skills = userData['skills'];
 
@@ -156,8 +157,11 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       for (var doc in snap.docs) {
         final data = doc.data();
         final status = (data['status'] ?? 'open').toString().toLowerCase();
-        if (status == 'closed') closed++;
-        else open++;
+        if (status == 'closed') {
+          closed++;
+        } else {
+          open++;
+        }
 
         tempJobs.add({
           'id': doc.id,
@@ -195,8 +199,9 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         
         recruiterReqCount[recruiterEmail] = (recruiterReqCount[recruiterEmail] ?? 0) + 1;
 
-        if (status == 'approved' || status == 'open' || status == 'active') approved++;
-        else if (status == 'rejected' || status == 'closed') rejected++;
+        if (status == 'approved' || status == 'open' || status == 'active') {
+          approved++;
+        } else if (status == 'rejected' || status == 'closed') rejected++;
         else pending++;
 
         final cands = data['candidates'] as List<dynamic>? ?? [];

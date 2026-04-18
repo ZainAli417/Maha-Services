@@ -8,13 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
 
-import '../../Constant/cv_analysis.dart';
 import 'LIst_of_Applicants.dart';
-import 'Recruiter_provider_Job_listing.dart';
 import 'job_detail_dialog_recrutier.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
-import 'package:provider/provider.dart';
-import '../Job_Seeker/job_seeker_provider.dart';
 
 // ─── Shared color tokens ──────────────────────────────────────────────────────
 const _kPrimary = Color(0xFF1E3A5F);
@@ -142,7 +138,7 @@ class _AppBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E40AF).withOpacity(0.1),
+                color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -320,8 +316,9 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
         }
 
         if (_selCompany.isNotEmpty && m['company'] != _selCompany) return false;
-        if (_selLocation.isNotEmpty && m['location'] != _selLocation)
+        if (_selLocation.isNotEmpty && m['location'] != _selLocation) {
           return false;
+        }
         if (_selJobType.isNotEmpty && m['nature'] != _selJobType) return false;
 
         return true;
@@ -427,7 +424,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: hasFilter ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                  color: hasFilter ? _kPrimary.withValues(alpha: 0.1) : _kSurfaceEl,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: hasFilter ? _kPrimary : _kBorder,
@@ -597,7 +594,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: active ? _kPrimary.withOpacity(0.08) : _kSurfaceEl,
+          color: active ? _kPrimary.withValues(alpha: 0.08) : _kSurfaceEl,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: active ? _kPrimary : _kBorder,
@@ -732,9 +729,9 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
       margin: const EdgeInsets.only(right: 6),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: _kPrimary.withOpacity(0.08),
+        color: _kPrimary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _kPrimary.withOpacity(0.3)),
+        border: Border.all(color: _kPrimary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -884,7 +881,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                               ),
                               decoration: BoxDecoration(
                                 color: sel
-                                    ? _kPrimary.withOpacity(0.1)
+                                    ? _kPrimary.withValues(alpha: 0.1)
                                     : _kSurfaceEl,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
@@ -982,7 +979,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                 ),
                 decoration: BoxDecoration(
                   color: current.isEmpty
-                      ? _kPrimary.withOpacity(0.1)
+                      ? _kPrimary.withValues(alpha: 0.1)
                       : _kSurfaceEl,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
@@ -1013,7 +1010,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: sel ? _kPrimary.withOpacity(0.1) : _kSurfaceEl,
+                    color: sel ? _kPrimary.withValues(alpha: 0.1) : _kSurfaceEl,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: sel ? _kPrimary : _kBorder,
@@ -1054,7 +1051,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: _kPrimary.withOpacity(0.08),
+                  color: _kPrimary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
@@ -1126,7 +1123,9 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   bool _listEq<T>(List<T>? a, List<T>? b) {
     if (a == null) return b == null;
     if (b == null || a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) if (a[i] != b[i]) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
     return true;
   }
 }
@@ -1229,7 +1228,7 @@ class _Job_CardsState extends State<Job_Cards>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       transitionAnimationController: AnimationController(
         vsync: Navigator.of(context),
         duration: const Duration(milliseconds: 380),
@@ -1280,7 +1279,7 @@ class _Job_CardsState extends State<Job_Cards>
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
-        barrierColor: Colors.black.withOpacity(0.55),
+        barrierColor: Colors.black.withValues(alpha: 0.55),
         transitionDuration: const Duration(milliseconds: 380),
         reverseTransitionDuration: const Duration(milliseconds: 280),
         pageBuilder: (ctx, anim, _) => FadeTransition(
@@ -1311,7 +1310,7 @@ class _Job_CardsState extends State<Job_Cards>
                     child: Material(
                       color: _kSurface,
                       elevation: 20,
-                      shadowColor: Colors.black.withOpacity(0.35),
+                      shadowColor: Colors.black.withValues(alpha: 0.35),
                       child: Column(
                         children: [
                           Container(
@@ -1319,7 +1318,7 @@ class _Job_CardsState extends State<Job_Cards>
                             width: 44,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: _kTxtTert.withOpacity(0.25),
+                              color: _kTxtTert.withValues(alpha: 0.25),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -1452,13 +1451,13 @@ class _Job_CardsState extends State<Job_Cards>
               color: _kSurface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: _hovered ? _kPrimary.withOpacity(0.28) : _kBorderLt,
+                color: _hovered ? _kPrimary.withValues(alpha: 0.28) : _kBorderLt,
                 width: _hovered ? 1.5 : 1,
               ),
               boxShadow: _hovered
                   ? [
                       BoxShadow(
-                        color: _kPrimary.withOpacity(0.1),
+                        color: _kPrimary.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
                         spreadRadius: -4,
@@ -1466,7 +1465,7 @@ class _Job_CardsState extends State<Job_Cards>
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
+                        color: Colors.black.withValues(alpha: 0.03),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -1483,8 +1482,8 @@ class _Job_CardsState extends State<Job_Cards>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          _kPrimary.withOpacity(0.03),
-                          _kAccent.withOpacity(0.02),
+                          _kPrimary.withValues(alpha: 0.03),
+                          _kAccent.withValues(alpha: 0.02),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -1516,13 +1515,13 @@ class _Job_CardsState extends State<Job_Cards>
                                       ? CachedNetworkImage(
                                           imageUrl: logoUrl,
                                           fit: BoxFit.cover,
-                                          placeholder: (_, __) => const Center(
+                                          placeholder: (_, _) => const Center(
                                             child: CircularProgressIndicator(
                                               strokeWidth: 1.5,
                                               color: _kPrimary,
                                             ),
                                           ),
-                                          errorWidget: (_, __, ___) =>
+                                          errorWidget: (_, _, _) =>
                                               _logoFallback(company),
                                         )
                                       : _logoFallback(company),
@@ -1553,7 +1552,7 @@ class _Job_CardsState extends State<Job_Cards>
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: _kPrimary.withOpacity(0.08),
+                                      color: _kPrimary.withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: Text(
@@ -1578,10 +1577,10 @@ class _Job_CardsState extends State<Job_Cards>
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _kSuccess.withOpacity(0.1),
+                                  color: _kSuccess.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: _kSuccess.withOpacity(0.2),
+                                    color: _kSuccess.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Row(
@@ -1693,10 +1692,10 @@ class _Job_CardsState extends State<Job_Cards>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _kAccent.withOpacity(0.08),
+                                color: _kAccent.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: _kAccent.withOpacity(0.2),
+                                  color: _kAccent.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: Text(
@@ -1734,12 +1733,12 @@ class _Job_CardsState extends State<Job_Cards>
                               padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
                                 color: appCount > 0
-                                    ? _kAccent.withOpacity(0.08)
+                                    ? _kAccent.withValues(alpha: 0.08)
                                     : _kSurface,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: appCount > 0
-                                      ? _kAccent.withOpacity(0.25)
+                                      ? _kAccent.withValues(alpha: 0.25)
                                       : _kBorder,
                                 ),
                               ),
@@ -1799,7 +1798,7 @@ class _Job_CardsState extends State<Job_Cards>
                                 borderRadius: BorderRadius.circular(10),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _kPrimary.withOpacity(0.25),
+                                    color: _kPrimary.withValues(alpha: 0.25),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),

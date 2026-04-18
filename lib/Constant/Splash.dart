@@ -128,7 +128,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             child: RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _controller,
-                builder: (_, __) => CustomPaint(
+                builder: (_, _) => CustomPaint(
                   painter: _OptimizedGridPainter(_controller.value),
                   size: Size.infinite,
                   willChange: true,
@@ -414,9 +414,9 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             ),
             decoration: BoxDecoration(
               color: isActive
-                  ? primaryColor.withOpacity(0.08)
+                  ? primaryColor.withValues(alpha: 0.08)
                   : (isHovered
-                  ? primaryColor.withOpacity(0.04)
+                  ? primaryColor.withValues(alpha: 0.04)
                   : Colors.transparent),
               borderRadius: BorderRadius.circular(10),
             ),
@@ -611,10 +611,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 24),
-        border: Border.all(color: portal.color.withOpacity(0.2), width: 2),
+        border: Border.all(color: portal.color.withValues(alpha: 0.2), width: 2),
         boxShadow: [
           BoxShadow(
-            color: portal.color.withOpacity(0.08),
+            color: portal.color.withValues(alpha: 0.08),
             blurRadius: isMobile ? 12 : 30,
             offset: Offset(0, isMobile ? 4 : 10),
           ),
@@ -631,7 +631,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                     horizontal: numberHPad, vertical: numberVPad),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [portal.color, portal.color.withOpacity(0.7)]),
+                      colors: [portal.color, portal.color.withValues(alpha: 0.7)]),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(portal.number,
@@ -644,8 +644,8 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 padding: EdgeInsets.all(iconContainerPad),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [
-                    portal.color.withOpacity(0.1),
-                    portal.color.withOpacity(0.05),
+                    portal.color.withValues(alpha: 0.1),
+                    portal.color.withValues(alpha: 0.05),
                   ]),
                   borderRadius:
                   BorderRadius.circular(isMobile ? 10 : 16),
@@ -686,11 +686,11 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                   Container(
                     padding: EdgeInsets.all(itemIconPad),
                     decoration: BoxDecoration(
-                      color: portal.color.withOpacity(0.1),
+                      color: portal.color.withValues(alpha: 0.1),
                       borderRadius:
                       BorderRadius.circular(isMobile ? 8 : 12),
                       border: Border.all(
-                          color: portal.color.withOpacity(0.2)),
+                          color: portal.color.withValues(alpha: 0.2)),
                     ),
                     child: Icon(item.icon,
                         color: portal.color, size: itemIconSize),
@@ -794,7 +794,8 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               height: 1.8),
         ),
         SizedBox(height: isMobile ? 14 : 24),
-        Row(
+       /*
+    Row(
           children: [
             _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2), iconPad, iconSize),
             const SizedBox(width: 12),
@@ -802,7 +803,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             const SizedBox(width: 12),
             _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335), iconPad, iconSize),
           ],
-        ),
+        ),*/
       ],
     );
   }
@@ -813,9 +814,9 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       child: Container(
         padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Icon(icon, color: color, size: size),
       ),
@@ -851,7 +852,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           : Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('© 2025 Maha Services. All rights reserved.',
+          Text('© 2026 Maha Services. All rights reserved.',
               style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF6B7280),
                   fontSize: copyrightFont)),
@@ -867,10 +868,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           horizontal: iconSize < 14 ? 10 : 12,
           vertical: iconSize < 14 ? 5 : 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withOpacity(0.1),
+        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border:
-        Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+        Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -878,7 +879,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           Icon(Icons.psychology_rounded,
               color: const Color(0xFF6366F1), size: iconSize),
           const SizedBox(width: 4),
-          Text('Powered by AI',
+          Text('Developed By mahaservices.org',
               style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF6366F1),
                   fontSize: fontSize,
@@ -909,12 +910,12 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 horizontal: badgeHPad, vertical: badgeVPad),
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
-                const Color(0xFF6366F1).withOpacity(0.2),
-                const Color(0xFF8B5CF6).withOpacity(0.2),
+                const Color(0xFF6366F1).withValues(alpha: 0.2),
+                const Color(0xFF8B5CF6).withValues(alpha: 0.2),
               ]),
               borderRadius: BorderRadius.circular(50),
               border: Border.all(
-                  color: const Color(0xFF6366F1).withOpacity(0.5),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.5),
                   width: 1.5),
             ),
             child: Row(
@@ -977,9 +978,9 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                 horizontal: isMobile ? 12 : 20,
                 vertical: isMobile ? 5 : 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Text('⚡ PROVEN SUCCESS',
                 style: GoogleFonts.plusJakartaSans(
@@ -1000,7 +1001,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               textAlign: TextAlign.center,
               style: GoogleFonts.plusJakartaSans(
                   fontSize: subtitleFont,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500)),
           SizedBox(height: isMobile ? 20 : 70),
           isMobile
@@ -1044,14 +1045,14 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(isMobile ? 10 : 16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.6), size: iconSize),
+          Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: iconSize),
           SizedBox(width: isMobile ? 8 : 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1064,7 +1065,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               Text(label,
                   style: GoogleFonts.plusJakartaSans(
                       fontSize: labelFont,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w500)),
             ],
           ),
@@ -1142,7 +1143,7 @@ class _OptimizedGridPainter extends CustomPainter {
   final double animationValue;
 
   static final Paint _baseGridPaint = Paint()
-    ..color = const Color(0xFF4A90E2).withOpacity(0.15)
+    ..color = const Color(0xFF4A90E2).withValues(alpha: 0.15)
     ..strokeWidth = 1.6
     ..style = PaintingStyle.stroke;
 
@@ -1152,7 +1153,7 @@ class _OptimizedGridPainter extends CustomPainter {
     ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
   static final Paint _intersectionPaint = Paint()
-    ..color = const Color(0xFFFFFFFF).withOpacity(0.3)
+    ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.3)
     ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
   _OptimizedGridPainter(this.animationValue);
@@ -1177,9 +1178,9 @@ class _OptimizedGridPainter extends CustomPainter {
           Offset(x, bs + bl / 2),
           [
             Colors.transparent,
-            const Color(0xFFF7E6FF).withOpacity(0.4),
-            const Color(0xFFF7E6FF).withOpacity(0.9),
-            const Color(0xFFF7E6FF).withOpacity(0.4),
+            const Color(0xFFF7E6FF).withValues(alpha: 0.4),
+            const Color(0xFFF7E6FF).withValues(alpha: 0.9),
+            const Color(0xFFF7E6FF).withValues(alpha: 0.4),
             Colors.transparent,
           ],
           [0.0, 0.2, 0.5, 0.8, 1.0],
@@ -1207,9 +1208,9 @@ class _OptimizedGridPainter extends CustomPainter {
           Offset(bs + bl / 2, y),
           [
             Colors.transparent,
-            const Color(0xFFE6EFFF).withOpacity(0.4),
-            const Color(0xFFE6EFFF).withOpacity(0.9),
-            const Color(0xFFE6EFFF).withOpacity(0.4),
+            const Color(0xFFE6EFFF).withValues(alpha: 0.4),
+            const Color(0xFFE6EFFF).withValues(alpha: 0.9),
+            const Color(0xFFE6EFFF).withValues(alpha: 0.4),
             Colors.transparent,
           ],
           [0.0, 0.2, 0.5, 0.8, 1.0],

@@ -123,7 +123,7 @@ class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF3B5BDB).withOpacity(0.07)
+      ..color = const Color(0xFF3B5BDB).withValues(alpha: 0.07)
       ..style = PaintingStyle.fill;
 
     const spacing = 28.0;
@@ -140,7 +140,7 @@ class _DotGridPainter extends CustomPainter {
       center: const Alignment(0.85, -0.6),
       radius: 0.9,
       colors: [
-        const Color(0xFF3B5BDB).withOpacity(0.06),
+        const Color(0xFF3B5BDB).withValues(alpha: 0.06),
         Colors.transparent,
       ],
     ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -329,9 +329,9 @@ class _PillBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: color.withOpacity(0.22)),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -374,21 +374,21 @@ class _FeatureChipState extends State<_FeatureChip> {
         padding:
         const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
         decoration: BoxDecoration(
-          color: _hovered ? widget.color.withOpacity(0.07) : _white,
+          color: _hovered ? widget.color.withValues(alpha: 0.07) : _white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
               color:
-              _hovered ? widget.color.withOpacity(0.35) : _border),
+              _hovered ? widget.color.withValues(alpha: 0.35) : _border),
           boxShadow: _hovered
               ? [
             BoxShadow(
-                color: widget.color.withOpacity(0.12),
+                color: widget.color.withValues(alpha: 0.12),
                 blurRadius: 12,
                 offset: const Offset(0, 4))
           ]
               : [
             BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 6,
                 offset: const Offset(0, 2))
           ],
@@ -399,7 +399,7 @@ class _FeatureChipState extends State<_FeatureChip> {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.1),
+                  color: widget.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8)),
               child: Icon(widget.icon, size: 16, color: widget.color),
             ),
@@ -456,11 +456,11 @@ class _FormCard extends StatelessWidget {
         border: Border.all(color: _border),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.07),
+              color: Colors.black.withValues(alpha: 0.07),
               blurRadius: 28,
               offset: const Offset(0, 8)),
           BoxShadow(
-              color: _indigo.withOpacity(0.04),
+              color: _indigo.withValues(alpha: 0.04),
               blurRadius: 48,
               offset: const Offset(0, 20)),
         ],
@@ -595,7 +595,7 @@ class _FormCard extends StatelessWidget {
                         fontSize: 10,
                         letterSpacing: 1.4,
                         fontWeight: FontWeight.w600,
-                        color: _slate.withOpacity(0.6))),
+                        color: _slate.withValues(alpha: 0.6))),
               ),
               Expanded(child: Divider(color: _border, thickness: 1)),
             ],
@@ -668,7 +668,7 @@ class _FieldState extends State<_Field> {
               boxShadow: _focused
                   ? [
                 BoxShadow(
-                    color: _indigo.withOpacity(0.14),
+                    color: _indigo.withValues(alpha: 0.14),
                     blurRadius: 10,
                     offset: const Offset(0, 3))
               ]
@@ -685,13 +685,13 @@ class _FieldState extends State<_Field> {
                 hintText: widget.hint,
                 hintStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: _slate.withOpacity(0.55)),
+                    color: _slate.withValues(alpha: 0.55)),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(left: 14, right: 10),
                   child: Icon(widget.icon,
                       size: 18,
                       color:
-                      _focused ? _indigo : _slate.withOpacity(0.7)),
+                      _focused ? _indigo : _slate.withValues(alpha: 0.7)),
                 ),
                 prefixIconConstraints:
                 const BoxConstraints(minWidth: 0, minHeight: 0),
@@ -744,7 +744,7 @@ class _SignInButtonState extends State<_SignInButton> {
   @override
   Widget build(BuildContext context) {
     final bg = widget.isLoading
-        ? _slate.withOpacity(0.4)
+        ? _slate.withValues(alpha: 0.4)
         : (_hovered ? _indigoLt : _indigo);
 
     return MouseRegion(
@@ -760,7 +760,7 @@ class _SignInButtonState extends State<_SignInButton> {
               ? []
               : [
             BoxShadow(
-                color: _indigo.withOpacity(_hovered ? 0.38 : 0.22),
+                color: _indigo.withValues(alpha: _hovered ? 0.38 : 0.22),
                 blurRadius: _hovered ? 18 : 12,
                 offset:
                 Offset(0, _hovered ? 6 : 4))
@@ -771,7 +771,7 @@ class _SignInButtonState extends State<_SignInButton> {
           child: InkWell(
             onTap: widget.isLoading ? null : widget.onPressed,
             borderRadius: BorderRadius.circular(12),
-            splashColor: Colors.white.withOpacity(0.12),
+            splashColor: Colors.white.withValues(alpha: 0.12),
             child: Center(
               child: widget.isLoading
                   ? Row(
@@ -867,12 +867,12 @@ class _Badge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: _slate.withOpacity(0.55)),
+        Icon(icon, size: 14, color: _slate.withValues(alpha: 0.55)),
         const SizedBox(width: 5),
         Text(label,
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
-                color: _slate.withOpacity(0.65),
+                color: _slate.withValues(alpha: 0.65),
                 fontWeight: FontWeight.w500)),
       ],
     );
@@ -907,11 +907,11 @@ class _OutlineButtonState extends State<_OutlineButton> {
           padding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
           decoration: BoxDecoration(
-            color: _hovered ? _indigo.withOpacity(0.06) : _white,
+            color: _hovered ? _indigo.withValues(alpha: 0.06) : _white,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
                 color: _hovered
-                    ? _indigo.withOpacity(0.4)
+                    ? _indigo.withValues(alpha: 0.4)
                     : _border),
           ),
           child: Row(

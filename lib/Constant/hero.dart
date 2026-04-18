@@ -232,7 +232,7 @@ class _HeroSectionState extends State<HeroSection>
             ),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -247,7 +247,7 @@ class _HeroSectionState extends State<HeroSection>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -307,7 +307,7 @@ class _HeroSectionState extends State<HeroSection>
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -317,7 +317,7 @@ class _HeroSectionState extends State<HeroSection>
               Container(
                 padding: EdgeInsets.all(iconPad),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.2),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.auto_awesome_rounded,
@@ -463,9 +463,9 @@ class _HeroSectionState extends State<HeroSection>
               padding: EdgeInsets.symmetric(
                   horizontal: featureHPad, vertical: featureVPad),
               decoration: BoxDecoration(
-                color: color.withOpacity(widget.isDarkMode ? 0.15 : 0.1),
+                color: color.withValues(alpha: widget.isDarkMode ? 0.15 : 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withOpacity(0.3)),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -617,7 +617,7 @@ class _EnhancedButtonState extends State<_EnhancedButton>
                 color: (widget.isPrimary
                     ? const Color(0xFF6366F1)
                     : const Color(0xFF10B981))
-                    .withOpacity(_isHovered ? 0.3 : 0.15),
+                    .withValues(alpha: _isHovered ? 0.3 : 0.15),
                 blurRadius: _isHovered ? 16 : 8,
                 offset: Offset(0, _isHovered ? 6 : 3),
               ),

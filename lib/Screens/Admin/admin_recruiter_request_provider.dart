@@ -579,13 +579,13 @@ class AdminProvider extends ChangeNotifier {
     debugPrint('📥 Fetching ${uncachedIds.length} candidates from Firestore');
     final fetchedResults = <Map<String, dynamic>>[];
 
-    Future<List<List<T>>> _batchSplit<T>(List<T> items) async =>
+    Future<List<List<T>>> batchSplit<T>(List<T> items) async =>
         [for (var i = 0; i < items.length; i += batchSize)
           items.sublist(i, (i + batchSize).clamp(0, items.length))];
 
     try {
       // Step A: Job_Seeker by docId
-      for (final batch in await _batchSplit(uncachedIds)) {
+      for (final batch in await batchSplit(uncachedIds)) {
         try {
           final snap = await _firestore
               .collection('Job_Seeker')
@@ -601,7 +601,7 @@ class AdminProvider extends ChangeNotifier {
       final foundB = fetchedResults.map((c) => c['uid'].toString()).toSet();
       final missingB = uncachedIds.where((id) => !foundB.contains(id)).toList();
       if (missingB.isNotEmpty) {
-        for (final batch in await _batchSplit(missingB)) {
+        for (final batch in await batchSplit(missingB)) {
           try {
             final snap = await _firestore
                 .collection('Job_Seeker')
@@ -619,7 +619,7 @@ class AdminProvider extends ChangeNotifier {
       final missingC = uncachedIds.where((id) => !foundC.contains(id)).toList();
       if (missingC.isNotEmpty) {
         debugPrint('🔍 ${missingC.length} not in Job_Seeker, trying "users"');
-        for (final batch in await _batchSplit(missingC)) {
+        for (final batch in await batchSplit(missingC)) {
           try {
             final snap = await _firestore
                 .collection('users')
@@ -635,7 +635,7 @@ class AdminProvider extends ChangeNotifier {
         final foundD = fetchedResults.map((c) => c['uid'].toString()).toSet();
         final missingD = missingC.where((id) => !foundD.contains(id)).toList();
         if (missingD.isNotEmpty) {
-          for (final batch in await _batchSplit(missingD)) {
+          for (final batch in await batchSplit(missingD)) {
             try {
               final snap = await _firestore
                   .collection('users')
@@ -1148,33 +1148,51 @@ Future<String> fetchUnifiedName(String uid) async {
     }
 
     try {
-      if (uid.startsWith('rec_') || uid.startsWith('R_') || uid.length > 28) {
-        // try recruiter first
-        final doc = await _firestore.collection('users').doc(uid).get();
-        if (doc.exists) {
-          final data = _normalizeMap(doc.data());
-          final name = data['name']?.toString() ?? 'Unknown Recruiter';
-          
-          // FIX: Cache the entire map and inject the uid
+      // Step 1: Check `users` collection first (has name since registration fix)
+      final usersDoc = await _firestore.collection('users').doc(uid).get();
+      if (usersDoc.exists) {
+        final data = _normalizeMap(usersDoc.data());
+        final name = data['name']?.toString().trim() ?? '';
+        if (name.isNotEmpty && name.toLowerCase() != 'null') {
           data['uid'] ??= uid;
-          data['name'] = name;
-          _recruiterCache[uid] = _CacheEntry(data, DateTime.now());
-          
+          _candidateCache[uid] = _CacheEntry(data, DateTime.now());
           return name;
         }
+        // Name missing in users — continue to role-specific collections
       }
-      {
-        final doc = await _firestore.collection('Job_Seeker').doc(uid).get();
-        if (doc.exists) {
-          final data = _normalizeMap(doc.data());
-          final pp   = _normalizeMap(data['personalProfile'] ?? data['personal_profile'] ?? {});
-          final name = pp['name']?.toString() ?? data['name']?.toString() ?? 'Unknown Job Seeker';
-          
-          // FIX: Cache the entire map and inject the uid
+
+      // Step 2: Check `Job_Seeker` collection
+      final jsDoc = await _firestore.collection('Job_Seeker').doc(uid).get();
+      if (jsDoc.exists) {
+        final data = _normalizeMap(jsDoc.data());
+        final ud   = _normalizeMap(data['user_data'] ?? {});
+        final pp   = _normalizeMap(
+          data['personalProfile'] ?? data['personal_profile'] ??
+          ud['personalProfile'] ?? ud['personal_profile'] ?? {},
+        );
+        final name = pp['name']?.toString().trim() ??
+            pp['fullName']?.toString().trim() ??
+            ud['name']?.toString().trim() ??
+            data['name']?.toString().trim() ?? '';
+        if (name.isNotEmpty && name.toLowerCase() != 'null') {
           data['uid'] ??= uid;
           data['name'] = name;
           _candidateCache[uid] = _CacheEntry(data, DateTime.now());
-          
+          return name;
+        }
+      }
+
+      // Step 3: Check `recruiter` collection
+      final recDoc = await _firestore.collection('recruiter').doc(uid).get();
+      if (recDoc.exists) {
+        final data = _normalizeMap(recDoc.data());
+        final ud   = _normalizeMap(data['user_data'] ?? {});
+        final name = ud['name']?.toString().trim() ??
+            data['name']?.toString().trim() ??
+            data['displayName']?.toString().trim() ?? '';
+        if (name.isNotEmpty && name.toLowerCase() != 'null') {
+          final entry = {'uid': uid, 'name': name, 'email': ud['email'] ?? data['email'] ?? ''};
+          _recruiterCache[uid] = _CacheEntry(entry, DateTime.now());
           return name;
         }
       }

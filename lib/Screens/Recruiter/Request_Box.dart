@@ -310,7 +310,7 @@ class _HeaderIcon extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(9),
     decoration: BoxDecoration(
-      color: _T.blue.withOpacity(0.1),
+      color: _T.blue.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(8),
     ),
     child: Icon(Icons.all_inbox_outlined, size: size, color: _T.blue),
@@ -366,7 +366,7 @@ class _RequestCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: _T.primary.withOpacity(0.09),
+                    color: _T.primary.withValues(alpha: 0.09),
                     borderRadius: BorderRadius.circular(9),
                   ),
                   child: const Icon(
@@ -525,7 +525,7 @@ class _CandidateMiniCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 17,
-                      backgroundColor: _T.primary.withOpacity(0.12),
+                      backgroundColor: _T.primary.withValues(alpha: 0.12),
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : 'C',
                         style: GoogleFonts.plusJakartaSans(
@@ -701,9 +701,9 @@ class _StatusBadge extends StatelessWidget {
         vertical: small ? 2 : 5,
       ),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.1),
+        color: c.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(small ? 4 : 20),
-        border: Border.all(color: c.withOpacity(small ? 0.25 : 0.4)),
+        border: Border.all(color: c.withValues(alpha: small ? 0.25 : 0.4)),
       ),
       child: Text(
         status.toUpperCase(),

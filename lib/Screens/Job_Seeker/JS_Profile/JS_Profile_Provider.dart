@@ -241,7 +241,7 @@ class ProfileProvider_NEW extends ChangeNotifier {
       dob = _getString(p, ['dob']);
 
       // ✅ ADD THIS DEBUG LOG
-      print('[LOAD DATA] DOB loaded from Firestore: "$dob"');
+      debugPrint('[LOAD DATA] DOB loaded from Firestore: "$dob"');
 
       socialLinks = _toStringList(p['socialLinks'] ?? p['social_links']);
       skillsList = _toStringList(p['skills'] ?? p['skillset']);
@@ -277,37 +277,37 @@ class ProfileProvider_NEW extends ChangeNotifier {
   /// Does NOT read from DB. Uses cached `_usesNestedUserData` flag.
   Future<void> _writeSection(Map<String, dynamic> payload) async {
     if (uid.isEmpty) {
-      print('[_writeSection] ERROR: UID is empty!');
+      debugPrint('[_writeSection] ERROR: UID is empty!');
       return;
     }
 
-    print('[_writeSection] Starting write...');
-    print('[_writeSection] _usesNestedUserData: $_usesNestedUserData');
+    debugPrint('[_writeSection] Starting write...');
+    debugPrint('[_writeSection] _usesNestedUserData: $_usesNestedUserData');
 
     try {
       Map<String, dynamic> finalPayload;
 
       if (_usesNestedUserData) {
         finalPayload = {'user_data': payload};
-        print('[_writeSection] Wrapping in user_data structure');
+        debugPrint('[_writeSection] Wrapping in user_data structure');
       } else {
         finalPayload = payload;
-        print('[_writeSection] Using flat structure');
+        debugPrint('[_writeSection] Using flat structure');
       }
 
-      print('[_writeSection] Final payload to Firestore: $finalPayload');
+      debugPrint('[_writeSection] Final payload to Firestore: $finalPayload');
 
       await _docRef.set(finalPayload, SetOptions(merge: true)).timeout(
         const Duration(seconds: 10),
         onTimeout: () => throw TimeoutException('Save operation timed out'),
       );
 
-      print('[_writeSection] Firestore write successful');
+      debugPrint('[_writeSection] Firestore write successful');
       _lastFetchTime = DateTime.now();
 
     } catch (e, st) {
-      print('[_writeSection] ERROR: $e');
-      print('[_writeSection] Stack trace: $st');
+      debugPrint('[_writeSection] ERROR: $e');
+      debugPrint('[_writeSection] Stack trace: $st');
       _handleError('Write failed', e, st);
       rethrow;
     }
@@ -335,10 +335,10 @@ class ProfileProvider_NEW extends ChangeNotifier {
   // --- Section Specific Savers ---
 
   Future<void> savePersonalSection(BuildContext ctx) async {
-    print('═══════════════════════════════════════');
-    print('[SAVE PERSONAL] Starting save...');
-    print('[SAVE PERSONAL] Current DOB value: "$dob"');
-    print('[SAVE PERSONAL] personalDirty: $personalDirty');
+    debugPrint('═══════════════════════════════════════');
+    debugPrint('[SAVE PERSONAL] Starting save...');
+    debugPrint('[SAVE PERSONAL] Current DOB value: "$dob"');
+    debugPrint('[SAVE PERSONAL] personalDirty: $personalDirty');
 
     final payload = {
       'personalProfile': {
@@ -356,21 +356,21 @@ class ProfileProvider_NEW extends ChangeNotifier {
       }
     };
 
-    print('[SAVE PERSONAL] Payload DOB: "${payload['personalProfile']!['dob']}"');
-    print('[SAVE PERSONAL] Full payload: $payload');
+    debugPrint('[SAVE PERSONAL] Payload DOB: "${payload['personalProfile']!['dob']}"');
+    debugPrint('[SAVE PERSONAL] Full payload: $payload');
 
     await _executeSave(ctx, () async {
-      print('[SAVE PERSONAL] Calling _writeSection...');
+      debugPrint('[SAVE PERSONAL] Calling _writeSection...');
       await _writeSection(payload);
-      print('[SAVE PERSONAL] _writeSection completed');
+      debugPrint('[SAVE PERSONAL] _writeSection completed');
     }, () {
-      print('[SAVE PERSONAL] Save successful, clearing dirty flag');
+      debugPrint('[SAVE PERSONAL] Save successful, clearing dirty flag');
       personalDirty = false;
       _safeNotifyListeners();
     }, 'Personal profile saved');
 
-    print('[SAVE PERSONAL] Save operation completed');
-    print('═══════════════════════════════════════');
+    debugPrint('[SAVE PERSONAL] Save operation completed');
+    debugPrint('═══════════════════════════════════════');
   }
   Future<void> saveEducationSection(BuildContext ctx) async {
     await _executeSave(ctx, () => _writeSection({
@@ -569,7 +569,7 @@ class ProfileProvider_NEW extends ChangeNotifier {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -611,11 +611,11 @@ class ProfileProvider_NEW extends ChangeNotifier {
   void updateObjectives(String v) { objectives = v; personalDirty = true; _safeNotifyListeners(); }
   void updatePersonalSummary(String v) { personalSummary = v; personalDirty = true; _safeNotifyListeners(); }
   void updateDob(String v) {
-    print('[updateDob] Called with value: "$v"');
-    print('[updateDob] Previous dob: "$dob"');
+    debugPrint('[updateDob] Called with value: "$v"');
+    debugPrint('[updateDob] Previous dob: "$dob"');
     dob = v;
     personalDirty = true;
-    print('[updateDob] New dob: "$dob", personalDirty: $personalDirty');
+    debugPrint('[updateDob] New dob: "$dob", personalDirty: $personalDirty');
     _safeNotifyListeners();
   }
   // Professional Status Updates
@@ -848,8 +848,9 @@ class ProfileProvider_NEW extends ChangeNotifier {
     return src.map((doc) {
       final copied = Map<String, dynamic>.from(doc);
       final uploadedAt = copied['uploadedAt'];
-      if (uploadedAt is DateTime) copied['uploadedAt'] = Timestamp.fromDate(uploadedAt);
-      else if (uploadedAt is int) copied['uploadedAt'] = Timestamp.fromMillisecondsSinceEpoch(uploadedAt);
+      if (uploadedAt is DateTime) {
+        copied['uploadedAt'] = Timestamp.fromDate(uploadedAt);
+      } else if (uploadedAt is int) copied['uploadedAt'] = Timestamp.fromMillisecondsSinceEpoch(uploadedAt);
       else if (uploadedAt is! Timestamp) copied['uploadedAt'] = Timestamp.now();
       return copied;
     }).toList();
@@ -858,7 +859,7 @@ class ProfileProvider_NEW extends ChangeNotifier {
   void _handleError(String context, dynamic error, [StackTrace? stackTrace]) {
     errorMessage = '$context: $error';
     lastDebug = '[ERROR] $context: $error';
-    print(lastDebug);
+    debugPrint(lastDebug);
     isLoading = false;
     _safeNotifyListeners();
   }

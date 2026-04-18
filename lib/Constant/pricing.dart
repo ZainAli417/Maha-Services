@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import 'Header_Nav.dart';
+import 'package:go_router/go_router.dart';
 
 class PremiumPricingPage extends StatefulWidget {
   const PremiumPricingPage({super.key});
@@ -133,10 +134,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(100),
               border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.2),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -212,7 +213,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.04),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -283,7 +284,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.04),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -607,9 +608,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               BoxShadow(
                 color: isHovered
                     ? (isPopular
-                    ? const Color(0xFF6366F1).withOpacity(0.15)
-                    : const Color(0xFF0F172A).withOpacity(0.08))
-                    : const Color(0xFF0F172A).withOpacity(0.04),
+                    ? const Color(0xFF6366F1).withValues(alpha: 0.15)
+                    : const Color(0xFF0F172A).withValues(alpha: 0.08))
+                    : const Color(0xFF0F172A).withValues(alpha: 0.04),
                 blurRadius: isHovered ? 32 : 16,
                 offset: Offset(0, isHovered ? 12 : 4),
               ),
@@ -712,7 +713,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _buildCTAButton(plan['buttonText'], isPopular, isHovered),
+                    _buildCTAButton(plan['buttonText'], isPopular, isHovered, () => context.go('/login')),
                     const SizedBox(height: 32),
                     Container(height: 1, color: const Color(0xFFE2E8F0)),
                     const SizedBox(height: 24),
@@ -743,9 +744,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withOpacity(0.1),
+                            Colors.white.withValues(alpha: 0.1),
                             Colors.transparent,
-                            Colors.white.withOpacity(0.05),
+                            Colors.white.withValues(alpha: 0.05),
                           ],
                         ),
                       ),
@@ -759,8 +760,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildCTAButton(String text, bool isPrimary, bool isHovered) {
-    return AnimatedContainer(
+  Widget _buildCTAButton(String text, bool isPrimary, bool isHovered, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -779,8 +782,8 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             ? [
           BoxShadow(
             color: isPrimary
-                ? const Color(0xFF6366F1).withOpacity(0.4)
-                : const Color(0xFF0F172A).withOpacity(0.1),
+                ? const Color(0xFF6366F1).withValues(alpha: 0.4)
+                : const Color(0xFF0F172A).withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -797,6 +800,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           letterSpacing: -0.2,
         ),
       ),
+    ),
     );
   }
 
@@ -808,7 +812,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           height: 20,
           decoration: BoxDecoration(
             color: included
-                ? const Color(0xFF6366F1).withOpacity(0.1)
+                ? const Color(0xFF6366F1).withValues(alpha: 0.1)
                 : const Color(0xFFF1F5F9),
             shape: BoxShape.circle,
           ),
@@ -1040,15 +1044,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
         ),
         SizedBox(height: isMobile ? 16 : 24),
-        Row(
-          children: [
-            _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2)),
-            const SizedBox(width: 12),
-            _buildSocialIcon(Icons.link, const Color(0xFF0A66C2)),
-            const SizedBox(width: 12),
-            _buildSocialIcon(Icons.mail_rounded, const Color(0xFFEA4335)),
-          ],
-        ),
+
       ],
     );
   }
@@ -1064,9 +1060,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       child: Container(
         padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Icon(icon, color: color, size: iconSize),
       ),
@@ -1105,9 +1101,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               vertical: isMobile ? 5 : 8,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Text(
               '⚡ PROVEN SUCCESS',
@@ -1135,7 +1131,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             textAlign: TextAlign.center,
             style: GoogleFonts.plusJakartaSans(
               fontSize: subtitleFontSize,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1180,14 +1176,14 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.6), size: iconSize),
+          Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: iconSize),
           SizedBox(width: isMobile ? 8 : 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1204,7 +1200,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 label,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: labelFontSize,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1243,10 +1239,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -1259,7 +1255,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  'Powered by AI',
+                  'Developed by MahaServices',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF6366F1),
                     fontSize: aiFontSize,
@@ -1284,10 +1280,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -1330,7 +1326,7 @@ class _GridPainter extends CustomPainter {
 
     // Base grid paint (dimmed, more prominent)
     final baseGridPaint = Paint()
-      ..color = const Color(0xFF4A90E2).withOpacity(0.15)
+      ..color = const Color(0xFF4A90E2).withValues(alpha: 0.15)
       ..strokeWidth = 1.6
       ..style = PaintingStyle.stroke;
 
@@ -1363,9 +1359,9 @@ class _GridPainter extends CustomPainter {
         end: Alignment.bottomCenter,
         colors: [
           Colors.transparent,
-          const Color(0xFFF7E6FF).withOpacity(0.4),
-          const Color(0xFFF7E6FF).withOpacity(0.9),
-          const Color(0xFFF7E6FF).withOpacity(0.4),
+          const Color(0xFFF7E6FF).withValues(alpha: 0.4),
+          const Color(0xFFF7E6FF).withValues(alpha: 0.9),
+          const Color(0xFFF7E6FF).withValues(alpha: 0.4),
           Colors.transparent,
         ],
         stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
@@ -1405,9 +1401,9 @@ class _GridPainter extends CustomPainter {
       final horizontalGradient = LinearGradient(
         colors: [
           Colors.transparent,
-          const Color(0xFFE6EFFF).withOpacity(0.4),
-          const Color(0xFFE6EFFF).withOpacity(0.9),
-          const Color(0xFFE6EFFF).withOpacity(0.4),
+          const Color(0xFFE6EFFF).withValues(alpha: 0.4),
+          const Color(0xFFE6EFFF).withValues(alpha: 0.9),
+          const Color(0xFFE6EFFF).withValues(alpha: 0.4),
           Colors.transparent,
         ],
         stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
@@ -1428,7 +1424,7 @@ class _GridPainter extends CustomPainter {
 
     // Add extra glow at beam intersections
     final intersectionPaint = Paint()
-      ..color = const Color(0xFFFFFFFF).withOpacity(0.3)
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.3)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
     verticalIndex = 0;

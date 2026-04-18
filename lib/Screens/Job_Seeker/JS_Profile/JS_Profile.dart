@@ -1,6 +1,7 @@
 // js_profile_screen.dart
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -97,12 +98,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
       // ✅ NEW: Call the callback to update provider
       if (onDateSelected != null) {
-        print(
+        debugPrint(
           '[_selectDate] Date selected: $dateString, calling onDateSelected callback',
         );
         onDateSelected(dateString);
       } else {
-        print('[_selectDate] WARNING: Date selected but no callback provided!');
+        debugPrint('[_selectDate] WARNING: Date selected but no callback provided!');
       }
     }
   }
@@ -548,7 +549,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             Container(
               padding: EdgeInsets.all(isMobile ? 6 : 10),
               decoration: BoxDecoration(
-                color: kPrimaryBlue.withOpacity(0.1),
+                color: kPrimaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -599,10 +600,10 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         vertical: isMobile ? 6 : 10,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withOpacity(0.08),
+        color: const Color(0xFF6366F1).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: const Color(0xFF6366F1).withOpacity(0.2),
+          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -696,16 +697,16 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? const Color(0xFF6366F1).withOpacity(0.08)
+                        ? const Color(0xFF6366F1).withValues(alpha: 0.08)
                         : (isCompleted
-                              ? const Color(0xFF10B981).withOpacity(0.08)
+                              ? const Color(0xFF10B981).withValues(alpha: 0.08)
                               : Colors.white),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isActive
-                          ? const Color(0xFF6366F1).withOpacity(0.3)
+                          ? const Color(0xFF6366F1).withValues(alpha: 0.3)
                           : (isCompleted
-                                ? const Color(0xFF10B981).withOpacity(0.3)
+                                ? const Color(0xFF10B981).withValues(alpha: 0.3)
                                 : Colors.grey.shade200),
                       width: 1,
                     ),
@@ -1020,7 +1021,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         cursor: SystemMouseCursors.click,
                         child: GestureDetector(
                           onTap: () {
-                            print('[DOB] Date picker opened');
+                            debugPrint('[DOB] Date picker opened');
                             _selectDate(
                               context,
                               _dobCtrl,
@@ -1028,9 +1029,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                   ? DateTime.tryParse(_dobCtrl.text)
                                   : DateTime(1930),
                               onDateSelected: (dateString) {
-                                print('[DOB] Date selected from picker: $dateString');
+                                debugPrint('[DOB] Date selected from picker: $dateString');
                                 prov.updateDob(dateString);
-                                print(
+                                debugPrint(
                                   '[DOB] Provider updated - dirty flag: ${prov.personalDirty}',
                                 );
                               },
@@ -1042,7 +1043,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               controller: _dobCtrl,
                               icon: Icons.calendar_today_outlined,
                               onChanged: (v) {
-                                print(
+                                debugPrint(
                                   '[DOB] TextField onChanged called: $v (This should NOT happen for date picker)',
                                 );
                                 prov.updateDob(v);
@@ -1112,10 +1113,10 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: const Color(0xFF6366F1).withOpacity(0.2),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -1393,7 +1394,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -1993,7 +1994,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 16),
 
           Material(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () => _pickAndUploadExperienceDoc(prov),
@@ -2108,7 +2109,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -2123,7 +2124,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         Container(
                           padding: EdgeInsets.all(_isMobile ? 8 : 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withOpacity(0.1),
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(_isMobile ? 8 : 10),
                           ),
                           child: Icon(
@@ -2452,7 +2453,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 16),
 
           Material(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () => _pickAndUploadCertificationDoc(prov),
@@ -2561,7 +2562,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -2777,7 +2778,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: EdgeInsets.all(isMobile ? 8 : 10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -2901,7 +2902,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withOpacity(0.1),
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -3351,7 +3352,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     String fileName = '';
 
     if (kIsWeb) {
-      final res = await FilePicker.platform.pickFiles(
+      final res = await FilePicker.pickFiles(
         allowMultiple: false,
         withData: true,
         type: FileType.image,
@@ -3381,7 +3382,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Future<void> _pickAndUploadDocument(ProfileProvider_NEW prov) async {
-    final res = await FilePicker.platform.pickFiles(
+    final res = await FilePicker.pickFiles(
       allowMultiple: false,
       withData: kIsWeb,
     );
@@ -3415,7 +3416,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
   // ✅ NEW: Experience document picker
   Future<void> _pickAndUploadExperienceDoc(ProfileProvider_NEW prov) async {
-    final res = await FilePicker.platform.pickFiles(
+    final res = await FilePicker.pickFiles(
       allowMultiple: false,
       withData: kIsWeb,
     );
@@ -3456,7 +3457,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
   // ✅ NEW: Certification document picker
   Future<void> _pickAndUploadCertificationDoc(ProfileProvider_NEW prov) async {
-    final res = await FilePicker.platform.pickFiles(
+    final res = await FilePicker.pickFiles(
       allowMultiple: false,
       withData: kIsWeb,
     );
@@ -3521,7 +3522,7 @@ void showTopNotification(
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

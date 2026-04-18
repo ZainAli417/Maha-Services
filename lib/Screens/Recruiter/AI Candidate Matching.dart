@@ -130,12 +130,12 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withOpacity(0.15),
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 48,
             offset: const Offset(0, 16),
           ),
@@ -220,7 +220,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -264,7 +264,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF10B981).withOpacity(0.5),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.5),
                   blurRadius: 6,
                   spreadRadius: 1,
                 ),
@@ -318,7 +318,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                   boxShadow: isActive
                       ? [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -407,7 +407,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFEF4444).withOpacity(0.15),
+            color: const Color(0xFFEF4444).withValues(alpha: 0.15),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
@@ -445,7 +445,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               color: const Color(0xFFFEF2F2),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFFEF4444).withOpacity(0.2),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.2),
               ),
             ),
             child: Text(

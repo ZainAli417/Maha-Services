@@ -97,7 +97,7 @@ class JobApplicationsProvider with ChangeNotifier {
 
       final jobData = jobDocSnap.data()!;
       final String? recruiterUid = jobData['recruiterUid'];
-print(recruiterUid);
+debugPrint(recruiterUid);
       if (recruiterUid == null || recruiterUid.isEmpty) {
         throw Exception('Operational error: Target recruiter ID missing.');
       }

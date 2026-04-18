@@ -42,7 +42,7 @@ class LoginProvider_Recruiter with ChangeNotifier {
       }
 
       // 3. Authenticate
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth.signInWithEmailAndPassword(email: email, password: password.trim());
 
       _isLoading = false;
       notifyListeners();

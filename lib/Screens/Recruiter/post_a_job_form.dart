@@ -158,7 +158,9 @@ class _PostJobScreenState extends State<PostJobScreen>
   void dispose() {
     _fadeCtrl.dispose();
     _scrollCtrl.dispose();
-    for (final n in _fn.values) n.dispose();
+    for (final n in _fn.values) {
+      n.dispose();
+    }
     super.dispose();
   }
 
@@ -227,7 +229,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E40AF).withOpacity(0.1),
+              color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -266,7 +268,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           //     decoration: BoxDecoration(
           //       color: _paleBlue,
           //       borderRadius: BorderRadius.circular(8),
-          //       border: Border.all(color: _accent.withOpacity(0.3)),
+          //       border: Border.all(color: _accent.withValues(alpha: 0.3)),
           //     ),
           //     child: Row(
           //       mainAxisSize: MainAxisSize.min,
@@ -455,8 +457,9 @@ class _PostJobScreenState extends State<PostJobScreen>
             onChange: provider.updateTempContactEmail,
             validator: (v) {
               if (v == null || v.trim().isEmpty) return 'Required';
-              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim()))
+              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
                 return 'Invalid email';
+              }
               return null;
             },
             icon: Icons.email_outlined,
@@ -657,8 +660,9 @@ class _PostJobScreenState extends State<PostJobScreen>
           onChange: provider.updateTempContactEmail,
           validator: (v) {
             if (v == null || v.trim().isEmpty) return 'Required';
-            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim()))
+            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
               return 'Invalid email';
+            }
             return null;
           },
           icon: Icons.email_outlined,
@@ -713,7 +717,7 @@ class _PostJobScreenState extends State<PostJobScreen>
   Widget _buildUnitHeader(job_listing_provider provider) {
     Future<void> pick() async {
       if (kIsWeb) {
-        final r = await FilePicker.platform.pickFiles(
+        final r = await FilePicker.pickFiles(
           type: FileType.image,
           withData: true,
         );
@@ -902,7 +906,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             ? Icon(
                 icon,
                 size: _isMobile ? 18 : 20,
-                color: _primary.withOpacity(0.55),
+                color: _primary.withValues(alpha: 0.55),
               )
             : null,
         filled: true,
@@ -938,7 +942,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         hintStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
-          color: _textMid.withOpacity(0.7),
+          color: _textMid.withValues(alpha: 0.7),
         ),
         errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
@@ -963,7 +967,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     final ls = _isMobile ? 12.0 : 13.0;
 
     return DropdownButtonFormField<String>(
-      value: valid,
+      initialValue: valid,
       isExpanded: true,
       items: items
           .map(
@@ -995,7 +999,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             ? Icon(
                 icon,
                 size: _isMobile ? 18 : 20,
-                color: _primary.withOpacity(0.55),
+                color: _primary.withValues(alpha: 0.55),
               )
             : null,
         filled: true,
@@ -1071,8 +1075,9 @@ class _PostJobScreenState extends State<PostJobScreen>
             child: child!,
           ),
         );
-        if (picked != null)
+        if (picked != null) {
           provider.updateTempDeadline(picked.toIso8601String());
+        }
       },
       decoration: InputDecoration(
         labelText: 'Application Deadline',
@@ -1080,7 +1085,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         prefixIcon: Icon(
           Icons.calendar_today_outlined,
           size: _isMobile ? 18 : 20,
-          color: _primary.withOpacity(0.55),
+          color: _primary.withValues(alpha: 0.55),
         ),
         suffixIcon: provider.tempDeadline.isNotEmpty
             ? IconButton(
@@ -1161,7 +1166,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                   vertical: _isMobile ? 6 : 8,
                 ),
                 decoration: BoxDecoration(
-                  color: on ? color.withOpacity(0.12) : _surface,
+                  color: on ? color.withValues(alpha: 0.12) : _surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: on ? color : _border,
@@ -1214,7 +1219,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               ? []
               : [
                   BoxShadow(
-                    color: _primary.withOpacity(0.25),
+                    color: _primary.withValues(alpha: 0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -1232,14 +1237,18 @@ class _PostJobScreenState extends State<PostJobScreen>
               ? null
               : () async {
                   FocusScope.of(context).unfocus();
-                  if ((provider.tempDepartment ?? '').isEmpty)
+                  if ((provider.tempDepartment ?? '').isEmpty) {
                     provider.updateTempDepartment(_departmentOpts.first);
-                  if ((provider.tempNature ?? '').isEmpty)
+                  }
+                  if ((provider.tempNature ?? '').isEmpty) {
                     provider.updateTempNature(_rankOptions.first);
-                  if ((provider.tempExperience ?? '').isEmpty)
+                  }
+                  if ((provider.tempExperience ?? '').isEmpty) {
                     provider.updateTempExperience(_clearanceOpts.first);
-                  if ((provider.tempSalaryType ?? '').isEmpty)
+                  }
+                  if ((provider.tempSalaryType ?? '').isEmpty) {
                     provider.updateTempSalaryType(_salaryTypeOpts.first);
+                  }
                   if (_formKey.currentState!.validate()) {
                     final err = await provider.addJob();
                     if (!context.mounted) return;

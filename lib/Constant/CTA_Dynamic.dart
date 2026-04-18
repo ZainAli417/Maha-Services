@@ -276,8 +276,8 @@ class _FloatingCTAState extends State<_FloatingCTA>
               : const Color(0xFF10B981);
 
           final shadowColor = widget.isPrimary
-              ? const Color(0xFF6366F1).withOpacity(0.4)
-              : const Color(0xFF10B981).withOpacity(0.25);
+              ? const Color(0xFF6366F1).withValues(alpha: 0.4)
+              : const Color(0xFF10B981).withValues(alpha: 0.25);
 
           return Transform.scale(
             scale: scale,

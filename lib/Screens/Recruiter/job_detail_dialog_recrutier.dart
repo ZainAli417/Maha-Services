@@ -176,7 +176,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         child: logoUrl.isNotEmpty
                             ? Image.network(logoUrl, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Center(
+                            errorBuilder: (_, _, _) => const Center(
                                 child: Icon(Icons.business,
                                     color: _textSecondary)))
                             : const Center(
@@ -418,7 +418,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
           color: _bgSurface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -602,9 +602,9 @@ class JobDetailModal_recruiter extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: isMobile ? 8 : 10, vertical: isMobile ? 4 : 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Text(label,
           style: GoogleFonts.plusJakartaSans(

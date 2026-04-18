@@ -119,7 +119,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E40AF).withOpacity(0.1),
+                color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.recent_actors_outlined,
@@ -186,7 +186,7 @@ class _LoadingView extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 3,
             valueColor: const AlwaysStoppedAnimation(_blue),
-            backgroundColor: _blue.withOpacity(0.12),
+            backgroundColor: _blue.withValues(alpha: 0.12),
           ),
         ),
         const SizedBox(height: 14),
@@ -207,9 +207,9 @@ class _ErrorView extends StatelessWidget {
       margin: const EdgeInsets.all(24),
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: _rose.withOpacity(0.06),
+        color: _rose.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _rose.withOpacity(0.2)),
+        border: Border.all(color: _rose.withValues(alpha: 0.2)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -217,7 +217,7 @@ class _ErrorView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-                color: _rose.withOpacity(0.1),
+                color: _rose.withValues(alpha: 0.1),
                 shape: BoxShape.circle),
             child: const Icon(Icons.error_outline_rounded,
                 size: 32, color: _rose),
@@ -250,8 +250,8 @@ class _EmptyView extends StatelessWidget {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
-              _blue.withOpacity(0.08),
-              _cyan.withOpacity(0.08)
+              _blue.withValues(alpha: 0.08),
+              _cyan.withValues(alpha: 0.08)
             ]),
             shape: BoxShape.circle,
           ),
@@ -411,7 +411,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                    color: _blue.withOpacity(0.25),
+                    color: _blue.withValues(alpha: 0.25),
                     blurRadius: 12,
                     offset: const Offset(0, 4))
               ],
@@ -691,7 +691,7 @@ class _PostJobButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: _blue.withOpacity(0.3),
+                color: _blue.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4))
           ],
@@ -740,7 +740,7 @@ class _StatCard extends StatelessWidget {
           border: Border.all(color: _slate200),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2))
           ],
@@ -750,7 +750,7 @@ class _StatCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                  color: meta.color.withOpacity(0.1),
+                  color: meta.color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10)),
               child: Icon(meta.icon, color: meta.color, size: 18),
             ),
@@ -788,7 +788,7 @@ class _StatCard extends StatelessWidget {
         border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 12,
               offset: const Offset(0, 4))
         ],
@@ -802,7 +802,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: meta.color.withOpacity(0.1),
+                    color: meta.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12)),
                 child: Icon(meta.icon, color: meta.color, size: 20),
               ),
@@ -811,7 +811,7 @@ class _StatCard extends StatelessWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: meta.color.withOpacity(0.25),
+                    color: meta.color.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(2)),
               ),
             ],
@@ -952,8 +952,8 @@ class _TrendChart extends StatelessWidget {
             show: true,
             gradient: LinearGradient(
               colors: [
-                _blue.withOpacity(0.16),
-                _blue.withOpacity(0.0)
+                _blue.withValues(alpha: 0.16),
+                _blue.withValues(alpha: 0.0)
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -1175,7 +1175,7 @@ class _TopSkillsCard extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isTop
                                     ? _violet
-                                    .withOpacity(0.12)
+                                    .withValues(alpha: 0.12)
                                     : _slate100,
                                 borderRadius:
                                 BorderRadius.circular(
@@ -1230,7 +1230,7 @@ class _TopSkillsCard extends StatelessWidget {
                                 isTop
                                     ? _violet
                                     : _blue
-                                    .withOpacity(
+                                    .withValues(alpha: 
                                     0.5)),
                           ),
                         ),
@@ -1299,7 +1299,7 @@ class _TopJobsCard extends StatelessWidget {
                     ? _amber
                     : i == 1
                     ? _slate400
-                    : _blue.withOpacity(0.55);
+                    : _blue.withValues(alpha: 0.55);
 
                 return FutureBuilder<DocumentSnapshot>(
                   future: cache[entry.key],
@@ -1320,13 +1320,13 @@ class _TopJobsCard extends StatelessWidget {
                           isMobile ? 12 : 14),
                       decoration: BoxDecoration(
                         color: i == 0
-                            ? _amber.withOpacity(0.05)
+                            ? _amber.withValues(alpha: 0.05)
                             : _slate50,
                         borderRadius:
                         BorderRadius.circular(12),
                         border: Border.all(
                             color: i == 0
-                                ? _amber.withOpacity(0.2)
+                                ? _amber.withValues(alpha: 0.2)
                                 : _slate200),
                       ),
                       child: Row(
@@ -1340,7 +1340,7 @@ class _TopJobsCard extends StatelessWidget {
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: rankColor
-                                  .withOpacity(0.12),
+                                  .withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: Text('${i + 1}',
@@ -1422,7 +1422,7 @@ class _ChartCard extends StatelessWidget {
         border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 12,
               offset: const Offset(0, 4))
         ],
@@ -1476,7 +1476,7 @@ class _CardHeader extends StatelessWidget {
                 horizontal: isMobile ? 8 : 10,
                 vertical: isMobile ? 3 : 4),
             decoration: BoxDecoration(
-                color: (badgeColor ?? _blue).withOpacity(0.1),
+                color: (badgeColor ?? _blue).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20)),
             child: Text(badge!,
                 style: GoogleFonts.dmSans(
@@ -1552,10 +1552,10 @@ class _ShimmerBoxState extends State<_ShimmerBox>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         height: widget.height,
         decoration: BoxDecoration(
-          color: _slate100.withOpacity(_anim.value),
+          color: _slate100.withValues(alpha: _anim.value),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),

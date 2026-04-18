@@ -150,8 +150,9 @@ class _ViewShortlistedState extends State<view_shortlisted>
   void _onSelectionChanged() {
     if (!mounted) return;
     final has = _provider.selectedApplicantIds.isNotEmpty;
-    if (has && !_islandCtrl.isCompleted)      _islandCtrl.forward();
-    else if (!has && !_islandCtrl.isDismissed) _islandCtrl.reverse();
+    if (has && !_islandCtrl.isCompleted) {
+      _islandCtrl.forward();
+    } else if (!has && !_islandCtrl.isDismissed) _islandCtrl.reverse();
   }
 
   // ─── Data helpers ───────────────────────────────────────────────────────
@@ -229,8 +230,8 @@ class _ViewShortlistedState extends State<view_shortlisted>
       barrierDismissible: true,
       barrierLabel: '',
       transitionDuration: const Duration(milliseconds: 280),
-      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
-      transitionBuilder: (ctx, anim, _, __) => Transform.scale(
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      transitionBuilder: (ctx, anim, _, _) => Transform.scale(
         scale: anim.value,
         child: Opacity(
           opacity: anim.value,
@@ -297,7 +298,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
         child: Scaffold(
           backgroundColor: _T.white,
           body: Consumer<ApplicantsProvider>(
-            builder: (_, provider, __) {
+            builder: (_, provider, _) {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator(
                     color: _T.primary, strokeWidth: 2));
@@ -465,7 +466,7 @@ class _RankButton extends StatelessWidget {
             fw: FontWeight.w600)),
     style: OutlinedButton.styleFrom(
       foregroundColor: active ? _T.purple : _T.textSec,
-      backgroundColor: active ? _T.purple.withOpacity(0.08) : _T.white,
+      backgroundColor: active ? _T.purple.withValues(alpha: 0.08) : _T.white,
       side: BorderSide(color: active ? _T.purple : _T.border),
       padding: EdgeInsets.symmetric(
           horizontal: small ? 12 : 16, vertical: small ? 10 : 12),
@@ -545,7 +546,7 @@ class _MobileCardList extends StatelessWidget {
         child: ListView.separated(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 80),
           itemCount: applicants.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (_, i) => _ApplicantCard(
             applicant: applicants[i],
             index: i,
@@ -586,7 +587,7 @@ class _ApplicantCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
         decoration: BoxDecoration(
-          color: isSelected ? _T.purple.withOpacity(0.05) : _T.white,
+          color: isSelected ? _T.purple.withValues(alpha: 0.05) : _T.white,
           borderRadius: BorderRadius.circular(11),
           border: Border.all(
             color: isSelected ? _T.purple : _T.border,
@@ -618,7 +619,7 @@ class _ApplicantCard extends StatelessWidget {
               Container(
                 width: 38, height: 38,
                 decoration: BoxDecoration(
-                  color: aColor.withOpacity(0.1),
+                  color: aColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(child: Text(
@@ -737,9 +738,9 @@ class _ScoreChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: color.withOpacity(0.25)),
+      border: Border.all(color: color.withValues(alpha: 0.25)),
     ),
     child: Text('$score%',
         style: _T.mono(fs: 11, c: color, fw: FontWeight.w800)),
@@ -849,7 +850,7 @@ class _TableRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: isSelected ? _T.purple.withOpacity(0.04) : _T.white,
+        color: isSelected ? _T.purple.withValues(alpha: 0.04) : _T.white,
         border: const Border(bottom: BorderSide(color: _T.border)),
       ),
       child: Row(children: [
@@ -873,7 +874,7 @@ class _TableRow extends StatelessWidget {
           Container(
             width: 38, height: 38,
             decoration: BoxDecoration(
-              color: aColor.withOpacity(0.1),
+              color: aColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(child: Text(
@@ -982,14 +983,14 @@ class _SelectionIsland extends StatelessWidget {
             color: _T.textPri,
             borderRadius: BorderRadius.circular(50),
             boxShadow: [BoxShadow(
-                color: _T.textPri.withOpacity(0.35),
+                color: _T.textPri.withValues(alpha: 0.35),
                 blurRadius: 20, offset: const Offset(0, 8))],
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: _T.white.withOpacity(0.15),
+                color: _T.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(children: [
@@ -1044,9 +1045,9 @@ class _SentBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
-      color: Colors.blue.withOpacity(0.1),
+      color: Colors.blue.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
     ),
     child: Text('SENT',
         style: _T.label(
@@ -1059,7 +1060,7 @@ class _ShortlistBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
     decoration: BoxDecoration(
-      color: _T.success.withOpacity(0.1),
+      color: _T.success.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(5),
     ),
     child: Text('Shortlist',
@@ -1148,7 +1149,7 @@ class _SendToAdminDialogState extends State<_SendToAdminDialog> {
           Container(
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: _T.primary.withOpacity(0.1),
+              color: _T.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.outbox_rounded, color: _T.primary, size: 22),

@@ -29,9 +29,9 @@ class SignUpWidgets {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                primaryColor.withOpacity(0.85),
-                secondaryColor.withOpacity(0.75),
-                accentColor.withOpacity(0.85),
+                primaryColor.withValues(alpha: 0.85),
+                secondaryColor.withValues(alpha: 0.75),
+                accentColor.withValues(alpha: 0.85),
               ],
             ),
           ),
@@ -63,7 +63,7 @@ class SignUpWidgets {
                                     borderRadius: BorderRadius.circular(14),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.14),
+                                        color: Colors.black.withValues(alpha: 0.14),
                                         blurRadius: 18,
                                         offset: const Offset(0, 6),
                                       ),
@@ -105,10 +105,10 @@ class SignUpWidgets {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.22),
+                        color: Colors.white.withValues(alpha: 0.22),
                         width: 1,
                       ),
                     ),
@@ -139,11 +139,11 @@ class SignUpWidgets {
                                 height: 90,
                                 padding: const EdgeInsets.symmetric(horizontal: 14),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.08),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.14), width: 1),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
                                   ],
                                 ),
                                 child: Row(
@@ -151,7 +151,7 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.18),
+                                        color: Colors.white.withValues(alpha: 0.18),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(Icons.people_rounded, color: Colors.white, size: 22),
@@ -162,7 +162,7 @@ class SignUpWidgets {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text('50K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Active Users', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('Active Users', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -184,11 +184,11 @@ class SignUpWidgets {
                                 height: 80,
                                 padding: const EdgeInsets.symmetric(horizontal: 14),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.08),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.14), width: 1),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
                                   ],
                                 ),
                                 child: Row(
@@ -196,7 +196,7 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.18),
+                                        color: Colors.white.withValues(alpha: 0.18),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(Icons.work_rounded, color: Colors.white, size: 22),
@@ -207,7 +207,7 @@ class SignUpWidgets {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text('10K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Jobs Posted', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('Jobs Posted', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -229,11 +229,11 @@ class SignUpWidgets {
                                 height: 80,
                                 padding: const EdgeInsets.symmetric(horizontal: 14),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.08),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(0.14), width: 1),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
                                   ],
                                 ),
                                 child: Row(
@@ -241,7 +241,7 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.18),
+                                        color: Colors.white.withValues(alpha: 0.18),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(Icons.business_rounded, color: Colors.white, size: 22),
@@ -252,7 +252,7 @@ class SignUpWidgets {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text('500+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Companies', style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                                        Text('Companies', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
                                       ],
                                     ),
                                   ],
@@ -271,16 +271,16 @@ class SignUpWidgets {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
+                            color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
@@ -289,7 +289,7 @@ class SignUpWidgets {
                         Expanded(
                           child: Text(
                             'Trusted platform — verified employers and secure hiring',
-                            style: GoogleFonts.plusJakartaSans(color: Colors.white.withOpacity(0.95), fontSize: 14),
+                            style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.95), fontSize: 14),
                           ),
                         ),
                       ],
@@ -488,7 +488,7 @@ class SignUpWidgets {
               decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 2))],
+                boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))],
               ),
             ),
           ],
@@ -500,7 +500,7 @@ class SignUpWidgets {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(steps[step]!.icon, color: primaryColor, size: 22),
@@ -572,7 +572,7 @@ class SignUpWidgets {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 22),
@@ -657,7 +657,7 @@ class SignUpDialogs {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(Icons.school_outlined, color: primaryColor, size: 24),
@@ -737,7 +737,7 @@ class SignUpDialogs {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: secondaryColor.withOpacity(0.1),
+                      color: secondaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(Icons.work_outline_rounded, color: secondaryColor, size: 24),

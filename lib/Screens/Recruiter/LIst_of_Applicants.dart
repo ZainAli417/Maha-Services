@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/downloadcv.dart';
 import '../../widgets/view_js_profile.dart';
 import 'AI Candidate Matching.dart';
 import 'AI Candidate Matching_Provider.dart';
@@ -402,7 +401,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [
                     r.getScoreColor(),
-                    r.getScoreColor().withOpacity(0.75),
+                    r.getScoreColor().withValues(alpha: 0.75),
                   ]),
                   borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16)),
@@ -422,13 +421,13 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                           Text('AI Match Analysis',
                               style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
-                                  color: Colors.white.withOpacity(0.85))),
+                                  color: Colors.white.withValues(alpha: 0.85))),
                         ]),
                   ),
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle),
                     child: Text('${r.overallScore}',
                         style: GoogleFonts.plusJakartaSans(
@@ -451,7 +450,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                                 horizontal: 18, vertical: 8),
                             decoration: BoxDecoration(
                               color: r.getRecommendationColor()
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                   color: r.getRecommendationColor(), width: 1.5),
@@ -616,7 +615,7 @@ class _ApplicantCard extends StatelessWidget {
 
     // ── Score data ──────────────────────────────────────────────────────────
     final scoreData = applicant.matchScore;
-    final hasScore  = scoreData != null && scoreData['overallScore'] != null;
+    final hasScore  = scoreData['overallScore'] != null;
     final score     = hasScore ? (scoreData['overallScore'] as int) : 0;
     final sColor    = hasScore ? scoreColor(score) : _cTxtTert;
     final sLabel    = hasScore ? scoreLabel(score) : 'Not analyzed';
@@ -630,12 +629,12 @@ class _ApplicantCard extends StatelessWidget {
           color: isSelected ? const Color(0xFFF5F3FF) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? _cPurple.withOpacity(0.4) : _cBorder,
+            color: isSelected ? _cPurple.withValues(alpha: 0.4) : _cBorder,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -670,7 +669,7 @@ class _ApplicantCard extends StatelessWidget {
                   Container(
                     width: 38, height: 38,
                     decoration: BoxDecoration(
-                      color: avatarColor.withOpacity(0.12),
+                      color: avatarColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(9),
                     ),
                     child: Center(
@@ -803,10 +802,10 @@ class _ApplicantCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: sColor.withOpacity(0.1),
+                          color: sColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: sColor.withOpacity(0.3)),
+                              color: sColor.withValues(alpha: 0.3)),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           Icon(Icons.auto_awesome,
@@ -978,9 +977,9 @@ class _Header extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: _cPrimary.withOpacity(0.08),
+                color: _cPrimary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _cPrimary.withOpacity(0.2)),
+                border: Border.all(color: _cPrimary.withValues(alpha: 0.2)),
               ),
               child: const Icon(Icons.more_horiz_rounded,
                   size: 20, color: _cPrimary),
@@ -999,9 +998,9 @@ class _Header extends StatelessWidget {
               padding:
               const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: _cPurple.withOpacity(0.1),
+                color: _cPurple.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _cPurple.withOpacity(0.3)),
+                border: Border.all(color: _cPurple.withValues(alpha: 0.3)),
               ),
               child: Text('${selected.length} selected',
                   style: GoogleFonts.plusJakartaSans(
@@ -1233,7 +1232,7 @@ class _DesktopActions extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             foregroundColor: rankByScore ? _cPurple : _cTxtSec,
             backgroundColor:
-            rankByScore ? _cPurple.withOpacity(0.08) : Colors.white,
+            rankByScore ? _cPurple.withValues(alpha: 0.08) : Colors.white,
             side: BorderSide(color: rankByScore ? _cPurple : _cBorder),
             padding: pad,
             shape: radius,
@@ -1433,7 +1432,7 @@ class _TableRow extends StatelessWidget {
               Container(
                 width: 36, height: 36,
                 decoration: BoxDecoration(
-                  color: avatarColor.withOpacity(0.12),
+                  color: avatarColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
@@ -1560,7 +1559,7 @@ class _ScoreCell extends StatelessWidget {
         ]);
       }
 
-      if (data == null || data['overallScore'] == null) {
+      if (data['overallScore'] == null) {
         return Text('Not analyzed',
             style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
@@ -1704,16 +1703,16 @@ class _ActionTile extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-        color: active ? color.withOpacity(0.08) : _cSurface,
+        color: active ? color.withValues(alpha: 0.08) : _cSurface,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-            color: active ? color.withOpacity(0.4) : _cBorder),
+            color: active ? color.withValues(alpha: 0.4) : _cBorder),
       ),
       child: Row(children: [
         Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(7)),
           child: Icon(icon, size: 17, color: color),
         ),

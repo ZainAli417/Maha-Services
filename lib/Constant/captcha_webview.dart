@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async'; // Import for Timer
 import 'dart:ui_web' as ui_web;
 import 'package:web/web.dart' as web;
@@ -62,7 +63,7 @@ void registerRecaptchaView(String siteKey) {
           timer.cancel(); // Stop checking once found
         } else if (timer.tick > 100) {
           timer.cancel(); // Stop checking after ~10 seconds to prevent memory leaks
-          print('Error: reCAPTCHA script failed to load.');
+          debugPrint('Error: reCAPTCHA script failed to load.');
         }
       });
     }

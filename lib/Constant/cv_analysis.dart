@@ -1,7 +1,5 @@
 // file: cv_analysis_screen.dart
-import 'dart:math' as math;
 import 'dart:ui';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown_widget/config/configs.dart';
@@ -11,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../Screens/Job_Seeker/job_hub.dart';
 import '../Screens/Job_Seeker/JS_Top_Bar.dart';
 import '../Screens/Job_Seeker/job_seeker_provider.dart';
 import 'cv_analysis_provider.dart';
@@ -81,7 +78,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   }
 
   Future<void> _pickFile() async {
-    final res = await FilePicker.platform.pickFiles(
+    final res = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
       withData: kIsWeb,
@@ -221,7 +218,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.2),
+      barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (ctx) => _AIProcessingDialog(provider: prov),
     ).then((_) {
       try { prov.removeListener(listener); } catch (_) {}
@@ -273,7 +270,7 @@ class _CompactHeader extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E40AF).withOpacity(0.1),
+                        color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(7),
                       ),
                       child: const Icon(Icons.document_scanner_outlined, size: 16, color: Color(0xFF1E40AF)),
@@ -517,7 +514,7 @@ class _InputPanel extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.plusJakartaSans(
-            color: kTextSecondary.withOpacity(0.6),
+            color: kTextSecondary.withValues(alpha: 0.6),
             fontSize: isMobile ? 12 : 14),
         filled: true,
         fillColor: kBackgroundGray,
@@ -587,16 +584,16 @@ class _FileUploadZone extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: kAccentBlue.withOpacity(0.05),
+          color: kAccentBlue.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: kAccentBlue.withOpacity(0.25)),
+          border: Border.all(color: kAccentBlue.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: kAccentBlue.withOpacity(0.1),
+                color: kAccentBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Icon(_getFileIcon(pickedFile!),
@@ -647,7 +644,7 @@ class _FileUploadZone extends StatelessWidget {
           color: kBackgroundGray,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: kAccentBlue.withOpacity(0.3),
+              color: kAccentBlue.withValues(alpha: 0.3),
               width: 1.5,
               style: BorderStyle.solid),
         ),
@@ -728,7 +725,7 @@ class _JobSelectorState extends State<_JobSelector> {
                 'Browse public jobs to auto-fill...',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: widget.isMobile ? 12 : 14,
-                  color: kTextSecondary.withOpacity(0.6),
+                  color: kTextSecondary.withValues(alpha: 0.6),
                 ),
               ),
               items: jobs.map((job) {
@@ -850,9 +847,9 @@ class _CompactScoreBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1055,19 +1052,19 @@ class _HighlightRow extends StatelessWidget {
         return {
           'icon': Icons.check_circle,
           'iconColor': kSuccessGreen,
-          'bgColor': kSuccessGreen.withOpacity(0.1),
+          'bgColor': kSuccessGreen.withValues(alpha: 0.1),
         };
       case 'weakness':
         return {
           'icon': Icons.warning_amber_rounded,
           'iconColor': kWarningOrange,
-          'bgColor': kWarningOrange.withOpacity(0.1),
+          'bgColor': kWarningOrange.withValues(alpha: 0.1),
         };
       default:
         return {
           'icon': Icons.info,
           'iconColor': kAccentBlue,
-          'bgColor': kAccentBlue.withOpacity(0.1),
+          'bgColor': kAccentBlue.withValues(alpha: 0.1),
         };
     }
   }
@@ -1093,7 +1090,7 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.analytics_outlined,
                 size: isMobile ? 38 : 48,
-                color: kTextSecondary.withOpacity(0.4)),
+                color: kTextSecondary.withValues(alpha: 0.4)),
             SizedBox(height: isMobile ? 12 : 16),
             Text(
               'No analysis yet',
@@ -1108,7 +1105,7 @@ class _EmptyState extends StatelessWidget {
               'Upload a CV and tap Analyze',
               style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
-                  color: kTextSecondary.withOpacity(0.7)),
+                  color: kTextSecondary.withValues(alpha: 0.7)),
             ),
           ],
         ),
@@ -1130,9 +1127,9 @@ class _ErrorDisplay extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
-        color: kErrorRed.withOpacity(0.05),
+        color: kErrorRed.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: kErrorRed.withOpacity(0.2)),
+        border: Border.all(color: kErrorRed.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1212,7 +1209,7 @@ class _AIProcessingDialog extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: kPrimaryBlue.withOpacity(0.1),
+                          color: kPrimaryBlue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.auto_awesome_outlined,

@@ -536,9 +536,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withOpacity(0.1),
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -740,7 +740,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   activeTrackColor: const Color(0xFF3B82F6),
                   inactiveTrackColor: const Color(0xFFE5E7EB),
                   thumbColor: const Color(0xFF3B82F6),
-                  overlayColor: const Color(0xFF3B82F6).withOpacity(0.2),
+                  overlayColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                   trackHeight: 4,
                   thumbShape:
                   const RoundSliderThumbShape(enabledThumbRadius: 8),
@@ -977,15 +977,15 @@ class _CompactJobCardState extends State<CompactJobCard>
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: _isHovered
-                    ? primaryColor.withOpacity(0.6)
+                    ? primaryColor.withValues(alpha: 0.6)
                     : Colors.grey.shade200,
                 width: _isHovered ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: _isHovered
-                      ? primaryColor.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.04),
+                      ? primaryColor.withValues(alpha: 0.15)
+                      : Colors.black.withValues(alpha: 0.04),
                   blurRadius: _isHovered ? 20 : 8,
                   offset: Offset(0, _isHovered ? 8 : 2),
                 ),
@@ -1011,7 +1011,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -1094,10 +1094,10 @@ class _CompactJobCardState extends State<CompactJobCard>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF003366).withOpacity(0.1),
+                              color: const Color(0xFF003366).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                  color: const Color(0xFF003366).withOpacity(0.3)),
+                                  color: const Color(0xFF003366).withValues(alpha: 0.3)),
                             ),
                             child: Text(
                               '$postedAgo ago',
@@ -1214,13 +1214,13 @@ class _CompactJobCardState extends State<CompactJobCard>
                                         gradient: LinearGradient(
                                           colors: [
                                             primaryColor,
-                                            primaryColor.withOpacity(0.8),
+                                            primaryColor.withValues(alpha: 0.8),
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: primaryColor.withOpacity(0.3),
+                                            color: primaryColor.withValues(alpha: 0.3),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -1268,14 +1268,14 @@ class _CompactJobCardState extends State<CompactJobCard>
                                                 ? [Colors.grey[300]!, Colors.grey[400]!]
                                                 : [
                                               primaryColor,
-                                              primaryColor.withOpacity(0.8),
+                                              primaryColor.withValues(alpha: 0.8),
                                             ],
                                           ),
                                           borderRadius: BorderRadius.circular(8),
                                           boxShadow: [
                                             BoxShadow(
                                               color: (already ? Colors.grey : primaryColor)
-                                                  .withOpacity(0.3),
+                                                  .withValues(alpha: 0.3),
                                               blurRadius: 8,
                                               offset: const Offset(0, 2),
                                             ),
@@ -1472,9 +1472,9 @@ class _ModernChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1), // Light color background for chips
+        color: color.withValues(alpha: 0.1), // Light color background for chips
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Text(
         text,

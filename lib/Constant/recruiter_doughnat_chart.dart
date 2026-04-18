@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 class ApplicationStatusChart extends StatefulWidget {
   final Map<String, dynamic> data;
 
-  const ApplicationStatusChart({Key? key, required this.data}) : super(key: key);
+  const ApplicationStatusChart({super.key, required this.data});
 
   @override
   State<ApplicationStatusChart> createState() => _ApplicationStatusChartState();
@@ -70,7 +70,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -139,7 +139,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
 
                                 return PieChartSectionData(
                                   gradient: LinearGradient(
-                                    colors: gradients[i].map((c) => c.withOpacity(opacity)).toList(),
+                                    colors: gradients[i].map((c) => c.withValues(alpha: opacity)).toList(),
                                   ),
                                   value: value > 0 ? value : 0.001,
                                   title: values[i] > 0 ? '${(values[i] / total * 100).toStringAsFixed(0)}%' : '',
@@ -255,13 +255,13 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      gradient[0].withOpacity(0.08),
-                      gradient[1].withOpacity(0.04),
+                      gradient[0].withValues(alpha: 0.08),
+                      gradient[1].withValues(alpha: 0.04),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: gradient[0].withOpacity(isFocused ? 0.25 : 0.12),
+                    color: gradient[0].withValues(alpha: isFocused ? 0.25 : 0.12),
                     width: 1.2,
                   ),
                 ),
@@ -325,7 +325,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),

@@ -46,8 +46,8 @@ class SignUpSteps {
   final ValueChanged<int> onReviewPageChanged;
   Gradient get _recruiterGradient =>   LinearGradient(
     colors: [
-       const Color(0xFFF59E0B).withOpacity(0.12),
-      const Color(0xFFEC4899).withOpacity(0.12),
+       const Color(0xFFF59E0B).withValues(alpha: 0.12),
+      const Color(0xFFEC4899).withValues(alpha: 0.12),
     ],
   );
 
@@ -179,7 +179,7 @@ class SignUpSteps {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             // use recruiter gradient when recruiter and selected
-            gradient: isRecruiter && selected ? _recruiterGradient : (selected ? LinearGradient(colors: [color.withOpacity(0.15), color.withOpacity(0.05)]) : null),
+            gradient: isRecruiter && selected ? _recruiterGradient : (selected ? LinearGradient(colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)]) : null),
             color: (isRecruiter && selected) ? null : (selected ? null : Colors.white),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
@@ -192,7 +192,7 @@ class SignUpSteps {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: selected ? (isRecruiter ? _recruiterAccentColor.withOpacity(0.2) : color.withOpacity(0.2)) : Colors.grey.shade100,
+                  color: selected ? (isRecruiter ? _recruiterAccentColor.withValues(alpha: 0.2) : color.withValues(alpha: 0.2)) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icon, color: selected ? (isRecruiter ? _recruiterAccentColor : color) : Colors.grey.shade600, size: 32),
@@ -350,7 +350,7 @@ class SignUpSteps {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, 10))],
+                  boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 10))],
                 ),
                 child: CircleAvatar(
                   radius: 70,
@@ -442,7 +442,7 @@ class SignUpSteps {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        color: primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(Icons.school_outlined, color: primaryColor, size: 24),
@@ -533,7 +533,7 @@ class SignUpSteps {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: secondaryColor.withOpacity(0.1),
+                        color: secondaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(Icons.work_outline_rounded, color: secondaryColor, size: 24),
@@ -611,9 +611,9 @@ class SignUpSteps {
             children: skills.map((s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [accentColor.withOpacity(0.15), accentColor.withOpacity(0.05)]),
+                gradient: LinearGradient(colors: [accentColor.withValues(alpha: 0.15), accentColor.withValues(alpha: 0.05)]),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: accentColor.withOpacity(0.3)),
+                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -713,9 +713,9 @@ class SignUpSteps {
             children: items.map((s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [color.withOpacity(0.15), color.withOpacity(0.05)]),
+                gradient: LinearGradient(colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)]),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withOpacity(0.3)),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

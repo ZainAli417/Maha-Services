@@ -18,8 +18,9 @@ class ForgotPasswordProvider with ChangeNotifier {
   }
 
   Future<void> submitForgotPassword(BuildContext context) async {
+    final trimmedEmail = _email.trim();
     // 1. Input Validation
-    if (_email.isEmpty || !_email.contains('@')) {
+    if (trimmedEmail.isEmpty || !trimmedEmail.contains('@')) {
       // REPLACED: _showErrorFlushbar
       showErrorSnackBar(context, 'Please enter a valid email address.');
       return;
@@ -29,7 +30,7 @@ class ForgotPasswordProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _auth.sendPasswordResetEmail(email: _email);
+      await _auth.sendPasswordResetEmail(email: trimmedEmail);
       _showSuccessDialog(context); // You might want to update this to a Green SnackBar too!
     } on FirebaseAuthException catch (e) {
       // 2. Firebase Error Handling
@@ -154,7 +155,7 @@ class ForgotPasswordProvider with ChangeNotifier {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -206,7 +207,7 @@ class ForgotPasswordProvider with ChangeNotifier {
                   child: Container(
                     height: 80,
                     width: 80,
-                    color: Colors.white.withOpacity(0.1), // Bubbles
+                    color: Colors.white.withValues(alpha: 0.1), // Bubbles
                   ),
                 ),
               ),

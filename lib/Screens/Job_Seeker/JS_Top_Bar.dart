@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Job_Seeker/JS_Initials_provider.dart';
 import 'package:provider/provider.dart';
-import '../../Web_routes.dart';
 
 class JobSeekerSidebar extends StatefulWidget {
   final int activeIndex;
@@ -44,7 +43,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 8,
                   offset: const Offset(2, 0),
                 ),
@@ -383,12 +382,12 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF6366F1).withOpacity(0.08)
+              ? const Color(0xFF6366F1).withValues(alpha: 0.08)
               : (isHovered ? Colors.grey.shade50 : Colors.transparent),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isActive
-                ? const Color(0xFF6366F1).withOpacity(0.3)
+                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
                 : Colors.transparent,
             width: 1,
           ),
@@ -398,7 +397,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(8),
-            splashColor: const Color(0xFF6366F1).withOpacity(0.1),
+            splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
             highlightColor: Colors.transparent,
             hoverColor: Colors.transparent,
             child: Padding(
@@ -517,7 +516,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.1),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 24),

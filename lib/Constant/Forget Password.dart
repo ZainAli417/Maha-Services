@@ -15,7 +15,7 @@ class ForgotPasswordModal {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 350),
       pageBuilder: (ctx, animation, secondaryAnimation) {
         return const _ForgotPasswordDialogContent();
@@ -95,12 +95,12 @@ class _ForgotPasswordDialogContentState
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6366F1).withOpacity(0.08),
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.08),
                       blurRadius: 40,
                       offset: const Offset(0, 16),
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -137,7 +137,7 @@ class _ForgotPasswordDialogContentState
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.08),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -291,7 +291,7 @@ class _ForgotPasswordDialogContentState
 
           // Submit button
           Consumer<ForgotPasswordProvider>(
-            builder: (_, provider, __) {
+            builder: (_, provider, _) {
               return SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -301,7 +301,7 @@ class _ForgotPasswordDialogContentState
                     backgroundColor: const Color(0xFF6366F1),
                     foregroundColor: Colors.white,
                     disabledBackgroundColor:
-                        const Color(0xFF6366F1).withOpacity(0.6),
+                        const Color(0xFF6366F1).withValues(alpha: 0.6),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -376,7 +376,7 @@ class _ForgotPasswordDialogContentState
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

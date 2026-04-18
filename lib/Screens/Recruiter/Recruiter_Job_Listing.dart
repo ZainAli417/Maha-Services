@@ -239,13 +239,13 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).primaryColor,
-                Theme.of(context).primaryColor.withOpacity(0.8),
+                Theme.of(context).primaryColor.withValues(alpha: 0.8),
               ],
             ),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -284,7 +284,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
               backgroundColor: const Color(0xFF1E40AF),
               foregroundColor: Colors.white,
               elevation: 4,
-              shadowColor: const Color(0xFF1E40AF).withOpacity(0.4),
+              shadowColor: const Color(0xFF1E40AF).withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -321,7 +321,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                   border: Border.all(color: Color(0xff5C738A)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -371,7 +371,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.grey.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -581,7 +581,7 @@ class _FilterDropdown extends StatelessWidget {
               border: Border.all(color: Color(0xff5C738A)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -671,21 +671,21 @@ class _JobListItemState extends State<_JobListItem> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _isHovered
-                ? Theme.of(context).primaryColor.withOpacity(0.3)
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
                 : Colors.grey.shade200,
             width: _isHovered ? 2 : 1,
           ),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.15),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.08),
+                    color: Colors.grey.withValues(alpha: 0.08),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -735,7 +735,7 @@ class _JobListItemState extends State<_JobListItem> {
               color: isActive ? Colors.green.shade500 : Colors.red.shade500,
               boxShadow: [
                 BoxShadow(
-                  color: (isActive ? Colors.green : Colors.red).withOpacity(
+                  color: (isActive ? Colors.green : Colors.red).withValues(alpha: 
                     0.3,
                   ),
                   blurRadius: 4,
