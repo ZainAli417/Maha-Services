@@ -537,8 +537,9 @@ class _KpiGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       _KD(Icons.groups_rounded, 'Total Users', prov.totalUsers,
-          '${prov.totalJobSeekers} seekers · ${prov.totalRecruiters} recruiters',
+          '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters· ${prov.totalAdmins} Admin',
           _C.indigo, _C.indigoLt, onTap: () => onNavigate?.call('User Management')),
+
       _KD(Icons.work_rounded, 'Jobs Posted', prov.totalJobs,
           'Public listings', _C.teal, _C.tealLt, onTap: () => _showJobsPopup(context, prov)),
       _KD(Icons.inbox_rounded, 'Requests', prov.totalRequests,
