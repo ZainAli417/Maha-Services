@@ -483,7 +483,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Widget _buildContent(BuildContext context) {
     final isMobile = _isMobile;
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
+      backgroundColor: Colors.white,
       body: Consumer<ProfileProvider_NEW>(
         builder: (context, prov, _) {
           if (prov.isLoading) {
@@ -526,7 +526,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildTopBar() {
-    const Color kPrimaryBlue = Color(0xFF1E40AF);
+    const Color kPrimaryBlue = Color(0xFF6366F1);
     const Color kTextPrimary = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
     final isMobile = _isMobile;
@@ -547,7 +547,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 onPressed: () => _scaffoldKey.currentState?.openDrawer(),
               ),
             Container(
-              padding: EdgeInsets.all(isMobile ? 6 : 10),
+              padding: EdgeInsets.all(isMobile ? 8 : 10),
               decoration: BoxDecoration(
                 color: kPrimaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
@@ -558,7 +558,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 color: kPrimaryBlue,
               ),
             ),
-            SizedBox(width: isMobile ? 8 : 14),
+            SizedBox(width: isMobile ? 12 : 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,21 +567,20 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   Text(
                     'Profile',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 14 : 18,
+                      fontSize: isMobile ? 15 : 18,
                       fontWeight: FontWeight.w600,
                       color: kTextPrimary,
                       height: 1.2,
                     ),
                   ),
-                  if (!isMobile)
-                    Text(
-                      'One Click Profile Analyzer & CV Builder',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13,
-                        color: kTextSecondary,
-                        height: 1.2,
-                      ),
+                  Text(
+                    'One Click Profile Analyzer & CV Builder',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 11 : 13,
+                      color: kTextSecondary,
+                      height: 1.2,
                     ),
+                  ),
                 ],
               ),
             ),

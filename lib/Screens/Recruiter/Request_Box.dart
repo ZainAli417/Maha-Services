@@ -8,12 +8,12 @@ import 'R_Top_Bar.dart';
 
 // ─── Design tokens (single source of truth) ───────────────────────────────────
 class _T {
-  static const primary = Color(0xFF4F46E5);
+  static const primary = Color(0xFF6366F1);
   static const blue = Color(0xFF1E40AF);
-  static const textPri = Color(0xFF0D1117);
-  static const textSec = Color(0xFF57606A);
-  static const textTert = Color(0xFF8B949E);
-  static const bg = Color(0xFFF6F8FA);
+  static const textPri = Color(0xFF0F172A);
+  static const textSec = Color(0xFF64748B);
+  static const textTert = Color(0xFF94A3B8);
+  static const bg = Color(0xFFFAFAFA);
   static const white = Color(0xFFFFFFFF);
   static const border = Color(0xFFD0D7DE);
   static const success = Color(0xFF1A7F37);
@@ -150,7 +150,7 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
       isMobile: isMobile,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Color(0xFFF8FAFC),
+        backgroundColor: Color(0xFFFAFAFA),
         drawer: isMobile
             ? Drawer(child: RecruiterSidebar(activeIndex: 4, isDrawer: true))
             : null,

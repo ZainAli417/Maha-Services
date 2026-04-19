@@ -462,20 +462,18 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           SizedBox(height: sectionGap),
           _buildRoleSelector(p, isWide),
           SizedBox(height: sectionGap),
-          if (p.role == 'Recruiter') ...[
-            _buildEnhancedTextField(
-              controller: p.nameController,
-              label: 'Full Name',
-              hint: 'Enter your full name',
-              icon: Icons.person_outline_rounded,
-              isWide: isWide,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Name required';
-                return null;
-              },
-            ),
-            SizedBox(height: fieldGap),
-          ],
+          _buildEnhancedTextField(
+            controller: p.nameController,
+            label: 'Full Name',
+            hint: 'Enter your full name',
+            icon: Icons.person_outline_rounded,
+            isWide: isWide,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Name required';
+              return null;
+            },
+          ),
+          SizedBox(height: fieldGap),
           _buildEnhancedTextField(
             controller: p.emailController,
             label: 'Email Address',

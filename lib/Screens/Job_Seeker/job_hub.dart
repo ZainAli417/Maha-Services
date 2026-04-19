@@ -108,6 +108,7 @@ class _job_hubState extends State<job_hub>
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
         key: _scaffoldKey,
+        backgroundColor: Colors.white,
         drawer: isMobile
             ? Drawer(
                 child: JobSeekerSidebar(activeIndex: 3, isDrawer: true),
@@ -127,9 +128,9 @@ class _job_hubState extends State<job_hub>
                         SafeArea(
                           bottom: false,
                           child: Container(
-                            height: 50,
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            decoration: BoxDecoration(
+                            height: 60,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: const BoxDecoration(
                               color: Colors.white,
                             ),
                             child: Row(
@@ -144,10 +145,10 @@ class _job_hubState extends State<job_hub>
                                 Container(
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+                                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(7),
                                   ),
-                                  child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF1E40AF)),
+                                  child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF6366F1)),
                                 ),
                                 const SizedBox(width: 8),
                                 Text('Job Hub',
@@ -320,7 +321,7 @@ class _job_hubState extends State<job_hub>
     );
   }
   Widget _buildWelcomeSection() {
-    const Color kPrimaryBlue   = Color(0xFF1E40AF);
+    const Color kPrimaryBlue   = Color(0xFF6366F1);
     const Color kTextPrimary   = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
     const Color kBorderLight   = Color(0xFFE2E8F0);
@@ -352,7 +353,7 @@ class _job_hubState extends State<job_hub>
               color: kPrimaryBlue,
             ),
           ),
-          SizedBox(width: isMobile ? 10 : 14),
+          SizedBox(width: isMobile ? 12 : 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,22 +362,21 @@ class _job_hubState extends State<job_hub>
                 Text(
                   'Job Hub',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: titleSz,
-                    fontWeight: FontWeight.w600,
+                    fontSize: isMobile ? 15 : 16,
+                    fontWeight: FontWeight.w700,
                     color: kTextPrimary,
                     height: 1.2,
                   ),
                 ),
-                if (!isMobile)
-                  Text(
-                    'Explore Jobs and Be a part of your Dream Company',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: subSz,
-                      color: kTextSecondary,
-                      height: 1.2,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                Text(
+                  'Explore Jobs and Be a part of your Dream Company',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isMobile ? 11 : 12,
+                    color: kTextSecondary,
+                    height: 1.2,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),

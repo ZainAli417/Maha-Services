@@ -19,9 +19,7 @@ String parseDocxBytes(Uint8List bytes) {
   final contentObj = archiveFile.content;
 
   // normalize content bytes
-  final List<int> contentBytes = (contentObj is List<int>)
-      ? contentObj
-      : List<int>.from(contentObj as Iterable);
+  final List<int> contentBytes = contentObj as List<int>;
 
   if (contentBytes.isEmpty) return '';
 

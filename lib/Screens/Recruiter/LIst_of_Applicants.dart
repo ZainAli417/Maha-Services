@@ -26,14 +26,14 @@ class SmoothScrollBehavior extends MaterialScrollBehavior {
 }
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
-const _cPrimary  = Color(0xFF1E3A5F);
-const _cAccent   = Color(0xFF3B82F6);
+const _cPrimary  = Color(0xFF6366F1);
+const _cAccent   = Color(0xFF818CF8);
 const _cPurple   = Color(0xFF8B5CF6);
 const _cGreen    = Color(0xFF10B981);
 const _cAmber    = Color(0xFFF59E0B);
 const _cRed      = Color(0xFFEF4444);
 const _cSlate    = Color(0xFF64748B);
-const _cSurface  = Color(0xFFF8FAFC);
+const _cSurface  = Color(0xFFFAFAFA);
 const _cBorder   = Color(0xFFE2E8F0);
 const _cTxt      = Color(0xFF0F172A);
 const _cTxtSec   = Color(0xFF64748B);
@@ -80,7 +80,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   // ─── Email masking ──────────────────────────────────────────────────────
   String _maskEmail(String email) {
     final parts = email.split('@');
-    if (parts.length != 2) return '****@****.com';
+    if (parts.length != 2) {
+      return '****@****.com';
+    }
     final u = parts[0];
     return '${u.length > 2 ? u.substring(0, 2) : '**'}****@${parts[1]}';
   }
@@ -138,7 +140,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     int ok = 0, skip = 0;
     for (final id in _selected) {
       final a = p.applicants.firstWhere((x) => x.userId == id);
-      if (a.status.toLowerCase() == 'shortlist') { skip++; continue; }
+      if (a.status.toLowerCase() == 'shortlist') {
+        skip++;
+        continue;
+      }
       await p.updateApplicationStatus(id, a.docId, 'shortlist');
       ok++;
     }
@@ -155,7 +160,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   // ─── Auto shortlist ─────────────────────────────────────────────────────
   Future<void> _autoShortlist(ApplicantsProvider p) async {
     final eligible = p.applicants.where((a) {
-      if (a.status.toLowerCase() == 'shortlist') return false;
+      if (a.status.toLowerCase() == 'shortlist') {
+        return false;
+      }
       final d = a.matchScore;
       return (d is Map) && ((d['overallScore'] as int? ?? 0) > 65);
     }).map((a) => a.userId).toList();
@@ -195,7 +202,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         ],
       ),
     );
-    if (ok != true) return;
+    if (ok != true) {
+      return;
+    }
 
     int count = 0;
     for (final id in eligible) {
@@ -212,16 +221,28 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
   // ─── Score helpers ──────────────────────────────────────────────────────
   Color _scoreColor(int s) {
-    if (s >= 85) return _cGreen;
-    if (s >= 70) return _cAccent;
-    if (s >= 50) return _cAmber;
+    if (s >= 85) {
+      return _cGreen;
+    }
+    if (s >= 70) {
+      return _cAccent;
+    }
+    if (s >= 50) {
+      return _cAmber;
+    }
     return _cRed;
   }
 
   String _scoreLabel(int s) {
-    if (s >= 85) return 'Excellent';
-    if (s >= 70) return 'Good';
-    if (s >= 50) return 'Medium';
+    if (s >= 85) {
+      return 'Excellent';
+    }
+    if (s >= 70) {
+      return 'Good';
+    }
+    if (s >= 50) {
+      return 'Medium';
+    }
     return 'Low';
   }
 
@@ -230,7 +251,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: Color(0xFFFAFAFA),
       body: Consumer<ApplicantsProvider>(
         builder: (ctx, provider, _) {
           if (provider.isLoading) {
@@ -284,7 +305,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
   Widget _buildTable(ApplicantsProvider p, bool isMobile) {
     final list = _filtered(p);
-    if (list.isEmpty) return _EmptyResults(onClear: p.clearAllFilters);
+    if (list.isEmpty) {
+      return _EmptyResults(onClear: p.clearAllFilters);
+    }
 
     // ── Shared search bar + list, layout differs per breakpoint ──────────────
     return Column(
@@ -945,7 +968,7 @@ class _Header extends StatelessWidget {
         isMobile ? 12 : 16,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
+        color: Color(0xFFFAFAFA),
       ),
       child: isMobile ? _mobileHeader(context) : _desktopHeader(context),
     );

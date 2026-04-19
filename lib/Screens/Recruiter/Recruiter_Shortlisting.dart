@@ -12,12 +12,12 @@ import 'View_Shortlisted.dart';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 class _T {
-  static const primary = Color(0xFF2563EB);
-  static const primaryLight = Color(0xFFEFF6FF);
-  static const textPri = Color(0xFF0D1117);
-  static const textSec = Color(0xFF57606A);
-  static const textTert = Color(0xFF8B949E);
-  static const bg = Color(0xFFF8FAFC);
+  static const primary = Color(0xFF6366F1);
+  static const primaryLight = Color(0xFFEEF2FF);
+  static const textPri = Color(0xFF0F172A);
+  static const textSec = Color(0xFF64748B);
+  static const textTert = Color(0xFF94A3B8);
+  static const bg = Color(0xFFFAFAFA);
   static const white = Color(0xFFFFFFFF);
   static const border = Color(0xFFD0D7DE);
   static const success = Color(0xFF1A7F37);
@@ -99,10 +99,11 @@ class _ShortlistingState extends State<Shortlisting>
         final _Layout layout;
         if (w < 600) {
           layout = _Layout.mobile;
-        } else if (w < 960)
+        } else if (w < 960) {
           layout = _Layout.tablet;
-        else
+        } else {
           layout = _Layout.desktop;
+        }
 
         return _LD(
           layout: layout,

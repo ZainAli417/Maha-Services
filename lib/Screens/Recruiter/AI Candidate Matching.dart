@@ -130,7 +130,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
@@ -215,12 +215,12 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                  colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -246,7 +246,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FC),
+        color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
@@ -310,7 +310,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 decoration: BoxDecoration(
                   gradient: isActive
                       ? const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+                    colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
                   )
                       : null,
                   color: isActive ? null : const Color(0xFFF1F5F9),
@@ -318,7 +318,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                   boxShadow: isActive
                       ? [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -336,7 +336,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 step['label'] as String,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
-                  color: isActive ? const Color(0xFF8B5CF6) : const Color(0xFF94A3B8),
+                  color: isActive ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -360,7 +360,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         key: ValueKey<String>(_currentStatus),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: const Color(0xFFE2E8F0),
@@ -375,7 +375,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF8B5CF6)),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF6366F1)),
               ),
             ),
             const SizedBox(width: 10),
@@ -495,7 +495,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6),
+                  backgroundColor: const Color(0xFF6366F1),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   elevation: 0,

@@ -30,12 +30,19 @@ class RoleService {
 
   static Future<Map<String, dynamic>> fetchUserData(String uid) async {
     try {
-      // 1. Run parallel checks
-      // Use sequential fetching for better stability on startup
-      final jsDoc = await _firestore.collection('Job_Seeker').doc(uid).get();
-      final recDoc = await _firestore.collection('recruiter').doc(uid).get();
-      final adminDoc = await _firestore.collection('admin').doc(uid).get();
-      final userDoc = await _firestore.collection('users').doc(uid).get();
+      // OPTIMIZATION: Run all 4 collection lookups in parallel instead of
+      // sequentially — cuts latency by ~75% on cold starts.
+      final results = await Future.wait([
+        _firestore.collection('Job_Seeker').doc(uid).get(),
+        _firestore.collection('recruiter').doc(uid).get(),
+        _firestore.collection('admin').doc(uid).get(),
+        _firestore.collection('users').doc(uid).get(),
+      ]);
+
+      final jsDoc    = results[0];
+      final recDoc   = results[1];
+      final adminDoc = results[2];
+      final userDoc  = results[3];
 
       String? role;
       bool isNew = false;
@@ -49,9 +56,11 @@ class RoleService {
         role = 'admin';
       }
 
+      String? status;
       // 4. Resolve isNew and Backup Role from 'users' collection
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
+        status = (userData['account_status'] ?? 'active').toString().toLowerCase().trim();
 
         // Resolve isNew status
         final rawIsNew = userData['isNew'];
@@ -67,11 +76,11 @@ class RoleService {
         role ??= _normalizeRole(userData['role']?.toString());
       }
 
-      debugPrint('✅ RoleService: UID=$uid, Role=$role, isNew=$isNew');
-      return {'role': role, 'isNew': isNew};
+      debugPrint('✅ RoleService: UID=$uid, Role=$role, isNew=$isNew, Status=$status');
+      return {'role': role, 'isNew': isNew, 'status': status};
     } catch (e) {
       debugPrint('❌ RoleService Error: $e');
-      return {'role': null, 'isNew': true};
+      return {'role': null, 'isNew': true, 'status': 'error'};
     }
   }
 
@@ -79,7 +88,7 @@ class RoleService {
     if (role == null) return null;
     final r = role.toLowerCase().trim();
     if (['recruiter', 'employer'].contains(r)) return 'recruiter';
-    if (['Job Seeker', 'jobseeker', 'candidate'].contains(r)) return 'Job Seeker';
+    if (['job seeker', 'jobseeker', 'candidate'].contains(r)) return 'Job Seeker';
     if (['admin', 'superadmin'].contains(r)) return 'admin';
     return null;
   }
@@ -120,18 +129,29 @@ class AuthNotifier extends ChangeNotifier {
       isInitialized = true;
       _isFetching = false;
     } else {
-      user = newUser;
       // Add a small delay for Firebase state to stabilize
       await Future.delayed(const Duration(milliseconds: 300));
       debugPrint('🔄 Fetching role data for: ${newUser.uid}');
 
       final data = await RoleService.fetchUserData(newUser.uid);
-      role = data['role'];
-      isNewUser = data['isNew'];
-      isInitialized = true;
-      _isFetching = false;
+      final status = data['status']?.toString().toLowerCase() ?? 'active';
 
-      debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
+      if (status != 'active' && status != 'error') {
+        debugPrint('🚫 Suspended account detected in AuthNotifier, signing out...');
+        user = null;
+        role = null;
+        isNewUser = false;
+        isInitialized = true;
+        _isFetching = false;
+        await _auth.signOut();
+      } else {
+        user = newUser;
+        role = data['role'];
+        isNewUser = data['isNew'];
+        isInitialized = true;
+        _isFetching = false;
+        debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
+      }
     }
     notifyListeners();
   }

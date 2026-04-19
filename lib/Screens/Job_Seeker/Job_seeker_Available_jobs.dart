@@ -302,7 +302,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF6366F1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -346,7 +346,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF6366F1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text('$_activeFiltersCount',
@@ -392,8 +392,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       icon: const Icon(Icons.clear_all, size: 18),
                       label: const Text('Clear All Filters'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
+                        foregroundColor: const Color(0xFF6366F1),
+                        side: const BorderSide(color: Color(0xFF6366F1)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -493,7 +493,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     icon: Badge(
                       isLabelVisible: _activeFiltersCount > 0,
                       label: Text('$_activeFiltersCount'),
-                      child: const Icon(Icons.tune, color: Color(0xFF3B82F6), size: 20),
+                      child: const Icon(Icons.tune, color: Color(0xFF6366F1), size: 20),
                     ),
                     tooltip: 'Show Filters',
                     padding: EdgeInsets.zero,
@@ -737,10 +737,10 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               ),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFF3B82F6),
+                  activeTrackColor: const Color(0xFF6366F1),
                   inactiveTrackColor: const Color(0xFFE5E7EB),
-                  thumbColor: const Color(0xFF3B82F6),
-                  overlayColor: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  thumbColor: const Color(0xFF6366F1),
+                  overlayColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
                   trackHeight: 4,
                   thumbShape:
                   const RoundSliderThumbShape(enabledThumbRadius: 8),
@@ -795,11 +795,11 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                  color: isSelected ? const Color(0xFF6366F1) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF6366F1)
                           : const Color(0xFFD1D5DB)),
                 ),
                 child: Text(

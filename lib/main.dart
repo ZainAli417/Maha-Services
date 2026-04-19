@@ -1,5 +1,4 @@
-// lib/main2.dart
-import 'package:cloud_firestore/cloud_firestore.dart';
+// lib/main.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,131 +28,14 @@ import 'firebase_options.dart';
 import 'login_provider.dart';
 
 /// ---------------------------
-/// Top-level test dataset list
-/// (single dataset as you requested)
-/// ---------------------------
-final List<Map<String, dynamic>> _airforceProfiles = [
-  // PROFILE 9
-  {
-    "certifications": [
-      {
-        "organization": "PAF Intelligence School",
-        "name": "Military Intelligence Fundamentals",
-      },
-      {"organization": "AASS", "name": "Introduction to Cybersecurity"},
-    ],
-    "publications": [
-      "Air Intelligence Collection Techniques - Defence Insights",
-    ],
-    "educationalProfile": [
-      {
-        "duration": "2001-2005",
-        "majorSubjects": "BS (Security & Strategic Studies)",
-        "institutionName": "National Defence University (NDU)",
-        "marksOrCgpa": "3.50/4",
-      },
-    ],
-    "professionalExperience": [
-      {
-        "location": "PAF Intelligence Directorate, Islamabad",
-        "aircraftType": "N/A",
-        "organization": "Pakistan Air Force",
-        "flightHours": "2000",
-        "startDate": "Sep 2006",
-        "rank": "Wing Commander",
-        "duration": "Sep 2006 - Present",
-        "duties":
-            "Intelligence analysis, target assessment, strategic reporting",
-        "unit": "Intelligence Wing",
-        "command": "Headquarters",
-        "endDate": "",
-        "role": "Intelligence Officer",
-      },
-    ],
-    "experienceDocuments": ["https://example.com/docs/intel_report_zafar.pdf"],
-    "professionalProfile": {
-      "status": "active",
-      "retirementDate": "2026-01-17",
-      "summary":
-          "Intelligence officer specializing in air operations and targeting.",
-      "expectedRetirementDate": "",
-    },
-    "awards": ["Excellence in Intelligence Award"],
-    "personalProfile": {
-      "profilePicUrl": "https://example.com/profile/zafar.png",
-      "nationality": "Pakistani",
-      "contactNumber": "+92-3000000009",
-      "name": "Zafar Iqbal",
-      "createdAt": "2026-01-18T16:06:37Z",
-      "socialLinks": ["https://www.linkedin.com/in/zafariqbal"],
-      "secondary_email": "zafar.alt@mail.com",
-      "skills": ["Intelligence Analysis", "OSINT", "Targeting"],
-      "email": "zafar.iqbal@paf.gov.pk",
-      "summary":
-          "Seasoned intelligence analyst with focus on air campaign support.",
-      "dob": "1980-10-02",
-      "objectives": "Improve intel fusion capabilities.",
-    },
-    "createdAt": TimeOfDay.fromDateTime(DateTime.now()).toString(),
-    "references": ["Air Commodore Tariq — Intelligence"],
-  },
-
-];
-
-/// ---------------------------
-/// Utility: pick profile by version (1-based)
-/// ---------------------------
-Map<String, dynamic> generateAirforceProfile(int version) {
-  final index = (version - 1) % _airforceProfiles.length;
-  return Map<String, dynamic>.from(_airforceProfiles[index]);
-}
-
-Future<void> triggerAirforceTestData(String uid, {int version = 1}) async {
-  try {
-    final data = generateAirforceProfile(version);
-
-    // Ensure dates inside nested maps are strings (they already are above).
-    // Write to Firestore (merge=true so we don't wipe other fields).
-    await FirebaseFirestore.instance.collection('Job_Seeker').doc(uid).set({
-      'user_data': data,
-      'testInjectedAt': DateTime.now().toIso8601String(),
-    }, SetOptions(merge: true));
-
-    // Debug log
-    debugPrint(
-      '✅ Injected Airforce test profile version $version into job_seeker/$uid',
-    );
-  } catch (e, st) {
-    debugPrint('❌ Failed to inject test data: $e\n$st');
-  }
-}
-
-Future<void> markAllUsersNotNew() async {
-  try {
-    final collectionRef = FirebaseFirestore.instance.collection('users');
-    final snapshot = await collectionRef.get();
-
-    for (final doc in snapshot.docs) {
-      await doc.reference.set({'isNew': 'no'}, SetOptions(merge: true));
-    }
-
-    debugPrint("✅ All users marked as isNew = no");
-  } catch (e) {
-    debugPrint("❌ Error updating users: $e");
-  }
-}
-
-/// ---------------------------
-/// Main + App (your providers & JobPortalApp)
+/// Main + App (providers & JobPortalApp)
 /// ---------------------------
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Call trigger here (manual UID you provided). This will run once at app start.
-  // Replace the UID if you want to test with another user.
-  // await triggerAirforceTestData("kXrYufRrFFbQePipdFeYylZjUEN2", version: 1);
-  //await markAllUsersNotNew();
+  // Load environment variables before anything else
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // If targeting web, make pretty URLs
   if (kIsWeb) {
@@ -274,6 +156,7 @@ class RoleProvider extends ChangeNotifier {
   }
 }
 
+/// Environment configuration — reads from .env at runtime
 class Env {
-  static const String backendUrl = 'https://backend.taasgrid.com';
+  static String get backendUrl =>'https://backend.taasgrid.com';
 }

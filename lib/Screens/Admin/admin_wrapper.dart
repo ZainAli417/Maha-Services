@@ -56,7 +56,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 // Mobile top bar — engaging header with icon + subtitle
                 if (isMobile) _buildMobileTopBar(),
                 Expanded(
-                  child: Container(color: Colors.white, child: _buildContent()),
+                  child: Container(color: const Color(0xFFFAFAFA), child: _buildContent()),
                 ),
               ],
             ),
@@ -74,7 +74,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Color(0xFFF8FAFC),
+        color: Color(0xFFFAFAFA),
       ),
       child: SafeArea(
         bottom: false,

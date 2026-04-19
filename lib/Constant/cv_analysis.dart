@@ -14,12 +14,12 @@ import '../Screens/Job_Seeker/job_seeker_provider.dart';
 import 'cv_analysis_provider.dart';
 
 // ─── Colours ────────────────────────────────────────────────────────────────
-const Color kPrimaryBlue    = Color(0xFF1E40AF);
-const Color kAccentBlue     = Color(0xFF3B82F6);
+const Color kPrimaryBlue    = Color(0xFF6366F1);
+const Color kAccentBlue     = Color(0xFF6366F1);
 const Color kTextPrimary    = Color(0xFF0F172A);
 const Color kTextSecondary  = Color(0xFF475569);
 const Color kBorderLight    = Color(0xFFE2E8F0);
-const Color kBackgroundGray = Color(0xFFF8FAFC);
+const Color kBackgroundGray = Color(0xFFFAFAFA);
 const Color kSuccessGreen   = Color(0xFF059669);
 const Color kWarningOrange  = Color(0xFFEA580C);
 const Color kErrorRed       = Color(0xFFDC2626);
@@ -243,56 +243,68 @@ class _CompactHeader extends StatelessWidget {
     final hPad = isMobile ? 10.0 : 20.0;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 10 : 14),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 8 : 12),
       decoration: const BoxDecoration(
         color: Colors.white,
       ),
-      child: Row(
-        children: [
-          if (isMobile)
-            SafeArea(
-              bottom: false,
-              child: Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.menu_rounded, size: 22),
-                      onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+      child: SafeArea(
+        bottom: false,
+        top: isMobile,
+        child: Row(
+          children: [
+            if (isMobile) ...[
+              IconButton(
+                icon: const Icon(Icons.menu_rounded, size: 22),
+                onPressed: () => scaffoldKey.currentState?.openDrawer(),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              ),
+              const SizedBox(width: 4),
+            ],
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: kPrimaryBlue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.document_scanner_outlined, size: 20, color: kPrimaryBlue),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'CV Analyzer',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 15 : 16,
+                      fontWeight: FontWeight.w700,
+                      color: kTextPrimary,
                     ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: const Icon(Icons.document_scanner_outlined, size: 16, color: Color(0xFF1E40AF)),
+                  ),
+                  Text(
+                    'ATS Analysis & Scoring',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 11 : 12,
+                      color: kTextSecondary,
                     ),
-                    const SizedBox(width: 8),
-                    Text('CV Analyzer',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          if (provider.isLoading)
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
-                strokeWidth: 2,
+            if (provider.isLoading)
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
+                  strokeWidth: 2,
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

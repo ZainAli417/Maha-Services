@@ -1,21 +1,48 @@
-# example netlify.toml
+# Netlify configuration for Maha Services Flutter Web App
 [build]
-  command = "# no build command"
+  command = "# no build command — pre-built artifacts deployed"
   functions = "netlify/functions"
   publish = "build/web"
 
-  ## Uncomment to use this redirect for Single Page Applications like create-react-app.
-  ## Not needed for static site generators.
-  #[[redirects]]
-  #  from = "/*"
-  #  to = "/index.html"
-  #  status = 200
+# ── SPA Routing ──
+# All deep-links must resolve to index.html so GoRouter handles them client-side
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
-  ## (optional) Settings for Netlify Dev
-  ## https://github.com/netlify/cli/blob/main/docs/netlify-dev.md#project-detection
-  #[dev]
-  #  command = "yarn start" # Command to start your dev server
-  #  port = 3000 # Port that the dev server will be listening on
-  #  publish = "dist" # Folder with the static content for _redirect file
+# ── Performance Headers ──
+# Aggressive caching for hashed/immutable static assets
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
-  ## more info on configuring this file: https://ntl.fyi/file-based-build-config
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/wasm"
+
+# Image assets — cache for 1 day with stale-while-revalidate
+[[headers]]
+  for = "/*.@(png|jpg|jpeg|gif|svg|webp|ico)"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=3600"
+
+# ── COOP / COEP for Flutter WASM + SharedArrayBuffer ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "credentialless"

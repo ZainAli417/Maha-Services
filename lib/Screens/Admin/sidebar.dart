@@ -24,7 +24,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
     return Container(
       width: 260,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFAFAFA),
         border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(2, 0)),
@@ -218,7 +218,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF4D5FFC), Color(0xFF170BF5)],
+                    colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),

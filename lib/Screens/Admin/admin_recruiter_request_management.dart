@@ -17,11 +17,11 @@ class _BP {
 //  Palette
 // ─────────────────────────────────────────────────────────────────────────────
 class _C {
-  static const bg = Color(0xFFF8FAFC);
+  static const bg = Color(0xFFFAFAFA);
   static const surface = Color(0xFFFFFFFF);
   static const border = Color(0xFFE8EDF5);
   static const divider = Color(0xFFF0F3F9);
-  static const primary = Color(0xFF4F46E5);
+  static const primary = Color(0xFF6366F1);
   static const primaryLt = Color(0xFFEEF2FF);
   static const success = Color(0xFF059669);
   static const successLt = Color(0xFFECFDF5);

@@ -850,8 +850,11 @@ class ProfileProvider_NEW extends ChangeNotifier {
       final uploadedAt = copied['uploadedAt'];
       if (uploadedAt is DateTime) {
         copied['uploadedAt'] = Timestamp.fromDate(uploadedAt);
-      } else if (uploadedAt is int) copied['uploadedAt'] = Timestamp.fromMillisecondsSinceEpoch(uploadedAt);
-      else if (uploadedAt is! Timestamp) copied['uploadedAt'] = Timestamp.now();
+      } else if (uploadedAt is int) {
+        copied['uploadedAt'] = Timestamp.fromMillisecondsSinceEpoch(uploadedAt);
+      } else if (uploadedAt is! Timestamp) {
+        copied['uploadedAt'] = Timestamp.now();
+      }
       return copied;
     }).toList();
   }

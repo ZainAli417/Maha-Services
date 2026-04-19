@@ -10,11 +10,11 @@ import 'admin_login_provider.dart';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const _ink      = Color(0xFF0D1B2A); // near-black text
-const _indigo   = Color(0xFF3B5BDB); // primary accent
+const _indigo   = Color(0xFF6366F1); // primary accent
 const _indigoLt = Color(0xFF4C6EF5); // lighter shade
 const _slate    = Color(0xFF64748B); // muted text
 const _border   = Color(0xFFDDE1E7);
-const _fill     = Color(0xFFF7F9FC);
+const _fill     = Color(0xFFFAFAFA);
 const _white    = Color(0xFFFFFFFF);
 const _errBg    = Color(0xFFFFF1F0);
 const _errBorder= Color(0xFFFFCDD2);
@@ -57,7 +57,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
     final isWide  = w >= 1024;
 
     return Scaffold(
-      backgroundColor: _white,
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Stack(
         children: [
           // ── Static decorative background — zero repaint cost ─────────

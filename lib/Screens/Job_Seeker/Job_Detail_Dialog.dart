@@ -14,8 +14,8 @@ class JobDetailModal extends StatelessWidget {
   static const _slate500   = Color(0xFF64748B);
   static const _slate400   = Color(0xFF94A3B8);
   static const _slate200   = Color(0xFFE2E8F0);
-  static const _slate50    = Color(0xFFF8FAFC);
-  static const _indigo     = Color(0xFF4F46E5);
+  static const _slate50    = Color(0xFFFAFAFA);
+  static const _indigo     = Color(0xFF6366F1);
   static const _indigoSoft = Color(0xFFEEF2FF);
   static const _emerald    = Color(0xFF059669);
   static const _emeraldBg  = Color(0xFFECFDF5);
@@ -218,7 +218,7 @@ class JobDetailModal extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft, end: Alignment.bottomRight,
-                colors: [Color(0xFFF8FAFF), Color(0xFFF1F5F9)],
+                colors: [Color(0xFFFAFAFA), Color(0xFFF1F5F9)],
               ),
               borderRadius: isMobile
                   ? BorderRadius.zero

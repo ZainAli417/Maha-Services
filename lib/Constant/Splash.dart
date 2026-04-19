@@ -120,7 +120,7 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     final outerH = isMobile ? 12.0 : (isTablet ? 30.0 : 50.0);
 
     return Scaffold(
-      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.transparent,
+      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.white,
       body: Stack(
         children: [
           // Animated grid background

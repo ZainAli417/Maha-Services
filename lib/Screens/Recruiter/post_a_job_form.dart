@@ -11,9 +11,9 @@ import '../../Widgets/quill_editor.dart';
 import '../../Constant/recruiter_AI.dart';
 
 // ─── Colors (mirrors Dashboard_Recruiter) ────────────────────────────────────
-const Color _primary = Color(0xFF1E3A5F);
-const Color _accent = Color(0xFF3B82F6);
-const Color _background = Color(0xFFF8FAFC);
+const Color _primary = Color(0xFF6366F1);
+const Color _accent = Color(0xFF8B5CF6);
+const Color _background = Color(0xFFFAFAFA);
 const Color _surface = Color(0xFFFFFFFF);
 const Color _textDark = Color(0xFF0F172A);
 const Color _textMid = Color(0xFF64748B);
@@ -229,13 +229,13 @@ class _PostJobScreenState extends State<PostJobScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
               Icons.flight_takeoff_outlined,
               size: 20,
-              color: Color(0xFF1E40AF),
+              color: Color(0xFF6366F1),
             ),
           ),
           const SizedBox(width: 10),
@@ -326,7 +326,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           ),
           _field(
             label: 'Air Force Unit / Base',
-            initial: provider.tempCompany ?? '',
+            initial: provider.tempCompany,
             onChange: provider.updateTempCompany,
             validator: (v) => v!.trim().isEmpty ? 'Required' : null,
             icon: Icons.location_city_rounded,
@@ -338,14 +338,14 @@ class _PostJobScreenState extends State<PostJobScreen>
         _buildTwoCol(
           _dropdown(
             label: 'Department / Squadron',
-            value: provider.tempDepartment ?? _departmentOpts.first,
+            value: provider.tempDepartment,
             items: _departmentOpts,
             onChange: (v) => provider.updateTempDepartment(v!),
             icon: Icons.group_work_outlined,
           ),
           _dropdown(
             label: 'Compensation Type',
-            value: provider.tempSalaryType ?? _salaryTypeOpts.first,
+            value: provider.tempSalaryType,
             items: _salaryTypeOpts,
             onChange: (v) => provider.updateTempSalaryType(v!),
             icon: Icons.payments_outlined,
@@ -364,7 +364,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           ),
           _field(
             label: 'Additional Pay Details',
-            initial: provider.tempPayDetails ?? '',
+            initial: provider.tempPayDetails?? '',
             onChange: provider.updateTempPayDetails,
             icon: Icons.info_outline_rounded,
             hint: 'Hazard pay, flight pay…',
@@ -411,14 +411,14 @@ class _PostJobScreenState extends State<PostJobScreen>
         _buildTwoCol(
           _dropdown(
             label: 'Rank Required',
-            value: provider.tempNature ?? _rankOptions.first,
+            value: provider.tempNature,
             items: _rankOptions,
             onChange: (v) => provider.updateTempNature(v!),
             icon: Icons.stars_rounded,
           ),
           _dropdown(
             label: 'Security Clearance',
-            value: provider.tempExperience ?? _clearanceOpts.first,
+            value: provider.tempExperience,
             items: _clearanceOpts,
             onChange: (v) => provider.updateTempExperience(v!),
             icon: Icons.verified_user_rounded,
@@ -428,7 +428,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         _buildTwoCol(
           _field(
             label: 'Years of Service',
-            initial: provider.tempPay ?? '',
+            initial: provider.tempPay,
             onChange: provider.updateTempPay,
             validator: (v) => v!.trim().isEmpty ? 'Required' : null,
             icon: Icons.timeline_rounded,
@@ -437,7 +437,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           ),
           _field(
             label: 'Duty Location',
-            initial: provider.tempLocation ?? '',
+            initial: provider.tempLocation,
             onChange: provider.updateTempLocation,
             validator: (v) => v!.trim().isEmpty ? 'Required' : null,
             icon: Icons.location_on_outlined,
@@ -453,10 +453,12 @@ class _PostJobScreenState extends State<PostJobScreen>
           _datePicker(provider),
           _field(
             label: 'Contact Email',
-            initial: provider.tempContactEmail ?? '',
+            initial: provider.tempContactEmail,
             onChange: provider.updateTempContactEmail,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Required';
+              if (v == null || v.trim().isEmpty) {
+                return 'Required';
+              }
               if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
                 return 'Invalid email';
               }
@@ -534,7 +536,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Air Force Unit / Base',
-          initial: provider.tempCompany ?? '',
+          initial: provider.tempCompany,
           onChange: provider.updateTempCompany,
           validator: (v) => v!.trim().isEmpty ? 'Required' : null,
           icon: Icons.location_city_rounded,
@@ -544,7 +546,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _dropdown(
           label: 'Department / Squadron',
-          value: provider.tempDepartment ?? _departmentOpts.first,
+          value: provider.tempDepartment,
           items: _departmentOpts,
           onChange: (v) => provider.updateTempDepartment(v!),
           icon: Icons.group_work_outlined,
@@ -552,7 +554,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _dropdown(
           label: 'Compensation Type',
-          value: provider.tempSalaryType ?? _salaryTypeOpts.first,
+          value: provider.tempSalaryType,
           items: _salaryTypeOpts,
           onChange: (v) => provider.updateTempSalaryType(v!),
           icon: Icons.payments_outlined,
@@ -560,7 +562,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Salary Range',
-          initial: provider.tempSalary ?? '',
+          initial: provider.tempSalary?? '',
           onChange: provider.updateTempSalary,
           validator: (v) => v!.trim().isEmpty ? 'Required' : null,
           icon: Icons.monetization_on_outlined,
@@ -570,7 +572,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Additional Pay Details',
-          initial: provider.tempPayDetails ?? '',
+          initial: provider.tempPayDetails?? '',
           onChange: provider.updateTempPayDetails,
           icon: Icons.info_outline_rounded,
           hint: 'Hazard pay, flight pay…',
@@ -615,7 +617,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _dropdown(
           label: 'Rank Required',
-          value: provider.tempNature ?? _rankOptions.first,
+          value: provider.tempNature,
           items: _rankOptions,
           onChange: (v) => provider.updateTempNature(v!),
           icon: Icons.stars_rounded,
@@ -623,7 +625,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _dropdown(
           label: 'Security Clearance',
-          value: provider.tempExperience ?? _clearanceOpts.first,
+          value: provider.tempExperience,
           items: _clearanceOpts,
           onChange: (v) => provider.updateTempExperience(v!),
           icon: Icons.verified_user_rounded,
@@ -631,7 +633,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Years of Service',
-          initial: provider.tempPay ?? '',
+          initial: provider.tempPay,
           onChange: provider.updateTempPay,
           validator: (v) => v!.trim().isEmpty ? 'Required' : null,
           icon: Icons.timeline_rounded,
@@ -641,7 +643,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Duty Location',
-          initial: provider.tempLocation ?? '',
+          initial: provider.tempLocation,
           onChange: provider.updateTempLocation,
           validator: (v) => v!.trim().isEmpty ? 'Required' : null,
           icon: Icons.location_on_outlined,
@@ -656,10 +658,12 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Contact Email',
-          initial: provider.tempContactEmail ?? '',
+          initial: provider.tempContactEmail,
           onChange: provider.updateTempContactEmail,
           validator: (v) {
-            if (v == null || v.trim().isEmpty) return 'Required';
+            if (v == null || v.trim().isEmpty) {
+              return 'Required';
+            }
             if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
               return 'Invalid email';
             }
@@ -1237,13 +1241,13 @@ class _PostJobScreenState extends State<PostJobScreen>
               ? null
               : () async {
                   FocusScope.of(context).unfocus();
-                  if ((provider.tempDepartment ?? '').isEmpty) {
+                  if (provider.tempDepartment.isEmpty) {
                     provider.updateTempDepartment(_departmentOpts.first);
                   }
-                  if ((provider.tempNature ?? '').isEmpty) {
+                  if (provider.tempNature.isEmpty) {
                     provider.updateTempNature(_rankOptions.first);
                   }
-                  if ((provider.tempExperience ?? '').isEmpty) {
+                  if (provider.tempExperience.isEmpty) {
                     provider.updateTempExperience(_clearanceOpts.first);
                   }
                   if ((provider.tempSalaryType ?? '').isEmpty) {
@@ -1251,7 +1255,9 @@ class _PostJobScreenState extends State<PostJobScreen>
                   }
                   if (_formKey.currentState!.validate()) {
                     final err = await provider.addJob();
-                    if (!context.mounted) return;
+                    if (!context.mounted) {
+                      return;
+                    }
                     if (err != null) {
                       _snack(context, err, isError: true);
                     } else {
@@ -1326,7 +1332,9 @@ class _PostJobScreenState extends State<PostJobScreen>
 
   // ─── DATE FORMAT ──────────────────────────────────────────────────────────
   String _fmtDate(String iso) {
-    if (iso.isEmpty) return '';
+    if (iso.isEmpty) {
+      return '';
+    }
     try {
       return DateFormat.yMMMMd().format(DateTime.parse(iso));
     } catch (_) {

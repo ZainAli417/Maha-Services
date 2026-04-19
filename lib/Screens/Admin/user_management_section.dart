@@ -17,6 +17,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
   String _searchQuery = '';
   String _selectedRoleFilter = 'all';
   String _selectedStatusFilter = 'all';
+  int _currentPage = 1;
+  static const int _itemsPerPage = 10;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -98,7 +100,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             child: SlideTransition(
               position: _slideAnimation,
               child: Container(
-                color: const Color(0xFFF8FAFC),
+                color: const Color(0xFFFAFAFA),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,7 +125,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     return Container(
       height: 72,
       decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
+        color: Color(0xFFFAFAFA),
       ),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
       child: Row(
@@ -187,7 +189,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             onPressed: () => _showAddUserDialog(context, provider),
             icon: const Icon(Icons.person_add_rounded, size: 20),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
@@ -207,22 +209,22 @@ class _UserManagementSectionState extends State<UserManagementSection>
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4F46E5),
+            backgroundColor: const Color(0xFF6366F1),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             elevation: 0,
-            shadowColor: const Color(0xFF4F46E5).withValues(alpha: 0.4),
+            shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
           ).copyWith(
             elevation: WidgetStateProperty.resolveWith<double>(
                   (states) => states.contains(WidgetState.hovered) ? 4 : 0,
             ),
             backgroundColor: WidgetStateProperty.resolveWith<Color>(
                   (states) => states.contains(WidgetState.hovered)
-                  ? const Color(0xFF4338CA)
-                  : const Color(0xFF4F46E5),
+                  ? const Color(0xFF4F46E5)
+                  : const Color(0xFF6366F1),
             ),
           ),
         ),
@@ -454,9 +456,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
               return _buildLoadingState();
             }
 
-            var users = _filterUsers(snapshot.data!.docs);
+            var allUsers = _filterUsers(snapshot.data!.docs);
+            int totalPages = (allUsers.length / _itemsPerPage).ceil();
+            if (totalPages == 0) totalPages = 1;
+            if (_currentPage > totalPages) _currentPage = totalPages;
 
-            if (users.isEmpty) {
+            int start = (_currentPage - 1) * _itemsPerPage;
+            int end = (start + _itemsPerPage).clamp(0, allUsers.length);
+            var users = allUsers.sublist(start, end);
+
+            if (allUsers.isEmpty) {
               return _buildEmptyState();
             }
 
@@ -468,7 +477,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF8FAFC),
+                      color: Color(0xFFFAFAFA),
                       border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
                     ),
                     child: Row(
@@ -494,6 +503,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       },
                     ),
                   ),
+                  _buildTableFooter(allUsers.length, totalPages),
                 ],
               );
             }
@@ -544,7 +554,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     },
                   ),
                 ),
-                _buildTableFooter(users.length),
+                _buildTableFooter(allUsers.length, totalPages),
               ],
             );
           },
@@ -587,7 +597,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                        colors: [Color(0xFF6366F1), Color(0xFF7C3AED)],
                         begin: Alignment.topLeft, end: Alignment.bottomRight,
                       ),
                     ),
@@ -624,7 +634,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   const Spacer(),
                   // Compact actions
                   _buildActionButton(
-                    Icons.edit_note_rounded, 'Edit', const Color(0xFF4F46E5),
+                    Icons.edit_note_rounded, 'Edit', const Color(0xFF6366F1),
                     () => _showEditUserDialog(context, provider, data, docId, displayName),
                   ),
                   const SizedBox(width: 4),
@@ -671,7 +681,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFFAFAFA),
         border: Border(
           bottom: BorderSide(
             color: _isScrolled ? const Color(0xFFE2E8F0) : Colors.transparent,
@@ -731,7 +741,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       color: Colors.white,
       child: InkWell(
         onTap: () {},
-        hoverColor: const Color(0xFFF8FAFC),
+        hoverColor: const Color(0xFFFAFAFA),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: FutureBuilder<String>(
@@ -782,7 +792,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             height: 40,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                colors: [Color(0xFF6366F1), Color(0xFF7C3AED)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -790,7 +800,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4F46E5).withValues(alpha: 0.15),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -990,7 +1000,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         _buildActionButton(
           Icons.edit_note_rounded,
           'Edit User',
-          const Color(0xFF4F46E5),
+          const Color(0xFF6366F1),
               () => _showEditUserDialog(context, provider, data, docId, name),
         ),
         const SizedBox(width: 6),
@@ -1051,35 +1061,77 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
     );
   }
-  Widget _buildTableFooter(int count) {
+  Widget _buildTableFooter(int totalCount, int totalPages) {
+    int start = totalCount == 0 ? 0 : (_currentPage - 1) * _itemsPerPage + 1;
+    int end = (_currentPage * _itemsPerPage).clamp(0, totalCount);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        border: Border(
-          top: BorderSide(color: const Color(0xFFE2E8F0)),
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFFFAFAFA),
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Flexible(
+            child: Text(
+              'Showing $start-$end of $totalCount',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF64748B),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 16, color: const Color(0xFF94A3B8)),
-              const SizedBox(width: 8),
-              Text(
-                'Showing $count user${count != 1 ? 's' : ''} from System',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF64748B),
+              _buildPageButton(
+                icon: Icons.chevron_left_rounded,
+                onTap: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: Text(
+                  '$_currentPage / $totalPages',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              _buildPageButton(
+                icon: Icons.chevron_right_rounded,
+                onTap: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
               ),
             ],
           ),
-
         ],
+      ),
+    );
+  }
+
+  Widget _buildPageButton({required IconData icon, VoidCallback? onTap}) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Icon(icon, size: 18),
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        backgroundColor: onTap != null ? Colors.white : Colors.transparent,
+        foregroundColor: onTap != null ? const Color(0xFF6366F1) : Colors.grey.shade400,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: onTap != null ? const Color(0xFFE2E8F0) : Colors.transparent),
+        ),
       ),
     );
   }
@@ -1094,7 +1146,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         };
       case 'recruiter':
         return {
-          'color': const Color(0xFF4F46E5),
+          'color': const Color(0xFF6366F1),
           'bgColor': const Color(0xFFEEF2FF),
           'icon': Icons.business_center_rounded,
         };
@@ -1123,7 +1175,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4F46E5)),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
               strokeWidth: 3,
               backgroundColor: const Color(0xFFE0E7FF),
             ),
@@ -1187,7 +1239,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4F46E5),
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1245,7 +1297,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               'Clear Filters',
               style: GoogleFonts.plusJakartaSans(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF4F46E5),
+                color: const Color(0xFF6366F1),
               ),
             ),
           ),
@@ -1310,7 +1362,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF4F46E5),
+                            const Color(0xFF6366F1),
                             const Color(0xFF6366F1).withValues(alpha: 0.9),
                           ],
                           begin: Alignment.topLeft,
@@ -1432,7 +1484,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: const Color(0xFFFAFAFA),
                         border: Border(top: BorderSide(color: Colors.grey.shade200)),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(20),
@@ -1503,7 +1555,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4F46E5),
+                              backgroundColor: const Color(0xFF6366F1),
                               foregroundColor: Colors.white,
                               disabledBackgroundColor: const Color(0xFFCBD5E1),
                               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
@@ -1582,7 +1634,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             boxShadow: isSelected
                 ? [
               BoxShadow(
-                color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1595,7 +1647,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               Icon(
                 icon,
                 size: 20,
-                color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8),
+                color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
               ),
               const SizedBox(width: 10),
               Text(
@@ -1603,7 +1655,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF64748B),
+                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
                 ),
               ),
               if (isSelected) ...[
@@ -1611,7 +1663,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 Icon(
                   Icons.check_circle_rounded,
                   size: 18,
-                  color: const Color(0xFF4F46E5),
+                  color: const Color(0xFF6366F1),
                 ),
               ],
             ],
@@ -1772,7 +1824,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: const Color(0xFFFAFAFA),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
@@ -1798,7 +1850,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: const Color(0xFFFAFAFA),
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
@@ -1901,7 +1953,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),

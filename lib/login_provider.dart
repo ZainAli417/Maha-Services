@@ -167,10 +167,19 @@ class LoginProvider with ChangeNotifier {
       final results = await Future.wait([
         _verifyUserRole(user.uid, expectedRole),
         if (isJobSeeker) _isNewUser(user.uid),
+        _isAccountActive(user.uid),
       ]);
 
-      final roleVerified = results[0];
-      final isNew        = isJobSeeker ? results[1] : false;
+      final roleVerified    = results[0];
+      final isNew           = isJobSeeker ? results[1] : false;
+      final isAccountActive = results.last;
+
+      // ── Step 2.1: Check Account Status ────────────────────────────────────
+      if (!isAccountActive) {
+        _setError('Your account is suspended. Contact Customer support.');
+        _auth.signOut().ignore();
+        return null;
+      }
 
       // ── FIX 3: sign out ONLY when role is not verified ────────────────────
       //
@@ -228,6 +237,14 @@ class LoginProvider with ChangeNotifier {
           .get(const GetOptions(source: Source.serverAndCache));
 
       if (!docSnap.exists) {
+        // Fallback: Check 'users' collection (crucial for new users who haven't finished profile)
+        final userSnap = await _firestore.collection('users').doc(uid).get();
+        if (userSnap.exists) {
+          final userData = userSnap.data();
+          final role = _normalizeRole(userData?['role']?.toString() ?? '');
+          if (role == normExpected) return true;
+        }
+
         if (!isRetry) {
           // Document may not exist yet due to token propagation — retry once
           debugPrint('⚠️ Role doc not found for $uid, retrying in 400ms…');
@@ -295,6 +312,26 @@ class LoginProvider with ChangeNotifier {
       // /profile-builder on any connection hiccup.
       debugPrint('⚠️ _isNewUser error — defaulting to existing user: $e');
       return false;
+  }
+  }
+
+  // ── Account status check ───────────────────────────────────────────────────
+  Future<bool> _isAccountActive(String uid) async {
+    try {
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      if (!userDoc.exists) return true; // Assume active if record missing
+
+      final data   = userDoc.data() as Map<String, dynamic>;
+      final status = (data['account_status'] ?? 'active').toString().toLowerCase().trim();
+
+      return status == 'active';
+    } catch (e) {
+      debugPrint('⚠️ _isAccountActive error (assuming active): $e');
+      return true;
     }
   }
 

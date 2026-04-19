@@ -85,7 +85,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Color _getScoreColor(int score) {
     if (score >= 80) return const Color(0xFF10B981); // Emerald
-    if (score >= 60) return const Color(0xFF3B82F6); // Blue
+    if (score >= 60) return const Color(0xFF6366F1); // Blue
     if (score >= 40) return const Color(0xFFF59E0B); // Amber
     return const Color(0xFFEF4444); // Red
   }
@@ -105,7 +105,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0xFFFAFAFA),
       child: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
           horizontal: isMobile ? 12 : 20,
@@ -130,7 +130,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -235,7 +235,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     final stats = [
-      {'icon': Icons.school_rounded, 'val': provider.educationalProfile.length.toString(), 'label': 'Education', 'col': const Color(0xFF3B82F6)},
+      {'icon': Icons.school_rounded, 'val': provider.educationalProfile.length.toString(), 'label': 'Education', 'col': const Color(0xFF6366F1)},
       {'icon': Icons.work_rounded, 'val': provider.professionalExperience.length.toString(), 'label': 'Experience', 'col': const Color(0xFF8B5CF6)},
       {'icon': Icons.verified_rounded, 'val': provider.certifications.length.toString(), 'label': 'Certificates', 'col': const Color(0xFF10B981)},
       {'icon': Icons.star_rounded, 'val': provider.awards.length.toString(), 'label': 'Awards', 'col': const Color(0xFFF59E0B)},
@@ -347,7 +347,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             ],
           ),
           SizedBox(height: isMobile ? 12 : 20),
-          _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, const Color(0xFF3B82F6)),
+          _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, const Color(0xFF6366F1)),
           _buildProgressRow('Education', _scoreEducation(), _wEducation, const Color(0xFF8B5CF6)),
           _buildProgressRow('Prof. Profile', _scoreProfessionalProfile(), _wProfessionalProfile, const Color(0xFF10B981)),
           _buildProgressRow('Experience', _scoreExperience(), _wExperience, const Color(0xFFF59E0B)),
@@ -588,14 +588,14 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF6366F1),
                       ),
                     ),
                     const SizedBox(width: 4),
                     Icon(
                       _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                       size: isMobile ? 14 : 16,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF6366F1),
                     )
                   ],
                 ),

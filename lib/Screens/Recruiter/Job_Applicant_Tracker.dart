@@ -13,17 +13,17 @@ import 'job_detail_dialog_recrutier.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 
 // ─── Shared color tokens ──────────────────────────────────────────────────────
-const _kPrimary = Color(0xFF1E3A5F);
-const _kAccent = Color(0xFF3B82F6);
+const _kPrimary = Color(0xFF6366F1);
+const _kAccent = Color(0xFF818CF8);
 const _kSuccess = Color(0xFF10B981);
 const _kSurface = Color(0xFFFFFFFF);
-const _kBg = Color(0xFFF8FAFC);
+const _kBg = Color(0xFFFAFAFA);
 const _kTxtPrimary = Color(0xFF0F172A);
 const _kTxtSec = Color(0xFF64748B);
 const _kTxtTert = Color(0xFF94A3B8);
 const _kBorder = Color(0xFFE2E8F0);
 const _kBorderLt = Color(0xFFF1F5F9);
-const _kSurfaceEl = Color(0xFFF8FAFC);
+const _kSurfaceEl = Color(0xFFFAFAFA);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TOP-LEVEL SCAFFOLD  (sidebar + appbar, no duplicate header)
@@ -121,7 +121,7 @@ class _AppBar extends StatelessWidget {
       child: Container(
         height: 56,
         padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
-        decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
+        decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
         child: Row(
           children: [
             if (isMobile) ...[
@@ -138,13 +138,13 @@ class _AppBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.track_changes_outlined,
                 size: 20,
-                color: Color(0xFF1E40AF),
+                color: Color(0xFF6366F1),
               ),
             ),
             const SizedBox(width: 10),
@@ -288,8 +288,9 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
     } catch (e) {
       debugPrint('Error loading metadata: $e');
     } finally {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -376,7 +377,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
     final isMobile = w < 768;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: Color(0xFFFAFAFA),
       body: CustomScrollView(
         controller: _scrollCtrl,
         physics: const BouncingScrollPhysics(),
@@ -391,7 +392,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   // ── Command bar ─────────────────────────────────────────────────────────────
   Widget _buildCommandBar(bool isMobile) {
     return Container(
-      color: Color(0xFFF8FAFC),
+      color: Color(0xFFFAFAFA),
       padding: EdgeInsets.fromLTRB(
         isMobile ? 12 : 24,
         isMobile ? 12 : 16,
@@ -1251,7 +1252,7 @@ class _Job_CardsState extends State<Job_Cards>
         builder: (ctx) => Container(
           height: MediaQuery.of(ctx).size.height * 0.88,
           decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
+            color: Color(0xFFFAFAFA),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -1262,7 +1263,7 @@ class _Job_CardsState extends State<Job_Cards>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Color(0xFFF8FAFC),
+                  color: Color(0xFFFAFAFA),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

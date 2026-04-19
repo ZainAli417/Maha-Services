@@ -14,7 +14,7 @@ class _T {
   static const textPri   = Color(0xFF0F172A);
   static const textSec   = Color(0xFF64748B);
   static const textTert  = Color(0xFF94A3B8);
-  static const bg        = Color(0xFFF8FAFC);
+  static const bg        = Color(0xFFFAFAFA);
   static const white     = Color(0xFFFFFFFF);
   static const border    = Color(0xFFE2E8F0);
   static const success   = Color(0xFF10B981);
@@ -152,7 +152,9 @@ class _ViewShortlistedState extends State<view_shortlisted>
     final has = _provider.selectedApplicantIds.isNotEmpty;
     if (has && !_islandCtrl.isCompleted) {
       _islandCtrl.forward();
-    } else if (!has && !_islandCtrl.isDismissed) _islandCtrl.reverse();
+    } else if (!has && !_islandCtrl.isDismissed) {
+      _islandCtrl.reverse();
+    }
   }
 
   // ─── Data helpers ───────────────────────────────────────────────────────
@@ -296,7 +298,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
       return _LD(
         isMobile: isMobile,
         child: Scaffold(
-          backgroundColor: _T.white,
+          backgroundColor: _T.bg,
           body: Consumer<ApplicantsProvider>(
             builder: (_, provider, _) {
               if (provider.isLoading) {

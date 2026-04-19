@@ -34,7 +34,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
           return Container(
             width: sidebarWidth,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFFFAFAFA),
               border: Border(
                 right: BorderSide(
                   color: Colors.grey.shade200,

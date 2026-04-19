@@ -31,10 +31,10 @@ class _BP {
 class _C {
   static const canvas   = Color(0xFFFFFFFF);
   static const surface  = Color(0xFFFFFFFF);
-  static const surfaceL = Color(0xFFFAFBFD);
+  static const surfaceL = Color(0xFFFFFFFF);
   static const border   = Color(0xFFE8ECF4);
 
-  static const indigo   = Color(0xFF4F46E5);
+  static const indigo   = Color(0xFF6366F1);
   static const indigoLt = Color(0xFFEEEDFC);
   static const teal     = Color(0xFF0891B2);
   static const tealLt   = Color(0xFFE0F5FA);
@@ -217,10 +217,9 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   Widget _buildMobileAppBar(String title) {
     return Container(
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: const BoxDecoration(
-        color: _C.surface,
-        border: Border(bottom: BorderSide(color: _C.border, width: 1)),
+        color: Colors.white,
       ),
       child: Row(
         children: [
@@ -232,19 +231,17 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           ),
           const SizedBox(width: 4),
           Container(
-            width: 28, height: 28,
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-              ),
+              color: _C.indigo.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(7),
             ),
-            child: const Icon(Icons.work_history_rounded, color: Colors.white, size: 14),
+            child: const Icon(Icons.work_history_rounded, color: _C.indigo, size: 16),
           ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(title,
-              style: _C.p(14),
+              style: _C.p(14, fw: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -409,39 +406,32 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     final pending  = (analytics['statusBreakdown'] as Map)['pending']  as int;
 
     return Container(
-      height: 58,
+      height: 64,
       padding: EdgeInsets.symmetric(horizontal: _BP.hPad(w)),
       decoration: const BoxDecoration(
-        color: _C.surface,
-        border: Border(bottom: BorderSide(color: _C.border, width: 1.5)),
-        boxShadow: [
-          BoxShadow(color: Color(0x06000000), blurRadius: 6, offset: Offset(0, 2))
-        ],
+        color: Colors.white,
       ),
       child: Row(
         children: [
           Container(
-            width: 32, height: 32,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(9),
+              color: _C.indigo.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.work_history_rounded, color: Colors.white, size: 16),
+            child: const Icon(Icons.work_history_rounded, color: _C.indigo, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('My Applications', style: _C.p(14)),
+              Text('My Applications', style: _C.p(16, fw: FontWeight.w600)),
               Text('Trends & insights',
-                  style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
+                  style: _C.p(11, fw: FontWeight.w500, color: _C.t3)),
             ],
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 20),
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -907,7 +897,7 @@ class _StatusBarChart extends StatelessWidget {
                   width: 22,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
                   backDrawRodData: BackgroundBarChartRodData(
-                    show: true, toY: safeMax, color: const Color(0xFFF4F6FB),
+                    show: true, toY: safeMax, color: const Color(0xFFFFFFFF),
                   ),
                 ),
               ],

@@ -13,14 +13,14 @@ import '../Job_Seeker/job_seeker_provider.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 const _navy      = Color(0xFF0A1628);
-const _blue      = Color(0xFF2563EB);
-const _blueLight = Color(0xFF3B82F6);
+const _blue      = Color(0xFF6366F1);
+const _blueLight = Color(0xFF818CF8);
 const _cyan      = Color(0xFF06B6D4);
 const _emerald   = Color(0xFF10B981);
 const _amber     = Color(0xFFF59E0B);
 const _rose      = Color(0xFFEF4444);
 const _violet    = Color(0xFF002D73);
-const _slate50   = Color(0xFFF8FAFC);
+const _slate50   = Color(0xFFFAFAFA);
 const _slate100  = Color(0xFFF1F5F9);
 const _slate200  = Color(0xFFE2E8F0);
 const _slate400  = Color(0xFF94A3B8);
@@ -119,11 +119,11 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E40AF).withValues(alpha: 0.1),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.recent_actors_outlined,
-                  size: 20, color: Color(0xFF1E40AF)),
+                  size: 20, color: Color(0xFF6366F1)),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -142,7 +142,7 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3A5F), Color(0xFF3B82F6)]),
+                      colors: [Color(0xFF6366F1), Color(0xFF818CF8)]),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -191,7 +191,7 @@ class _LoadingView extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text('Loading analytics…',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 13, color: _slate600)),
       ],
     ),
@@ -224,14 +224,14 @@ class _ErrorView extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text('Something went wrong',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: _slate900)),
           const SizedBox(height: 6),
           Text(error,
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13, color: _slate600)),
         ],
       ),
@@ -260,13 +260,13 @@ class _EmptyView extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text('No Jobs Posted Yet',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: _slate900)),
         const SizedBox(height: 5),
         Text('Post your first job to see analytics here',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.plusJakartaSans(
                 fontSize: 13, color: _slate600)),
       ],
     ),
@@ -350,7 +350,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                             size: 13, color: _slate400),
                         const SizedBox(width: 4),
                         Text('Pull down to refresh',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 color: _slate400,
                                 letterSpacing: 0.2)),
@@ -425,12 +425,12 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Recruiter Dashboard',
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color: _slate900)),
                 Text('Real-time hiring analytics',
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.plusJakartaSans(
                         fontSize: 12, color: _slate600)),
               ],
             ),
@@ -702,7 +702,7 @@ class _PostJobButton extends StatelessWidget {
             const Icon(Icons.add_rounded, color: _white, size: 20),
             const SizedBox(width: 8),
             Text('Post',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: _white)),
@@ -760,14 +760,14 @@ class _StatCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(meta.value,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: _slate900,
                           height: 1.1)),
                   Text(meta.label,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: _slate600)),
@@ -818,20 +818,20 @@ class _StatCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(meta.value,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
                   color: _slate900,
                   height: 1.0)),
           const SizedBox(height: 4),
           Text(meta.label,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: _slate900)),
           const SizedBox(height: 2),
           Text(meta.subtitle,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: 11, color: _slate400)),
         ],
       ),
@@ -897,7 +897,7 @@ class _TrendChart extends StatelessWidget {
             showTitles: true,
             reservedSize: isMobile ? 28 : 36,
             getTitlesWidget: (v, m) => Text('${v.toInt()}',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 9 : 10,
                     color: _slate400)),
           ),
@@ -920,7 +920,7 @@ class _TrendChart extends StatelessWidget {
                 child: Text(
                   DateFormat(isMobile ? 'M/d' : 'MMM d')
                       .format(dates[i]),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 9 : 10,
                       color: _slate400),
                 ),
@@ -972,7 +972,7 @@ class _TrendChart extends StatelessWidget {
                 : '';
             return LineTooltipItem(
               '$d\n${t.y.toInt()} total',
-              GoogleFonts.dmSans(
+              GoogleFonts.plusJakartaSans(
                   color: _white,
                   fontSize: 12,
                   fontWeight: FontWeight.w600),
@@ -1062,7 +1062,7 @@ class _StatusPie extends StatelessWidget {
       value: value.toDouble(),
       title: value == 0 ? '' : '$pct%',
       radius: isMobile ? 34 : 44,
-      titleStyle: GoogleFonts.dmSans(
+      titleStyle: GoogleFonts.plusJakartaSans(
           fontSize: isMobile ? 9 : 11,
           fontWeight: FontWeight.w700,
           color: _white),
@@ -1093,12 +1093,12 @@ class _PieLegend extends StatelessWidget {
           Expanded(
             child: Text(label,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 11 : 12,
                     color: _slate600)),
           ),
           Text('$value',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
                   fontWeight: FontWeight.w700,
                   color: _slate900)),
@@ -1182,7 +1182,7 @@ class _TopSkillsCard extends StatelessWidget {
                                     7),
                               ),
                               child: Text('${i + 1}',
-                                  style: GoogleFonts.dmSans(
+                                  style: GoogleFonts.plusJakartaSans(
                                       fontSize:
                                       isMobile ? 10 : 11,
                                       fontWeight:
@@ -1197,7 +1197,7 @@ class _TopSkillsCard extends StatelessWidget {
                               child: Text(sk.key,
                                   overflow:
                                   TextOverflow.ellipsis,
-                                  style: GoogleFonts.dmSans(
+                                  style: GoogleFonts.plusJakartaSans(
                                       fontSize:
                                       isMobile ? 12 : 13,
                                       fontWeight:
@@ -1207,7 +1207,7 @@ class _TopSkillsCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             // Count
                             Text('${sk.value}',
-                                style: GoogleFonts.dmSans(
+                                style: GoogleFonts.plusJakartaSans(
                                     fontSize:
                                     isMobile ? 11 : 12,
                                     fontWeight:
@@ -1344,7 +1344,7 @@ class _TopJobsCard extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Text('${i + 1}',
-                                style: GoogleFonts.dmSans(
+                                style: GoogleFonts.plusJakartaSans(
                                     fontSize:
                                     isMobile ? 12 : 13,
                                     fontWeight:
@@ -1364,7 +1364,7 @@ class _TopJobsCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow
                                         .ellipsis,
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.plusJakartaSans(
                                         fontSize: isMobile
                                             ? 12
                                             : 13,
@@ -1374,7 +1374,7 @@ class _TopJobsCard extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                     '${entry.value} application${entry.value == 1 ? '' : 's'}',
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.plusJakartaSans(
                                         fontSize: isMobile
                                             ? 10
                                             : 11,
@@ -1456,14 +1456,14 @@ class _CardHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 14 : 16,
                       fontWeight: FontWeight.w800,
                       color: _slate900)),
               const SizedBox(height: 2),
               Text(subtitle,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 11 : 12,
                       color: _slate400)),
             ],
@@ -1479,7 +1479,7 @@ class _CardHeader extends StatelessWidget {
                 color: (badgeColor ?? _blue).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20)),
             child: Text(badge!,
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 10 : 11,
                     fontWeight: FontWeight.w700,
                     color: badgeColor ?? _blue)),
@@ -1507,7 +1507,7 @@ class _EmptyHint extends StatelessWidget {
               color: _slate200),
           const SizedBox(height: 8),
           Text(message,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
                   color: _slate400)),
         ],

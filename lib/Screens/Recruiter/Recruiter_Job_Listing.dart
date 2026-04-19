@@ -16,6 +16,7 @@ class recruiter_job_listing extends StatefulWidget {
 class _recruiter_job_listingState extends State<recruiter_job_listing>
     with TickerProviderStateMixin {
   String _selectedStatus = 'All';
+  final Color _primaryColor = Color(0xFF6366F1);
   String _selectedDepartment = 'All';
   String _selectedLocation = 'All';
   String _selectedExperience = 'All';
@@ -157,7 +158,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFFAFAFA),
       drawer: isMobile
           ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
           : null,
@@ -219,13 +220,13 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
       backgroundColor: Color(0xFFFAFAFA),
       leading: isMobile
           ? IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Color(0xFF0B0B0B)),
+              icon: const Icon(Icons.menu_rounded, color: Color(0xFF6366F1)),
               onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             )
           : null,
       title: Text(
         'Jobs Dashboard',
-        style: GoogleFonts.montserrat(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: isMobile ? 20 : 26,
           fontWeight: FontWeight.w700,
           color: Color(0xFF0B0B0B),
@@ -258,7 +259,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
               const SizedBox(width: 6),
               Text(
                 '$jobCount Jobs',
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -275,16 +276,16 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
             icon: const Icon(Icons.add_rounded, size: 18),
             label: Text(
               'Post Job',
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E40AF),
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
               elevation: 4,
-              shadowColor: const Color(0xFF1E40AF).withValues(alpha: 0.4),
+              shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -336,7 +337,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                   },
                   decoration: InputDecoration(
                     hintText: 'Search jobs, companies, departments...',
-                    hintStyle: GoogleFonts.montserrat(
+                    hintStyle: GoogleFonts.plusJakartaSans(
                       color: Colors.grey.shade500,
                       fontSize: 15,
                     ),
@@ -355,7 +356,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                       vertical: 16,
                     ),
                   ),
-                  style: GoogleFonts.montserrat(fontSize: 15),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 15),
                 ),
               ),
               if (isMobile)
@@ -382,7 +383,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
                   icon: const Icon(Icons.clear_all_rounded, size: 20),
                   label: Text(
                     'Clear Filters',
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -479,7 +480,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
       width: width,
       child: Text(
         title,
-        style: GoogleFonts.montserrat(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: Color(0xFF64748B),
@@ -524,7 +525,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
           const SizedBox(height: 24),
           Text(
             'No jobs found',
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 24,
               fontWeight: FontWeight.w600,
               color: Color(0xFF64748B),
@@ -533,7 +534,7 @@ class _recruiter_job_listingState extends State<recruiter_job_listing>
           const SizedBox(height: 12),
           Text(
             'Try adjusting your filters or search terms to find more results',
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               color: Colors.grey.shade500,
             ),
@@ -565,7 +566,7 @@ class _FilterDropdown extends StatelessWidget {
         children: [
           Text(
             label,
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: Color(0xFF64748B),
@@ -597,7 +598,7 @@ class _FilterDropdown extends StatelessWidget {
                 color: Color(0xFF64748B),
                 size: 24,
               ),
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF64748B),
@@ -611,7 +612,7 @@ class _FilterDropdown extends StatelessWidget {
                   value: option,
                   child: Text(
                     option,
-                    style: GoogleFonts.montserrat(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -748,7 +749,7 @@ class _JobListItemState extends State<_JobListItem> {
           Expanded(
             child: Text(
               isActive ? 'Active' : 'Paused',
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isActive ? Colors.green.shade600 : Colors.red.shade600,
@@ -769,7 +770,7 @@ class _JobListItemState extends State<_JobListItem> {
         children: [
           Text(
             title,
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: Color(0xFF64748B),
@@ -780,7 +781,7 @@ class _JobListItemState extends State<_JobListItem> {
           const SizedBox(height: 4),
           Text(
             company,
-            style: GoogleFonts.montserrat(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: Color(0xFF64748B),
               fontWeight: FontWeight.w500,
@@ -792,7 +793,7 @@ class _JobListItemState extends State<_JobListItem> {
             const SizedBox(height: 2),
             Text(
               postedAgo,
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 color: Colors.grey.shade500,
               ),
@@ -808,7 +809,7 @@ class _JobListItemState extends State<_JobListItem> {
       width: _recruiter_job_listingState.qualificationWidth,
       child: Text(
         qualifications,
-        style: GoogleFonts.montserrat(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: Color(0xFF64748B),
@@ -831,7 +832,7 @@ class _JobListItemState extends State<_JobListItem> {
         ),
         child: Text(
           department,
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: Colors.blue.shade700,
@@ -858,7 +859,7 @@ class _JobListItemState extends State<_JobListItem> {
           Expanded(
             child: Text(
               location,
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: Color(0xFF64748B),
                 fontWeight: FontWeight.w500,
@@ -884,7 +885,7 @@ class _JobListItemState extends State<_JobListItem> {
         ),
         child: Text(
           experience,
-          style: GoogleFonts.montserrat(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: Colors.orange.shade700,
@@ -911,7 +912,7 @@ class _JobListItemState extends State<_JobListItem> {
           Expanded(
             child: Text(
               pay,
-              style: GoogleFonts.montserrat(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.green.shade700,
@@ -938,7 +939,7 @@ class _JobListItemState extends State<_JobListItem> {
               ),
               child: Text(
                 workModes.first,
-                style: GoogleFonts.montserrat(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: Colors.purple.shade700,

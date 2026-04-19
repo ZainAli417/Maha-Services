@@ -87,8 +87,11 @@ class ViewApplicantDetails extends StatelessWidget {
       final _Layout l;
       if (sw < 600) {
         l = _Layout.mobile;
-      } else if (sw < 960) l = _Layout.tablet;
-      else               l = _Layout.desktop;
+      } else if (sw < 960) {
+        l = _Layout.tablet;
+      } else {
+        l = _Layout.desktop;
+      }
       final ld = _LayoutData(l, sw);
 
       final content = ClipRRect(
