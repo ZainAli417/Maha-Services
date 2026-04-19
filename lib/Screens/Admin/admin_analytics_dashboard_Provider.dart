@@ -76,27 +76,35 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
   Future<void> _fetchAggregateKPIs() async {
     try {
-      // OPTIMIZATION: Use AggregateQuery (.count()) instead of fetching ALL
-      // user documents. This reduces Firestore reads from N to 3 lightweight
-      // count operations — critical as the user base grows.
-      final usersCollection = _firestore.collection('users');
+      // Users collection based counting
+      final usersSnap = await _firestore.collection('users').get();
+      int tempAdmin = 0, tempRec = 0, tempJs = 0;
+      
+      for (var doc in usersSnap.docs) {
+        final data = doc.data();
+        // Handle case-insensitive field names and various role formats
+        final role = (data['role'] ?? data['Role'] ?? data['type'] ?? data['user_role'] ?? '').toString().trim().toLowerCase();
+        
+        if (role.contains('admin')) {
+          tempAdmin++;
+        } else if (role.contains('recruiter')) {
+          tempRec++;
 
-      final results = await Future.wait([
-        // Count by role using where() + count() — 3 lightweight reads
-        usersCollection.where('role', isEqualTo: 'recruiter').count().get(),
-        usersCollection.where('role', isEqualTo: 'job seeker').count().get(),
-        usersCollection.where('role', whereIn: ['admin', 'superadmin', 'Admin']).count().get(),
-        // Count jobs and requests
-        _firestore.collection('Posted_jobs_public').count().get(),
-        _firestore.collection('recruiter_requests').count().get(),
-      ]);
+        } else if (role.contains('seeker') || role.contains('job') || role == 'Job Seeker') {
+          tempJs++;
+        }
+      }
 
-      totalRecruiters  = results[0].count ?? 0;
-      totalJobSeekers  = results[1].count ?? 0;
-      totalAdmins      = results[2].count ?? 0;
-      totalUsers       = totalRecruiters + totalJobSeekers;
-      totalJobs        = results[3].count ?? 0;
-      totalRequests    = results[4].count ?? 0;
+      totalAdmins = tempAdmin;
+      totalRecruiters = tempRec;
+      totalJobSeekers = tempJs;
+      totalUsers = tempAdmin + tempRec + tempJs;
+
+      final jobsQuery = await _firestore.collection('Posted_jobs_public').count().get();
+      totalJobs = jobsQuery.count ?? 0;
+
+      final reqQuery = await _firestore.collection('recruiter_requests').count().get();
+      totalRequests = reqQuery.count ?? 0;
       
       _safeNotify();
     } catch (e) {
@@ -123,13 +131,9 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         List<dynamic> skills = [];
         if (data['skills'] is List) {
           skills = data['skills'];
-        } else if (personalProfile['skills'] is List) {
-          skills = personalProfile['skills'];
-        } else if (profProfile['skills'] is List) {
-          skills = profProfile['skills'];
-        } else if (userData['skills'] is List) {
-          skills = userData['skills'];
-        }
+        } else if (personalProfile['skills'] is List) skills = personalProfile['skills'];
+        else if (profProfile['skills'] is List) skills = profProfile['skills'];
+        else if (userData['skills'] is List) skills = userData['skills'];
 
         for (var s in skills) {
           final skillStr = s.toString().trim();
@@ -201,11 +205,8 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
         if (status == 'approved' || status == 'open' || status == 'active') {
           approved++;
-        } else if (status == 'rejected' || status == 'closed') {
-          rejected++;
-        } else {
-          pending++;
-        }
+        } else if (status == 'rejected' || status == 'closed') rejected++;
+        else pending++;
 
         final cands = data['candidates'] as List<dynamic>? ?? [];
         for (var c in cands) {

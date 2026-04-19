@@ -9,12 +9,12 @@ import 'admin_analytics_dashboard_Provider.dart';
 //  DESIGN TOKENS  — Light Professional
 // ═══════════════════════════════════════════════════════════════════════════
 class _C {
-  static const canvas   = Color(0xFFFAFAFA);
+  static const canvas   = Color(0xFFF8FAFC);
   static const surface  = Color(0xFFFFFFFF);
   static const surfaceL = Color(0xFFFAFBFD);
   static const border   = Color(0xFFE8ECF4);
 
-  static const indigo   = Color(0xFF6366F1);
+  static const indigo   = Color(0xFF4F46E5);
   static const indigoLt = Color(0xFFEEEDFC);
   static const teal     = Color(0xFF0891B2);
   static const tealLt   = Color(0xFFE0F5FA);
@@ -111,7 +111,7 @@ class _AdminAnalyticsDashboardScreenState
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: Color(0xFFFAFAFA),
+        color: Color(0xFFF8FAFC),
       ),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: Row(
@@ -537,9 +537,8 @@ class _KpiGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       _KD(Icons.groups_rounded, 'Total Users', prov.totalUsers,
-          '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters· ${prov.totalAdmins} Admin',
+          '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters · ${prov.totalAdmins} Admins',
           _C.indigo, _C.indigoLt, onTap: () => onNavigate?.call('User Management')),
-
       _KD(Icons.work_rounded, 'Jobs Posted', prov.totalJobs,
           'Public listings', _C.teal, _C.tealLt, onTap: () => _showJobsPopup(context, prov)),
       _KD(Icons.inbox_rounded, 'Requests', prov.totalRequests,

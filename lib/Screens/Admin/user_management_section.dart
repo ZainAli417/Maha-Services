@@ -94,29 +94,29 @@ class _UserManagementSectionState extends State<UserManagementSection>
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Consumer<AdminProvider>(
-        builder: (context, provider, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Container(
-                color: const Color(0xFFFAFAFA),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Skip header on mobile — wrapper already shows it
-                    if (!isMobile) _buildModernHeader(context, provider),
-                    if (!isMobile) const SizedBox(height: 28),
-                    _buildFilters(),
-                    SizedBox(height: isMobile ? 12 : 24),
-                    Expanded(child: _buildUsersTable(provider)),
-                  ],
-                ),
+      builder: (context, provider, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: Container(
+              color: const Color(0xFFFAFAFA),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Skip header on mobile — wrapper already shows it
+                  if (!isMobile) _buildModernHeader(context, provider),
+                  if (!isMobile) const SizedBox(height: 28),
+                  _buildFilters(),
+                  SizedBox(height: isMobile ? 12 : 24),
+                  Expanded(child: _buildUsersTable(provider)),
+                ],
               ),
             ),
-          );
-        },
-      );
+          ),
+        );
+      },
+    );
   }
 
 
@@ -184,20 +184,20 @@ class _UserManagementSectionState extends State<UserManagementSection>
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        child: isMobile 
-        ? IconButton(
-            onPressed: () => _showAddUserDialog(context, provider),
-            icon: const Icon(Icons.person_add_rounded, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+        child: isMobile
+            ? IconButton(
+          onPressed: () => _showAddUserDialog(context, provider),
+          icon: const Icon(Icons.person_add_rounded, size: 20),
+          style: IconButton.styleFrom(
+            backgroundColor: const Color(0xFF6366F1),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.all(12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-          )
-        : ElevatedButton.icon(
+          ),
+        )
+            : ElevatedButton.icon(
           onPressed: () => _showAddUserDialog(context, provider),
           icon: const Icon(Icons.person_add_rounded, size: 18),
           label: Text(
@@ -236,40 +236,40 @@ class _UserManagementSectionState extends State<UserManagementSection>
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
-      child: isMobile 
-      ? Column(
-          children: [
-            const SizedBox(height: 12),
+      child: isMobile
+          ? Column(
+        children: [
+          const SizedBox(height: 12),
 
-            _buildSearchBar(),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                   _buildFilterDropdown(
-                    'Role',
-                    _selectedRoleFilter,
-                    ['all', 'Job Seeker', 'Recruiter', 'Admin'],
-                        (value) => setState(() => _selectedRoleFilter = value!),
-                    Icons.work_outline,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildFilterDropdown(
-                    'Status',
-                    _selectedStatusFilter,
-                    ['all', 'active', 'suspended'],
-                        (value) => setState(() => _selectedStatusFilter = value!),
-                    Icons.toggle_on_outlined,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildRefreshButton(),
-                ],
-              ),
+          _buildSearchBar(),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterDropdown(
+                  'Role',
+                  _selectedRoleFilter,
+                  ['all', 'Job Seeker', 'Recruiter', 'Admin'],
+                      (value) => setState(() => _selectedRoleFilter = value!),
+                  Icons.work_outline,
+                ),
+                const SizedBox(width: 8),
+                _buildFilterDropdown(
+                  'Status',
+                  _selectedStatusFilter,
+                  ['all', 'active', 'suspended'],
+                      (value) => setState(() => _selectedStatusFilter = value!),
+                  Icons.toggle_on_outlined,
+                ),
+                const SizedBox(width: 8),
+                _buildRefreshButton(),
+              ],
             ),
-          ],
-        )
-      : Row(
+          ),
+        ],
+      )
+          : Row(
         children: [
           Expanded(flex: 3, child: _buildSearchBar()),
           const SizedBox(width: 16),
@@ -428,136 +428,139 @@ class _UserManagementSectionState extends State<UserManagementSection>
   Widget _buildUsersTable(AdminProvider provider) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return Container(
-      margin: EdgeInsets.fromLTRB(isMobile ? 8 : 10, 0, isMobile ? 8 : 10, 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('users').snapshots(),
-          builder: (context, snapshot) {
-            if (!mounted) return const SizedBox.shrink();
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 1600),
+        margin: EdgeInsets.fromLTRB(isMobile ? 12 : 32, 0, isMobile ? 12 : 32, 32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (!mounted) return const SizedBox.shrink();
 
-            if (snapshot.hasError) {
-              return _buildErrorState(snapshot.error.toString());
-            }
-            if (!snapshot.hasData) {
-              return _buildLoadingState();
-            }
+              if (snapshot.hasError) {
+                return _buildErrorState(snapshot.error.toString());
+              }
+              if (!snapshot.hasData) {
+                return _buildLoadingState();
+              }
 
-            var allUsers = _filterUsers(snapshot.data!.docs);
-            int totalPages = (allUsers.length / _itemsPerPage).ceil();
-            if (totalPages == 0) totalPages = 1;
-            if (_currentPage > totalPages) _currentPage = totalPages;
+              var allUsers = _filterUsers(snapshot.data!.docs);
+              int totalPages = (allUsers.length / _itemsPerPage).ceil();
+              if (totalPages == 0) totalPages = 1;
+              if (_currentPage > totalPages) _currentPage = totalPages;
 
-            int start = (_currentPage - 1) * _itemsPerPage;
-            int end = (start + _itemsPerPage).clamp(0, allUsers.length);
-            var users = allUsers.sublist(start, end);
+              int start = (_currentPage - 1) * _itemsPerPage;
+              int end = (start + _itemsPerPage).clamp(0, allUsers.length);
+              var users = allUsers.sublist(start, end);
 
-            if (allUsers.isEmpty) {
-              return _buildEmptyState();
-            }
+              if (allUsers.isEmpty) {
+                return _buildEmptyState();
+              }
 
-            // ── MOBILE: Card-based layout (no horizontal scrolling) ──
-            if (isMobile) {
+              // ── MOBILE: Card-based layout (no horizontal scrolling) ──
+              if (isMobile) {
+                return Column(
+                  children: [
+                    // Compact count header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFAFAFA),
+                        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.people_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 8),
+                          Text('${users.length} user${users.length != 1 ? 's' : ''}',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF64748B))),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        itemCount: users.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final doc = users[index];
+                          final data = doc.data() as Map<String, dynamic>;
+                          return _buildMobileUserCard(context, provider, doc.id, data);
+                        },
+                      ),
+                    ),
+                    _buildTableFooter(allUsers.length, totalPages),
+                  ],
+                );
+              }
+
+              // ── DESKTOP: Table layout ──
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Compact count header
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFAFAFA),
-                      border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.people_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
-                        const SizedBox(width: 8),
-                        Text('${users.length} user${users.length != 1 ? 's' : ''}',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600,
-                              color: const Color(0xFF64748B))),
-                      ],
-                    ),
-                  ),
+                  _buildTableHeader(),
                   Expanded(
-                    child: ListView.separated(
+                    child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.zero,
                       itemCount: users.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         final doc = users[index];
                         final data = doc.data() as Map<String, dynamic>;
-                        return _buildMobileUserCard(context, provider, doc.id, data);
+
+                        return AnimatedBuilder(
+                          animation: _staggerController,
+                          builder: (context, child) {
+                            final animationValue = CurvedAnimation(
+                              parent: _staggerController,
+                              curve: Interval(
+                                (index / users.length) * 0.5,
+                                1.0,
+                                curve: Curves.easeOutQuart,
+                              ),
+                            ).value;
+
+                            return Opacity(
+                              opacity: animationValue,
+                              child: Transform.translate(
+                                offset: Offset(0, 20 * (1 - animationValue)),
+                                child: Column(
+                                  children: [
+                                    _buildUserRow(context, provider, doc.id, data, index),
+                                    if (index < users.length - 1)
+                                      const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
                       },
                     ),
                   ),
                   _buildTableFooter(allUsers.length, totalPages),
                 ],
               );
-            }
-
-            // ── DESKTOP: Table layout ──
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildTableHeader(),
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.zero,
-                    itemCount: users.length,
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final doc = users[index];
-                      final data = doc.data() as Map<String, dynamic>;
-
-                      return AnimatedBuilder(
-                        animation: _staggerController,
-                        builder: (context, child) {
-                          final animationValue = CurvedAnimation(
-                            parent: _staggerController,
-                            curve: Interval(
-                              (index / users.length) * 0.5,
-                              1.0,
-                              curve: Curves.easeOutQuart,
-                            ),
-                          ).value;
-
-                          return Opacity(
-                            opacity: animationValue,
-                            child: Transform.translate(
-                              offset: Offset(0, 20 * (1 - animationValue)),
-                              child: Column(
-                                children: [
-                                  _buildUserRow(context, provider, doc.id, data, index),
-                                  if (index < users.length - 1)
-                                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-                _buildTableFooter(allUsers.length, totalPages),
-              ],
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -603,7 +606,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     ),
                     child: Center(
                       child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                          style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -612,12 +615,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(displayName,
-                          style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0F172A)),
-                          overflow: TextOverflow.ellipsis, maxLines: 1),
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0F172A)),
+                            overflow: TextOverflow.ellipsis, maxLines: 1),
                         Text(email,
-                          style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF64748B)),
-                          overflow: TextOverflow.ellipsis, maxLines: 1),
+                            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF64748B)),
+                            overflow: TextOverflow.ellipsis, maxLines: 1),
                       ],
                     ),
                   ),
@@ -635,19 +638,19 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   // Compact actions
                   _buildActionButton(
                     Icons.edit_note_rounded, 'Edit', const Color(0xFF6366F1),
-                    () => _showEditUserDialog(context, provider, data, docId, displayName),
+                        () => _showEditUserDialog(context, provider, data, docId, displayName),
                   ),
                   const SizedBox(width: 4),
                   _buildActionButton(
                     status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
                     status == 'active' ? 'Suspend' : 'Activate',
                     status == 'active' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                    () async => await provider.suspendUser(docId, status),
+                        () async => await provider.suspendUser(docId, status),
                   ),
                   const SizedBox(width: 4),
                   _buildActionButton(
                     Icons.lock_reset_rounded, 'Reset', const Color(0xFF8B5CF6),
-                    () => _showResetPasswordDialog(context, provider, email),
+                        () => _showResetPasswordDialog(context, provider, email),
                   ),
                 ],
               ),
@@ -1325,10 +1328,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   void _showUserDialog(BuildContext context, AdminProvider provider, String title, bool isEdit, Map<String, dynamic>? existingData) {
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 600;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) {
         String selectedRole = existingData?['role'] ?? 'Job Seeker';
         String selectedLevel = existingData?['user_lvl'] ?? 'basic';
@@ -1336,20 +1342,27 @@ class _UserManagementSectionState extends State<UserManagementSection>
         return StatefulBuilder(
           builder: (stfContext, setDialogState) {
             return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              elevation: 10,
+              insetPadding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 40,
+                vertical: 24,
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              elevation: 0,
               backgroundColor: Colors.transparent,
               child: Container(
-                width: 540,
-                constraints: const BoxConstraints(maxHeight: 700),
+                width: isMobile ? size.width : 540,
+                constraints: BoxConstraints(
+                  maxHeight: size.height * 0.85,
+                  maxWidth: 540,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      offset: const Offset(0, 20),
                     ),
                   ],
                 ),
@@ -1358,25 +1371,22 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   children: [
                     // Modern Header with Gradient
                     Container(
-                      padding: const EdgeInsets.all(28),
+                      padding: EdgeInsets.all(isMobile ? 20 : 28),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF6366F1),
-                            const Color(0xFF6366F1).withValues(alpha: 0.9),
-                          ],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
                         ),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: EdgeInsets.all(isMobile ? 10 : 12),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
@@ -1384,7 +1394,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                             child: Icon(
                               isEdit ? Icons.edit_note_rounded : Icons.person_add_rounded,
                               color: Colors.white,
-                              size: 24,
+                              size: isMobile ? 20 : 24,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -1395,18 +1405,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 Text(
                                   title,
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: isMobile ? 18 : 22,
+                                    fontWeight: FontWeight.w800,
                                     color: Colors.white,
-                                    letterSpacing: -0.3,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 2),
                                 Text(
                                   isEdit ? 'Update user information' : 'Create new account',
                                   style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 12,
+                                    color: Colors.white.withValues(alpha: 0.8),
                                   ),
                                 ),
                               ],
@@ -1417,9 +1427,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               provider.clearForm();
                               Navigator.pop(dialogContext);
                             },
-                            icon: const Icon(Icons.close, color: Colors.white, size: 22),
+                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
+                              backgroundColor: Colors.white.withValues(alpha: 0.1),
                               padding: const EdgeInsets.all(8),
                             ),
                           ),
@@ -1429,7 +1439,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     // Content
                     Flexible(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(28),
+                        padding: EdgeInsets.all(isMobile ? 20 : 28),
                         child: Form(
                           key: provider.formKey,
                           child: Column(
@@ -1440,14 +1450,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 provider.nameController,
                                 Icons.person_outline_rounded,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 24),
                               _buildDialogField(
                                 'Email Address',
                                 provider.emailController,
                                 Icons.alternate_email_rounded,
                                 readOnly: isEdit,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 24),
                               if (!isEdit) ...[
                                 _buildDialogField(
                                   'Password',
@@ -1456,19 +1466,19 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                   obscureText: true,
                                   validator: (v) => (v?.length ?? 0) < 6 ? 'Password must be at least 6 characters' : null,
                                 ),
-                                const SizedBox(height: 18),
+                                const SizedBox(height: 24),
                               ],
                               _buildSectionLabel('User Role'),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               _buildRoleSelector(selectedRole, (value) {
                                 setDialogState(() {
                                   selectedRole = value!;
                                   provider.roleController.text = value;
                                 });
                               }),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 24),
                               _buildSectionLabel('Account Level'),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               _buildLevelDropdown(selectedLevel, (value) {
                                 setDialogState(() {
                                   selectedLevel = value!;
@@ -1482,13 +1492,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     ),
                     // Footer Actions
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: EdgeInsets.all(isMobile ? 16 : 24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFAFAFA),
-                        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                        color: const Color(0xFFF8FAFC),
+                        border: Border(top: BorderSide(color: Colors.grey.shade100)),
                         borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20),
+                          bottomLeft: Radius.circular(24),
+                          bottomRight: Radius.circular(24),
                         ),
                       ),
                       child: Row(
@@ -1558,7 +1568,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               backgroundColor: const Color(0xFF6366F1),
                               foregroundColor: Colors.white,
                               disabledBackgroundColor: const Color(0xFFCBD5E1),
-                              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ).copyWith(
@@ -1580,176 +1590,174 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
+
   Widget _buildRoleSelector(String selectedRole, ValueChanged<String?> onChanged) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
           Expanded(
-            child: _buildRoleOption(
-              'Job Seeker',
-              'Job Seeker',
-              selectedRole,
-              Icons.work_outline_rounded,
-              onChanged,
-            ),
+            child: _buildRoleOption('Job Seeker', 'Job Seeker', selectedRole, Icons.work_outline_rounded, onChanged),
           ),
-          const SizedBox(width: 6),
           Expanded(
-            child: _buildRoleOption(
-              'Recruiter',
-              'Recruiter',
-              selectedRole,
-              Icons.business_center_rounded,
-              onChanged,
-            ),
+            child: _buildRoleOption('Recruiter', 'Recruiter', selectedRole, Icons.business_center_rounded, onChanged),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRoleOption(
-      String label,
-      String value,
-      String groupValue,
-      IconData icon,
-      ValueChanged<String?> onChanged,
-      ) {
+  Widget _buildRoleOption(String label, String value, String groupValue, IconData icon, ValueChanged<String?> onChanged) {
     final isSelected = value == groupValue;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => onChanged(value),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected
-                ? [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
-              ),
-              const SizedBox(width: 10),
-              Text(
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8)),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
                 label,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                  color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF64748B),
                 ),
               ),
-              if (isSelected) ...[
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 18,
-                  color: const Color(0xFF6366F1),
-                ),
-              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+
+
+  Widget _buildLevelDropdown(String selectedLevel, ValueChanged<String?> onChanged) {
+    return DropdownButtonFormField<String>(
+      value: selectedLevel,
+      style: GoogleFonts.plusJakartaSans(fontSize: 14, color: const Color(0xFF0F172A), fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+        ),
+      ),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      items: [
+        DropdownMenuItem(
+          value: 'basic',
+          child: Row(
+            children: [
+              const Icon(Icons.person_outline, size: 18, color: Color(0xFF64748B)),
+              const SizedBox(width: 12),
+              Text('Basic Account', style: GoogleFonts.plusJakartaSans()),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLevelDropdown(String selectedLevel, ValueChanged<String?> onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: DropdownButtonFormField<String>(
-        initialValue: selectedLevel,
-        focusColor: null,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 14,
-          color: const Color(0xFF0F172A),
-          fontWeight: FontWeight.w500,
+        DropdownMenuItem(
+          value: 'premium',
+          child: Row(
+            children: [
+              const Icon(Icons.workspace_premium_rounded, size: 18, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 12),
+              Text('Premium Account', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+              const SizedBox(width: 8),
+              const Badge(label: Text('PRO'), backgroundColor: Color(0xFFFEF3C7), textColor: Color(0xFFD97706)),
+            ],
+          ),
         ),
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
-        items: [
-          DropdownMenuItem(
-            value: 'basic',
-            child: Row(
-              children: [
-                const Icon(Icons.person_outline, size: 18, color: Color(0xFF64748B)),
-                const SizedBox(width: 12),
-                Text('Basic Account', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
-              ],
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'premium',
-            child: Row(
-              children: [
-                const Icon(Icons.workspace_premium_rounded, size: 18, color: Color(0xFFF59E0B)),
-                const SizedBox(width: 12),
-                Row(
-                  children: [
-                    Text('Premium Account', style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'PRO',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFFD97706),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-        onChanged: onChanged,
-      ),
+      ],
+      onChanged: onChanged,
     );
   }
 
 
 
   Widget _buildSectionLabel(String label) {
-    return Text(
-      label,
-      style: GoogleFonts.plusJakartaSans(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF374151),
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, bottom: 8),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          color: const Color(0xFF64748B),
+        ),
       ),
     );
   }
 
+  Widget _buildDialogField(
+      String label,
+      TextEditingController controller,
+      IconData icon, {
+        bool obscureText = false,
+        bool readOnly = false,
+        String? Function(String?)? validator,
+      }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel(label),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          readOnly: readOnly,
+          style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w500),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
+            hintText: 'Enter $label',
+            hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: const Color(0xFFCBD5E1)),
+            filled: true,
+            fillColor: readOnly ? const Color(0xFFF8FAFC) : Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+            ),
+          ),
+          validator: validator ?? (v) => v?.trim().isEmpty ?? true ? '$label is required' : null,
+        ),
+      ],
+    );
+  }
 
 
 
@@ -1765,19 +1773,24 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
 
   void _showResetPasswordDialog(BuildContext context, AdminProvider provider, String email) {
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 600;
+
     showDialog(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierColor: const Color(0xFF0F172A).withValues(alpha: 0.7),
       builder: (dialogContext) => Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 40),
         backgroundColor: Colors.transparent,
         child: Container(
-          width: 420,
+          // Adaptive width: 95% on small screens, max 420 on large ones
+          width: isMobile ? size.width : 420,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 40,
                 offset: const Offset(0, 20),
               ),
@@ -1786,14 +1799,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(32),
+              Padding(
+                padding: EdgeInsets.all(isMobile ? 24 : 32),
                 child: Column(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                        color: const Color(0xFFF5F3FF),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1814,31 +1827,34 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     const SizedBox(height: 12),
                     Text(
                       'A password reset link will be sent to:',
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         color: const Color(0xFF64748B),
-                        height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFAFAFA),
+                        color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.email_outlined, size: 18, color: const Color(0xFF94A3B8)),
+                          const Icon(Icons.alternate_email_rounded, size: 16, color: Color(0xFF94A3B8)),
                           const SizedBox(width: 10),
-                          Text(
-                            email,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0F172A),
+                          Flexible(
+                            child: Text(
+                              email,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF0F172A),
+                              ),
                             ),
                           ),
                         ],
@@ -1847,59 +1863,42 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   ],
                 ),
               ),
+              // Footer
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFAFAFA),
+                  color: const Color(0xFFF8FAFC),
                   borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
                   ),
-                  border: Border(top: BorderSide(color: const Color(0xFFE2E8F0))),
+                  border: Border(top: BorderSide(color: Colors.grey.shade100)),
                 ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
+                      child: TextButton(
                         onPressed: () => Navigator.pop(dialogContext),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(color: const Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: const Color(0xFF64748B),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
+                        child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.w600)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton.icon(
+                      flex: 2,
+                      child: ElevatedButton(
                         onPressed: () {
                           provider.resetPassword(email);
                           Navigator.pop(dialogContext);
-                          CustomSnackbars.showSuccess(context, 'Password reset email sent');
+                          CustomSnackbars.showSuccess(context, 'Reset link sent successfully');
                         },
-                        icon: const Icon(Icons.send_rounded, size: 18),
-                        label: Text(
-                          'Send Link',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF8B5CF6),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
+                        child: Text('Send Link', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
@@ -1913,63 +1912,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
 
-  Widget _buildDialogField(
-      String label,
-      TextEditingController controller,
-      IconData icon, {
-        bool obscureText = false,
-        bool readOnly = false,
-        String? Function(String?)? validator,
-      }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionLabel(label),
-        const SizedBox(height: 10),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          readOnly: readOnly,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
-            filled: false,
-            hintText: 'Enter $label',
-            hintStyle: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              color: const Color(0xFF94A3B8),
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: const Color(0xFFE2E8F0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: const Color(0xFFE2E8F0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFEF4444)),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          validator: validator ?? (v) => v?.trim().isEmpty ?? true ? '$label is required' : null,
-        ),
-      ],
-    );
-  }
   @override
   void dispose() {
     // Stop animations first before disposing
