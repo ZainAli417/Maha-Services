@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.job_portal"
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     // Inside the android { ... } block
     compileOptions {
@@ -36,8 +36,6 @@ android {
             // 🔥 IMPORTANT OPTIMIZATION
             isMinifyEnabled = true
             isShrinkResources = true
-
-            // Proguard rules
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

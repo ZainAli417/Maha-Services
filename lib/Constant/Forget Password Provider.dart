@@ -17,13 +17,13 @@ class ForgotPasswordProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> submitForgotPassword(BuildContext context) async {
+  Future<bool> submitForgotPassword(BuildContext context) async {
     final trimmedEmail = _email.trim();
     // 1. Input Validation
     if (trimmedEmail.isEmpty || !trimmedEmail.contains('@')) {
       // REPLACED: _showErrorFlushbar
       showErrorSnackBar(context, 'Please enter a valid email address.');
-      return;
+      return false;
     }
 
     _isLoading = true;
@@ -31,7 +31,7 @@ class ForgotPasswordProvider with ChangeNotifier {
 
     try {
       await _auth.sendPasswordResetEmail(email: trimmedEmail);
-      _showSuccessDialog(context); // You might want to update this to a Green SnackBar too!
+      return true;
     } on FirebaseAuthException catch (e) {
       // 2. Firebase Error Handling
       if (e.code == 'user-not-found') {
@@ -44,102 +44,18 @@ class ForgotPasswordProvider with ChangeNotifier {
             e.message ?? 'Failed to send password reset email.'
         );
       }
+      return false;
     } catch (e) {
       // 3. Generic Error Handling
       showErrorSnackBar(
           context,
           'An unexpected error occurred. Please try again.'
       );
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
-  }
-  void _showSuccessDialog(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Dismiss',
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Center(
-          child: Material(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.3,
-              height: MediaQuery.of(context).size.height * 0.6,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center, // center horizontally
-                  children: [
-                    Lottie.asset(
-                      'images/success.json',
-                      height: 200,
-                      width: 200,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Check Your Mailbox',
-                      textAlign: TextAlign.center, // center text
-                      style: GoogleFonts.montserrat(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'If your email exists, a password reset link has been sent to your email.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.montserrat(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        color: primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Close',
-                        style: GoogleFonts.montserrat(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),            ),
-          ),
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curvedAnimation =
-            CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
-        return ScaleTransition(
-          scale: curvedAnimation,
-          child: child,
-        );
-      },
-    );
   }
 
   void showErrorSnackBar(BuildContext context, String message) {

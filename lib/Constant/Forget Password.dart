@@ -64,9 +64,9 @@ class _ForgotPasswordDialogContentState
     final provider =
         Provider.of<ForgotPasswordProvider>(context, listen: false);
     provider.setEmail(_emailController.text.trim());
-    await provider.submitForgotPassword(context);
+    final success = await provider.submitForgotPassword(context);
 
-    if (mounted) {
+    if (success && mounted) {
       setState(() => _submitted = true);
     }
   }
