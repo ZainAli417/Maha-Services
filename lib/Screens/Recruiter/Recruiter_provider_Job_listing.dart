@@ -289,6 +289,7 @@ class job_listing_provider extends ChangeNotifier {
 
       final jobData = _buildJobData(jobId, _cachedUserId!, logoUrl);
       await _saveJobData(jobId, jobData);
+
       clearTempFields();
       return null;
     } catch (e) {

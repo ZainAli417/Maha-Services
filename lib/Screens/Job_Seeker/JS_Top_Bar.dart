@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -136,11 +137,28 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                         ),
 
                         const SizedBox(height: 20),
-                        _buildSectionLabel('ACCOUNT'),
-                        const SizedBox(height: 8),
-                        _buildProMenuItem(
-                          icon: Icons.settings_outlined,
-                          label: 'Settings',
+                        FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get(),
+                          builder: (context, snapshot) {
+                            final role = (snapshot.data?.data() as Map<String, dynamic>?)?['role'] ?? '';
+                            if (role != 'Job Seeker') return const SizedBox.shrink();
+                            
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildSectionLabel('ACCOUNT'),
+                                const SizedBox(height: 8),
+                                _buildMenuItem(
+                                  icon: Icons.settings_outlined,
+                                  activeIcon: Icons.settings,
+                                  label: 'Settings',
+                                  index: 4,
+                                  isActive: widget.activeIndex == 4,
+                                  onTap: () => context.go('/js-settings'),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                         _buildProMenuItem(
                           icon: Icons.help_outline,

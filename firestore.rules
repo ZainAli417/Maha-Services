@@ -91,5 +91,12 @@ service cloud.firestore {
     match /{path=**}/applied_jobs/{jobId} {
       allow read: if isAuth() && (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
     }
+
+    // --- JOB ALERT QUEUE ---
+    // Recruiters can create alert queue items; Cloud Functions (admin SDK) handle processing
+    match /job_alert_queue/{alertId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
   }
 }

@@ -51,6 +51,9 @@ class SignupProvider extends ChangeNotifier {
   bool isCaptchaVerified = false;
   String? captchaToken;
 
+  // ─── Job Alerts / Newsletter ──────────────────────────────────────────────────
+  bool jobAlertsEnabled = true;
+
   final _picker = ImagePicker();
 
   // ─── Safe notify helper ───────────────────────────────────────────────────────
@@ -80,11 +83,20 @@ class SignupProvider extends ChangeNotifier {
     _safeNotify(); // ← was notifyListeners(), caused the build-phase crash
   }
 
+  // ─── Job Alerts Toggle ────────────────────────────────────────────────────────
+  void toggleJobAlerts(bool value) {
+    jobAlertsEnabled = value;
+    notifyListeners();
+  }
+
   // ─── Role & Navigation ────────────────────────────────────────────────────────
   void setRole(String newRole) {
     if (!['Job Seeker', 'Recruiter'].contains(newRole)) return;
     role = newRole;
-    if (newRole == 'Recruiter') showCvUploadSection = false;
+    if (newRole == 'Recruiter') {
+      showCvUploadSection = false;
+      jobAlertsEnabled = false;
+    }
     notifyListeners();
   }
 
@@ -320,6 +332,7 @@ class SignupProvider extends ChangeNotifier {
         'role': role,
         'isNew': 'no',
         'account_status': 'active',
+        'job_alerts_enabled': jobAlertsEnabled,
         'created_at': FieldValue.serverTimestamp(),
       });
       return true;
@@ -364,6 +377,7 @@ class SignupProvider extends ChangeNotifier {
         'uid': uid,
         'account_status': 'active',
         'user_lvl': 'basic',
+        'job_alerts_enabled': jobAlertsEnabled,
         'created_at': FieldValue.serverTimestamp(),
       });
 
@@ -658,6 +672,7 @@ class SignupProvider extends ChangeNotifier {
     generalError = null;
     isLoading = false;
     isCaptchaVerified = false;
+    jobAlertsEnabled = true;
     captchaToken = null;
     notifyListeners();
   }

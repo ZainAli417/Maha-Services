@@ -23,6 +23,7 @@ import 'Screens/Recruiter/Request_Box.dart';
 import 'SignUp /profile_builder.dart';
 import 'SignUp /signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
+import 'Screens/Job_Seeker/js_settings_screen.dart';
 
 // ========== 1. ROBUST DATA SERVICE (Logic from Code A) ==========
 class RoleService {
@@ -267,6 +268,7 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/profile', pageBuilder: (c, s) => _fadePage(const ProfileScreen_NEW(), s)),
     GoRoute(path: '/ai-tools', pageBuilder: (c, s) => _fadePage(CVAnalysisScreen(), s)),
     GoRoute(path: '/job-hub', pageBuilder: (c, s) => _fadePage(job_hub(), s)),
+    GoRoute(path: '/js-settings', pageBuilder: (c, s) => _fadePage(const JSSettingsScreen(), s)),
 
     // Recruiter
     GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),

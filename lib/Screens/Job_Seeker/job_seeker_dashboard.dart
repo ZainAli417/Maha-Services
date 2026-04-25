@@ -1782,9 +1782,6 @@ class _OutlineBtn extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  SHARED PRIMITIVES
-// ═══════════════════════════════════════════════════════════════════════════
 class _Card extends StatelessWidget {
   final Widget child; final double? height;
   const _Card({required this.child, this.height});
@@ -1877,9 +1874,6 @@ class _Empty extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  CHART DATA MODEL
-// ═══════════════════════════════════════════════════════════════════════════
 class ChartData {
   final String status; final int count; final Color color;
   ChartData(this.status, this.count, this.color);

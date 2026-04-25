@@ -555,7 +555,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
             ),
           ),
-          SizedBox(height: isWide ? 32 : 22),
+          SizedBox(height: isWide ? 24 : 18),
+          if (p.role == 'Job Seeker') ...[
+            _buildJobAlertsCheckbox(p, isWide),
+            SizedBox(height: isWide ? 24 : 16),
+          ],
           _buildReCaptcha(p),
           SizedBox(height: isWide ? 20 : 16),
           _buildSubmitButton(p, isWide),
@@ -679,6 +683,100 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             ],
           ),
       ],
+    );
+  }
+
+  Widget _buildJobAlertsCheckbox(SignupProvider provider, bool isWide) {
+    return GestureDetector(
+      onTap: () => provider.toggleJobAlerts(!provider.jobAlertsEnabled),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: EdgeInsets.all(isWide ? 16 : 12),
+        decoration: BoxDecoration(
+          color: provider.jobAlertsEnabled
+              ? const Color(0xFF6366F1).withValues(alpha: 0.05)
+              : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: provider.jobAlertsEnabled
+                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+                : Colors.grey.shade200,
+            width: provider.jobAlertsEnabled ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isWide ? 24 : 22,
+              height: isWide ? 24 : 22,
+              decoration: BoxDecoration(
+                gradient: provider.jobAlertsEnabled
+                    ? const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      )
+                    : null,
+                color: provider.jobAlertsEnabled ? null : Colors.white,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: provider.jobAlertsEnabled
+                      ? Colors.transparent
+                      : Colors.grey.shade300,
+                  width: 1.5,
+                ),
+                boxShadow: provider.jobAlertsEnabled
+                    ? [
+                        BoxShadow(
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: provider.jobAlertsEnabled
+                  ? const Icon(Icons.check_rounded,
+                      size: 16, color: Colors.white)
+                  : null,
+            ),
+            SizedBox(width: isWide ? 14 : 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.notifications_active_rounded,
+                          size: 16, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Job Alerts & Newsletter',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: isWide ? 14 : 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Receive email notifications when new positions are posted. '
+                    'Get career tips and platform updates.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isWide ? 12 : 11,
+                      color: Colors.grey.shade600,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
