@@ -30,7 +30,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
         final initials = provider.initials;
 
         final sidebarWidth = widget.isDrawer
-        // Mobile: Narrower drawer, clamped between 180 and 230
+            // Mobile: Narrower drawer, clamped between 180 and 230
             ? (MediaQuery.of(context).size.width * 0.35).clamp(180.0, 230.0)
             : 240.0; // Desktop: Reduced from 260 to 240
         return Container(
@@ -38,10 +38,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border(
-              right: BorderSide(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
+              right: BorderSide(color: Colors.grey.shade200, width: 1),
             ),
             boxShadow: [
               BoxShadow(
@@ -72,7 +69,10 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                 // Menu Items
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 12,
+                    ),
                     children: [
                       _buildSectionLabel('MAIN MENU'),
                       const SizedBox(height: 8),
@@ -92,17 +92,24 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                         isActive: widget.activeIndex == 1,
                         onTap: () => context.go('/post-job'),
                       ),
+                      // _buildMenuItem(
+                      //   icon: Icons.work_outline,
+                      //   activeIcon: Icons.work,
+                      //   label: 'My Jobs',
+                      //   index: 5,
+                      //   isActive: widget.activeIndex == 5,
+                      //   onTap: () => context.go('/recruiter-jobs'),
+                      // ),
                       _buildMenuItem(
                         icon: Icons.spatial_tracking_outlined,
                         activeIcon: Icons.spatial_tracking_rounded,
                         label: 'Job Application Tracker',
-                        index:2,
+                        index: 2,
                         isActive: widget.activeIndex == 2,
                         onTap: () => context.go('/job-application-tracker'),
                       ),
 
                       _buildMenuItem(
-
                         icon: Icons.person_outline,
                         activeIcon: Icons.person,
                         label: 'Shortlisting',
@@ -117,6 +124,14 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                         index: 4,
                         isActive: widget.activeIndex == 4,
                         onTap: () => context.go('/request-box'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.archive_outlined,
+                        activeIcon: Icons.archive,
+                        label: 'Archived Jobs',
+                        index: 5,
+                        isActive: widget.activeIndex == 5,
+                        onTap: () => context.go('/archived-jobs'),
                       ),
 
                       // const SizedBox(height: 20),
@@ -152,7 +167,6 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
           ),
         );
       },
-
     );
   }
 
@@ -193,7 +207,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                   'Recruiter Portal',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -272,7 +286,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                   'Recruiter',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -354,7 +368,9 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       label,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         color: isActive
                             ? const Color(0xFF0F172A)
                             : const Color(0xFF475569),
@@ -364,7 +380,10 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                   // Badge
                   if (badge != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444),
                         borderRadius: BorderRadius.circular(10),
@@ -454,12 +473,19 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 24),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFEF4444),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             Text(
               'Confirm Logout',
-              style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),
@@ -470,7 +496,10 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -506,7 +535,6 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
               style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
           ),
-
         ],
       ),
     );

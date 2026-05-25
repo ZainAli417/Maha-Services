@@ -76,12 +76,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       curve: Curves.easeInOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.1, 0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.1, 0), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -123,11 +121,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F0F23),
-              Color(0xFF1a1a3e),
-              Color(0xFF2d1b4e),
-            ],
+            colors: [Color(0xFF0F0F23), Color(0xFF1a1a3e), Color(0xFF2d1b4e)],
           ),
         ),
         child: Stack(
@@ -135,8 +129,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             _buildAnimatedOrbs(),
             SafeArea(
               child: Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -299,7 +295,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1.5,
+        ),
       ),
       child: Row(
         children: [
@@ -318,7 +317,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 ),
               ],
             ),
-            child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
+            child: const Icon(
+              Icons.bolt_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -413,14 +416,19 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         ),
         const SizedBox(height: 14),
         const _CompactFeature(
-            icon: Icons.auto_awesome_rounded, title: 'AI-Powered Matching'),
+          icon: Icons.auto_awesome_rounded,
+          title: 'AI-Powered Matching',
+        ),
         const SizedBox(height: 10),
         const _CompactFeature(
-            icon: Icons.speed_rounded, title: 'Seek More Borderless Jobs'),
+          icon: Icons.speed_rounded,
+          title: 'Seek More Borderless Jobs',
+        ),
         const SizedBox(height: 10),
         const _CompactFeature(
-            icon: Icons.verified_user_rounded,
-            title: 'Verified Employers across Globe'),
+          icon: Icons.verified_user_rounded,
+          title: 'Verified Employers across Globe',
+        ),
       ],
     );
   }
@@ -437,9 +445,17 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           const _TrustBadge(icon: Icons.shield_outlined, label: '256-bit'),
-          Container(width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
           const _TrustBadge(icon: Icons.verified_outlined, label: 'SOC 2'),
-          Container(width: 1, height: 20, color: Colors.white.withValues(alpha: 0.1)),
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
           const _TrustBadge(icon: Icons.security_outlined, label: 'GDPR'),
         ],
       ),
@@ -448,8 +464,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
 
   // ─── ACCOUNT PANEL ───────────────────────────────────────────────────────────
 
-  Widget accountPanel(
-      BuildContext context, SignupProvider p, bool isWide) {
+  Widget accountPanel(BuildContext context, SignupProvider p, bool isWide) {
     final double fieldGap = isWide ? 18 : 14;
     final double sectionGap = isWide ? 28 : 18;
 
@@ -540,7 +555,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             validator: (v) {
               final val = v?.trim() ?? '';
               if (val.isEmpty) return 'Confirm your password';
-              if (val != p.passwordController.text.trim()) return 'Passwords must match';
+              if (val != p.passwordController.text.trim()) {
+                return 'Passwords must match';
+              }
               return null;
             },
             suffixIcon: IconButton(
@@ -551,8 +568,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 color: const Color(0xFF6366F1),
                 size: 20,
               ),
-              onPressed: () => setState(() =>
-              _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+              onPressed: () => setState(
+                () => _isConfirmPasswordVisible = !_isConfirmPasswordVisible,
+              ),
             ),
           ),
           SizedBox(height: isWide ? 24 : 18),
@@ -609,8 +627,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 ),
               ],
             ),
-            child: Icon(Icons.account_circle_outlined,
-                color: Colors.white, size: iconSize),
+            child: Icon(
+              Icons.account_circle_outlined,
+              color: Colors.white,
+              size: iconSize,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -632,7 +653,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: subSize,
                     color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -665,7 +686,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           Text(
             'Please verify that you are not a robot',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 12, color: Colors.grey.shade600),
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
           )
         else
           Row(
@@ -728,8 +751,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 boxShadow: provider.jobAlertsEnabled
                     ? [
                         BoxShadow(
-                          color:
-                              const Color(0xFF6366F1).withValues(alpha: 0.3),
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -737,8 +759,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                     : null,
               ),
               child: provider.jobAlertsEnabled
-                  ? const Icon(Icons.check_rounded,
-                      size: 16, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    )
                   : null,
             ),
             SizedBox(width: isWide ? 14 : 10),
@@ -748,8 +773,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.notifications_active_rounded,
-                          size: 16, color: Color(0xFF6366F1)),
+                      const Icon(
+                        Icons.notifications_active_rounded,
+                        size: 16,
+                        color: Color(0xFF6366F1),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Job Alerts & Newsletter',
@@ -789,11 +817,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         decoration: BoxDecoration(
           gradient: verified
               ? const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-          )
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                )
               : LinearGradient(
-            colors: [Colors.grey.shade100, Colors.grey.shade200],
-          ),
+                  colors: [Colors.grey.shade100, Colors.grey.shade200],
+                ),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: verified ? Colors.transparent : Colors.grey.shade300,
@@ -801,19 +829,19 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           ),
           boxShadow: verified
               ? [
-            BoxShadow(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ]
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
               : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: ElevatedButton.icon(
           onPressed: verified ? () => _handleSubmit(provider) : null,
@@ -825,8 +853,8 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           label: Text(
             verified
                 ? (provider.role == 'Recruiter'
-                ? 'Create Recruiter Account'
-                : 'Create Job Seeker Account')
+                      ? 'Create Recruiter Account'
+                      : 'Create Job Seeker Account')
                 : 'Verify First',
             style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w600,
@@ -880,8 +908,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           context.go('/recruiter-dashboard');
         } else {
           _showSnackBar(
-              provider.generalError ?? 'Failed to create account',
-              isError: true);
+            provider.generalError ?? 'Failed to create account',
+            isError: true,
+          );
         }
       } else {
         final route = await provider.createJobSeekerAccount();
@@ -897,8 +926,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           if (mounted) context.go(route);
         } else {
           _showSnackBar(
-              provider.generalError ?? 'Failed to create account',
-              isError: true);
+            provider.generalError ?? 'Failed to create account',
+            isError: true,
+          );
         }
       }
     } catch (e) {
@@ -922,13 +952,17 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             Text(
               'Creating Your Account',
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: 17, fontWeight: FontWeight.w600),
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Please wait...',
               style: GoogleFonts.plusJakartaSans(
-                  color: Colors.grey.shade600, fontSize: 14),
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -983,18 +1017,18 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       decoration: BoxDecoration(
         gradient: isSelected
             ? const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-        )
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              )
             : null,
         borderRadius: BorderRadius.circular(12),
         boxShadow: isSelected
             ? [
-          BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ]
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
             : null,
       ),
       child: Material(
@@ -1013,8 +1047,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               children: [
                 Icon(
                   icon,
-                  color:
-                  isSelected ? Colors.white : Colors.grey.shade600,
+                  color: isSelected ? Colors.white : Colors.grey.shade600,
                   size: compact ? 18 : 22,
                 ),
                 SizedBox(width: compact ? 6 : 10),
@@ -1025,9 +1058,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: compact ? 13 : 14,
                       fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white
-                          : Colors.grey.shade700,
+                      color: isSelected ? Colors.white : Colors.grey.shade700,
                     ),
                   ),
                 ),
@@ -1076,9 +1107,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           maxLines: maxLines,
           onChanged: onChanged,
           validator: validator,
-          autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+          autovalidateMode:
+              autovalidateMode ?? AutovalidateMode.onUserInteraction,
           style: GoogleFonts.plusJakartaSans(
-              fontSize: 14, fontWeight: FontWeight.w500),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.plusJakartaSans(
@@ -1089,7 +1123,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             helperStyle: GoogleFonts.plusJakartaSans(
               color: const Color(0xFF6366F1),
               fontSize: 11,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             prefixIcon: Container(
               margin: EdgeInsets.all(isWide ? 12 : 10),
@@ -1103,8 +1137,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child:
-              Icon(icon, color: const Color(0xFF6366F1), size: 18),
+              child: Icon(icon, color: const Color(0xFF6366F1), size: 18),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -1114,23 +1147,19 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              BorderSide(color: Colors.grey.shade200, width: 1.5),
+              borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              BorderSide(color: Colors.red.shade300, width: 1.5),
+              borderSide: BorderSide(color: Colors.red.shade300, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              BorderSide(color: Colors.red.shade400, width: 2),
+              borderSide: BorderSide(color: Colors.red.shade400, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16,
@@ -1158,8 +1187,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.watch<SignupProvider>();
-    final state =
-    context.findAncestorStateOfType<_SignUp_ScreenState>()!;
+    final state = context.findAncestorStateOfType<_SignUp_ScreenState>()!;
     final isWide = MediaQuery.of(context).size.width > 900;
 
     // Responsive paddings
@@ -1177,15 +1205,14 @@ class _SignUp_ScreenInner extends StatelessWidget {
               child: Row(
                 children: [
                   if (isWide)
-                    Flexible(
-                      flex: 5,
-                      child: state.leftPanel(context),
-                    ),
+                    Flexible(flex: 5, child: state.leftPanel(context)),
                   Flexible(
                     flex: 5,
                     child: SingleChildScrollView(
                       padding: EdgeInsets.symmetric(
-                          horizontal: hPad, vertical: vPad),
+                        horizontal: hPad,
+                        vertical: vPad,
+                      ),
                       child: FadeTransition(
                         opacity: state._fadeAnimation,
                         child: SlideTransition(
@@ -1194,7 +1221,6 @@ class _SignUp_ScreenInner extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Mobile brand header
-
                               state.accountPanel(context, p, isWide),
                               const SizedBox(height: 8),
                               Center(
@@ -1209,20 +1235,18 @@ class _SignUp_ScreenInner extends StatelessWidget {
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: () =>
-                                          context.go('/login'),
+                                      onPressed: () => context.go('/login'),
                                       style: TextButton.styleFrom(
-                                        padding:
-                                        const EdgeInsets.only(left: 4),
+                                        padding: const EdgeInsets.only(left: 4),
                                         minimumSize: Size.zero,
                                         tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
+                                            MaterialTapTargetSize.shrinkWrap,
                                       ),
                                       child: Text(
                                         'Login',
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 13,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w700,
                                           color: Colors.indigo,
                                         ),
                                       ),
@@ -1244,6 +1268,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildMobileLogoHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1271,8 +1296,11 @@ class _SignUp_ScreenInner extends StatelessWidget {
                     color: Colors.indigo,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.work_outline_rounded,
-                      color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.work_outline_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ),
             ),
@@ -1291,7 +1319,6 @@ class _SignUp_ScreenInner extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ─── Reusable components ──────────────────────────────────────────────────────
@@ -1374,7 +1401,11 @@ class _CompactFeature extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 16),
+          child: Icon(
+            icon,
+            color: Colors.white.withValues(alpha: 0.9),
+            size: 16,
+          ),
         ),
         const SizedBox(width: 12),
         Text(
@@ -1389,7 +1420,6 @@ class _CompactFeature extends StatelessWidget {
     );
   }
 }
-
 
 class _TrustBadge extends StatelessWidget {
   final IconData icon;

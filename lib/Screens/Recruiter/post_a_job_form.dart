@@ -12,15 +12,21 @@ import '../../Constant/recruiter_AI.dart';
 
 // ─── Colors (mirrors Dashboard_Recruiter) ────────────────────────────────────
 const Color _primary = Color(0xFF6366F1);
+const Color _primaryLight = Color(0xFFF0F4FF);
 const Color _accent = Color(0xFF8B5CF6);
-const Color _background = Color(0xFFFAFAFA);
-const Color _surface = Color(0xFFFFFFFF);
+const Color _accentLight = Color(0xFFF5F3FF);
+const Color _bgWhite = Color(0xFFFFFFFF);
+const Color _bgLight = Color(0xFFF8FAFC);
 const Color _textDark = Color(0xFF0F172A);
 const Color _textMid = Color(0xFF64748B);
 const Color _border = Color(0xFFE2E8F0);
-const Color _paleBlue = Color(0xFFEFF6FF);
+const Color _success = Color(0xFF10B981);
+const Color _successLight = Color(0xFFF0FDF4);
+const Color _warning = Color(0xFFFB923C);
+const Color _info = Color(0xFF0EA5E9);
 const Color _secondary = Color(0xFF4A90A4);
 const Color _surfaceDark = Color(0xFF2C3E50);
+const Color _paleBlue = Color(0xFFEFF6FF);
 const Color _paleWhite = Color(0xFFF0F4F8);
 
 class PostJobScreen extends StatefulWidget {
@@ -171,7 +177,7 @@ class _PostJobScreenState extends State<PostJobScreen>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: _background,
+      backgroundColor: _bgWhite,
       drawer: _isMobile
           ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
           : null,
@@ -198,6 +204,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                   child: Container(
                     decoration: const BoxDecoration(
                       border: Border(left: BorderSide(color: _border)),
+                      color: _bgWhite,
                     ),
                     child: AIJDBuilderWidget(onClose: () {}),
                   ),
@@ -212,84 +219,86 @@ class _PostJobScreenState extends State<PostJobScreen>
 
   // ─── APP BAR (mirrors dashboard _buildMobileAppBar style for all sizes) ──
   Widget _buildAppBar() {
-    return SafeArea(bottom: false, child: Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-
-      child: Row(
-        children: [
-          if (_isMobile) ...[
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, size: 24, color: _textDark),
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
-            const SizedBox(width: 4),
-          ],
-          // Icon badge — matches dashboard style
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.flight_takeoff_outlined,
-              size: 20,
-              color: Color(0xFF6366F1),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Post a Position',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: _isMobile ? 15 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: _textDark,
-                  ),
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        height: 68,
+        padding: EdgeInsets.symmetric(
+          horizontal: _isMobile ? 16 : 28,
+          vertical: _isMobile ? 10 : 12,
+        ),
+        decoration: const BoxDecoration(
+          color: _bgWhite,
+          border: Border(bottom: BorderSide(color: _border, width: 1)),
+        ),
+        child: Row(
+          children: [
+            if (_isMobile) ...[
+              IconButton(
+                icon: const Icon(
+                  Icons.menu_rounded,
+                  size: 24,
+                  color: _textDark,
                 ),
-                if (!_isMobile)
-                  Text(
-                    'Fill in the details below to publish a new listing',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _textMid),
-                  ),
-              ],
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                splashRadius: 20,
+              ),
+              const SizedBox(width: 8),
+            ],
+            // Icon badge — matches dashboard style
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _primaryLight,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.flight_takeoff_outlined,
+                size: 24,
+                color: _primary,
+              ),
             ),
-          ),
-          // Back button
-          // GestureDetector(
-          //   onTap: () => Navigator.of(context).maybePop(),
-          //   child: Container(
-          //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          //     decoration: BoxDecoration(
-          //       color: _paleBlue,
-          //       borderRadius: BorderRadius.circular(8),
-          //       border: Border.all(color: _accent.withValues(alpha: 0.3)),
-          //     ),
-          //     child: Row(
-          //       mainAxisSize: MainAxisSize.min,
-          //       children: [
-          //         const Icon(Icons.arrow_back_ios_new_rounded, size: 13, color: _accent),
-          //         const SizedBox(width: 4),
-          //         Text('Back', style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600, color: _accent)),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Post a Position',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: _isMobile ? 16 : 18,
+                      fontWeight: FontWeight.w800,
+                      color: _textDark,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  if (!_isMobile)
+                    Text(
+                      'Fill in the details to publish a new listing',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: _textMid,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),);
+    );
   }
 
   // ─── BODY ─────────────────────────────────────────────────────────────────
   Widget _buildBody() {
     return Consumer<job_listing_provider>(
       builder: (context, provider, _) {
-        final hPad = _isMobile ? 16.0 : 40.0;
+        final hPad = _isMobile ? 16.0 : 28.0;
         return SingleChildScrollView(
           controller: _scrollCtrl,
           padding: EdgeInsets.fromLTRB(hPad, 24, hPad, 40),
@@ -364,7 +373,7 @@ class _PostJobScreenState extends State<PostJobScreen>
           ),
           _field(
             label: 'Additional Pay Details',
-            initial: provider.tempPayDetails?? '',
+            initial: provider.tempPayDetails ?? '',
             onChange: provider.updateTempPayDetails,
             icon: Icons.info_outline_rounded,
             hint: 'Hazard pay, flight pay…',
@@ -562,7 +571,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Salary Range',
-          initial: provider.tempSalary?? '',
+          initial: provider.tempSalary ?? '',
           onChange: provider.updateTempSalary,
           validator: (v) => v!.trim().isEmpty ? 'Required' : null,
           icon: Icons.monetization_on_outlined,
@@ -572,7 +581,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         gap,
         _field(
           label: 'Additional Pay Details',
-          initial: provider.tempPayDetails?? '',
+          initial: provider.tempPayDetails ?? '',
           onChange: provider.updateTempPayDetails,
           icon: Icons.info_outline_rounded,
           hint: 'Hazard pay, flight pay…',
@@ -746,15 +755,26 @@ class _PostJobScreenState extends State<PostJobScreen>
       onTap: () => Future.microtask(pick),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: _isMobile ? 64 : 80,
-        height: _isMobile ? 64 : 80,
+        width: 80,
+        height: 80,
         decoration: BoxDecoration(
-          color: _paleWhite,
+          color: _primaryLight,
           shape: BoxShape.circle,
           border: Border.all(
-            color: provider.tempLogoBytes != null ? _accent : _border,
+            color: provider.tempLogoBytes != null
+                ? _primary.withValues(alpha: 0.4)
+                : _border,
             width: provider.tempLogoBytes != null ? 2.5 : 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: _primary.withValues(
+                alpha: provider.tempLogoBytes != null ? 0.15 : 0.05,
+              ),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: ClipOval(
           child: provider.tempLogoBytes != null
@@ -764,16 +784,16 @@ class _PostJobScreenState extends State<PostJobScreen>
                   children: [
                     Icon(
                       Icons.add_photo_alternate_rounded,
-                      size: _isMobile ? 22 : 26,
-                      color: _textMid,
+                      size: 28,
+                      color: _primary,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       'Emblem',
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 9,
-                        color: _textMid,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 10,
+                        color: _primary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -786,30 +806,34 @@ class _PostJobScreenState extends State<PostJobScreen>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         avatar,
-        const SizedBox(width: 16),
+        const SizedBox(width: 18),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Unit Identification',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: _isMobile ? 14 : 16,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
                   color: _textDark,
+                  letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
-                'Tap the circle to upload your unit emblem',
+                'Upload your unit emblem to personalize this listing',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: _isMobile ? 11 : 12,
+                  fontSize: 12,
                   color: _textMid,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
         ),
+        if (provider.tempLogoBytes != null) const SizedBox(width: 12),
         if (provider.tempLogoBytes != null)
           TextButton.icon(
             onPressed: () => Future.microtask(pick),
@@ -819,12 +843,12 @@ class _PostJobScreenState extends State<PostJobScreen>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: _accent,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              backgroundColor: _paleBlue,
+              backgroundColor: _accentLight,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -839,26 +863,31 @@ class _PostJobScreenState extends State<PostJobScreen>
     return Row(
       children: [
         Container(
-          width: 3,
-          height: 20,
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: _primary,
-            borderRadius: BorderRadius.circular(2),
+            color: _primaryLight,
+            borderRadius: BorderRadius.circular(10),
           ),
+          child: Icon(icon, size: 18, color: _primary),
         ),
-        const SizedBox(width: 10),
-        Icon(icon, size: _isMobile ? 17 : 18, color: _primary),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Text(
           title,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: _isMobile ? 13 : 15,
-            fontWeight: FontWeight.w600,
+            fontSize: _isMobile ? 15 : 16,
+            fontWeight: FontWeight.w800,
             color: _textDark,
+            letterSpacing: 0.3,
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Divider(color: _border, thickness: 1)),
+        Expanded(
+          child: Container(
+            height: 2,
+            color: _border,
+            margin: const EdgeInsets.symmetric(vertical: 6),
+          ),
+        ),
       ],
     );
   }
@@ -887,7 +916,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     TextInputType? keyboard,
     FocusNode? fn,
   }) {
-    final radius = _isMobile ? 10.0 : 12.0;
+    final radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -900,21 +929,17 @@ class _PostJobScreenState extends State<PostJobScreen>
       keyboardType: keyboard,
       style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
-        color: _surfaceDark,
-        fontWeight: FontWeight.w500,
+        color: _textDark,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         prefixIcon: icon != null
-            ? Icon(
-                icon,
-                size: _isMobile ? 18 : 20,
-                color: _primary.withValues(alpha: 0.55),
-              )
+            ? Icon(icon, size: 18, color: _primary.withValues(alpha: 0.6))
             : null,
         filled: true,
-        fillColor: _surface,
+        fillColor: _bgLight,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -925,33 +950,33 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _border, width: 1),
+          borderSide: const BorderSide(color: _border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _primary, width: 1.8),
+          borderSide: const BorderSide(color: _primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
         ),
         labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
         hintStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
-          color: _textMid.withValues(alpha: 0.7),
+          color: _textMid.withValues(alpha: 0.5),
         ),
         errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
-          color: Colors.redAccent,
-          fontWeight: FontWeight.w500,
+          color: Color(0xFFEF4444),
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -966,7 +991,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     IconData? icon,
   }) {
     final valid = items.contains(value) ? value : items.first;
-    final radius = _isMobile ? 10.0 : 12.0;
+    final radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -980,8 +1005,9 @@ class _PostJobScreenState extends State<PostJobScreen>
               child: Text(
                 i,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: _isMobile ? 12 : 13,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _textDark,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -991,23 +1017,23 @@ class _PostJobScreenState extends State<PostJobScreen>
       onChanged: onChange,
       style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
-        color: _surfaceDark,
-        fontWeight: FontWeight.w500,
+        color: _textDark,
+        fontWeight: FontWeight.w600,
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _primary),
-      dropdownColor: _surface,
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: _primary,
+        size: 22,
+      ),
+      dropdownColor: _bgWhite,
       borderRadius: BorderRadius.circular(radius),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon != null
-            ? Icon(
-                icon,
-                size: _isMobile ? 18 : 20,
-                color: _primary.withValues(alpha: 0.55),
-              )
+            ? Icon(icon, size: 18, color: _primary.withValues(alpha: 0.6))
             : null,
         filled: true,
-        fillColor: _surface,
+        fillColor: _bgLight,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -1018,16 +1044,16 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _border, width: 1),
+          borderSide: const BorderSide(color: _border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _primary, width: 1.8),
+          borderSide: const BorderSide(color: _primary, width: 2),
         ),
         labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1036,7 +1062,7 @@ class _PostJobScreenState extends State<PostJobScreen>
   // ─── DATE PICKER ──────────────────────────────────────────────────────────
   Widget _datePicker(job_listing_provider provider) {
     final display = _fmtDate(provider.tempDeadline);
-    final radius = _isMobile ? 10.0 : 12.0;
+    final radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -1048,8 +1074,8 @@ class _PostJobScreenState extends State<PostJobScreen>
           provider.tempDeadline.isEmpty ? 'Deadline required' : null,
       style: GoogleFonts.plusJakartaSans(
         fontSize: fs,
-        color: _surfaceDark,
-        fontWeight: FontWeight.w500,
+        color: _textDark,
+        fontWeight: FontWeight.w600,
       ),
       onTap: () async {
         DateTime init;
@@ -1073,7 +1099,7 @@ class _PostJobScreenState extends State<PostJobScreen>
                 primary: _primary,
                 onPrimary: Colors.white,
                 surface: Colors.white,
-                onSurface: _surfaceDark,
+                onSurface: _textDark,
               ),
             ),
             child: child!,
@@ -1088,8 +1114,8 @@ class _PostJobScreenState extends State<PostJobScreen>
         hintText: 'Select date',
         prefixIcon: Icon(
           Icons.calendar_today_outlined,
-          size: _isMobile ? 18 : 20,
-          color: _primary.withValues(alpha: 0.55),
+          size: 18,
+          color: _primary.withValues(alpha: 0.6),
         ),
         suffixIcon: provider.tempDeadline.isNotEmpty
             ? IconButton(
@@ -1098,7 +1124,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               )
             : null,
         filled: true,
-        fillColor: _surface,
+        fillColor: _bgLight,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -1109,21 +1135,21 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _border, width: 1),
+          borderSide: const BorderSide(color: _border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: _primary, width: 1.8),
+          borderSide: const BorderSide(color: _primary, width: 2),
         ),
         labelStyle: GoogleFonts.plusJakartaSans(
           fontSize: ls,
           color: _textMid,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
         errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
-          color: Colors.redAccent,
-          fontWeight: FontWeight.w500,
+          color: Color(0xFFEF4444),
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1143,56 +1169,66 @@ class _PostJobScreenState extends State<PostJobScreen>
       children: [
         Row(
           children: [
-            Icon(icon, size: _isMobile ? 15 : 17, color: color),
-            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 10),
             Text(
               title,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: _isMobile ? 12 : 13,
-                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
                 color: _textDark,
+                letterSpacing: 0.2,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Wrap(
-          spacing: _isMobile ? 6 : 8,
-          runSpacing: _isMobile ? 6 : 8,
+          spacing: 8,
+          runSpacing: 8,
           children: all.map((item) {
             final on = selected.contains(item);
             return GestureDetector(
               onTap: () => Future.microtask(() => onToggle(item)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(
-                  horizontal: _isMobile ? 11 : 14,
-                  vertical: _isMobile ? 6 : 8,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: on ? color.withValues(alpha: 0.12) : _surface,
-                  borderRadius: BorderRadius.circular(20),
+                  color: on ? color.withValues(alpha: 0.15) : _bgLight,
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: on ? color : _border,
+                    color: on ? color.withValues(alpha: 0.4) : _border,
                     width: on ? 1.5 : 1,
                   ),
+                  boxShadow: on
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (on) ...[
-                      Icon(
-                        Icons.check_rounded,
-                        size: _isMobile ? 12 : 14,
-                        color: color,
-                      ),
+                      Icon(Icons.check_rounded, size: 14, color: color),
                       const SizedBox(width: 4),
                     ],
                     Text(
                       item,
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: _isMobile ? 11 : 12,
-                        fontWeight: on ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 12,
+                        fontWeight: on ? FontWeight.w700 : FontWeight.w500,
                         color: on ? color : _textMid,
                       ),
                     ),
@@ -1210,22 +1246,36 @@ class _PostJobScreenState extends State<PostJobScreen>
   Widget _buildSubmit(job_listing_provider provider) {
     return SizedBox(
       width: double.infinity,
-      height: _isMobile ? 50 : 56,
+      height: 56,
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: provider.isPosting
               ? LinearGradient(
-                  colors: [Colors.grey.shade400, Colors.grey.shade500],
+                  colors: [
+                    Colors.grey.withValues(alpha: 0.3),
+                    Colors.grey.withValues(alpha: 0.4),
+                  ],
                 )
-              : const LinearGradient(colors: [_primary, _accent]),
-          borderRadius: BorderRadius.circular(_isMobile ? 12 : 14),
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [_primary, _accent],
+                ),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: provider.isPosting
-              ? []
+              ? [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
               : [
                   BoxShadow(
-                    color: _primary.withValues(alpha: 0.25),
+                    color: _primary.withValues(alpha: 0.3),
                     blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
                   ),
                 ],
         ),
@@ -1234,7 +1284,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(_isMobile ? 12 : 14),
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
           onPressed: provider.isPosting
@@ -1270,8 +1320,8 @@ class _PostJobScreenState extends State<PostJobScreen>
                 },
           child: provider.isPosting
               ? const SizedBox(
-                  height: 22,
-                  width: 22,
+                  height: 24,
+                  width: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     color: Colors.white,
@@ -1283,16 +1333,16 @@ class _PostJobScreenState extends State<PostJobScreen>
                     const Icon(
                       Icons.flight_takeoff_rounded,
                       color: Colors.white,
-                      size: 20,
+                      size: 22,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Text(
-                      _isMobile ? 'Post Position' : 'Post Position Now',
+                      'Post Position Now',
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: _isMobile ? 14 : 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.4,
                       ),
                     ),
                   ],
@@ -1311,20 +1361,27 @@ class _PostJobScreenState extends State<PostJobScreen>
             Icon(
               isError ? Icons.error_outline : Icons.check_circle_outline,
               color: Colors.white,
+              size: 20,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 msg,
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
         ),
-        backgroundColor: isError ? Colors.redAccent : const Color(0xFF2E7D32),
+        backgroundColor: isError ? Color(0xFFEF4444) : _success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        elevation: 4,
         duration: Duration(seconds: isError ? 4 : 3),
       ),
     );
@@ -1370,12 +1427,14 @@ class _PostJobAIFloatingChatState extends State<_PostJobAIFloatingChat> {
           right: 16,
           bottom: 16,
           child: Material(
-            elevation: 8,
+            elevation: 12,
             borderRadius: BorderRadius.circular(16),
-            color: const Color(0xFF4F46E5),
+            color: _primary,
+            shadowColor: _primary.withValues(alpha: 0.4),
             child: InkWell(
               onTap: _toggleChat,
               borderRadius: BorderRadius.circular(16),
+              splashColor: Colors.white.withValues(alpha: 0.1),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -1391,11 +1450,12 @@ class _PostJobAIFloatingChatState extends State<_PostJobAIFloatingChat> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Recruite.AI',
+                      'AI Assistant',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ],

@@ -17,10 +17,22 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
   late AnimationController _animationController;
   late Animation<double> _animation;
 
-  final List<Color> _pendingGradient = [const Color(0xFFFBBF24), const Color(0xFFF59E0B)];
-  final List<Color> _acceptedGradient = [const Color(0xFF10B981), const Color(0xFF059669)];
-  final List<Color> _shortlistedGradient = [const Color(0xFF3B82F6), const Color(0xFF2563EB)];
-  final List<Color> _rejectedGradient = [const Color(0xFFEF4444), const Color(0xFFDC2626)];
+  final List<Color> _pendingGradient = [
+    const Color(0xFFFBBF24),
+    const Color(0xFFF59E0B),
+  ];
+  final List<Color> _acceptedGradient = [
+    const Color(0xFF10B981),
+    const Color(0xFF059669),
+  ];
+  final List<Color> _shortlistedGradient = [
+    const Color(0xFF3B82F6),
+    const Color(0xFF2563EB),
+  ];
+  final List<Color> _rejectedGradient = [
+    const Color(0xFFEF4444),
+    const Color(0xFFDC2626),
+  ];
 
   @override
   void initState() {
@@ -52,8 +64,18 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
     final total = pending + accepted + rejected + shortlisted;
     final values = [pending, accepted, shortlisted, rejected];
     final labels = ['Pending', 'Accepted', 'Shortlisted', 'Rejected'];
-    final icons = [Icons.schedule_rounded, Icons.check_circle_rounded, Icons.star_rounded, Icons.cancel_rounded];
-    final gradients = [_pendingGradient, _acceptedGradient, _shortlistedGradient, _rejectedGradient];
+    final icons = [
+      Icons.schedule_rounded,
+      Icons.check_circle_rounded,
+      Icons.star_rounded,
+      Icons.cancel_rounded,
+    ];
+    final gradients = [
+      _pendingGradient,
+      _acceptedGradient,
+      _shortlistedGradient,
+      _rejectedGradient,
+    ];
 
     if (total == 0) {
       return _buildEmptyState();
@@ -82,7 +104,11 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
           // Compact Header
           Row(
             children: [
-              const Icon(Icons.analytics_rounded, color: Colors.deepPurple, size: 28),
+              const Icon(
+                Icons.analytics_rounded,
+                color: Colors.deepPurple,
+                size: 28,
+              ),
               const SizedBox(width: 10),
               Text(
                 "Applications",
@@ -114,18 +140,22 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                           return PieChart(
                             PieChartData(
                               pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                                  setState(() {
-                                    if (!event.isInterestedForInteractions ||
-                                        pieTouchResponse == null ||
-                                        pieTouchResponse.touchedSection == null) {
-                                      _touchedIndex = -1;
-                                      return;
-                                    }
-                                    _touchedIndex = pieTouchResponse
-                                        .touchedSection!.touchedSectionIndex;
-                                  });
-                                },
+                                touchCallback:
+                                    (FlTouchEvent event, pieTouchResponse) {
+                                      setState(() {
+                                        if (!event
+                                                .isInterestedForInteractions ||
+                                            pieTouchResponse == null ||
+                                            pieTouchResponse.touchedSection ==
+                                                null) {
+                                          _touchedIndex = -1;
+                                          return;
+                                        }
+                                        _touchedIndex = pieTouchResponse
+                                            .touchedSection!
+                                            .touchedSectionIndex;
+                                      });
+                                    },
                               ),
                               borderData: FlBorderData(show: false),
                               sectionsSpace: 2,
@@ -134,15 +164,25 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                               sections: List.generate(4, (i) {
                                 final isTouched = i == _touchedIndex;
                                 final double radius = isTouched ? 32.0 : 28.0;
-                                final double opacity = (_touchedIndex == -1 || isTouched) ? 1.0 : 0.35;
-                                final value = values[i].toDouble() * _animation.value;
+                                final double opacity =
+                                    (_touchedIndex == -1 || isTouched)
+                                    ? 1.0
+                                    : 0.35;
+                                final value =
+                                    values[i].toDouble() * _animation.value;
 
                                 return PieChartSectionData(
                                   gradient: LinearGradient(
-                                    colors: gradients[i].map((c) => c.withValues(alpha: opacity)).toList(),
+                                    colors: gradients[i]
+                                        .map(
+                                          (c) => c.withValues(alpha: opacity),
+                                        )
+                                        .toList(),
                                   ),
                                   value: value > 0 ? value : 0.001,
-                                  title: values[i] > 0 ? '${(values[i] / total * 100).toStringAsFixed(0)}%' : '',
+                                  title: values[i] > 0
+                                      ? '${(values[i] / total * 100).toStringAsFixed(0)}%'
+                                      : '',
                                   radius: radius,
                                   titleStyle: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
@@ -152,7 +192,9 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                                 );
                               }),
                             ),
-                            swapAnimationDuration: const Duration(milliseconds: 350),
+                            swapAnimationDuration: const Duration(
+                              milliseconds: 350,
+                            ),
                             swapAnimationCurve: Curves.easeOutCubic,
                           );
                         },
@@ -171,7 +213,9 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                                     : gradients[_touchedIndex],
                               ).createShader(bounds),
                               child: Text(
-                                _touchedIndex == -1 ? '$total' : '${values[_touchedIndex]}',
+                                _touchedIndex == -1
+                                    ? '$total'
+                                    : '${values[_touchedIndex]}',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w800,
@@ -180,7 +224,9 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                               ),
                             ),
                             Text(
-                              _touchedIndex == -1 ? 'Total' : labels[_touchedIndex],
+                              _touchedIndex == -1
+                                  ? 'Total'
+                                  : labels[_touchedIndex],
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10,
                                 color: Colors.blueGrey[500],
@@ -210,7 +256,8 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                         value: values[index],
                         total: total,
                         icon: icons[index],
-                        isFocused: _touchedIndex == index || _touchedIndex == -1,
+                        isFocused:
+                            _touchedIndex == index || _touchedIndex == -1,
                         index: index,
                       ),
                     );
@@ -233,7 +280,9 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
     required bool isFocused,
     required int index,
   }) {
-    final percentage = total > 0 ? (value / total * 100).toStringAsFixed(0) : '0';
+    final percentage = total > 0
+        ? (value / total * 100).toStringAsFixed(0)
+        : '0';
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -251,7 +300,10 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                 });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -261,7 +313,9 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: gradient[0].withValues(alpha: isFocused ? 0.25 : 0.12),
+                    color: gradient[0].withValues(
+                      alpha: isFocused ? 0.25 : 0.12,
+                    ),
                     width: 1.2,
                   ),
                 ),
@@ -301,7 +355,7 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
                           '$percentage%',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 9,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                             color: Colors.blueGrey[400],
                           ),
                         ),
@@ -340,7 +394,11 @@ class _ApplicationStatusChartState extends State<ApplicationStatusChart>
               color: Colors.grey[100],
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.pie_chart_outline_rounded, size: 40, color: Colors.grey[400]),
+            child: Icon(
+              Icons.pie_chart_outline_rounded,
+              size: 40,
+              color: Colors.grey[400],
+            ),
           ),
           const SizedBox(height: 14),
           Text(

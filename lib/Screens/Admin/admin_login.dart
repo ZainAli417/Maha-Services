@@ -9,16 +9,16 @@ import '../../Constant/Forget Password.dart';
 import 'admin_login_provider.dart';
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
-const _ink      = Color(0xFF0D1B2A); // near-black text
-const _indigo   = Color(0xFF6366F1); // primary accent
+const _ink = Color(0xFF0D1B2A); // near-black text
+const _indigo = Color(0xFF6366F1); // primary accent
 const _indigoLt = Color(0xFF4C6EF5); // lighter shade
-const _slate    = Color(0xFF64748B); // muted text
-const _border   = Color(0xFFDDE1E7);
-const _fill     = Color(0xFFFAFAFA);
-const _white    = Color(0xFFFFFFFF);
-const _errBg    = Color(0xFFFFF1F0);
-const _errBorder= Color(0xFFFFCDD2);
-const _errText  = Color(0xFFD32F2F);
+const _slate = Color(0xFF64748B); // muted text
+const _border = Color(0xFFDDE1E7);
+const _fill = Color(0xFFFAFAFA);
+const _white = Color(0xFFFFFFFF);
+const _errBg = Color(0xFFFFF1F0);
+const _errBorder = Color(0xFFFFCDD2);
+const _errText = Color(0xFFD32F2F);
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -36,11 +36,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
   void initState() {
     super.initState();
     _ac = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 540));
-    _fade  = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
+      vsync: this,
+      duration: const Duration(milliseconds: 540),
+    );
+    _fade = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
     _slide = Tween<Offset>(
-        begin: const Offset(0, 0.06), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _ac, curve: Curves.easeOutCubic));
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ac, curve: Curves.easeOutCubic));
     _ac.forward();
   }
 
@@ -52,9 +55,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final w       = MediaQuery.of(context).size.width;
-    final isMobile= w < 768;
-    final isWide  = w >= 1024;
+    final w = MediaQuery.of(context).size.width;
+    final isMobile = w < 768;
+    final isWide = w >= 1024;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -71,8 +74,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
             child: Center(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 20 : 40,
-                    vertical: isMobile ? 72 : 48),
+                  horizontal: isMobile ? 20 : 40,
+                  vertical: isMobile ? 72 : 48,
+                ),
                 child: FadeTransition(
                   opacity: _fade,
                   child: SlideTransition(
@@ -81,20 +85,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                       constraints: const BoxConstraints(maxWidth: 1160),
                       child: isWide
                           ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Expanded(flex: 5, child: _LeftPanel()),
-                          SizedBox(width: 56),
-                          Expanded(flex: 4, child: _FormCard()),
-                        ],
-                      )
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Expanded(flex: 5, child: _LeftPanel()),
+                                SizedBox(width: 56),
+                                Expanded(flex: 4, child: _FormCard()),
+                              ],
+                            )
                           : const Column(
-                        children: [
-                          _LeftPanel(),
-                          SizedBox(height: 40),
-                          _FormCard(),
-                        ],
-                      ),
+                              children: [
+                                _LeftPanel(),
+                                SizedBox(height: 40),
+                                _FormCard(),
+                              ],
+                            ),
                     ),
                   ),
                 ),
@@ -113,9 +117,7 @@ class _StaticBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: CustomPaint(painter: _DotGridPainter()),
-    );
+    return Positioned.fill(child: CustomPaint(painter: _DotGridPainter()));
   }
 }
 
@@ -127,7 +129,7 @@ class _DotGridPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     const spacing = 28.0;
-    const radius  = 1.5;
+    const radius = 1.5;
 
     for (double x = 0; x < size.width; x += spacing) {
       for (double y = 0; y < size.height; y += spacing) {
@@ -163,12 +165,15 @@ class _NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 0, left: 0, right: 0,
+      top: 0,
+      left: 0,
+      right: 0,
       child: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 20 : 36,
-              vertical: isMobile ? 12 : 18),
+            horizontal: isMobile ? 20 : 36,
+            vertical: isMobile ? 12 : 18,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -182,17 +187,23 @@ class _NavBar extends StatelessWidget {
                       color: _indigo,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.admin_panel_settings_rounded,
-                        color: _white, size: 20),
+                    child: const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      color: _white,
+                      size: 20,
+                    ),
                   ),
                   if (!isMobile) ...[
                     const SizedBox(width: 10),
-                    Text('ADMIN PORTAL',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.4,
-                            color: _ink)),
+                    Text(
+                      'ADMIN PORTAL',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.4,
+                        color: _ink,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -216,7 +227,7 @@ class _LeftPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w        = MediaQuery.of(context).size.width;
+    final w = MediaQuery.of(context).size.width;
     final isMobile = w < 768;
 
     return Column(
@@ -226,22 +237,22 @@ class _LeftPanel extends StatelessWidget {
       children: [
         // Badge
         _PillBadge(
-            icon: Icons.verified_user_rounded,
-            label: 'SECURE ACCESS',
-            color: _indigo),
+          icon: Icons.verified_user_rounded,
+          label: 'SECURE ACCESS',
+          color: _indigo,
+        ),
         const SizedBox(height: 22),
 
         // Headline
         Text(
-          isMobile
-              ? 'Admin Control Panel'
-              : 'Admin Control Panel',
+          isMobile ? 'Admin Control Panel' : 'Admin Control Panel',
           style: GoogleFonts.plusJakartaSans(
-              fontSize: isMobile ? 30 : 44,
-              fontWeight: FontWeight.w800,
-              height: 1.18,
-              color: _ink,
-              letterSpacing: -0.5),
+            fontSize: isMobile ? 30 : 44,
+            fontWeight: FontWeight.w800,
+            height: 1.18,
+            color: _ink,
+            letterSpacing: -0.5,
+          ),
           textAlign: isMobile ? TextAlign.center : TextAlign.start,
         ),
         const SizedBox(height: 16),
@@ -249,12 +260,13 @@ class _LeftPanel extends StatelessWidget {
         // Sub-text
         Text(
           'Manage your platform with powerful tools and '
-              'comprehensive analytics. Access user management, '
-              'system settings, and real-time monitoring.',
+          'comprehensive analytics. Access user management, '
+          'system settings, and real-time monitoring.',
           style: GoogleFonts.plusJakartaSans(
-              fontSize: isMobile ? 13 : 15,
-              height: 1.65,
-              color: _slate),
+            fontSize: isMobile ? 13 : 15,
+            height: 1.65,
+            color: _slate,
+          ),
           textAlign: isMobile ? TextAlign.center : TextAlign.start,
         ),
         const SizedBox(height: 10),
@@ -284,7 +296,6 @@ class _LeftPanel extends StatelessWidget {
         //         color: Color(0xFF7048E8)),
         //   ],
         // ),
-
         if (!isMobile) ...[
           const SizedBox(height: 44),
           // Divider line with text
@@ -292,12 +303,15 @@ class _LeftPanel extends StatelessWidget {
             children: [
               Container(width: 32, height: 2, color: _indigo),
               const SizedBox(width: 12),
-              Text('TRUSTED ADMIN DASHBOARD',
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.6,
-                      color: _slate)),
+              Text(
+                'TRUSTED ADMIN DASHBOARD',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.6,
+                  color: _slate,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -321,8 +335,11 @@ class _PillBadge extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _PillBadge(
-      {required this.icon, required this.label, required this.color});
+  const _PillBadge({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -338,12 +355,15 @@ class _PillBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 7),
-          Text(label,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.3,
-                  color: color)),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.3,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -354,8 +374,11 @@ class _FeatureChip extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _FeatureChip(
-      {required this.icon, required this.label, required this.color});
+  const _FeatureChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   @override
   State<_FeatureChip> createState() => _FeatureChipState();
@@ -371,27 +394,28 @@ class _FeatureChipState extends State<_FeatureChip> {
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
         decoration: BoxDecoration(
           color: _hovered ? widget.color.withValues(alpha: 0.07) : _white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color:
-              _hovered ? widget.color.withValues(alpha: 0.35) : _border),
+            color: _hovered ? widget.color.withValues(alpha: 0.35) : _border,
+          ),
           boxShadow: _hovered
               ? [
-            BoxShadow(
-                color: widget.color.withValues(alpha: 0.12),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
-          ]
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.12),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 6,
-                offset: const Offset(0, 2))
-          ],
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -399,16 +423,20 @@ class _FeatureChipState extends State<_FeatureChip> {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                  color: widget.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8)),
+                color: widget.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Icon(widget.icon, size: 16, color: widget.color),
             ),
             const SizedBox(width: 10),
-            Text(widget.label,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: _ink)),
+            Text(
+              widget.label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _ink,
+              ),
+            ),
           ],
         ),
       ),
@@ -425,14 +453,22 @@ class _StatItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: _indigo)),
-        Text(label,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 11, color: _slate, fontWeight: FontWeight.w500)),
+        Text(
+          value,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: _indigo,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            color: _slate,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -444,7 +480,7 @@ class _FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prov     = context.watch<AdminAuthProvider>();
+    final prov = context.watch<AdminAuthProvider>();
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
@@ -456,13 +492,15 @@ class _FormCard extends StatelessWidget {
         border: Border.all(color: _border),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.07),
-              blurRadius: 28,
-              offset: const Offset(0, 8)),
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 28,
+            offset: const Offset(0, 8),
+          ),
           BoxShadow(
-              color: _indigo.withValues(alpha: 0.04),
-              blurRadius: 48,
-              offset: const Offset(0, 20)),
+            color: _indigo.withValues(alpha: 0.04),
+            blurRadius: 48,
+            offset: const Offset(0, 20),
+          ),
         ],
       ),
       child: Column(
@@ -477,22 +515,28 @@ class _FormCard extends StatelessWidget {
                   color: _indigo,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.lock_rounded,
-                    color: _white, size: 20),
+                child: const Icon(Icons.lock_rounded, color: _white, size: 20),
               ),
               const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Sign In',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: _ink,
-                          height: 1.1)),
-                  Text('Access your admin dashboard',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12, color: _slate)),
+                  Text(
+                    'Sign In',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: _ink,
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'Access your admin dashboard',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      color: _slate,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -544,23 +588,29 @@ class _FormCard extends StatelessWidget {
           // ── Error message ──────────────────────────────────────────
           if (prov.errorMessage != null) ...[
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                  color: _errBg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: _errBorder)),
+                color: _errBg,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _errBorder),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded,
-                      size: 18, color: _errText),
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 18,
+                    color: _errText,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(prov.errorMessage!,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: _errText,
-                            fontWeight: FontWeight.w500)),
+                    child: Text(
+                      prov.errorMessage!,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: _errText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -590,12 +640,15 @@ class _FormCard extends StatelessWidget {
               Expanded(child: Divider(color: _border, thickness: 1)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Text('SECURED BY',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 10,
-                        letterSpacing: 1.4,
-                        fontWeight: FontWeight.w600,
-                        color: _slate.withValues(alpha: 0.6))),
+                child: Text(
+                  'SECURED BY',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    letterSpacing: 1.4,
+                    fontWeight: FontWeight.w600,
+                    color: _slate.withValues(alpha: 0.6),
+                  ),
+                ),
               ),
               Expanded(child: Divider(color: _border, thickness: 1)),
             ],
@@ -606,11 +659,14 @@ class _FormCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              _Badge(icon: Icons.shield_outlined,       label: 'SSL Encrypted'),
+              _Badge(icon: Icons.shield_outlined, label: 'SSL Encrypted'),
               SizedBox(width: 20),
-              _Badge(icon: Icons.verified_user_outlined,label: 'Firebase Auth'),
+              _Badge(
+                icon: Icons.verified_user_outlined,
+                label: 'Firebase Auth',
+              ),
               SizedBox(width: 20),
-              _Badge(icon: Icons.lock_clock_outlined,   label: '2FA Ready'),
+              _Badge(icon: Icons.lock_clock_outlined, label: '2FA Ready'),
             ],
           ),
         ],
@@ -652,12 +708,15 @@ class _FieldState extends State<_Field> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: _ink,
-                letterSpacing: 0.3)),
+        Text(
+          widget.label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: _ink,
+            letterSpacing: 0.3,
+          ),
+        ),
         const SizedBox(height: 7),
         Focus(
           onFocusChange: (f) => setState(() => _focused = f),
@@ -667,11 +726,12 @@ class _FieldState extends State<_Field> {
               borderRadius: BorderRadius.circular(11),
               boxShadow: _focused
                   ? [
-                BoxShadow(
-                    color: _indigo.withValues(alpha: 0.14),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3))
-              ]
+                      BoxShadow(
+                        color: _indigo.withValues(alpha: 0.14),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ]
                   : [],
             ),
             child: TextFormField(
@@ -679,45 +739,53 @@ class _FieldState extends State<_Field> {
               obscureText: widget.obscure,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14, color: _ink),
+              style: GoogleFonts.plusJakartaSans(fontSize: 14, color: _ink),
               decoration: InputDecoration(
                 hintText: widget.hint,
                 hintStyle: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: _slate.withValues(alpha: 0.55)),
+                  fontSize: 13,
+                  color: _slate.withValues(alpha: 0.55),
+                ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(left: 14, right: 10),
-                  child: Icon(widget.icon,
-                      size: 18,
-                      color:
-                      _focused ? _indigo : _slate.withValues(alpha: 0.7)),
+                  child: Icon(
+                    widget.icon,
+                    size: 18,
+                    color: _focused ? _indigo : _slate.withValues(alpha: 0.7),
+                  ),
                 ),
-                prefixIconConstraints:
-                const BoxConstraints(minWidth: 0, minHeight: 0),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
                 suffixIcon: widget.suffix != null
                     ? Padding(
-                    padding: const EdgeInsets.only(right: 14),
-                    child: widget.suffix)
+                        padding: const EdgeInsets.only(right: 14),
+                        child: widget.suffix,
+                      )
                     : null,
-                suffixIconConstraints:
-                const BoxConstraints(minWidth: 0, minHeight: 0),
+                suffixIconConstraints: const BoxConstraints(
+                  minWidth: 0,
+                  minHeight: 0,
+                ),
                 filled: true,
                 fillColor: _focused ? const Color(0xFFF4F6FF) : _fill,
                 contentPadding: const EdgeInsets.symmetric(
-                    vertical: 15, horizontal: 16),
+                  vertical: 15,
+                  horizontal: 16,
+                ),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(11),
-                    borderSide:
-                    const BorderSide(color: _border)),
+                  borderRadius: BorderRadius.circular(11),
+                  borderSide: const BorderSide(color: _border),
+                ),
                 enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(11),
-                    borderSide:
-                    const BorderSide(color: _border)),
+                  borderRadius: BorderRadius.circular(11),
+                  borderSide: const BorderSide(color: _border),
+                ),
                 focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(11),
-                    borderSide:
-                    const BorderSide(color: _indigo, width: 1.8)),
+                  borderRadius: BorderRadius.circular(11),
+                  borderSide: const BorderSide(color: _indigo, width: 1.8),
+                ),
               ),
             ),
           ),
@@ -731,8 +799,7 @@ class _FieldState extends State<_Field> {
 class _SignInButton extends StatefulWidget {
   final bool isLoading;
   final VoidCallback onPressed;
-  const _SignInButton(
-      {required this.isLoading, required this.onPressed});
+  const _SignInButton({required this.isLoading, required this.onPressed});
 
   @override
   State<_SignInButton> createState() => _SignInButtonState();
@@ -759,12 +826,12 @@ class _SignInButtonState extends State<_SignInButton> {
           boxShadow: widget.isLoading
               ? []
               : [
-            BoxShadow(
-                color: _indigo.withValues(alpha: _hovered ? 0.38 : 0.22),
-                blurRadius: _hovered ? 18 : 12,
-                offset:
-                Offset(0, _hovered ? 6 : 4))
-          ],
+                  BoxShadow(
+                    color: _indigo.withValues(alpha: _hovered ? 0.38 : 0.22),
+                    blurRadius: _hovered ? 18 : 12,
+                    offset: Offset(0, _hovered ? 6 : 4),
+                  ),
+                ],
         ),
         child: Material(
           color: Colors.transparent,
@@ -775,44 +842,50 @@ class _SignInButtonState extends State<_SignInButton> {
             child: Center(
               child: widget.isLoading
                   ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white),
-                  ),
-                  const SizedBox(width: 12),
-                  Text('Signing in…',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
-                ],
-              )
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Signing in…',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    )
                   : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Sign In to Dashboard',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
-                  const SizedBox(width: 8),
-                  AnimatedSlide(
-                    offset:
-                    _hovered ? const Offset(0.2, 0) : Offset.zero,
-                    duration:
-                    const Duration(milliseconds: 160),
-                    child: const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 18),
-                  ),
-                ],
-              ),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Sign In to Dashboard',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        AnimatedSlide(
+                          offset: _hovered ? const Offset(0.2, 0) : Offset.zero,
+                          duration: const Duration(milliseconds: 160),
+                          child: const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),
@@ -842,15 +915,18 @@ class _TextLinkState extends State<_TextLink> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onTap,
-        child: Text(widget.label,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: _hovered ? _indigo : _slate,
-                decoration: _hovered
-                    ? TextDecoration.underline
-                    : TextDecoration.none,
-                decorationColor: _indigo)),
+        child: Text(
+          widget.label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: _hovered ? _indigo : _slate,
+            decoration: _hovered
+                ? TextDecoration.underline
+                : TextDecoration.none,
+            decorationColor: _indigo,
+          ),
+        ),
       ),
     );
   }
@@ -869,11 +945,14 @@ class _Badge extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: _slate.withValues(alpha: 0.55)),
         const SizedBox(width: 5),
-        Text(label,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 10,
-                color: _slate.withValues(alpha: 0.65),
-                fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 10,
+            color: _slate.withValues(alpha: 0.65),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -884,8 +963,11 @@ class _OutlineButton extends StatefulWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  const _OutlineButton(
-      {required this.label, required this.icon, required this.onTap});
+  const _OutlineButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   State<_OutlineButton> createState() => _OutlineButtonState();
@@ -904,28 +986,27 @@ class _OutlineButtonState extends State<_OutlineButton> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
-          padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
           decoration: BoxDecoration(
             color: _hovered ? _indigo.withValues(alpha: 0.06) : _white,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-                color: _hovered
-                    ? _indigo.withValues(alpha: 0.4)
-                    : _border),
+              color: _hovered ? _indigo.withValues(alpha: 0.4) : _border,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(widget.icon,
-                  size: 16,
-                  color: _hovered ? _indigo : _slate),
+              Icon(widget.icon, size: 16, color: _hovered ? _indigo : _slate),
               const SizedBox(width: 7),
-              Text(widget.label,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _hovered ? _indigo : _slate)),
+              Text(
+                widget.label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _hovered ? _indigo : _slate,
+                ),
+              ),
             ],
           ),
         ),

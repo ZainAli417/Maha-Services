@@ -111,8 +111,10 @@ class SignupProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void revealNextPersonalField() => _updatePersonalIndex(personalVisibleIndex + 1);
-  void revealPreviousPersonalField() => _updatePersonalIndex(personalVisibleIndex - 1);
+  void revealNextPersonalField() =>
+      _updatePersonalIndex(personalVisibleIndex + 1);
+  void revealPreviousPersonalField() =>
+      _updatePersonalIndex(personalVisibleIndex - 1);
 
   void _updatePersonalIndex(int index) {
     if (index >= 0) {
@@ -147,11 +149,13 @@ class SignupProvider extends ChangeNotifier {
         imageDataUrl = res['dataUrl'] as String?;
       } else {
         final picked = await _picker.pickImage(
-            source: ImageSource.gallery, imageQuality: 80);
+          source: ImageSource.gallery,
+          imageQuality: 80,
+        );
         if (picked == null) return;
         profilePicBytes = await picked.readAsBytes();
         imageDataUrl =
-        'data:${picked.mimeType ?? 'image/jpeg'};base64,${base64Encode(profilePicBytes!)}';
+            'data:${picked.mimeType ?? 'image/jpeg'};base64,${base64Encode(profilePicBytes!)}';
       }
       profilePicUrl = null;
       notifyListeners();
@@ -172,10 +176,13 @@ class SignupProvider extends ChangeNotifier {
     if (profilePicBytes == null || profilePicBytes!.isEmpty) return null;
     try {
       final collectionName = role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
-      final ref = FirebaseStorage.instance
-          .ref('$collectionName/$uid/profilePic.jpg');
+      final ref = FirebaseStorage.instance.ref(
+        '$collectionName/$uid/profilePic.jpg',
+      );
       await ref.putData(
-          profilePicBytes!, SettableMetadata(contentType: 'image/jpeg'));
+        profilePicBytes!,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
       return await ref.getDownloadURL();
     } catch (_) {
       return null;
@@ -268,14 +275,22 @@ class SignupProvider extends ChangeNotifier {
 
   bool validatePersonalFieldAtIndex(int index) {
     switch (index) {
-      case 0: return nameController.text.trim().isNotEmpty;
-      case 1: return _isValidPhone(contactNumberController.text.trim());
-      case 2: return nationalityController.text.trim().isNotEmpty;
-      case 3: return dob != null;
-      case 4: return summaryController.text.trim().isNotEmpty;
-      case 5: return skills.isNotEmpty;
-      case 6: return objectivesController.text.trim().isNotEmpty;
-      default: return false;
+      case 0:
+        return nameController.text.trim().isNotEmpty;
+      case 1:
+        return _isValidPhone(contactNumberController.text.trim());
+      case 2:
+        return nationalityController.text.trim().isNotEmpty;
+      case 3:
+        return dob != null;
+      case 4:
+        return summaryController.text.trim().isNotEmpty;
+      case 5:
+        return skills.isNotEmpty;
+      case 6:
+        return objectivesController.text.trim().isNotEmpty;
+      default:
+        return false;
     }
   }
 
@@ -286,19 +301,28 @@ class SignupProvider extends ChangeNotifier {
       (value as String?)?.trim().isNotEmpty ?? false;
 
   double computeProgress() {
-    final personalDone =
-        [0, 1, 2, 3, 4, 5, 6].where(validatePersonalFieldAtIndex).length;
+    final personalDone = [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+    ].where(validatePersonalFieldAtIndex).length;
     final educationDone = educationSectionIsComplete() ? 1 : 0;
     return (personalDone + educationDone) / 8;
   }
 
   bool educationSectionIsComplete() {
     if (educationalProfile.isEmpty) return false;
-    return educationalProfile.every((e) =>
-    _isNotEmpty(e['institutionName']) &&
-        _isNotEmpty(e['duration']) &&
-        _isNotEmpty(e['majorSubjects']) &&
-        _isNotEmpty(e['marksOrCgpa']));
+    return educationalProfile.every(
+      (e) =>
+          _isNotEmpty(e['institutionName']) &&
+          _isNotEmpty(e['duration']) &&
+          _isNotEmpty(e['majorSubjects']) &&
+          _isNotEmpty(e['marksOrCgpa']),
+    );
   }
 
   // ─── Firebase Operations ──────────────────────────────────────────────────────
@@ -361,7 +385,8 @@ class SignupProvider extends ChangeNotifier {
         profilePicUrl = await _uploadProfilePic(uid);
       }
 
-      final hasProfileData = nameController.text.trim().isNotEmpty ||
+      final hasProfileData =
+          nameController.text.trim().isNotEmpty ||
           contactNumberController.text.trim().isNotEmpty ||
           nationalityController.text.trim().isNotEmpty ||
           skills.isNotEmpty ||
@@ -430,7 +455,8 @@ class SignupProvider extends ChangeNotifier {
   }
 
   Future<bool> submitExtractedCvAndCreateAccount(
-      CvExtractionResult result) async {
+    CvExtractionResult result,
+  ) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       generalError = 'No authenticated user found. Please log in first.';
@@ -454,15 +480,15 @@ class SignupProvider extends ChangeNotifier {
         if (cvName.isNotEmpty) {
           cvUpdateData['name'] = cvName;
         }
-        await FirebaseFirestore.instance.collection('users').doc(uid).update(cvUpdateData);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .update(cvUpdateData);
         debugPrint('✅ isNew → "no" for $uid');
       } catch (e) {
         debugPrint('⚠️ Falling back to set merge: $e');
         try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .set({
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
             'uid': uid,
             'email': user.email ?? '',
             'role': role,
@@ -483,8 +509,7 @@ class SignupProvider extends ChangeNotifier {
 
   // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-  Future<bool> _executeWithLoading(
-      Future<bool> Function() operation) async {
+  Future<bool> _executeWithLoading(Future<bool> Function() operation) async {
     generalError = null;
     isLoading = true;
     notifyListeners();
@@ -502,14 +527,11 @@ class SignupProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _saveUserData(
-      String uid, Map<String, dynamic> userData) async {
-    final collectionName =
-    role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
-    await FirebaseFirestore.instance
-        .collection(collectionName)
-        .doc(uid)
-        .set({'user_data': userData}, SetOptions(merge: true));
+  Future<void> _saveUserData(String uid, Map<String, dynamic> userData) async {
+    final collectionName = role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
+    await FirebaseFirestore.instance.collection(collectionName).doc(uid).set({
+      'user_data': userData,
+    }, SetOptions(merge: true));
   }
 
   Map<String, dynamic> _buildRecruiterData(String uid) => {
@@ -544,47 +566,57 @@ class SignupProvider extends ChangeNotifier {
       'dob': dob != null ? DateFormat('yyyy-MM-dd').format(dob!) : null,
       'createdAt': FieldValue.serverTimestamp(),
     },
-    'educationalProfile':
-    educationalProfile.isNotEmpty ? educationalProfile : null,
+    'educationalProfile': educationalProfile.isNotEmpty
+        ? educationalProfile
+        : null,
   };
 
   Map<String, dynamic> _buildCvUserData(
-      String uid, CvExtractionResult result, String authEmail) =>
-      {
-        'personalProfile': {
-          'name': nameController.text.trim(),
-          'email': authEmail,
-          'secondary_email': secondaryEmail ?? '',
-          'contactNumber': contactNumberController.text.trim(),
-          'nationality': nationalityController.text.trim(),
-          'profilePicUrl': profilePicUrl,
-          'skills': skills,
-          'objectives': objectivesController.text.trim(),
-          'socialLinks': socialLinks,
-          'summary': summaryController.text.trim(),
-          'dob': dob != null ? DateFormat('yyyy-MM-dd').format(dob!) : null,
-        },
-        'educationalProfile': educationalProfile,
-        'professionalProfile': {'summary': result.professionalSummary},
-        'professionalExperience': result.professionalExperience,
-        'certifications': result.certifications,
-        'publications': result.publications,
-        'awards': result.awards,
-        'references': result.references,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+    String uid,
+    CvExtractionResult result,
+    String authEmail,
+  ) => {
+    'personalProfile': {
+      'name': nameController.text.trim(),
+      'email': authEmail,
+      'secondary_email': secondaryEmail ?? '',
+      'contactNumber': contactNumberController.text.trim(),
+      'nationality': nationalityController.text.trim(),
+      'profilePicUrl': profilePicUrl,
+      'skills': skills,
+      'objectives': objectivesController.text.trim(),
+      'socialLinks': socialLinks,
+      'summary': summaryController.text.trim(),
+      'dob': dob != null ? DateFormat('yyyy-MM-dd').format(dob!) : null,
+    },
+    'educationalProfile': educationalProfile,
+    'professionalProfile': {'summary': result.professionalSummary},
+    'professionalExperience': result.professionalExperience,
+    'certifications': result.certifications,
+    'publications': result.publications,
+    'awards': result.awards,
+    'references': result.references,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
 
   void _populateFromCvResult(CvExtractionResult result) {
     final personal = result.personalProfile;
-    nameController.text =
-        _getStringValue(personal['name'], nameController.text);
-    contactNumberController.text =
-        _getStringValue(personal['contactNumber'], contactNumberController.text);
-    nationalityController.text =
-        _getStringValue(personal['nationality'], nationalityController.text);
+    nameController.text = _getStringValue(
+      personal['name'],
+      nameController.text,
+    );
+    contactNumberController.text = _getStringValue(
+      personal['contactNumber'],
+      contactNumberController.text,
+    );
+    nationalityController.text = _getStringValue(
+      personal['nationality'],
+      nationalityController.text,
+    );
     summaryController.text = _getStringValue(
-        personal['summary'] ?? result.professionalSummary,
-        summaryController.text);
+      personal['summary'] ?? result.professionalSummary,
+      summaryController.text,
+    );
     secondaryEmail = _getStringValue(personal['email'], '');
 
     _populateListFromDynamic(socialLinks, personal['socialLinks']);
@@ -592,30 +624,36 @@ class SignupProvider extends ChangeNotifier {
 
     educationalProfile
       ..clear()
-      ..addAll(result.educationalProfile.map((edu) => {
-        'institutionName': _getStringValue(edu['institutionName'], ''),
-        'duration': _getStringValue(edu['duration'], ''),
-        'majorSubjects': _getStringValue(edu['majorSubjects'], ''),
-        'marksOrCgpa': _getStringValue(edu['marksOrCgpa'], ''),
-      }));
+      ..addAll(
+        result.educationalProfile.map(
+          (edu) => {
+            'institutionName': _getStringValue(edu['institutionName'], ''),
+            'duration': _getStringValue(edu['duration'], ''),
+            'majorSubjects': _getStringValue(edu['majorSubjects'], ''),
+            'marksOrCgpa': _getStringValue(edu['marksOrCgpa'], ''),
+          },
+        ),
+      );
 
     notifyListeners();
   }
 
   String _getStringValue(dynamic value, String fallback) =>
       (value?.toString().trim().isNotEmpty ?? false)
-          ? value.toString()
-          : fallback;
+      ? value.toString()
+      : fallback;
 
   void _populateListFromDynamic(List<String> target, dynamic source) {
     target.clear();
     if (source is List) {
       target.addAll(source.map((e) => e.toString()));
     } else if (source is String && source.isNotEmpty) {
-      target.addAll(source
-          .split(RegExp(r'[,;\n]'))
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty));
+      target.addAll(
+        source
+            .split(RegExp(r'[,;\n]'))
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty),
+      );
     }
   }
 

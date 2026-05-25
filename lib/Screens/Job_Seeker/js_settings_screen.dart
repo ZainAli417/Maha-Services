@@ -17,27 +17,27 @@ import '../../services/job_alert_service.dart';
 // ═══════════════════════════════════════════════════════════════
 abstract final class _Tokens {
   // Primary palette
-  static const Color primary = Color(0xFF4F46E5);   // Indigo 600
+  static const Color primary = Color(0xFF4F46E5); // Indigo 600
   static const Color primarySoft = Color(0xFFEEF2FF); // Indigo 50
-  static const Color accent = Color(0xFF7C3AED);    // Violet 600
+  static const Color accent = Color(0xFF7C3AED); // Violet 600
 
   // Neutral palette
   static const Color background = Color(0xFFF8FAFC); // Slate 50
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE2E8F0);     // Slate 200
-  static const Color divider = Color(0xFFF1F5F9);    // Slate 100
+  static const Color border = Color(0xFFE2E8F0); // Slate 200
+  static const Color divider = Color(0xFFF1F5F9); // Slate 100
 
   // Text palette
-  static const Color textDark = Color(0xFF0F172A);   // Slate 900
-  static const Color textBase = Color(0xFF334155);   // Slate 700
-  static const Color textMuted = Color(0xFF64748B);  // Slate 500
-  static const Color textLight = Color(0xFF94A3B8);  // Slate 400
+  static const Color textDark = Color(0xFF0F172A); // Slate 900
+  static const Color textBase = Color(0xFF334155); // Slate 700
+  static const Color textMuted = Color(0xFF64748B); // Slate 500
+  static const Color textLight = Color(0xFF94A3B8); // Slate 400
 
   // Semantic
-  static const Color success = Color(0xFF10B981);    // Emerald 500
-  static const Color successSoft = Color(0xFFD1FAE5);// Emerald 100
-  static const Color warning = Color(0xFFF59E0B);    // Amber 500
-  static const Color danger = Color(0xFFEF4444);     // Red 500
+  static const Color success = Color(0xFF10B981); // Emerald 500
+  static const Color successSoft = Color(0xFFD1FAE5); // Emerald 100
+  static const Color warning = Color(0xFFF59E0B); // Amber 500
+  static const Color danger = Color(0xFFEF4444); // Red 500
 
   // Motion
   static const Duration fast = Duration(milliseconds: 200);
@@ -96,10 +96,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: _Tokens.slow,
-    );
+    _fadeController = AnimationController(vsync: this, duration: _Tokens.slow);
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
       curve: Curves.easeOutQuart,
@@ -133,7 +130,9 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               'Update Password',
               style: GoogleFonts.plusJakartaSans(
@@ -161,14 +160,17 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                       controller: currentPasswordController,
                       label: 'Current Password',
                       obscure: obscureCurrent,
-                      onToggle: () => setDialogState(() => obscureCurrent = !obscureCurrent),
+                      onToggle: () => setDialogState(
+                        () => obscureCurrent = !obscureCurrent,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildPasswordField(
                       controller: newPasswordController,
                       label: 'New Password',
                       obscure: obscureNew,
-                      onToggle: () => setDialogState(() => obscureNew = !obscureNew),
+                      onToggle: () =>
+                          setDialogState(() => obscureNew = !obscureNew),
                       validator: (val) => (val != null && val.length >= 6)
                           ? null
                           : 'Password must be at least 6 characters',
@@ -178,7 +180,9 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                       controller: confirmPasswordController,
                       label: 'Confirm New Password',
                       obscure: obscureConfirm,
-                      onToggle: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                      onToggle: () => setDialogState(
+                        () => obscureConfirm = !obscureConfirm,
+                      ),
                       validator: (val) => val == newPasswordController.text
                           ? null
                           : 'Passwords do not match',
@@ -205,57 +209,74 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                   onPressed: isUpdating
                       ? null
                       : () async {
-                    if (formKey.currentState!.validate()) {
-                      setDialogState(() => isUpdating = true);
-                      try {
-                        AuthCredential credential = EmailAuthProvider.credential(
-                          email: user.email!,
-                          password: currentPasswordController.text,
-                        );
-                        await user.reauthenticateWithCredential(credential);
-                        await user.updatePassword(newPasswordController.text);
+                          if (formKey.currentState!.validate()) {
+                            setDialogState(() => isUpdating = true);
+                            try {
+                              AuthCredential credential =
+                                  EmailAuthProvider.credential(
+                                    email: user.email!,
+                                    password: currentPasswordController.text,
+                                  );
+                              await user.reauthenticateWithCredential(
+                                credential,
+                              );
+                              await user.updatePassword(
+                                newPasswordController.text,
+                              );
 
-                        if (mounted) {
-                          Navigator.pop(context);
-                          _showStatusSnack(
-                            enabled: true,
-                            title: 'Password Updated',
-                            subtitle: 'Your account is now more secure.',
-                          );
-                        }
-                      } on FirebaseAuthException catch (e) {
-                        String error = 'Failed to update password.';
-                        if (e.code == 'wrong-password') error = 'Current password is incorrect.';
-                        if (e.code == 'weak-password') error = 'The password is too weak.';
-                        if (e.code == 'too-many-requests') error = 'Too many attempts. Try later.';
-                        _showErrorSnack(error);
-                      } catch (e) {
-                        _showErrorSnack('An unexpected error occurred.');
-                      } finally {
-                        if (mounted) setDialogState(() => isUpdating = false);
-                      }
-                    }
-                  },
+                              if (mounted) {
+                                Navigator.pop(context);
+                                _showStatusSnack(
+                                  enabled: true,
+                                  title: 'Password Updated',
+                                  subtitle: 'Your account is now more secure.',
+                                );
+                              }
+                            } on FirebaseAuthException catch (e) {
+                              String error = 'Failed to update password.';
+                              if (e.code == 'wrong-password') {
+                                error = 'Current password is incorrect.';
+                              }
+                              if (e.code == 'weak-password') {
+                                error = 'The password is too weak.';
+                              }
+                              if (e.code == 'too-many-requests') {
+                                error = 'Too many attempts. Try later.';
+                              }
+                              _showErrorSnack(error);
+                            } catch (e) {
+                              _showErrorSnack('An unexpected error occurred.');
+                            } finally {
+                              if (mounted) {
+                                setDialogState(() => isUpdating = false);
+                              }
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _Tokens.primary,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                   ),
                   child: isUpdating
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
-                    ),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
                       : Text(
-                    'Update',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
-                  ),
+                          'Update',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -279,12 +300,18 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
       style: GoogleFonts.plusJakartaSans(
         fontSize: 14,
         color: _Tokens.textDark,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.plusJakartaSans(fontSize: 13, color: _Tokens.textMuted),
-        floatingLabelStyle: GoogleFonts.plusJakartaSans(color: _Tokens.primary, fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 13,
+          color: _Tokens.textMuted,
+        ),
+        floatingLabelStyle: GoogleFonts.plusJakartaSans(
+          color: _Tokens.primary,
+          fontWeight: FontWeight.w600,
+        ),
         suffixIcon: IconButton(
           icon: Icon(
             obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -311,9 +338,15 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _Tokens.danger),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
-      validator: validator ?? (val) => (val == null || val.isEmpty) ? 'This field is required' : null,
+      validator:
+          validator ??
+          (val) =>
+              (val == null || val.isEmpty) ? 'This field is required' : null,
     );
   }
 
@@ -333,8 +366,10 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
     }
 
     try {
-      final userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
       final data = userDoc.data();
       final role = data?['role'] ?? 'Job Seeker';
 
@@ -433,7 +468,9 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                enabled ? Icons.notifications_active_rounded : Icons.notifications_off_rounded,
+                enabled
+                    ? Icons.notifications_active_rounded
+                    : Icons.notifications_off_rounded,
                 color: enabled ? _Tokens.success : _Tokens.textMuted,
                 size: 18,
               ),
@@ -466,9 +503,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
         ),
         backgroundColor: enabled ? _Tokens.success : _Tokens.textMuted,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: EdgeInsets.all(
           MediaQuery.sizeOf(context).width < _Tokens.mobile ? 12 : 24,
         ),
@@ -483,7 +518,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
         content: Text(
           message,
           style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
@@ -504,9 +539,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
       key: _scaffoldKey,
       backgroundColor: _Tokens.background,
       drawer: MediaQuery.sizeOf(context).width < _Tokens.mobile
-          ? Drawer(
-        child: JobSeekerSidebar(activeIndex: 4, isDrawer: true),
-      )
+          ? Drawer(child: JobSeekerSidebar(activeIndex: 4, isDrawer: true))
           : null,
       body: SafeArea(
         child: LayoutBuilder(
@@ -524,7 +557,8 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                       children: [
                         _AppBar(
                           isCompact: isCompact,
-                          onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                          onMenuTap: () =>
+                              _scaffoldKey.currentState?.openDrawer(),
                         ),
                         Expanded(
                           child: _isLoading
@@ -532,16 +566,16 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
                               : _role != 'Job Seeker'
                               ? const _AccessDeniedView()
                               : _SettingsContent(
-                            formFactor: factor,
-                            staggerController: _staggerController,
-                            jobAlertsEnabled: _jobAlertsEnabled,
-                            newsletterEnabled: _newsletterEnabled,
-                            isSavingAlerts: _isSavingAlerts,
-                            isSavingNewsletter: _isSavingNewsletter,
-                            onToggleJobAlerts: _toggleJobAlerts,
-                            onToggleNewsletter: _toggleNewsletter,
-                            onTapChangePassword: _handleChangePassword,
-                          ),
+                                  formFactor: factor,
+                                  staggerController: _staggerController,
+                                  jobAlertsEnabled: _jobAlertsEnabled,
+                                  newsletterEnabled: _newsletterEnabled,
+                                  isSavingAlerts: _isSavingAlerts,
+                                  isSavingNewsletter: _isSavingNewsletter,
+                                  onToggleJobAlerts: _toggleJobAlerts,
+                                  onToggleNewsletter: _toggleNewsletter,
+                                  onTapChangePassword: _handleChangePassword,
+                                ),
                         ),
                       ],
                     ),
@@ -580,9 +614,7 @@ class _AppBar extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.menu_rounded, size: 22),
               onPressed: onMenuTap,
-              style: IconButton.styleFrom(
-                foregroundColor: _Tokens.textDark,
-              ),
+              style: IconButton.styleFrom(foregroundColor: _Tokens.textDark),
             ),
           if (isCompact) const SizedBox(width: 8),
           Container(
@@ -674,7 +706,12 @@ class _SettingsContent extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: _Tokens.maxContentWidth),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(horizontalPadding, 24, horizontalPadding, 48),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            24,
+            horizontalPadding,
+            48,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -693,7 +730,7 @@ class _SettingsContent extends StatelessWidget {
                 iconBgColor: _Tokens.primarySoft,
                 title: 'Job Posting Alerts',
                 description:
-                'Receive email notifications whenever recruiters post new job positions. '
+                    'Receive email notifications whenever recruiters post new job positions. '
                     'Stay ahead of the competition by being the first to apply.',
                 value: jobAlertsEnabled,
                 onChanged: onToggleJobAlerts,
@@ -709,7 +746,7 @@ class _SettingsContent extends StatelessWidget {
                 iconBgColor: const Color(0xFFF3E8FF), // Violet 100
                 title: 'Newsletter & Updates',
                 description:
-                'Get weekly digests with career tips, industry insights, '
+                    'Get weekly digests with career tips, industry insights, '
                     'and platform updates straight to your inbox.',
                 value: newsletterEnabled,
                 onChanged: onToggleNewsletter,
@@ -734,7 +771,8 @@ class _SettingsContent extends StatelessWidget {
                 iconColor: _Tokens.warning,
                 iconBgColor: const Color(0xFFFEF3C7), // Amber 100
                 title: 'Change Password',
-                description: 'Update your password to keep your account secure.',
+                description:
+                    'Update your password to keep your account secure.',
                 actionLabel: 'Update',
                 onTap: onTapChangePassword,
                 delay: 4,
@@ -748,10 +786,12 @@ class _SettingsContent extends StatelessWidget {
                 iconBgColor: const Color(0xFFFEE2E2), // Red 100
                 title: 'Delete Account',
                 description:
-                'Permanently delete your account and all associated data. '
+                    'Permanently delete your account and all associated data. '
                     'This action cannot be undone.',
                 actionLabel: 'Delete',
-                onTap: () {/* Show confirmation dialog */},
+                onTap: () {
+                  /* Show confirmation dialog */
+                },
                 isDestructive: true,
                 delay: 5,
                 controller: staggerController,
@@ -759,10 +799,7 @@ class _SettingsContent extends StatelessWidget {
 
               const SizedBox(height: 36),
 
-              _InfoCard(
-                delay: 6,
-                controller: staggerController,
-              ),
+              _InfoCard(delay: 6, controller: staggerController),
             ],
           ),
         ),
@@ -791,19 +828,17 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final animation = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Interval(
-          delay * 0.08,
-          (delay * 0.08) + 0.4,
-          curve: Curves.easeOutQuart,
-        ),
-      ),
-    );
+    final animation =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: Interval(
+              delay * 0.08,
+              (delay * 0.08) + 0.4,
+              curve: Curves.easeOutQuart,
+            ),
+          ),
+        );
 
     final fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -906,19 +941,17 @@ class _ToggleCardState extends State<_ToggleCard>
 
   @override
   Widget build(BuildContext context) {
-    final animation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: widget.controller,
-        curve: Interval(
-          widget.delay * 0.08,
-          (widget.delay * 0.08) + 0.45,
-          curve: Curves.easeOutQuart,
-        ),
-      ),
-    );
+    final animation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: widget.controller,
+            curve: Interval(
+              widget.delay * 0.08,
+              (widget.delay * 0.08) + 0.45,
+              curve: Curves.easeOutQuart,
+            ),
+          ),
+        );
 
     final fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -955,7 +988,9 @@ class _ToggleCardState extends State<_ToggleCard>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: _Tokens.textDark.withValues(alpha: _isHovered ? 0.06 : 0.03),
+                  color: _Tokens.textDark.withValues(
+                    alpha: _isHovered ? 0.06 : 0.03,
+                  ),
                   blurRadius: _isHovered ? 16 : 8,
                   offset: const Offset(0, 4),
                   spreadRadius: _isHovered ? -2 : 0,
@@ -1013,8 +1048,11 @@ class _ToggleCardState extends State<_ToggleCard>
                               activeColor: Colors.white,
                               activeTrackColor: widget.iconColor,
                               inactiveThumbColor: Colors.white,
-                              inactiveTrackColor: _Tokens.textLight.withValues(alpha: 0.35),
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              inactiveTrackColor: _Tokens.textLight.withValues(
+                                alpha: 0.35,
+                              ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                             ),
                         ],
                       ),
@@ -1125,19 +1163,17 @@ class _ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final animation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Interval(
-          delay * 0.08,
-          (delay * 0.08) + 0.45,
-          curve: Curves.easeOutQuart,
-        ),
-      ),
-    );
+    final animation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: Interval(
+              delay * 0.08,
+              (delay * 0.08) + 0.45,
+              curve: Curves.easeOutQuart,
+            ),
+          ),
+        );
 
     final fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -1209,8 +1245,9 @@ class _ActionCard extends StatelessWidget {
                   TextButton(
                     onPressed: onTap,
                     style: TextButton.styleFrom(
-                      foregroundColor:
-                      isDestructive ? _Tokens.danger : _Tokens.primary,
+                      foregroundColor: isDestructive
+                          ? _Tokens.danger
+                          : _Tokens.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
@@ -1246,19 +1283,17 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final animation = Tween<Offset>(
-      begin: const Offset(0, 0.25),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Interval(
-          delay * 0.08,
-          (delay * 0.08) + 0.5,
-          curve: Curves.easeOutQuart,
-        ),
-      ),
-    );
+    final animation =
+        Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: controller,
+            curve: Interval(
+              delay * 0.08,
+              (delay * 0.08) + 0.5,
+              curve: Curves.easeOutQuart,
+            ),
+          ),
+        );
 
     final fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
@@ -1287,9 +1322,7 @@ class _InfoCard extends StatelessWidget {
               ],
             ),
             borderRadius: BorderRadius.circular(_Tokens.cardRadius),
-            border: Border.all(
-              color: _Tokens.primary.withValues(alpha: 0.12),
-            ),
+            border: Border.all(color: _Tokens.primary.withValues(alpha: 0.12)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1334,9 +1367,9 @@ class _InfoCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       'When enabled, you\'ll receive an email every time a recruiter '
-                          'posts a new position on Maha Services. Emails include job '
-                          'title, location, salary, and a direct link to apply. '
-                          'You can disable this at any time from this screen.',
+                      'posts a new position on Maha Services. Emails include job '
+                      'title, location, salary, and a direct link to apply. '
+                      'You can disable this at any time from this screen.',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12.5,
                         color: _Tokens.textMuted,
@@ -1506,7 +1539,7 @@ class _AccessDeniedView extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 'Job Alert settings are only available for Job Seekers. '
-                    'Switch to your Job Seeker profile to manage alerts.',
+                'Switch to your Job Seeker profile to manage alerts.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,

@@ -40,7 +40,7 @@ dependencies:
   mime: ^2.0.0
   tuple: any
   path_provider: any
-  flutter_quill: ^11.5.0
+  flutter_quill: ^11.5.1
   flutter_localizations:
     sdk: flutter
 

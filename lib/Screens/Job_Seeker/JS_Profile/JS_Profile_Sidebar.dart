@@ -8,7 +8,7 @@ class JSProfileSidebar extends StatefulWidget {
   const JSProfileSidebar({super.key, required this.provider});
 
   @override
-  _JSProfileSidebarState createState() => _JSProfileSidebarState();
+  State<JSProfileSidebar> createState() => _JSProfileSidebarState();
 }
 
 class _JSProfileSidebarState extends State<JSProfileSidebar> {
@@ -39,25 +39,34 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     return s.clamp(0, _wPersonal);
   }
 
-  int _scoreEducation() => widget.provider.educationalProfile.isNotEmpty ? _wEducation : 0;
-  int _scoreProfessionalProfile() => widget.provider.professionalProfileSummary.trim().isNotEmpty ? _wProfessionalProfile : 0;
-  int _scoreExperience() => widget.provider.professionalExperience.isNotEmpty ? _wExperience : 0;
-  int _scoreCertifications() => widget.provider.certifications.isNotEmpty ? _wCertifications : 0;
-  int _scorePublications() => widget.provider.publications.isNotEmpty ? _wPublications : 0;
+  int _scoreEducation() =>
+      widget.provider.educationalProfile.isNotEmpty ? _wEducation : 0;
+  int _scoreProfessionalProfile() =>
+      widget.provider.professionalProfileSummary.trim().isNotEmpty
+      ? _wProfessionalProfile
+      : 0;
+  int _scoreExperience() =>
+      widget.provider.professionalExperience.isNotEmpty ? _wExperience : 0;
+  int _scoreCertifications() =>
+      widget.provider.certifications.isNotEmpty ? _wCertifications : 0;
+  int _scorePublications() =>
+      widget.provider.publications.isNotEmpty ? _wPublications : 0;
   int _scoreAwards() => widget.provider.awards.isNotEmpty ? _wAwards : 0;
-  int _scoreReferences() => widget.provider.references.isNotEmpty ? _wReferences : 0;
-  int _scoreDocuments() => widget.provider.documents.isNotEmpty ? _wDocuments : 0;
+  int _scoreReferences() =>
+      widget.provider.references.isNotEmpty ? _wReferences : 0;
+  int _scoreDocuments() =>
+      widget.provider.documents.isNotEmpty ? _wDocuments : 0;
 
   int computeTotalScore() {
     return (_scorePersonal() +
-        _scoreEducation() +
-        _scoreProfessionalProfile() +
-        _scoreExperience() +
-        _scoreCertifications() +
-        _scorePublications() +
-        _scoreAwards() +
-        _scoreReferences() +
-        _scoreDocuments())
+            _scoreEducation() +
+            _scoreProfessionalProfile() +
+            _scoreExperience() +
+            _scoreCertifications() +
+            _scorePublications() +
+            _scoreAwards() +
+            _scoreReferences() +
+            _scoreDocuments())
         .clamp(0, 100);
   }
 
@@ -151,7 +160,6 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     );
   }
 
-
   Widget _buildCompletionCard(int totalScore, Color scoreColor) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
@@ -189,7 +197,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     _getScoreLabel(totalScore),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 10 : 12,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: scoreColor,
                     ),
                   ),
@@ -202,7 +210,10 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: scoreColor.withValues(alpha: 0.1),
-                  border: Border.all(color: scoreColor.withValues(alpha: 0.2), width: 2),
+                  border: Border.all(
+                    color: scoreColor.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
                 ),
                 child: Text(
                   '$totalScore%',
@@ -235,12 +246,42 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     final stats = [
-      {'icon': Icons.school_rounded, 'val': provider.educationalProfile.length.toString(), 'label': 'Education', 'col': const Color(0xFF6366F1)},
-      {'icon': Icons.work_rounded, 'val': provider.professionalExperience.length.toString(), 'label': 'Experience', 'col': const Color(0xFF8B5CF6)},
-      {'icon': Icons.verified_rounded, 'val': provider.certifications.length.toString(), 'label': 'Certificates', 'col': const Color(0xFF10B981)},
-      {'icon': Icons.star_rounded, 'val': provider.awards.length.toString(), 'label': 'Awards', 'col': const Color(0xFFF59E0B)},
-      {'icon': Icons.article_rounded, 'val': provider.publications.length.toString(), 'label': 'Publications', 'col': const Color(0xFFEC4899)},
-      {'icon': Icons.folder_copy_rounded, 'val': provider.documents.length.toString(), 'label': 'Documents', 'col': const Color(0xFFEF4444)},
+      {
+        'icon': Icons.school_rounded,
+        'val': provider.educationalProfile.length.toString(),
+        'label': 'Education',
+        'col': const Color(0xFF6366F1),
+      },
+      {
+        'icon': Icons.work_rounded,
+        'val': provider.professionalExperience.length.toString(),
+        'label': 'Experience',
+        'col': const Color(0xFF8B5CF6),
+      },
+      {
+        'icon': Icons.verified_rounded,
+        'val': provider.certifications.length.toString(),
+        'label': 'Certificates',
+        'col': const Color(0xFF10B981),
+      },
+      {
+        'icon': Icons.star_rounded,
+        'val': provider.awards.length.toString(),
+        'label': 'Awards',
+        'col': const Color(0xFFF59E0B),
+      },
+      {
+        'icon': Icons.article_rounded,
+        'val': provider.publications.length.toString(),
+        'label': 'Publications',
+        'col': const Color(0xFFEC4899),
+      },
+      {
+        'icon': Icons.folder_copy_rounded,
+        'val': provider.documents.length.toString(),
+        'label': 'Documents',
+        'col': const Color(0xFFEF4444),
+      },
     ];
 
     return Column(
@@ -287,7 +328,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Icon(s['icon'] as IconData, color: s['col'] as Color, size: isMobile ? 16 : 18),
+                  Icon(
+                    s['icon'] as IconData,
+                    color: s['col'] as Color,
+                    size: isMobile ? 16 : 18,
+                  ),
                   SizedBox(height: isMobile ? 2 : 4),
                   Text(
                     s['val'] as String,
@@ -334,7 +379,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              Icon(Icons.checklist_rtl_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(
+                Icons.checklist_rtl_rounded,
+                color: const Color(0xFF1E3A8A),
+                size: isMobile ? 13 : 16,
+              ),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Completeness Breakdown',
@@ -347,11 +396,36 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             ],
           ),
           SizedBox(height: isMobile ? 12 : 20),
-          _buildProgressRow('Personal Info', _scorePersonal(), _wPersonal, const Color(0xFF6366F1)),
-          _buildProgressRow('Education', _scoreEducation(), _wEducation, const Color(0xFF8B5CF6)),
-          _buildProgressRow('Prof. Profile', _scoreProfessionalProfile(), _wProfessionalProfile, const Color(0xFF10B981)),
-          _buildProgressRow('Experience', _scoreExperience(), _wExperience, const Color(0xFFF59E0B)),
-          _buildProgressRow('Certifications', _scoreCertifications(), _wCertifications, const Color(0xFFEC4899)),
+          _buildProgressRow(
+            'Personal Info',
+            _scorePersonal(),
+            _wPersonal,
+            const Color(0xFF6366F1),
+          ),
+          _buildProgressRow(
+            'Education',
+            _scoreEducation(),
+            _wEducation,
+            const Color(0xFF8B5CF6),
+          ),
+          _buildProgressRow(
+            'Prof. Profile',
+            _scoreProfessionalProfile(),
+            _wProfessionalProfile,
+            const Color(0xFF10B981),
+          ),
+          _buildProgressRow(
+            'Experience',
+            _scoreExperience(),
+            _wExperience,
+            const Color(0xFFF59E0B),
+          ),
+          _buildProgressRow(
+            'Certifications',
+            _scoreCertifications(),
+            _wCertifications,
+            const Color(0xFFEC4899),
+          ),
         ],
       ),
     );
@@ -387,7 +461,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                       label,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 10 : 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF374151),
                       ),
                     ),
@@ -454,7 +528,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              Icon(Icons.diamond_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(
+                Icons.diamond_rounded,
+                color: const Color(0xFF1E3A8A),
+                size: isMobile ? 13 : 16,
+              ),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Top Skills',
@@ -485,7 +563,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   skill,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 9 : 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E40AF),
                   ),
                 ),
@@ -531,7 +609,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         children: [
           Row(
             children: [
-              Icon(Icons.contact_mail_rounded, color: const Color(0xFF1E3A8A), size: isMobile ? 13 : 16),
+              Icon(
+                Icons.contact_mail_rounded,
+                color: const Color(0xFF1E3A8A),
+                size: isMobile ? 13 : 16,
+              ),
               SizedBox(width: isMobile ? 6 : 10),
               Text(
                 'Contact Info',
@@ -545,10 +627,26 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
           ),
           SizedBox(height: isMobile ? 12 : 20),
 
-          _buildInfoRow(Icons.mail_rounded, 'Email', provider.email.isNotEmpty ? provider.email : '—'),
-          _buildInfoRow(Icons.phone_iphone_rounded, 'Phone', provider.contactNumber.isNotEmpty ? provider.contactNumber : '—'),
-          _buildInfoRow(Icons.public_rounded, 'Nationality', provider.nationality.isNotEmpty ? provider.nationality : '—'),
-          _buildInfoRow(Icons.cake_rounded, 'DOB', provider.dob.isNotEmpty ? provider.dob : '—'),
+          _buildInfoRow(
+            Icons.mail_rounded,
+            'Email',
+            provider.email.isNotEmpty ? provider.email : '—',
+          ),
+          _buildInfoRow(
+            Icons.phone_iphone_rounded,
+            'Phone',
+            provider.contactNumber.isNotEmpty ? provider.contactNumber : '—',
+          ),
+          _buildInfoRow(
+            Icons.public_rounded,
+            'Nationality',
+            provider.nationality.isNotEmpty ? provider.nationality : '—',
+          ),
+          _buildInfoRow(
+            Icons.cake_rounded,
+            'DOB',
+            provider.dob.isNotEmpty ? provider.dob : '—',
+          ),
 
           // Summary Accordion
           if (provider.personalSummary.isNotEmpty) ...[
@@ -566,15 +664,25 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               duration: const Duration(milliseconds: 300),
               firstChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 10 : 12,
+                  color: const Color(0xFF6B7280),
+                  height: 1.6,
+                ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               secondChild: Text(
                 provider.personalSummary,
-                style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 10 : 12, color: const Color(0xFF6B7280), height: 1.6),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 10 : 12,
+                  color: const Color(0xFF6B7280),
+                  height: 1.6,
+                ),
               ),
-              crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              crossFadeState: _isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
             ),
             const SizedBox(height: 8),
             InkWell(
@@ -593,10 +701,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     ),
                     const SizedBox(width: 4),
                     Icon(
-                      _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                      _isExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
                       size: isMobile ? 14 : 16,
                       color: const Color(0xFF6366F1),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -620,7 +730,11 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               color: const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
             ),
-            child: Icon(icon, color: const Color(0xFF6B7280), size: isMobile ? 10 : 12),
+            child: Icon(
+              icon,
+              color: const Color(0xFF6B7280),
+              size: isMobile ? 10 : 12,
+            ),
           ),
           SizedBox(width: isMobile ? 8 : 12),
           Expanded(
@@ -640,7 +754,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   value,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 10 : 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF1F2937),
                   ),
                   maxLines: 1,
@@ -653,6 +767,4 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       ),
     );
   }
-
 }
-

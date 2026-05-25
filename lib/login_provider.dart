@@ -47,21 +47,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginProvider with ChangeNotifier {
-  final _auth      = FirebaseAuth.instance;
+  final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
   StreamSubscription<User?>? _authSubscription;
   bool _isDisposed = false;
 
-  bool    _isLoading    = false;
+  bool _isLoading = false;
   String? _errorMessage;
-  User?   _currentUser;
+  User? _currentUser;
 
   // ── Getters ────────────────────────────────────────────────────────────────
-  bool    get isLoading    => _isLoading;
+  bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  User?   get currentUser  => _currentUser;
-  bool    get isSignedIn   => _currentUser != null;
+  User? get currentUser => _currentUser;
+  bool get isSignedIn => _currentUser != null;
 
   // ── Safety helpers ─────────────────────────────────────────────────────────
   void _safeNotify() {
@@ -100,8 +100,14 @@ class LoginProvider with ChangeNotifier {
   String _normalizeRole(String role) {
     final n = role.trim().toLowerCase();
     if (['recruiter', 'employer'].contains(n)) return 'recruiter';
-    if (['job_seeker', 'jobseeker', 'job seeker', 'candidate',
-      'job_seeker', 'job seeker'].contains(n)) {
+    if ([
+      'job_seeker',
+      'jobseeker',
+      'job seeker',
+      'candidate',
+      'job_seeker',
+      'job seeker',
+    ].contains(n)) {
       return 'Job Seeker';
     }
     return n;
@@ -110,7 +116,7 @@ class LoginProvider with ChangeNotifier {
   String _getRoleDashboard(String role) {
     final n = _normalizeRole(role);
     if (n == 'recruiter') return '/recruiter-dashboard';
-    if (n == 'admin')     return '/admin_dashboard';
+    if (n == 'admin') return '/admin_dashboard';
     return '/dashboard';
   }
 
@@ -170,8 +176,8 @@ class LoginProvider with ChangeNotifier {
         _isAccountActive(user.uid),
       ]);
 
-      final roleVerified    = results[0];
-      final isNew           = isJobSeeker ? results[1] : false;
+      final roleVerified = results[0];
+      final isNew = isJobSeeker ? results[1] : false;
       final isAccountActive = results.last;
 
       // ── Step 2.1: Check Account Status ────────────────────────────────────
@@ -200,14 +206,15 @@ class LoginProvider with ChangeNotifier {
 
       if (isJobSeeker) {
         final route = isNew ? '/profile-builder' : '/dashboard';
-        debugPrint(isNew
-            ? '✨ New Job Seeker → /profile-builder'
-            : '👤 Existing Job Seeker → /dashboard');
+        debugPrint(
+          isNew
+              ? '✨ New Job Seeker → /profile-builder'
+              : '👤 Existing Job Seeker → /dashboard',
+        );
         return route;
       }
 
       return _getRoleDashboard(expectedRole);
-
     } on FirebaseAuthException catch (e) {
       _handleAuthError(e);
       return null;
@@ -225,11 +232,16 @@ class LoginProvider with ChangeNotifier {
   // FIX 1 (safety net): Even after getIdToken(true), slow devices or
   // cold Firestore connections can take an extra 200–400 ms to propagate the
   // token. We retry once after a short delay before giving up.
-  Future<bool> _verifyUserRole(String uid, String expectedRole,
-      {bool isRetry = false}) async {
+  Future<bool> _verifyUserRole(
+    String uid,
+    String expectedRole, {
+    bool isRetry = false,
+  }) async {
     try {
       final normExpected = _normalizeRole(expectedRole);
-      final collection   = normExpected == 'recruiter' ? 'recruiter' : 'Job_Seeker';
+      final collection = normExpected == 'recruiter'
+          ? 'recruiter'
+          : 'Job_Seeker';
 
       final docSnap = await _firestore
           .collection(collection)
@@ -292,17 +304,18 @@ class LoginProvider with ChangeNotifier {
           .get(const GetOptions(source: Source.serverAndCache));
 
       if (!userDoc.exists) {
-        // Document genuinely doesn't exist → treat as new
-        debugPrint('⚠️ _isNewUser: users/$uid not found → treating as new');
-        return true;
+        debugPrint(
+          '⚠️ _isNewUser: users/$uid not found → treating as existing legacy user',
+        );
+        return false;
       }
 
-      final data  = userDoc.data() as Map<String, dynamic>;
+      final data = userDoc.data() as Map<String, dynamic>;
       final isNew = data['isNew'];
       debugPrint('🔍 _isNewUser for $uid: isNew = $isNew');
 
       if (isNew is String) return isNew.toLowerCase().trim() == 'yes';
-      if (isNew is bool)   return isNew;
+      if (isNew is bool) return isNew;
 
       // Field absent → document was created without isNew → existing user
       return false;
@@ -312,7 +325,7 @@ class LoginProvider with ChangeNotifier {
       // /profile-builder on any connection hiccup.
       debugPrint('⚠️ _isNewUser error — defaulting to existing user: $e');
       return false;
-  }
+    }
   }
 
   // ── Account status check ───────────────────────────────────────────────────
@@ -325,8 +338,11 @@ class LoginProvider with ChangeNotifier {
 
       if (!userDoc.exists) return true; // Assume active if record missing
 
-      final data   = userDoc.data() as Map<String, dynamic>;
-      final status = (data['account_status'] ?? 'active').toString().toLowerCase().trim();
+      final data = userDoc.data() as Map<String, dynamic>;
+      final status = (data['account_status'] ?? 'active')
+          .toString()
+          .toLowerCase()
+          .trim();
 
       return status == 'active';
     } catch (e) {

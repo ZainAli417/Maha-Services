@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function isImage() {
+      return request.resource != null &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    function underFiveMb() {
+      return request.resource != null &&
+        request.resource.size < 5 * 1024 * 1024;
+    }
+
+    match /Job_Seeker/{uid}/{fileName=**} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid) && isImage() && underFiveMb();
+    }
+
+    match /recruiter/{uid}/{fileName=**} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid) && isImage() && underFiveMb();
+    }
+
+    match /recruiter_logos/{uid}/{fileName=**} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid) && isImage() && underFiveMb();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

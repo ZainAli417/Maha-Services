@@ -26,19 +26,19 @@ class SmoothScrollBehavior extends MaterialScrollBehavior {
 }
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
-const _cPrimary  = Color(0xFF6366F1);
-const _cAccent   = Color(0xFF818CF8);
-const _cPurple   = Color(0xFF8B5CF6);
-const _cGreen    = Color(0xFF10B981);
-const _cAmber    = Color(0xFFF59E0B);
-const _cRed      = Color(0xFFEF4444);
-const _cSlate    = Color(0xFF64748B);
-const _cSurface  = Color(0xFFFAFAFA);
-const _cBorder   = Color(0xFFE2E8F0);
-const _cTxt      = Color(0xFF0F172A);
-const _cTxtSec   = Color(0xFF64748B);
-const _cTxtTert  = Color(0xFF94A3B8);
-const _cTeal     = Color(0xFF086F63);
+const _cPrimary = Color(0xFF6366F1);
+const _cAccent = Color(0xFF818CF8);
+const _cPurple = Color(0xFF8B5CF6);
+const _cGreen = Color(0xFF10B981);
+const _cAmber = Color(0xFFF59E0B);
+const _cRed = Color(0xFFEF4444);
+const _cSlate = Color(0xFF64748B);
+const _cSurface = Color(0xFFFAFAFA);
+const _cBorder = Color(0xFFE2E8F0);
+const _cTxt = Color(0xFF0F172A);
+const _cTxtSec = Color(0xFF64748B);
+const _cTxtTert = Color(0xFF94A3B8);
+const _cTeal = Color(0xFF086F63);
 
 // ─────────────────────────────────────────────────────────────────────────────
 class ApplicantsScreen extends StatefulWidget {
@@ -51,8 +51,8 @@ class ApplicantsScreen extends StatefulWidget {
 
 class _ApplicantsScreenState extends State<ApplicantsScreen> {
   final Set<String> _selected = {};
-  bool _selectAll      = false;
-  bool _rankByScore    = false;
+  bool _selectAll = false;
+  bool _rankByScore = false;
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -114,10 +114,12 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     if (_search.text.isNotEmpty) {
       final q = _search.text.toLowerCase();
       list = list
-          .where((a) =>
-      a.name.toLowerCase().contains(q) ||
-          a.email.toLowerCase().contains(q) ||
-          (a.jobData?.title ?? '').toLowerCase().contains(q))
+          .where(
+            (a) =>
+                a.name.toLowerCase().contains(q) ||
+                a.email.toLowerCase().contains(q) ||
+                (a.jobData?.title ?? '').toLowerCase().contains(q),
+          )
           .toList();
     }
     if (_rankByScore) {
@@ -128,7 +130,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
   int _score(ApplicantRecord a) {
     final d = a.matchScore;
-    return (d is Map) ? (d['overallScore'] as int? ?? 0) : 0;
+    return d['overallScore'] as int? ?? 0;
   }
 
   // ─── Shortlist selected ─────────────────────────────────────────────────
@@ -147,7 +149,10 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       await p.updateApplicationStatus(id, a.docId, 'shortlist');
       ok++;
     }
-    setState(() { _selected.clear(); _selectAll = false; });
+    setState(() {
+      _selected.clear();
+      _selectAll = false;
+    });
     if (skip > 0 && ok == 0) {
       _toast('All selected already shortlisted');
     } else if (skip > 0) {
@@ -159,13 +164,16 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
 
   // ─── Auto shortlist ─────────────────────────────────────────────────────
   Future<void> _autoShortlist(ApplicantsProvider p) async {
-    final eligible = p.applicants.where((a) {
-      if (a.status.toLowerCase() == 'shortlist') {
-        return false;
-      }
-      final d = a.matchScore;
-      return (d is Map) && ((d['overallScore'] as int? ?? 0) > 65);
-    }).map((a) => a.userId).toList();
+    final eligible = p.applicants
+        .where((a) {
+          if (a.status.toLowerCase() == 'shortlist') {
+            return false;
+          }
+          final d = a.matchScore;
+          return (d is Map) && ((d['overallScore'] as int? ?? 0) > 65);
+        })
+        .map((a) => a.userId)
+        .toList();
 
     if (eligible.isEmpty) {
       _toast('No candidates with score > 65 outside shortlist', error: true);
@@ -176,29 +184,39 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Row(children: [
-          const Icon(Icons.auto_awesome, color: _cPurple),
-          const SizedBox(width: 10),
-          Text('Auto Shortlist',
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700)),
-        ]),
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: _cPurple),
+            const SizedBox(width: 10),
+            Text(
+              'Auto Shortlist',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
         content: Text(
           'Add ${eligible.length} candidate${eligible.length > 1 ? 's' : ''} '
-              'with AI score > 65% to shortlist?\n\nAlready shortlisted will be skipped.',
+          'with AI score > 65% to shortlist?\n\nAlready shortlisted will be skipped.',
           style: GoogleFonts.plusJakartaSans(fontSize: 13),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel', style: GoogleFonts.plusJakartaSans())),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.plusJakartaSans()),
+          ),
           ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: _cPurple,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8))),
-              child: Text('Confirm',
-                  style: GoogleFonts.plusJakartaSans(color: Colors.white))),
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _cPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Confirm',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
@@ -256,7 +274,8 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         builder: (ctx, provider, _) {
           if (provider.isLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: _cPurple));
+              child: CircularProgressIndicator(color: _cPurple),
+            );
           }
           if (provider.error != null) {
             return Center(
@@ -265,12 +284,15 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 children: [
                   Icon(Icons.error_outline, size: 44, color: Colors.red[300]),
                   const SizedBox(height: 14),
-                  Text('Error: ${provider.error}',
-                      style: GoogleFonts.plusJakartaSans(color: Colors.red[700])),
+                  Text(
+                    'Error: ${provider.error}',
+                    style: GoogleFonts.plusJakartaSans(color: Colors.red[700]),
+                  ),
                   const SizedBox(height: 14),
                   ElevatedButton(
-                      onPressed: () => provider.refresh(jobId: widget.jobId),
-                      child: const Text('Retry')),
+                    onPressed: () => provider.refresh(jobId: widget.jobId),
+                    child: const Text('Retry'),
+                  ),
                 ],
               ),
             );
@@ -289,9 +311,11 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   onAutoShortlist: () => _autoShortlist(provider),
                   onToggleRank: () {
                     setState(() => _rankByScore = !_rankByScore);
-                    _toast(_rankByScore
-                        ? 'Ranked by AI match score'
-                        : 'Ranking cleared');
+                    _toast(
+                      _rankByScore
+                          ? 'Ranked by AI match score'
+                          : 'Ranking cleared',
+                    );
                   },
                 ),
               ),
@@ -409,6 +433,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
       ],
     );
   }
+
   void _showScoreDialog(BuildContext ctx, AIMatchResult r) {
     showDialog(
       context: ctx,
@@ -422,111 +447,153 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    r.getScoreColor(),
-                    r.getScoreColor().withValues(alpha: 0.75),
-                  ]),
+                  gradient: LinearGradient(
+                    colors: [
+                      r.getScoreColor(),
+                      r.getScoreColor().withValues(alpha: 0.75),
+                    ],
+                  ),
                   borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16)),
+                    top: Radius.circular(16),
+                  ),
                 ),
-                child: Row(children: [
-                  const Icon(Icons.psychology, color: Colors.white, size: 26),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
+                child: Row(
+                  children: [
+                    const Icon(Icons.psychology, color: Colors.white, size: 26),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(r.applicantName,
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white)),
-                          Text('AI Match Analysis',
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  color: Colors.white.withValues(alpha: 0.85))),
-                        ]),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
+                          Text(
+                            r.applicantName,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'AI Match Analysis',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle),
-                    child: Text('${r.overallScore}',
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${r.overallScore}',
                         style: GoogleFonts.plusJakartaSans(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
-                  ),
-                ]),
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               // Body
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(20),
                   child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: r.getRecommendationColor()
-                                  .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: r.getRecommendationColor(), width: 1.5),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: r.getRecommendationColor().withValues(
+                              alpha: 0.1,
                             ),
-                            child: Text(r.recommendation,
-                                style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: r.getRecommendationColor())),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: r.getRecommendationColor(),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Text(
+                            r.recommendation,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: r.getRecommendationColor(),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Text('Score Breakdown',
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 12),
-                        _ScoreRow(label: 'Skills Match', score: r.skillsMatch),
-                        const SizedBox(height: 10),
-                        _ScoreRow(
-                            label: 'Experience', score: r.experienceMatch),
-                        const SizedBox(height: 10),
-                        _ScoreRow(label: 'Education', score: r.educationMatch),
-                        if (r.strengths.isNotEmpty) ...[
-                          const SizedBox(height: 20),
-                          _SectionHead(
-                              'Key Strengths', Icons.check_circle, _cGreen),
-                          const SizedBox(height: 10),
-                          ...r.strengths.map((s) => _Bullet(s, _cGreen)),
-                        ],
-                        if (r.weaknesses.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          _SectionHead('Areas for Improvement',
-                              Icons.warning_amber_rounded, _cAmber),
-                          const SizedBox(height: 10),
-                          ...r.weaknesses.map((w) => _Bullet(w, _cAmber)),
-                        ],
-                        const SizedBox(height: 16),
-                        Text('Detailed Analysis',
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                              color: _cSurface,
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Text(r.detailedAnalysis,
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12,
-                                  height: 1.6,
-                                  color: _cTxtSec)),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Score Breakdown',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ]),
+                      ),
+                      const SizedBox(height: 12),
+                      _ScoreRow(label: 'Skills Match', score: r.skillsMatch),
+                      const SizedBox(height: 10),
+                      _ScoreRow(label: 'Experience', score: r.experienceMatch),
+                      const SizedBox(height: 10),
+                      _ScoreRow(label: 'Education', score: r.educationMatch),
+                      if (r.strengths.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        _SectionHead(
+                          'Key Strengths',
+                          Icons.check_circle,
+                          _cGreen,
+                        ),
+                        const SizedBox(height: 10),
+                        ...r.strengths.map((s) => _Bullet(s, _cGreen)),
+                      ],
+                      if (r.weaknesses.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _SectionHead(
+                          'Areas for Improvement',
+                          Icons.warning_amber_rounded,
+                          _cAmber,
+                        ),
+                        const SizedBox(height: 10),
+                        ...r.weaknesses.map((w) => _Bullet(w, _cAmber)),
+                      ],
+                      const SizedBox(height: 16),
+                      Text(
+                        'Detailed Analysis',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _cSurface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          r.detailedAnalysis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            height: 1.6,
+                            color: _cTxtSec,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Padding(
@@ -540,11 +607,16 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    child: Text('Close',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Close',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -555,6 +627,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     );
   }
 }
+
 class _MobileSelectBar extends StatelessWidget {
   final int total;
   final int selectedCount;
@@ -584,7 +657,8 @@ class _MobileSelectBar extends StatelessWidget {
             activeColor: _cPurple,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50)),
+              borderRadius: BorderRadius.circular(50),
+            ),
           ),
           const SizedBox(width: 8),
           Text(
@@ -593,7 +667,7 @@ class _MobileSelectBar extends StatelessWidget {
                 : '$selectedCount of $total selected',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: selectedCount > 0 ? _cPurple : _cTxtSec,
             ),
           ),
@@ -602,6 +676,7 @@ class _MobileSelectBar extends StatelessWidget {
     );
   }
 }
+
 class _ApplicantCard extends StatelessWidget {
   final ApplicantRecord applicant;
   final int index;
@@ -628,8 +703,10 @@ class _ApplicantCard extends StatelessWidget {
   });
 
   static const _avatarColors = [
-    Color(0xFF3B82F6), Color(0xFF8B5CF6),
-    Color(0xFFEC4899), Color(0xFF06B6D4),
+    Color(0xFF3B82F6),
+    Color(0xFF8B5CF6),
+    Color(0xFFEC4899),
+    Color(0xFF06B6D4),
   ];
 
   @override
@@ -638,10 +715,10 @@ class _ApplicantCard extends StatelessWidget {
 
     // ── Score data ──────────────────────────────────────────────────────────
     final scoreData = applicant.matchScore;
-    final hasScore  = scoreData['overallScore'] != null;
-    final score     = hasScore ? (scoreData['overallScore'] as int) : 0;
-    final sColor    = hasScore ? scoreColor(score) : _cTxtTert;
-    final sLabel    = hasScore ? scoreLabel(score) : 'Not analyzed';
+    final hasScore = scoreData['overallScore'] != null;
+    final score = hasScore ? (scoreData['overallScore'] as int) : 0;
+    final sColor = hasScore ? scoreColor(score) : _cTxtTert;
+    final sLabel = hasScore ? scoreLabel(score) : 'Not analyzed';
 
     return GestureDetector(
       onTap: onViewDetails,
@@ -666,7 +743,6 @@ class _ApplicantCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ── Top row: checkbox + avatar + name + status ────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
@@ -683,14 +759,16 @@ class _ApplicantCard extends StatelessWidget {
                       activeColor: _cPurple,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
 
                   // Avatar
                   Container(
-                    width: 38, height: 38,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
                       color: avatarColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(9),
@@ -727,7 +805,9 @@ class _ApplicantCard extends StatelessWidget {
                         Text(
                           maskEmail(applicant.email),
                           style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11, color: _cTxtSec),
+                            fontSize: 11,
+                            color: _cTxtSec,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -762,8 +842,7 @@ class _ApplicantCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   _MetaChip(
                     icon: Icons.calendar_today_outlined,
-                    label: DateFormat('MMM d, yy')
-                        .format(applicant.appliedAt),
+                    label: DateFormat('MMM d, yy').format(applicant.appliedAt),
                   ),
                   const SizedBox(width: 8),
                   _MetaChip(
@@ -779,117 +858,154 @@ class _ApplicantCard extends StatelessWidget {
             // ── AI Score row ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: Builder(builder: (ctx) {
-                final ai   = ctx.watch<AIMatchProvider>();
-                final busy = ai.isProcessingApplicant(applicant.userId);
+              child: Builder(
+                builder: (ctx) {
+                  final ai = ctx.watch<AIMatchProvider>();
+                  final busy = ai.isProcessingApplicant(applicant.userId);
 
-                if (busy) {
-                  return Row(children: [
-                    const SizedBox(
-                      width: 12, height: 12,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1.8,
-                        valueColor: AlwaysStoppedAnimation(_cPurple),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text('Analyzing…',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11, color: _cTxtSec)),
-                  ]);
-                }
-
-                return Row(
-                  children: [
-                    // Score pill / label
-                    GestureDetector(
-                      onTap: hasScore
-                          ? () {
-                        final result = AIMatchResult(
-                          applicantId: applicant.userId,
-                          applicantName: applicant.name,
-                          overallScore: score,
-                          skillsMatch: scoreData['skillsMatch'] as int? ?? 0,
-                          experienceMatch: scoreData['experienceMatch'] as int? ?? 0,
-                          educationMatch: scoreData['educationMatch'] as int? ?? 0,
-                          strengths: List<String>.from(scoreData['strengths'] ?? []),
-                          weaknesses: List<String>.from(scoreData['weaknesses'] ?? []),
-                          recommendation: scoreData['recommendation']?.toString() ?? 'N/A',
-                          detailedAnalysis: scoreData['detailedAnalysis']?.toString() ?? '',
-                          timestamp: DateTime.now(),
-                        );
-                        onShowScore(result);
-                      }
-                          : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: sColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: sColor.withValues(alpha: 0.3)),
+                  if (busy) {
+                    return Row(
+                      children: [
+                        const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 1.8,
+                            valueColor: AlwaysStoppedAnimation(_cPurple),
+                          ),
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.auto_awesome,
-                              size: 11, color: sColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            hasScore ? '$score%  $sLabel' : sLabel,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: sColor,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Analyzing…',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: _cTxtSec,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      // Score pill / label
+                      GestureDetector(
+                        onTap: hasScore
+                            ? () {
+                                final result = AIMatchResult(
+                                  applicantId: applicant.userId,
+                                  applicantName: applicant.name,
+                                  overallScore: score,
+                                  skillsMatch:
+                                      scoreData['skillsMatch'] as int? ?? 0,
+                                  experienceMatch:
+                                      scoreData['experienceMatch'] as int? ?? 0,
+                                  educationMatch:
+                                      scoreData['educationMatch'] as int? ?? 0,
+                                  strengths: List<String>.from(
+                                    scoreData['strengths'] ?? [],
+                                  ),
+                                  weaknesses: List<String>.from(
+                                    scoreData['weaknesses'] ?? [],
+                                  ),
+                                  recommendation:
+                                      scoreData['recommendation']?.toString() ??
+                                      'N/A',
+                                  detailedAnalysis:
+                                      scoreData['detailedAnalysis']
+                                          ?.toString() ??
+                                      '',
+                                  timestamp: DateTime.now(),
+                                );
+                                onShowScore(result);
+                              }
+                            : null,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: sColor.withValues(alpha: 0.3),
                             ),
                           ),
-                        ]),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.auto_awesome, size: 11, color: sColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                hasScore ? '$score%  $sLabel' : sLabel,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: sColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
 
-                    // Progress bar (only if score exists)
-                    if (hasScore) ...[
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: score / 100,
-                            backgroundColor: _cBorder,
-                            valueColor: AlwaysStoppedAnimation(sColor),
-                            minHeight: 5,
+                      // Progress bar (only if score exists)
+                      if (hasScore) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: score / 100,
+                              backgroundColor: _cBorder,
+                              valueColor: AlwaysStoppedAnimation(sColor),
+                              minHeight: 5,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const Spacer(),
+
+                      // View profile button
+                      GestureDetector(
+                        onTap: onViewDetails,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _cSurface,
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(color: _cBorder),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.visibility_outlined,
+                                size: 14,
+                                color: _cTxtSec,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'View',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: _cTxtSec,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ],
-
-                    const Spacer(),
-
-                    // View profile button
-                    GestureDetector(
-                      onTap: onViewDetails,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: _cSurface,
-                          borderRadius: BorderRadius.circular(7),
-                          border: Border.all(color: _cBorder),
-                        ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.visibility_outlined,
-                              size: 14, color: _cTxtSec),
-                          const SizedBox(width: 5),
-                          Text('View',
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _cTxtSec)),
-                        ]),
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -903,11 +1019,7 @@ class _MetaChip extends StatelessWidget {
   final String label;
   final double? maxWidth;
 
-  const _MetaChip({
-    required this.icon,
-    required this.label,
-    this.maxWidth,
-  });
+  const _MetaChip({required this.icon, required this.label, this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -918,22 +1030,29 @@ class _MetaChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: _cBorder),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 11, color: _cTxtTert),
-        const SizedBox(width: 4),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth ?? 80),
-          child: Text(
-            label,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 10, fontWeight: FontWeight.w600, color: _cTxtSec),
-            overflow: TextOverflow.ellipsis,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: _cTxtTert),
+          const SizedBox(width: 4),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth ?? 80),
+            child: Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: _cTxtSec,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 }
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HEADER WIDGET
 // ─────────────────────────────────────────────────────────────────────────────
@@ -967,9 +1086,7 @@ class _Header extends StatelessWidget {
         isMobile ? 14 : 28,
         isMobile ? 12 : 16,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFAFAFA),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
       child: isMobile ? _mobileHeader(context) : _desktopHeader(context),
     );
   }
@@ -979,76 +1096,106 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Candidate Shortlisting',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _cTxt,
-                          letterSpacing: -0.4)),
+                  Text(
+                    'Candidate Shortlisting',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: _cTxt,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('AI-powered applicant management',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _cTxtSec)),
-                ]),
-          ),
-          // Mobile action menu button
-          GestureDetector(
-            onTap: () => _showMobileActions(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _cPrimary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _cPrimary.withValues(alpha: 0.2)),
+                  Text(
+                    'AI-powered applicant management',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: _cTxtSec,
+                    ),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.more_horiz_rounded,
-                  size: 20, color: _cPrimary),
             ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close_rounded, color: CupertinoColors.systemGrey2),
-          ),
-        ]),
+            // Mobile action menu button
+            GestureDetector(
+              onTap: () => _showMobileActions(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _cPrimary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _cPrimary.withValues(alpha: 0.2)),
+                ),
+                child: const Icon(
+                  Icons.more_horiz_rounded,
+                  size: 20,
+                  color: _cPrimary,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(
+                Icons.close_rounded,
+                color: CupertinoColors.systemGrey2,
+              ),
+            ),
+          ],
+        ),
         // Selection status if any selected
         if (selected.isNotEmpty) ...[
           const SizedBox(height: 10),
-          Row(children: [
-            Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: _cPurple.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _cPurple.withValues(alpha: 0.3)),
-              ),
-              child: Text('${selected.length} selected',
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: _cPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _cPurple.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  '${selected.length} selected',
                   style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _cPurple,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: onShortlist,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _cPurple,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Shortlist',
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: _cPurple)),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onShortlist,
-              child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: _cPurple,
-                  borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                child: Text('Shortlist',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
               ),
-            ),
-          ]),
+            ],
+          ),
         ],
       ],
     );
@@ -1071,57 +1218,72 @@ class _Header extends StatelessWidget {
           children: [
             Center(
               child: Container(
-                  width: 36, height: 4,
-                  decoration: BoxDecoration(
-                      color: _cBorder,
-                      borderRadius: BorderRadius.circular(2))),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: _cBorder,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
-            Text('Actions',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15, fontWeight: FontWeight.w700, color: _cTxt)),
+            Text(
+              'Actions',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: _cTxt,
+              ),
+            ),
             const SizedBox(height: 14),
             // Run AI Analysis
-            Consumer<AIMatchProvider>(builder: (ctx, ai, _) {
-              return _ActionTile(
-                icon: ai.isAnalyzing
-                    ? Icons.hourglass_empty
-                    : Icons.psychology_outlined,
-                label: ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
-                color: _cTeal,
-                onTap: ai.isAnalyzing
-                    ? null
-                    : () {
-                  Navigator.pop(context);
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => AIMatchScoreScreen(
-                      jobId: jobId ?? '',
-                      jobTitle: provider.applicants.isNotEmpty
-                          ? (provider.applicants.first.jobData
-                          ?.title ??
-                          'Job Position')
-                          : 'Job Position',
-                    ),
-                  );
-                },
-              );
-            }),
+            Consumer<AIMatchProvider>(
+              builder: (ctx, ai, _) {
+                return _ActionTile(
+                  icon: ai.isAnalyzing
+                      ? Icons.hourglass_empty
+                      : Icons.psychology_outlined,
+                  label: ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
+                  color: _cTeal,
+                  onTap: ai.isAnalyzing
+                      ? null
+                      : () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => AIMatchScoreScreen(
+                              jobId: jobId ?? '',
+                              jobTitle: provider.applicants.isNotEmpty
+                                  ? (provider.applicants.first.jobData?.title ??
+                                        'Job Position')
+                                  : 'Job Position',
+                            ),
+                          );
+                        },
+                );
+              },
+            ),
             const SizedBox(height: 10),
             _ActionTile(
               icon: rankByScore ? Icons.filter_list : Icons.sort,
               label: rankByScore ? 'Clear Ranking' : 'Rank by AI Score',
               color: _cPurple,
               active: rankByScore,
-              onTap: () { Navigator.pop(context); onToggleRank(); },
+              onTap: () {
+                Navigator.pop(context);
+                onToggleRank();
+              },
             ),
             const SizedBox(height: 10),
             _ActionTile(
               icon: Icons.auto_awesome,
               label: 'Auto Shortlist (Score > 65%)',
               color: _cGreen,
-              onTap: () { Navigator.pop(context); onAutoShortlist(); },
+              onTap: () {
+                Navigator.pop(context);
+                onAutoShortlist();
+              },
             ),
           ],
         ),
@@ -1131,35 +1293,49 @@ class _Header extends StatelessWidget {
 
   // Desktop: full inline
   Widget _desktopHeader(BuildContext context) {
-    return Row(children: [
-      Expanded(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Text('Candidate Shortlisting',
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Candidate Shortlisting',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: _cTxt,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Manage applicants efficiently using AI',
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: _cTxt,
-                    letterSpacing: -0.5)),
-            const SizedBox(width: 10),
-
-          ]),
-          const SizedBox(height: 4),
-          Text('Manage applicants efficiently using AI',
-              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxtSec)),
-        ]),
-      ),
-      const SizedBox(width: 16),
-      _DesktopActions(
-        selected: selected,
-        rankByScore: rankByScore,
-        jobId: jobId,
-        provider: provider,
-        onShortlist: onShortlist,
-        onAutoShortlist: onAutoShortlist,
-        onToggleRank: onToggleRank,
-      ),
-    ]);
+                  fontSize: 13,
+                  color: _cTxtSec,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        _DesktopActions(
+          selected: selected,
+          rankByScore: rankByScore,
+          jobId: jobId,
+          provider: provider,
+          onShortlist: onShortlist,
+          onAutoShortlist: onAutoShortlist,
+          onToggleRank: onToggleRank,
+        ),
+      ],
+    );
   }
 }
 
@@ -1187,7 +1363,8 @@ class _DesktopActions extends StatelessWidget {
   Widget build(BuildContext context) {
     const pad = EdgeInsets.symmetric(horizontal: 14, vertical: 10);
     const radius = RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)));
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+    );
     const textStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
 
     return Wrap(
@@ -1200,62 +1377,84 @@ class _DesktopActions extends StatelessWidget {
           onPressed: selected.isEmpty ? null : onShortlist,
           icon: const Icon(Icons.checklist_rounded, size: 16),
           label: Text(
-            selected.isEmpty ? 'Select to Shortlist' : 'Shortlist (${selected.length})',
+            selected.isEmpty
+                ? 'Select to Shortlist'
+                : 'Shortlist (${selected.length})',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 13, fontWeight: FontWeight.w600),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           style: selected.isEmpty
               ? OutlinedButton.styleFrom(
-              foregroundColor: _cTxtSec,
-              side: const BorderSide(color: _cBorder),
-              padding: pad, shape: radius)
+                  foregroundColor: _cTxtSec,
+                  side: const BorderSide(color: _cBorder),
+                  padding: pad,
+                  shape: radius,
+                )
               : OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: _cPurple,
-              padding: pad, shape: radius),
+                  foregroundColor: Colors.white,
+                  backgroundColor: _cPurple,
+                  padding: pad,
+                  shape: radius,
+                ),
         ),
         // Run AI
-        Consumer<AIMatchProvider>(builder: (ctx, ai, _) {
-          return ElevatedButton.icon(
-            onPressed: ai.isAnalyzing
-                ? null
-                : () => showDialog(
-              context: ctx,
-              barrierDismissible: false,
-              builder: (_) => AIMatchScoreScreen(
-                jobId: jobId ?? '',
-                jobTitle: provider.applicants.isNotEmpty
-                    ? (provider.applicants.first.jobData?.title ??
-                    'Job Position')
-                    : 'Job Position',
+        Consumer<AIMatchProvider>(
+          builder: (ctx, ai, _) {
+            return ElevatedButton.icon(
+              onPressed: ai.isAnalyzing
+                  ? null
+                  : () => showDialog(
+                      context: ctx,
+                      barrierDismissible: false,
+                      builder: (_) => AIMatchScoreScreen(
+                        jobId: jobId ?? '',
+                        jobTitle: provider.applicants.isNotEmpty
+                            ? (provider.applicants.first.jobData?.title ??
+                                  'Job Position')
+                            : 'Job Position',
+                      ),
+                    ),
+              icon: Icon(
+                ai.isAnalyzing
+                    ? Icons.hourglass_empty
+                    : Icons.psychology_outlined,
+                size: 16,
               ),
-            ),
-            icon: Icon(
-                ai.isAnalyzing ? Icons.hourglass_empty : Icons.psychology_outlined,
-                size: 16),
-            label: Text(ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
+              label: Text(
+                ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _cTeal,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: pad,
-              shape: radius,
-            ),
-          );
-        }),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _cTeal,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: pad,
+                shape: radius,
+              ),
+            );
+          },
+        ),
         // Rank
         OutlinedButton.icon(
           onPressed: onToggleRank,
           icon: Icon(rankByScore ? Icons.filter_list : Icons.sort, size: 16),
-          label: Text(rankByScore ? 'Ranked' : 'Rank by Score',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13, fontWeight: FontWeight.w600)),
+          label: Text(
+            rankByScore ? 'Ranked' : 'Rank by Score',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           style: OutlinedButton.styleFrom(
             foregroundColor: rankByScore ? _cPurple : _cTxtSec,
-            backgroundColor:
-            rankByScore ? _cPurple.withValues(alpha: 0.08) : Colors.white,
+            backgroundColor: rankByScore
+                ? _cPurple.withValues(alpha: 0.08)
+                : Colors.white,
             side: BorderSide(color: rankByScore ? _cPurple : _cBorder),
             padding: pad,
             shape: radius,
@@ -1265,9 +1464,13 @@ class _DesktopActions extends StatelessWidget {
         ElevatedButton.icon(
           onPressed: onAutoShortlist,
           icon: const Icon(Icons.auto_awesome, size: 16),
-          label: Text('Auto Shortlist >65%',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13, fontWeight: FontWeight.w600)),
+          label: Text(
+            'Auto Shortlist >65%',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           style: ElevatedButton.styleFrom(
             backgroundColor: _cGreen,
             foregroundColor: Colors.white,
@@ -1293,30 +1496,40 @@ class _SearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: isMobile ? 10 : 12),
+        horizontal: isMobile ? 12 : 16,
+        vertical: isMobile ? 10 : 12,
+      ),
       decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: _cBorder))),
+        border: Border(bottom: BorderSide(color: _cBorder)),
+      ),
       child: TextField(
         controller: controller,
         style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxt),
         decoration: InputDecoration(
           hintText: 'Search by name, email or keyword…',
-          hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtTert),
+          hintStyle: GoogleFonts.plusJakartaSans(
+            fontSize: 12,
+            color: _cTxtTert,
+          ),
           prefixIcon: const Icon(Icons.search, color: _cTxtTert, size: 18),
           filled: true,
           fillColor: _cSurface,
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _cBorder)),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: _cBorder),
+          ),
           enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _cBorder)),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: _cBorder),
+          ),
           focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _cPurple, width: 1.5)),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: _cPurple, width: 1.5),
+          ),
         ),
       ),
     );
@@ -1345,27 +1558,30 @@ class _TableHeader extends StatelessWidget {
         color: _cSurface,
         border: Border(bottom: BorderSide(color: _cBorder)),
       ),
-      child: Row(children: [
-        SizedBox(
-          width: 36,
-          child: Checkbox(
-            value: selectAll,
-            onChanged: (_) => onToggleAll(),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50)),
-            activeColor: _cPurple,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 36,
+            child: Checkbox(
+              value: selectAll,
+              onChanged: (_) => onToggleAll(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              activeColor: _cPurple,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        _th('CANDIDATE',      flex: 3),
-        _th('EXPERIENCE',     flex: 2),
-        _th('APPLIED',        flex: 2),
-        _th('AI SCORE',       flex: 2),
-        _th('STATUS',         flex: 1),
-        const SizedBox(width: 8),
-        const SizedBox(width: 56, child: _ThLabel('ACTIONS')),
-      ]),
+          const SizedBox(width: 8),
+          _th('CANDIDATE', flex: 3),
+          _th('EXPERIENCE', flex: 2),
+          _th('APPLIED', flex: 2),
+          _th('AI SCORE', flex: 2),
+          _th('STATUS', flex: 1),
+          const SizedBox(width: 8),
+          const SizedBox(width: 56, child: _ThLabel('ACTIONS')),
+        ],
+      ),
     );
   }
 
@@ -1378,12 +1594,15 @@ class _ThLabel extends StatelessWidget {
   const _ThLabel(this.text);
 
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: _cTxtSec,
-          letterSpacing: 0.4));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: GoogleFonts.plusJakartaSans(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: _cTxtSec,
+      letterSpacing: 0.4,
+    ),
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1417,8 +1636,10 @@ class _TableRow extends StatelessWidget {
   });
 
   static const _avatarColors = [
-    Color(0xFF3B82F6), Color(0xFF8B5CF6),
-    Color(0xFFEC4899), Color(0xFF06B6D4),
+    Color(0xFF3B82F6),
+    Color(0xFF8B5CF6),
+    Color(0xFFEC4899),
+    Color(0xFF06B6D4),
   ];
 
   @override
@@ -1441,7 +1662,8 @@ class _TableRow extends StatelessWidget {
               value: isSelected,
               onChanged: (_) => onToggle(),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50)),
+                borderRadius: BorderRadius.circular(50),
+              ),
               activeColor: _cPurple,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -1451,44 +1673,56 @@ class _TableRow extends StatelessWidget {
           // Candidate
           Expanded(
             flex: 3,
-            child: Row(children: [
-              Container(
-                width: 36, height: 36,
-                decoration: BoxDecoration(
-                  color: avatarColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    applicant.name.isNotEmpty
-                        ? applicant.name.substring(0, 2).toUpperCase()
-                        : 'NA',
-                    style: GoogleFonts.plusJakartaSans(
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: avatarColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      applicant.name.isNotEmpty
+                          ? applicant.name.substring(0, 2).toUpperCase()
+                          : 'NA',
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: avatarColor),
+                        color: avatarColor,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(applicant.name,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _cTxt),
-                          overflow: TextOverflow.ellipsis),
-                      Text(maskEmail(applicant.email),
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11, color: _cTxtSec),
-                          overflow: TextOverflow.ellipsis),
-                    ]),
-              ),
-            ]),
+                      Text(
+                        applicant.name,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _cTxt,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        maskEmail(applicant.email),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          color: _cTxtSec,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
 
           // Experience
@@ -1511,18 +1745,24 @@ class _TableRow extends StatelessWidget {
           ),
 
           // AI Score
-          Expanded(flex: 2, child: _ScoreCell(
-            applicant: applicant,
-            scoreColor: scoreColor,
-            scoreLabel: scoreLabel,
-            onShowScore: onShowScore,
-          )),
+          Expanded(
+            flex: 2,
+            child: _ScoreCell(
+              applicant: applicant,
+              scoreColor: scoreColor,
+              scoreLabel: scoreLabel,
+              onShowScore: onShowScore,
+            ),
+          ),
 
           // Status
-          Expanded(flex: 1, child: _StatusDropdown(
-            applicant: applicant,
-            onStatusChange: onStatusChange,
-          )),
+          Expanded(
+            flex: 1,
+            child: _StatusDropdown(
+              applicant: applicant,
+              onStatusChange: onStatusChange,
+            ),
+          ),
 
           const SizedBox(width: 8),
 
@@ -1562,83 +1802,106 @@ class _ScoreCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (ctx) {
-      final data = applicant.matchScore;
-      final ai   = ctx.watch<AIMatchProvider>();
-      final busy = ai.isProcessingApplicant(applicant.userId);
+    return Builder(
+      builder: (ctx) {
+        final data = applicant.matchScore;
+        final ai = ctx.watch<AIMatchProvider>();
+        final busy = ai.isProcessingApplicant(applicant.userId);
 
-      if (busy) {
-        return Row(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(
-            width: 12, height: 12,
-            child: CircularProgressIndicator(
-                strokeWidth: 1.8,
-                valueColor: AlwaysStoppedAnimation(_cPurple)),
-          ),
-          const SizedBox(width: 6),
-          Text('Analyzing…',
-              style:
-              GoogleFonts.plusJakartaSans(fontSize: 11, color: _cTxtSec)),
-        ]);
-      }
+        if (busy) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.8,
+                  valueColor: AlwaysStoppedAnimation(_cPurple),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Analyzing…',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  color: _cTxtSec,
+                ),
+              ),
+            ],
+          );
+        }
 
-      if (data['overallScore'] == null) {
-        return Text('Not analyzed',
+        if (data['overallScore'] == null) {
+          return Text(
+            'Not analyzed',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 11,
-                color: _cTxtTert,
-                fontStyle: FontStyle.italic));
-      }
+              fontSize: 11,
+              color: _cTxtTert,
+              fontStyle: FontStyle.italic,
+            ),
+          );
+        }
 
-      final score  = data['overallScore'] as int;
-      final color  = scoreColor(score);
-      final label  = scoreLabel(score);
+        final score = data['overallScore'] as int;
+        final color = scoreColor(score);
+        final label = scoreLabel(score);
 
-      final result = AIMatchResult(
-        applicantId:      applicant.userId,
-        applicantName:    applicant.name,
-        overallScore:     score,
-        skillsMatch:      data['skillsMatch']      as int? ?? 0,
-        experienceMatch:  data['experienceMatch']  as int? ?? 0,
-        educationMatch:   data['educationMatch']   as int? ?? 0,
-        strengths:        List<String>.from(data['strengths']  ?? []),
-        weaknesses:       List<String>.from(data['weaknesses'] ?? []),
-        recommendation:   data['recommendation']?.toString() ?? 'N/A',
-        detailedAnalysis: data['detailedAnalysis']?.toString() ?? '',
-        timestamp:        DateTime.now(),
-      );
+        final result = AIMatchResult(
+          applicantId: applicant.userId,
+          applicantName: applicant.name,
+          overallScore: score,
+          skillsMatch: data['skillsMatch'] as int? ?? 0,
+          experienceMatch: data['experienceMatch'] as int? ?? 0,
+          educationMatch: data['educationMatch'] as int? ?? 0,
+          strengths: List<String>.from(data['strengths'] ?? []),
+          weaknesses: List<String>.from(data['weaknesses'] ?? []),
+          recommendation: data['recommendation']?.toString() ?? 'N/A',
+          detailedAnalysis: data['detailedAnalysis']?.toString() ?? '',
+          timestamp: DateTime.now(),
+        );
 
-      return GestureDetector(
-        onTap: () => onShowScore(result),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(children: [
-              Text('$score%',
-                  style: GoogleFonts.plusJakartaSans(
+        return GestureDetector(
+          onTap: () => onShowScore(result),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '$score%',
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: color)),
-              const SizedBox(width: 5),
-              Text(label,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 10, color: color)),
-            ]),
-            const SizedBox(height: 5),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: score / 100,
-                backgroundColor: _cBorder,
-                valueColor: AlwaysStoppedAnimation(color),
-                minHeight: 5,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    label,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      color: color,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      );
-    });
+              const SizedBox(height: 5),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: score / 100,
+                  backgroundColor: _cBorder,
+                  valueColor: AlwaysStoppedAnimation(color),
+                  minHeight: 5,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -1649,21 +1912,32 @@ class _StatusDropdown extends StatelessWidget {
   final ApplicantRecord applicant;
   final Future<void> Function(String) onStatusChange;
 
-  const _StatusDropdown(
-      {required this.applicant, required this.onStatusChange});
+  const _StatusDropdown({
+    required this.applicant,
+    required this.onStatusChange,
+  });
 
   static const _cfg = {
-    'pending':   {'label': 'Pending',   'color': _cAmber,               'bg': Color(0xFFFEF3C7)},
-    'shortlist': {'label': 'Shortlist', 'color': _cGreen,               'bg': Color(0xFFD1FAE5)},
-    'rejected':  {'label': 'Rejected',  'color': Color(0xFF64748B),     'bg': Color(0xFFF1F5F9)},
+    'pending': {'label': 'Pending', 'color': _cAmber, 'bg': Color(0xFFFEF3C7)},
+    'shortlist': {
+      'label': 'Shortlist',
+      'color': _cGreen,
+      'bg': Color(0xFFD1FAE5),
+    },
+    'rejected': {
+      'label': 'Rejected',
+      'color': Color(0xFF64748B),
+      'bg': Color(0xFFF1F5F9),
+    },
   };
 
   @override
   Widget build(BuildContext context) {
     final s = applicant.status.toLowerCase();
-    final cfg = _cfg[s] ?? {'label': 'Unknown', 'color': _cSlate, 'bg': _cSurface};
+    final cfg =
+        _cfg[s] ?? {'label': 'Unknown', 'color': _cSlate, 'bg': _cSurface};
     final color = cfg['color'] as Color;
-    final bg    = cfg['bg']    as Color;
+    final bg = cfg['bg'] as Color;
 
     return PopupMenuButton<String>(
       onSelected: onStatusChange,
@@ -1671,31 +1945,46 @@ class _StatusDropdown extends StatelessWidget {
         final c = e.value['color'] as Color;
         return PopupMenuItem(
           value: e.key,
-          child: Row(children: [
-            Container(width: 7, height: 7,
-                decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
-            const SizedBox(width: 8),
-            Text(e.value['label'] as String,
-                style: GoogleFonts.plusJakartaSans(fontSize: 12)),
-          ]),
+          child: Row(
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                e.value['label'] as String,
+                style: GoogleFonts.plusJakartaSans(fontSize: 12),
+              ),
+            ],
+          ),
         );
       }).toList(),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-            color: bg, borderRadius: BorderRadius.circular(5)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Flexible(
-            child: Text(cfg['label'] as String,
+          color: bg,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                cfg['label'] as String,
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: color),
-                overflow: TextOverflow.ellipsis),
-          ),
-          const SizedBox(width: 2),
-          Icon(Icons.arrow_drop_down, size: 15, color: color),
-        ]),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(Icons.arrow_drop_down, size: 15, color: color),
+          ],
+        ),
       ),
     );
   }
@@ -1729,30 +2018,38 @@ class _ActionTile extends StatelessWidget {
         color: active ? color.withValues(alpha: 0.08) : _cSurface,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-            color: active ? color.withValues(alpha: 0.4) : _cBorder),
+          color: active ? color.withValues(alpha: 0.4) : _cBorder,
+        ),
       ),
-      child: Row(children: [
-        Container(
-          padding: const EdgeInsets.all(7),
-          decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(7)),
-          child: Icon(icon, size: 17, color: color),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(label,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: onTap == null ? _cTxtTert : _cTxt)),
-        ),
-        if (active)
+      child: Row(
+        children: [
           Container(
-            width: 7, height: 7,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Icon(icon, size: 17, color: color),
           ),
-      ]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: onTap == null ? _cTxtTert : _cTxt,
+              ),
+            ),
+          ),
+          if (active)
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+        ],
+      ),
     ),
   );
 }
@@ -1764,43 +2061,62 @@ class _ScoreRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = score >= 80 ? _cGreen
-        : score >= 60 ? _cAccent
-        : score >= 40 ? _cAmber
+    final color = score >= 80
+        ? _cGreen
+        : score >= 60
+        ? _cAccent
+        : score >= 40
+        ? _cAmber
         : _cRed;
-    return Row(children: [
-      Expanded(flex: 2,
-          child: Text(label,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12, fontWeight: FontWeight.w600))),
-      Expanded(
-        flex: 3,
-        child: Row(children: [
-          Expanded(
-            child: Container(
-              height: 7,
-              decoration: BoxDecoration(
-                  color: _cBorder,
-                  borderRadius: BorderRadius.circular(4)),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: score / 100,
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(4))),
-              ),
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 10),
-          Text('$score%',
-              style: GoogleFonts.plusJakartaSans(
+        ),
+        Expanded(
+          flex: 3,
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: _cBorder,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: score / 100,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '$score%',
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: color)),
-        ]),
-      ),
-    ]);
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1811,13 +2127,19 @@ class _SectionHead extends StatelessWidget {
   const _SectionHead(this.label, this.icon, this.color);
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-    Icon(icon, color: color, size: 17),
-    const SizedBox(width: 7),
-    Text(label,
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, color: color, size: 17),
+      const SizedBox(width: 7),
+      Text(
+        label,
         style: GoogleFonts.plusJakartaSans(
-            fontSize: 13, fontWeight: FontWeight.w700)),
-  ]);
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ],
+  );
 }
 
 class _Bullet extends StatelessWidget {
@@ -1828,18 +2150,24 @@ class _Bullet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
-    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
           margin: const EdgeInsets.only(top: 6),
-          width: 5, height: 5,
-          decoration:
-          BoxDecoration(color: color, shape: BoxShape.circle)),
-      const SizedBox(width: 9),
-      Expanded(
-        child: Text(text,
-            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec)),
-      ),
-    ]),
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -1859,16 +2187,24 @@ class _EmptyResults extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
-                color: _cSurface, shape: BoxShape.circle),
-            child: const Icon(Icons.person_search_rounded,
-                size: 54, color: _cTxtTert),
+              color: _cSurface,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person_search_rounded,
+              size: 54,
+              color: _cTxtTert,
+            ),
           ),
           const SizedBox(height: 18),
-          Text('No applicants found',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B))),
+          Text(
+            'No applicants found',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF1E293B),
+            ),
+          ),
           const SizedBox(height: 6),
           SizedBox(
             width: 280,
@@ -1882,16 +2218,20 @@ class _EmptyResults extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onClear,
             icon: const Icon(Icons.clear_rounded, size: 16),
-            label: Text('Clear filters',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13, fontWeight: FontWeight.w600)),
+            label: Text(
+              'Clear filters',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor: _cPurple,
               side: const BorderSide(color: _cBorder),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ),
         ],

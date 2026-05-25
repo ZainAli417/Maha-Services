@@ -12,30 +12,15 @@ class CustomSnackbars {
   }
 
   static void showError(BuildContext context, String message) {
-    _show(
-      context,
-      message,
-      const Color(0xFFEF4444),
-      Icons.error_rounded,
-    );
+    _show(context, message, const Color(0xFFEF4444), Icons.error_rounded);
   }
 
   static void showWarning(BuildContext context, String message) {
-    _show(
-      context,
-      message,
-      const Color(0xFFF59E0B),
-      Icons.warning_rounded,
-    );
+    _show(context, message, const Color(0xFFF59E0B), Icons.warning_rounded);
   }
 
   static void showInfo(BuildContext context, String message) {
-    _show(
-      context,
-      message,
-      const Color(0xFF3B82F6),
-      Icons.info_rounded,
-    );
+    _show(context, message, const Color(0xFF3B82F6), Icons.info_rounded);
   }
 
   static void _show(
@@ -57,7 +42,7 @@ class CustomSnackbars {
                 style: GoogleFonts.plusJakartaSans(
                   color: Colors.white,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -65,9 +50,7 @@ class CustomSnackbars {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 4),
         dismissDirection: DismissDirection.horizontal,

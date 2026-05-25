@@ -103,7 +103,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         );
         onDateSelected(dateString);
       } else {
-        debugPrint('[_selectDate] WARNING: Date selected but no callback provided!');
+        debugPrint(
+          '[_selectDate] WARNING: Date selected but no callback provided!',
+        );
       }
     }
   }
@@ -195,7 +197,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                   _getMonthName(month),
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                     color: isSelected
                                         ? Colors.white
                                         : const Color(0xFF0F172A),
@@ -215,7 +217,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'Cancel',
-                    style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                 ),
                 ElevatedButton(
@@ -315,7 +319,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     Icons.file_copy_outlined,
     Icons.video_file_outlined,
     Icons.assured_workload_outlined,
-    Icons.group_add_outlined,    // FontAwesomeIcons.folder,
+    Icons.group_add_outlined, // FontAwesomeIcons.folder,
   ];
 
   @override
@@ -422,9 +426,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       child: Scaffold(
         key: _scaffoldKey,
         drawer: isMobile
-            ? Drawer(
-                child: JobSeekerSidebar(activeIndex: 1, isDrawer: true),
-              )
+            ? Drawer(child: JobSeekerSidebar(activeIndex: 1, isDrawer: true))
             : null,
         body: Row(
           children: [
@@ -460,7 +462,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             children: [
               const SizedBox(height: 8),
               Container(
-                width: 36, height: 4,
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE5E7EB),
                   borderRadius: BorderRadius.circular(2),
@@ -610,7 +613,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-           'Step ${_currentStep + 1} of ${_stepTitles.length}',
+            'Step ${_currentStep + 1} of ${_stepTitles.length}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 11 : 13,
               fontWeight: FontWeight.w600,
@@ -691,8 +694,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 8: 20, // Increased from 8/16
-                    vertical: isMobile ? 8 : 12,    // Increased from 6
+                    horizontal: isMobile ? 8 : 20, // Increased from 8/16
+                    vertical: isMobile ? 8 : 12, // Increased from 6
                   ),
                   decoration: BoxDecoration(
                     color: isActive
@@ -726,7 +729,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       Text(
                         _stepTitles[index],
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 12: 14,
+                          fontSize: isMobile ? 12 : 14,
                           fontWeight: isActive
                               ? FontWeight.w600
                               : FontWeight.w500,
@@ -878,7 +881,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         'Upload Profile Photo',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                           color: const Color(0xFF64748B),
                         ),
                       ),
@@ -1028,7 +1031,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                   ? DateTime.tryParse(_dobCtrl.text)
                                   : DateTime(1930),
                               onDateSelected: (dateString) {
-                                debugPrint('[DOB] Date selected from picker: $dateString');
+                                debugPrint(
+                                  '[DOB] Date selected from picker: $dateString',
+                                );
                                 prov.updateDob(dateString);
                                 debugPrint(
                                   '[DOB] Provider updated - dirty flag: ${prov.personalDirty}',
@@ -1127,7 +1132,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       color: const Color(0xFF6366F1),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1233,7 +1238,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => _selectYear(context, _eduStartYearCtrl),
+                            onTap: () =>
+                                _selectYear(context, _eduStartYearCtrl),
                             child: AbsorbPointer(
                               child: _buildTextField(
                                 label: 'Start Year',
@@ -1275,7 +1281,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => _selectYear(context, _eduStartYearCtrl),
+                              onTap: () =>
+                                  _selectYear(context, _eduStartYearCtrl),
                               child: AbsorbPointer(
                                 child: _buildTextField(
                                   label: 'Start Year',
@@ -1289,7 +1296,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           const SizedBox(width: 8),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => _selectYear(context, _eduEndYearCtrl),
+                              onTap: () =>
+                                  _selectYear(context, _eduEndYearCtrl),
                               child: AbsorbPointer(
                                 child: _buildTextField(
                                   label: 'End Year',
@@ -1539,7 +1547,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: (prov.professionalStatus == 'serving' || prov.professionalStatus == 'retired')
+                    value:
+                        (prov.professionalStatus == 'serving' ||
+                            prov.professionalStatus == 'retired')
                         ? prov.professionalStatus
                         : null,
                     hint: Text(
@@ -2123,8 +2133,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         Container(
                           padding: EdgeInsets.all(_isMobile ? 8 : 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(_isMobile ? 8 : 10),
+                            color: const Color(
+                              0xFF6366F1,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                              _isMobile ? 8 : 10,
+                            ),
                           ),
                           child: Icon(
                             Icons.flight_takeoff,
@@ -2160,7 +2174,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                       rank,
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: _isMobile ? 11 : 13,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                         color: const Color(0xFF6366F1),
                                       ),
                                     ),
@@ -2284,7 +2298,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 aircraftType,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: const Color(0xFF475569),
                                 ),
                               ),
@@ -2312,7 +2326,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 '$flightHours hrs',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: const Color(0xFF475569),
                                 ),
                               ),
@@ -2689,7 +2703,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF6366F1), size: isMobile ? 18 : 24),
+              Icon(
+                icon,
+                color: const Color(0xFF6366F1),
+                size: isMobile ? 18 : 24,
+              ),
               SizedBox(width: isMobile ? 8 : 12),
               Text(
                 title,
@@ -2732,7 +2750,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       borderSide: const BorderSide(color: Color(0xFF6366F1)),
                     ),
                   ),
-                  style: GoogleFonts.plusJakartaSans(fontSize: isMobile ? 13 : 14),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isMobile ? 13 : 14,
+                  ),
                 ),
               ),
               SizedBox(width: isMobile ? 8 : 12),
@@ -2744,7 +2764,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: EdgeInsets.all(isMobile ? 10 : 12),
-                    child: Icon(Icons.add, size: isMobile ? 16 : 20, color: Colors.white),
+                    child: Icon(
+                      Icons.add,
+                      size: isMobile ? 16 : 20,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -3000,174 +3024,13 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-        if (_currentStep > 0)
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                setState(() => _currentStep--);
-                _scrollToCurrentStep();
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 12 : 24,
-                  vertical: isMobile ? 8 : 14,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.chevron_left,
-                      size: isMobile ? 16 : 20,
-                      color: const Color(0xFF475569),
-                    ),
-                    SizedBox(width: isMobile ? 4 : 8),
-                    Text(
-                      isMobile ? 'Back' : 'Previous',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: isMobile ? 12 : 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF475569),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-        else
-          const SizedBox(),
-        Row(
-          children: [
-            Material(
-              // ✅ CHANGED: Red if dirty, green if clean
-              color: isDirty
-                  ? const Color(0xFFEF4444)
-                  : const Color(0xFF10B981),
-              borderRadius: BorderRadius.circular(8),
-              child: InkWell(
-                onTap: () async {
-                  await _saveCurrentSection(prov);
-                  if (mounted) setState(() {});
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 12 : 24,
-                    vertical: isMobile ? 8 : 14,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isDirty ? Icons.warning_amber_rounded : Icons.check,
-                        size: isMobile ? 16 : 20,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: isMobile ? 4 : 8),
-                      Text(
-                        isDirty ? (isMobile ? 'Save' : 'Save Changes') : 'Saved',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 11 : 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            if (_currentStep < _stepTitles.length - 1) ...[
-              const SizedBox(width: 12),
+            if (_currentStep > 0)
               Material(
-                color: const Color(0xFF6366F1),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.transparent,
                 child: InkWell(
-                  onTap: () async {
-                    // ✅ NEW: Check if there are unsaved changes
-                    if (isDirty) {
-                      final shouldProceed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          title: Row(
-                            children: [
-                              const Icon(
-                                Icons.warning_amber_rounded,
-                                color: Color(0xFFEF4444),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Unsaved Changes',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          content: Text(
-                            'You have unsaved changes. Do you want to save them before proceeding?',
-                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'Discard',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: const Color(0xFFEF4444),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                Navigator.pop(context, true);
-                                await _saveCurrentSection(prov);
-                                // ✅ Wait for save to complete before moving to next step
-                                Future.delayed(
-                                  const Duration(milliseconds: 300),
-                                  () {
-                                    if (mounted) {
-                                      setState(() => _currentStep++);
-                                      _scrollToCurrentStep();
-                                    }
-                                  },
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                              ),
-                              child: Text(
-                                'Save & Continue',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (shouldProceed == false) {
-                        setState(() => _currentStep++);
-                        _scrollToCurrentStep();
-                      }
-                    } else {
-                      setState(() => _currentStep++);
-                      _scrollToCurrentStep();
-                    }
+                  onTap: () {
+                    setState(() => _currentStep--);
+                    _scrollToCurrentStep();
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
@@ -3175,65 +3038,241 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       horizontal: isMobile ? 12 : 24,
                       vertical: isMobile ? 8 : 14,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Next',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: isMobile ? 11 : 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: isMobile ? 4 : 8),
-                        Icon(
-                          Icons.chevron_right,
-                          size: isMobile ? 16 : 20,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-            if (isMobile) ...[
-              const SizedBox(width: 8),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _showSidebarSheet(prov),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
+                      border: Border.all(color: Colors.grey.shade300),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.analytics_outlined, size: 16, color: Color(0xFF6366F1)),
-                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.chevron_left,
+                          size: isMobile ? 16 : 20,
+                          color: const Color(0xFF475569),
+                        ),
+                        SizedBox(width: isMobile ? 4 : 8),
                         Text(
-                          'Stats',
+                          isMobile ? 'Back' : 'Previous',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
+                            fontSize: isMobile ? 12 : 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF475569),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-            ],
+              )
+            else
+              const SizedBox(),
+            Row(
+              children: [
+                Material(
+                  // ✅ CHANGED: Red if dirty, green if clean
+                  color: isDirty
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFF10B981),
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () async {
+                      await _saveCurrentSection(prov);
+                      if (mounted) setState(() {});
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isMobile ? 12 : 24,
+                        vertical: isMobile ? 8 : 14,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isDirty ? Icons.warning_amber_rounded : Icons.check,
+                            size: isMobile ? 16 : 20,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: isMobile ? 4 : 8),
+                          Text(
+                            isDirty
+                                ? (isMobile ? 'Save' : 'Save Changes')
+                                : 'Saved',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isMobile ? 11 : 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (_currentStep < _stepTitles.length - 1) ...[
+                  const SizedBox(width: 12),
+                  Material(
+                    color: const Color(0xFF6366F1),
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () async {
+                        // ✅ NEW: Check if there are unsaved changes
+                        if (isDirty) {
+                          final shouldProceed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              title: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: Color(0xFFEF4444),
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Unsaved Changes',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              content: Text(
+                                'You have unsaved changes. Do you want to save them before proceeding?',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 14,
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: Text(
+                                    'Discard',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFFEF4444),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    Navigator.pop(context, true);
+                                    await _saveCurrentSection(prov);
+                                    // ✅ Wait for save to complete before moving to next step
+                                    Future.delayed(
+                                      const Duration(milliseconds: 300),
+                                      () {
+                                        if (mounted) {
+                                          setState(() => _currentStep++);
+                                          _scrollToCurrentStep();
+                                        }
+                                      },
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF10B981),
+                                  ),
+                                  child: Text(
+                                    'Save & Continue',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (shouldProceed == false) {
+                            setState(() => _currentStep++);
+                            _scrollToCurrentStep();
+                          }
+                        } else {
+                          setState(() => _currentStep++);
+                          _scrollToCurrentStep();
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 12 : 24,
+                          vertical: isMobile ? 8 : 14,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Next',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: isMobile ? 11 : 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: isMobile ? 4 : 8),
+                            Icon(
+                              Icons.chevron_right,
+                              size: isMobile ? 16 : 20,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (isMobile) ...[
+                  const SizedBox(width: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showSidebarSheet(prov),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color(0xFF6366F1),
+                            width: 1.5,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.analytics_outlined,
+                              size: 16,
+                              color: Color(0xFF6366F1),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Stats',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF6366F1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
-      ],
-            ),
       ),
     );
   }
@@ -3289,7 +3328,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       children: [
         Row(
           children: [
-            Icon(icon, color: const Color(0xFF64748B), size: isMobile ? 14 : 16),
+            Icon(
+              icon,
+              color: const Color(0xFF64748B),
+              size: isMobile ? 14 : 16,
+            ),
             SizedBox(width: isMobile ? 6 : 8),
             Flexible(
               child: Text(
@@ -3372,12 +3415,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     }
 
     if (bytes == null) return;
-    final mimeType = lookupMimeType(fileName, headerBytes: bytes) ?? "image/jpeg";
-    await prov.uploadProfilePicture(
-      bytes,
-      fileName,
-      mimeType: mimeType,
-    );
+    final mimeType =
+        lookupMimeType(fileName, headerBytes: bytes) ?? "image/jpeg";
+    await prov.uploadProfilePicture(bytes, fileName, mimeType: mimeType);
   }
 
   Future<void> _pickAndUploadDocument(ProfileProvider_NEW prov) async {
@@ -3534,7 +3574,10 @@ void showTopNotification(
               Expanded(
                 child: Text(
                   message,
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.white),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

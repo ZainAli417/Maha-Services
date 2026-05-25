@@ -3,7 +3,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- HELPER FUNCTIONS ---
     function isAuth() {
       return request.auth != null;
     }
@@ -12,17 +11,23 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == userId;
     }
 
-    // Securely check if user is admin WITHOUT using the recursive get() in every rule
-    function isAdmin() {
-      return isAuth() && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() == 'admin' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower() == 'superadmin' ||
-        exists(/databases/$(database)/documents/admin/$(request.auth.uid))
-      );
+    function hasUserDoc() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
     function userRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower();
+      return hasUserDoc()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role.lower()
+        : '';
+    }
+
+    function isAdmin() {
+      return isAuth() && (
+        exists(/databases/$(database)/documents/admin/$(request.auth.uid)) ||
+        userRole() == 'admin' ||
+        userRole() == 'superadmin'
+      );
     }
 
     function isRecruiter() {
@@ -31,72 +36,220 @@ service cloud.firestore {
 
     function isJobSeeker() {
       let role = userRole();
-      return isAuth() && (role == 'job_seeker' || role == 'jobseeker' || role == 'candidate' || role == 'job seeker');
+      return isAuth() && (
+        role == 'job_seeker' ||
+        role == 'jobseeker' ||
+        role == 'candidate' ||
+        role == 'job seeker'
+      );
     }
 
-    // --- GLOBAL ADMIN OVERRIDE ---
-    // Allow admins to do ANYTHING in the database
+    function isAllowedSignupRole(role) {
+      let normalized = role.lower();
+      return normalized == 'recruiter' ||
+        normalized == 'employer' ||
+        normalized == 'job seeker' ||
+        normalized == 'job_seeker' ||
+        normalized == 'jobseeker' ||
+        normalized == 'candidate';
+    }
+
+    function privateJobPath(recruiterUid, jobId) {
+      return /databases/$(database)/documents/recruiter/$(recruiterUid)/Posted_jobs/$(jobId);
+    }
+
+    function publicJobPath(jobId) {
+      return /databases/$(database)/documents/Posted_jobs_public/$(jobId);
+    }
+
+    function applicationPath(candidateUid, jobId) {
+      return /databases/$(database)/documents/applications/$(candidateUid)/applied_jobs/$(jobId);
+    }
+
+    function viewPath(jobId, viewerUid) {
+      return /databases/$(database)/documents/Posted_jobs_public/$(jobId)/views/$(viewerUid);
+    }
+
+    function userImmutableFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['uid', 'role', 'account_status', 'user_lvl', 'admin', 'isAdmin']);
+    }
+
+    function validOwnedPublicJobCreate(jobId) {
+      return isRecruiter() &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        request.resource.data.status == 'active' &&
+        request.resource.data.applicationCount == 0 &&
+        request.resource.data.viewCount == 0 &&
+        existsAfter(privateJobPath(request.auth.uid, jobId)) &&
+        getAfter(privateJobPath(request.auth.uid, jobId)).data.recruiterUid == request.auth.uid;
+    }
+
+    function validOwnedPublicJobUpdate(jobId) {
+      return isRecruiter() &&
+        resource.data.recruiterUid == request.auth.uid &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['applicationCount', 'viewCount', 'recruiterUid', 'id', 'timestamp']) &&
+        existsAfter(privateJobPath(request.auth.uid, jobId)) &&
+        getAfter(privateJobPath(request.auth.uid, jobId)).data.status == request.resource.data.status;
+    }
+
+    function validApplicationCounterUpdate(jobId) {
+      return isJobSeeker() &&
+        resource.data.status == 'active' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicationCount']) &&
+        request.resource.data.applicationCount == resource.data.applicationCount + 1 &&
+        !exists(applicationPath(request.auth.uid, jobId)) &&
+        existsAfter(applicationPath(request.auth.uid, jobId));
+    }
+
+    function validViewCounterUpdate(jobId) {
+      return isAuth() &&
+        resource.data.status == 'active' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']) &&
+        request.resource.data.viewCount == resource.data.viewCount + 1 &&
+        !exists(viewPath(jobId, request.auth.uid)) &&
+        existsAfter(viewPath(jobId, request.auth.uid));
+    }
+
+    function validApplicationCreate(candidateUid, jobId) {
+      return isUser(candidateUid) &&
+        isJobSeeker() &&
+        jobId == request.resource.data.jobId &&
+        request.resource.data.userId == candidateUid &&
+        request.resource.data.status == 'pending' &&
+        exists(publicJobPath(jobId)) &&
+        get(publicJobPath(jobId)).data.status == 'active' &&
+        request.resource.data.recruiterUid == get(publicJobPath(jobId)).data.recruiterUid &&
+        getAfter(publicJobPath(jobId)).data.applicationCount ==
+          get(publicJobPath(jobId)).data.applicationCount + 1;
+    }
+
+    function recruiterOwnsApplication() {
+      return isRecruiter() && resource.data.recruiterUid == request.auth.uid;
+    }
+
     match /{allPaths=**} {
       allow read, write: if isAdmin();
     }
 
-    // --- COLLECTION RULES (For non-admins) ---
-
     match /users/{userId} {
-      allow read, write: if isUser(userId);
+      allow read: if isUser(userId);
+      allow create: if isUser(userId) &&
+        request.resource.data.uid == userId &&
+        isAllowedSignupRole(request.resource.data.role) &&
+        request.resource.data.account_status == 'active';
+      allow update: if isUser(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        userImmutableFieldsUnchanged();
+      allow delete: if false;
     }
 
     match /admin/{adminId} {
-      allow read, write: if isUser(adminId);
+      allow read: if isUser(adminId);
+      allow write: if false;
     }
 
     match /recruiter/{recruiterId} {
-      allow read, write: if isUser(recruiterId);
+      allow read, create, update: if isUser(recruiterId);
+      allow delete: if false;
 
       match /Posted_jobs/{jobId} {
-        allow read, write: if isUser(recruiterId);
+        allow read: if isUser(recruiterId);
+        allow create: if isUser(recruiterId) &&
+          isRecruiter() &&
+          request.resource.data.recruiterUid == recruiterId &&
+          existsAfter(publicJobPath(jobId)) &&
+          getAfter(publicJobPath(jobId)).data.recruiterUid == recruiterId;
+        allow update: if isUser(recruiterId) &&
+          isRecruiter() &&
+          resource.data.recruiterUid == recruiterId &&
+          request.resource.data.recruiterUid == recruiterId &&
+          !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['recruiterUid', 'id', 'timestamp']);
+        allow delete: if false;
       }
     }
 
     match /Posted_jobs_public/{jobId} {
-      allow read: if isAuth();
-      allow create: if isRecruiter();
-      allow update: if isAuth();
-      allow delete: if (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+      // Allow public reads for active job postings so seekers can view details
+      // immediately. Signed-in users can read the public jobs collection like
+      // the previous rules allowed; this also lets globally-created providers
+      // run owner/status queries without tripping permission-denied on login.
+      allow read: if (
+        resource.data.status == 'active' ||
+        isAuth()
+      );
+      allow create: if validOwnedPublicJobCreate(jobId);
+      allow update: if validOwnedPublicJobUpdate(jobId) ||
+        validApplicationCounterUpdate(jobId) ||
+        validViewCounterUpdate(jobId);
+      allow delete: if false;
+
+      match /views/{viewerUid} {
+        allow read: if isUser(viewerUid) ||
+          (isRecruiter() && get(publicJobPath(jobId)).data.recruiterUid == request.auth.uid);
+        allow create: if isUser(viewerUid) &&
+          request.resource.data.viewerUid == viewerUid &&
+          request.resource.data.jobId == jobId &&
+          get(publicJobPath(jobId)).data.status == 'active' &&
+          !exists(viewPath(jobId, viewerUid)) &&
+          getAfter(publicJobPath(jobId)).data.viewCount ==
+            get(publicJobPath(jobId)).data.viewCount + 1;
+        allow update, delete: if false;
+      }
     }
 
     match /Job_Seeker/{jobSeekerId} {
       allow read: if isUser(jobSeekerId) || isRecruiter();
-      allow write: if isUser(jobSeekerId);
+      allow create, update: if isUser(jobSeekerId);
+      allow delete: if false;
+
+      match /saved_jobs/{jobId} {
+        allow read: if isUser(jobSeekerId);
+        allow create, update: if isUser(jobSeekerId) &&
+          request.resource.data.jobId == jobId;
+        allow delete: if isUser(jobSeekerId);
+      }
 
       match /applied_jobs/{jobId} {
-        allow read, write: if isUser(jobSeekerId) || isRecruiter();
+        allow read, create, update: if isUser(jobSeekerId) || isRecruiter();
+        allow delete: if false;
       }
-      
+
       match /{allSubcollections=**} {
-        allow read, write: if isUser(jobSeekerId);
+        allow read, create, update: if isUser(jobSeekerId);
+        allow delete: if false;
       }
     }
 
-    match /applications/{userId}/{document=**} {
-      allow read, write: if isUser(userId) || isRecruiter();
+    match /applications/{candidateUid}/applied_jobs/{jobId} {
+      allow read: if isUser(candidateUid) || recruiterOwnsApplication();
+      allow create: if validApplicationCreate(candidateUid, jobId);
+      allow update: if recruiterOwnsApplication() &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'sentToAdmin', 'match_score', 'responseDate']);
+      allow delete: if false;
     }
 
     match /recruiter_requests/{requestId} {
-      allow read: if (isRecruiter() && resource.data.recruiter_id == request.auth.uid);
-      allow create: if isRecruiter();
+      allow read: if isRecruiter() && resource.data.recruiter_id == request.auth.uid;
+      allow create: if isRecruiter() &&
+        request.resource.data.recruiter_id == request.auth.uid;
+      allow update: if isRecruiter() &&
+        resource.data.recruiter_id == request.auth.uid &&
+        request.resource.data.recruiter_id == request.auth.uid;
+      allow delete: if false;
     }
 
-    // --- COLLECTION GROUP RULES ---
     match /{path=**}/applied_jobs/{jobId} {
-      allow read: if isAuth() && (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+      allow read: if isRecruiter() && resource.data.recruiterUid == request.auth.uid;
     }
 
-    // --- JOB ALERT QUEUE ---
-    // Recruiters can create alert queue items; Cloud Functions (admin SDK) handle processing
     match /job_alert_queue/{alertId} {
-      allow create: if isAuth();
-      allow read, update, delete: if isAdmin();
+      allow create: if isRecruiter();
+      allow read, update, delete: if false;
     }
   }
 }

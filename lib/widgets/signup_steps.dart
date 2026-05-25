@@ -44,16 +44,18 @@ class SignUpSteps {
   final PageController reviewPageController;
   final int currentReviewPage;
   final ValueChanged<int> onReviewPageChanged;
-  Gradient get _recruiterGradient =>   LinearGradient(
+  Gradient get _recruiterGradient => LinearGradient(
     colors: [
-       const Color(0xFFF59E0B).withValues(alpha: 0.12),
+      const Color(0xFFF59E0B).withValues(alpha: 0.12),
       const Color(0xFFEC4899).withValues(alpha: 0.12),
     ],
   );
 
-  Color get _recruiterBorderColor => const Color(0xFFF59E0B); // 0xFFF59E0B @ 30%
+  Color get _recruiterBorderColor =>
+      const Color(0xFFF59E0B); // 0xFFF59E0B @ 30%
 
-  Color get _recruiterAccentColor => const Color.fromRGBO(236, 72, 153, 1); // solid accent (0xFFEC4899)
+  Color get _recruiterAccentColor =>
+      const Color.fromRGBO(236, 72, 153, 1); // solid accent (0xFFEC4899)
   SignUpSteps({
     required this.role,
     required this.nameController,
@@ -101,13 +103,36 @@ class SignUpSteps {
       case 0:
         return _roleStep();
       case 1:
-        return _singleFieldStep(label: 'Full Name', hint: 'e.g., Jane Smith', controller: nameController, icon: Icons.person_outline_rounded);
+        return _singleFieldStep(
+          label: 'Full Name',
+          hint: 'e.g., Jane Smith',
+          controller: nameController,
+          icon: Icons.person_outline_rounded,
+        );
       case 2:
-        return _singleFieldStep(label: 'Email Address', hint: 'e.g., jane@email.com', controller: emailController, icon: Icons.mail_outline_rounded, keyboard: TextInputType.emailAddress);
+        return _singleFieldStep(
+          label: 'Email Address',
+          hint: 'e.g., jane@email.com',
+          controller: emailController,
+          icon: Icons.mail_outline_rounded,
+          keyboard: TextInputType.emailAddress,
+        );
       case 3:
-        return _singleFieldStep(label: 'Phone Number', hint: 'e.g., +1 234 567 8900', controller: phoneController, icon: Icons.phone_outlined, keyboard: TextInputType.phone);
+        return _singleFieldStep(
+          label: 'Phone Number',
+          hint: 'e.g., +1 234 567 8900',
+          controller: phoneController,
+          icon: Icons.phone_outlined,
+          keyboard: TextInputType.phone,
+        );
       case 4:
-        return _singleFieldStep(label: 'Nationality', hint: 'e.g., Pakistani', controller: nationalityController, icon: Icons.account_circle_outlined, keyboard: TextInputType.text);
+        return _singleFieldStep(
+          label: 'Nationality',
+          hint: 'e.g., Pakistani',
+          controller: nationalityController,
+          icon: Icons.account_circle_outlined,
+          keyboard: TextInputType.text,
+        );
       case 5:
         return _passwordStep();
       case 6:
@@ -136,13 +161,35 @@ class SignUpSteps {
       case 0:
         return _roleStep();
       case 1:
-        return _singleFieldStep(label: 'Full Name', hint: 'e.g., John Doe', controller: nameController, icon: Icons.person_outline_rounded);
+        return _singleFieldStep(
+          label: 'Full Name',
+          hint: 'e.g., John Doe',
+          controller: nameController,
+          icon: Icons.person_outline_rounded,
+        );
       case 2:
-        return _singleFieldStep(label: 'Email Address', hint: 'e.g., john@mail.com', controller: emailController, icon: Icons.mail_outline_rounded, keyboard: TextInputType.emailAddress);
+        return _singleFieldStep(
+          label: 'Email Address',
+          hint: 'e.g., john@mail.com',
+          controller: emailController,
+          icon: Icons.mail_outline_rounded,
+          keyboard: TextInputType.emailAddress,
+        );
       case 3:
-        return _singleFieldStep(label: 'Phone Number', hint: 'e.g., +1 234 567 8900', controller: phoneController, icon: Icons.phone_outlined, keyboard: TextInputType.phone);
+        return _singleFieldStep(
+          label: 'Phone Number',
+          hint: 'e.g., +1 234 567 8900',
+          controller: phoneController,
+          icon: Icons.phone_outlined,
+          keyboard: TextInputType.phone,
+        );
       case 4:
-        return _singleFieldStep(label: 'Nationality', hint: 'e.g., American', controller: nationalityController, icon: Icons.flag_outlined);
+        return _singleFieldStep(
+          label: 'Nationality',
+          hint: 'e.g., American',
+          controller: nationalityController,
+          icon: Icons.flag_outlined,
+        );
       case 5:
         return _passwordStep();
       case 6:
@@ -156,18 +203,49 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Welcome Aboard! 🚀', style: GoogleFonts.plusJakartaSans(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          'Welcome Aboard! 🚀',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Choose your role to unlock tailored features', style: GoogleFonts.plusJakartaSans(fontSize: 15, color: Colors.grey.shade600)),
+        Text(
+          'Choose your role to unlock tailored features',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 32),
-        _roleCard('Job Seeker', 'Find your dream job', Icons.work_outline_rounded, role == 'Job Seeker', primaryColor),
+        _roleCard(
+          'Job Seeker',
+          'Find your dream job',
+          Icons.work_outline_rounded,
+          role == 'Job Seeker',
+          primaryColor,
+        ),
         const SizedBox(height: 16),
-        _roleCard('Recruiter', 'Discover top talent', Icons.business_center_outlined, role == 'Recruiter', secondaryColor),
+        _roleCard(
+          'Recruiter',
+          'Discover top talent',
+          Icons.business_center_outlined,
+          role == 'Recruiter',
+          secondaryColor,
+        ),
       ],
     );
   }
 
-  Widget _roleCard(String title, String subtitle, IconData icon, bool selected, Color color) {
+  Widget _roleCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    bool selected,
+    Color color,
+  ) {
     final bool isRecruiter = title == 'Recruiter';
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -179,11 +257,24 @@ class SignUpSteps {
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             // use recruiter gradient when recruiter and selected
-            gradient: isRecruiter && selected ? _recruiterGradient : (selected ? LinearGradient(colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)]) : null),
-            color: (isRecruiter && selected) ? null : (selected ? null : Colors.white),
+            gradient: isRecruiter && selected
+                ? _recruiterGradient
+                : (selected
+                      ? LinearGradient(
+                          colors: [
+                            color.withValues(alpha: 0.15),
+                            color.withValues(alpha: 0.05),
+                          ],
+                        )
+                      : null),
+            color: (isRecruiter && selected)
+                ? null
+                : (selected ? null : Colors.white),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isRecruiter && selected ? _recruiterBorderColor : (selected ? color : Colors.grey.shade200),
+              color: isRecruiter && selected
+                  ? _recruiterBorderColor
+                  : (selected ? color : Colors.grey.shade200),
               width: 2,
             ),
           ),
@@ -192,19 +283,42 @@ class SignUpSteps {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: selected ? (isRecruiter ? _recruiterAccentColor.withValues(alpha: 0.2) : color.withValues(alpha: 0.2)) : Colors.grey.shade100,
+                  color: selected
+                      ? (isRecruiter
+                            ? _recruiterAccentColor.withValues(alpha: 0.2)
+                            : color.withValues(alpha: 0.2))
+                      : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: selected ? (isRecruiter ? _recruiterAccentColor : color) : Colors.grey.shade600, size: 32),
+                child: Icon(
+                  icon,
+                  color: selected
+                      ? (isRecruiter ? _recruiterAccentColor : color)
+                      : Colors.grey.shade600,
+                  size: 32,
+                ),
               ),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade800)),
+                    Text(
+                      title,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -215,7 +329,11 @@ class SignUpSteps {
                     color: isRecruiter ? _recruiterAccentColor : color,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
             ],
           ),
@@ -224,15 +342,39 @@ class SignUpSteps {
     );
   }
 
-  Widget _singleFieldStep({required String label, required String hint, required TextEditingController controller, required IconData icon, TextInputType? keyboard}) {
+  Widget _singleFieldStep({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required IconData icon,
+    TextInputType? keyboard,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Please provide your $label', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+        Text(
+          'Please provide your $label',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 32),
-        SignUpWidgets.elegantTextField(controller: controller, label: hint, icon: icon, keyboardType: keyboard),
+        SignUpWidgets.elegantTextField(
+          controller: controller,
+          label: hint,
+          icon: icon,
+          keyboardType: keyboard,
+        ),
       ],
     );
   }
@@ -241,9 +383,22 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Secure Your Account 🔒', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          'Secure Your Account 🔒',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Create a strong password to protect your account', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+        Text(
+          'Create a strong password to protect your account',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 32),
         SignUpWidgets.elegantTextField(
           controller: passwordController,
@@ -251,7 +406,12 @@ class SignUpSteps {
           icon: Icons.lock_outline_rounded,
           obscure: obscurePassword,
           suffix: IconButton(
-            icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: Colors.grey.shade600),
+            icon: Icon(
+              obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              color: Colors.grey.shade600,
+            ),
             onPressed: onObscurePasswordToggle,
           ),
         ),
@@ -262,7 +422,12 @@ class SignUpSteps {
           icon: Icons.lock_person_outlined,
           obscure: obscureConfirm,
           suffix: IconButton(
-            icon: Icon(obscureConfirm ? Icons.visibility_outlined : Icons.visibility_off_outlined, color: Colors.grey.shade600),
+            icon: Icon(
+              obscureConfirm
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              color: Colors.grey.shade600,
+            ),
             onPressed: onObscureConfirmToggle,
           ),
         ),
@@ -275,9 +440,22 @@ class SignUpSteps {
       builder: (context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Personal Information', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+          Text(
+            'Personal Information',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade800,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Help us know you better', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+          Text(
+            'Help us know you better',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
           const SizedBox(height: 32),
 
           // 1. Father's Name Field
@@ -315,15 +493,26 @@ class SignUpSteps {
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Color(0xff5C738A),),
+                border: Border.all(color: Color(0xff5C738A)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, color: primaryColor, size: 22),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    color: primaryColor,
+                    size: 22,
+                  ),
                   const SizedBox(width: 16),
                   Text(
-                    dob == null ? 'Select Date of Birth' : dob!.toLocal().toIso8601String().split('T').first,
-                    style: GoogleFonts.plusJakartaSans(fontSize: 15, color: dob == null ? Colors.grey.shade600 : Colors.grey.shade800),
+                    dob == null
+                        ? 'Select Date of Birth'
+                        : dob!.toLocal().toIso8601String().split('T').first,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      color: dob == null
+                          ? Colors.grey.shade600
+                          : Colors.grey.shade800,
+                    ),
                   ),
                 ],
               ),
@@ -334,15 +523,26 @@ class SignUpSteps {
     );
   }
 
-
-
   Widget _imageUploadStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Profile Photo 📸', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          'Profile Photo 📸',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('A professional photo makes a great first impression', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+        Text(
+          'A professional photo makes a great first impression',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 32),
         Center(
           child: Column(
@@ -350,13 +550,27 @@ class SignUpSteps {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 10))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: CircleAvatar(
                   radius: 70,
                   backgroundColor: Colors.grey.shade100,
-                  backgroundImage: imageDataUrl != null ? MemoryImage(base64Decode(imageDataUrl!.split(',').last)) : null,
-                  child: imageDataUrl == null ? Icon(Icons.person_outline_rounded, size: 60, color: Colors.grey.shade400) : null,
+                  backgroundImage: imageDataUrl != null
+                      ? MemoryImage(base64Decode(imageDataUrl!.split(',').last))
+                      : null,
+                  child: imageDataUrl == null
+                      ? Icon(
+                          Icons.person_outline_rounded,
+                          size: 60,
+                          color: Colors.grey.shade400,
+                        )
+                      : null,
                 ),
               ),
               const SizedBox(height: 24),
@@ -365,18 +579,34 @@ class SignUpSteps {
                 child: ElevatedButton.icon(
                   onPressed: onPickImage,
                   icon: const Icon(Icons.upload_file_rounded),
-                  label: Text(imageDataUrl == null ? 'Upload Photo' : 'Change Photo', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                  label: Text(
+                    imageDataUrl == null ? 'Upload Photo' : 'Change Photo',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 0,
                   ),
                 ),
               ),
               const SizedBox(height: 12),
-              Text('Max size: 2MB • JPG, PNG', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade500)),
+              Text(
+                'Max size: 2MB • JPG, PNG',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                ),
+              ),
             ],
           ),
         ),
@@ -395,9 +625,22 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Education 🎓', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(
+                    'Education 🎓',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Add your academic background', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+                  Text(
+                    'Add your academic background',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -406,12 +649,22 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAddEducation,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                label: Text(
+                  'Add',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -420,7 +673,10 @@ class SignUpSteps {
         ),
         const SizedBox(height: 24),
         if (educations.isEmpty)
-          SignUpWidgets.buildEmptyState('No education added yet', Icons.school_outlined)
+          SignUpWidgets.buildEmptyState(
+            'No education added yet',
+            Icons.school_outlined,
+          )
         else
           ListView.builder(
             shrinkWrap: true,
@@ -434,8 +690,14 @@ class SignUpSteps {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Color(0xff5C738A),),
-                  boxShadow: [BoxShadow(color: Colors.grey.shade100, blurRadius: 10, offset: const Offset(0, 4))],
+                  border: Border.all(color: Color(0xff5C738A)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade100,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -445,25 +707,51 @@ class SignUpSteps {
                         color: primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.school_outlined, color: primaryColor, size: 24),
+                      child: Icon(
+                        Icons.school_outlined,
+                        color: primaryColor,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(edu['degree'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(
+                            edu['degree'] ?? '',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(edu['institution'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
-                          if (edu['from']!.isNotEmpty || edu['to']!.isNotEmpty) ...[
+                          Text(
+                            edu['institution'] ?? '',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          if (edu['from']!.isNotEmpty ||
+                              edu['to']!.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text('${edu['from']} - ${edu['to']}', style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade500)),
+                            Text(
+                              '${edu['from']} - ${edu['to']}',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
                           ],
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFEF4444),
+                      ),
                       onPressed: () => onRemoveEducation(index),
                     ),
                   ],
@@ -486,9 +774,22 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Work Experience 💼', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(
+                    'Work Experience 💼',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Showcase your professional journey', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+                  Text(
+                    'Showcase your professional journey',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -497,12 +798,22 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAddExperience,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                label: Text(
+                  'Add',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: secondaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -511,7 +822,10 @@ class SignUpSteps {
         ),
         const SizedBox(height: 24),
         if (experiences.isEmpty)
-          SignUpWidgets.buildEmptyState('No experience added yet', Icons.work_outline_rounded)
+          SignUpWidgets.buildEmptyState(
+            'No experience added yet',
+            Icons.work_outline_rounded,
+          )
         else
           ListView.builder(
             shrinkWrap: true,
@@ -525,8 +839,14 @@ class SignUpSteps {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Color(0xff5C738A),),
-                  boxShadow: [BoxShadow(color: Colors.grey.shade100, blurRadius: 10, offset: const Offset(0, 4))],
+                  border: Border.all(color: Color(0xff5C738A)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade100,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -536,21 +856,41 @@ class SignUpSteps {
                         color: secondaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.work_outline_rounded, color: secondaryColor, size: 24),
+                      child: Icon(
+                        Icons.work_outline_rounded,
+                        color: secondaryColor,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(exp['title'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text(
+                            exp['title'] ?? '',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          if (exp['duration']!.isNotEmpty) Text(exp['duration'] ?? '', style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.grey.shade600)),
+                          if (exp['duration']!.isNotEmpty)
+                            Text(
+                              exp['duration'] ?? '',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFEF4444),
+                      ),
                       onPressed: () => onRemoveExperience(index),
                     ),
                   ],
@@ -566,9 +906,22 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Your Skills ⚡', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          'Your Skills ⚡',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Add skills that make you stand out', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+        Text(
+          'Add skills that make you stand out',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -587,8 +940,13 @@ class SignUpSteps {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: accentColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 0,
                 ),
                 child: const Icon(Icons.add_rounded),
@@ -601,37 +959,68 @@ class SignUpSteps {
           Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('No skills added yet', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade500)),
+              child: Text(
+                'No skills added yet',
+                style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade500),
+              ),
             ),
           )
         else
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: skills.map((s) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [accentColor.withValues(alpha: 0.15), accentColor.withValues(alpha: 0.05)]),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.verified_rounded, size: 16, color: accentColor),
-                  const SizedBox(width: 8),
-                  Text(s, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
-                  const SizedBox(width: 8),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => onRemoveSkill(s),
-                      child: const Icon(Icons.close_rounded, size: 18, color: Color(0xFFEF4444)),
+            children: skills
+                .map(
+                  (s) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          accentColor.withValues(alpha: 0.15),
+                          accentColor.withValues(alpha: 0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          size: 16,
+                          color: accentColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          s,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => onRemoveSkill(s),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )).toList(),
+                )
+                .toList(),
           ),
       ],
     );
@@ -680,9 +1069,22 @@ class SignUpSteps {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+                  Text(
+                    title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -691,12 +1093,22 @@ class SignUpSteps {
               child: ElevatedButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                label: Text(
+                  'Add',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -710,75 +1122,117 @@ class SignUpSteps {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: items.map((s) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)]),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 16, color: color),
-                  const SizedBox(width: 8),
-                  Text(s, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
-                  const SizedBox(width: 8),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => onRemove(s),
-                      child: const Icon(Icons.close_rounded, size: 18, color: Color(0xFFEF4444)),
+            children: items
+                .map(
+                  (s) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          color.withValues(alpha: 0.15),
+                          color.withValues(alpha: 0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: color.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, size: 16, color: color),
+                        const SizedBox(width: 8),
+                        Text(
+                          s,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => onRemove(s),
+                            child: const Icon(
+                              Icons.close_rounded,
+                              size: 18,
+                              color: Color(0xFFEF4444),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )).toList(),
+                )
+                .toList(),
           ),
       ],
     );
   }
 
   Widget _reviewStep() {
-
     // 1. Collect all review cards into a list.
     final List<Widget> reviewCards = [
       // --- Account Details Card (Always visible) ---
-      SignUpWidgets.buildReviewCard('Account Details', {
-        'Role': role,
-        'Name': nameController.text,
-        'Email': emailController.text,
-        'Phone': phoneController.text,
-        if (nationalityController.text.isNotEmpty) 'Nationality': nationalityController.text,
-      }, Icons.person_outline_rounded, primaryColor),
+      SignUpWidgets.buildReviewCard(
+        'Account Details',
+        {
+          'Role': role,
+          'Name': nameController.text,
+          'Email': emailController.text,
+          'Phone': phoneController.text,
+          if (nationalityController.text.isNotEmpty)
+            'Nationality': nationalityController.text,
+        },
+        Icons.person_outline_rounded,
+        primaryColor,
+      ),
     ];
 
     // 2. Conditionally add Job Seeker specific cards
     if (role == 'Job Seeker') {
       reviewCards.addAll([
         // --- Personal Details Card ---
-        SignUpWidgets.buildReviewCard('Personal Details', {
-          'Date of Birth': dob?.toLocal().toIso8601String().split('T').first ?? 'N/A',
-          'Father\'s Name': fatherController.text,
-        }, Icons.family_restroom_outlined, secondaryColor),
+        SignUpWidgets.buildReviewCard(
+          'Personal Details',
+          {
+            'Date of Birth':
+                dob?.toLocal().toIso8601String().split('T').first ?? 'N/A',
+            'Father\'s Name': fatherController.text,
+          },
+          Icons.family_restroom_outlined,
+          secondaryColor,
+        ),
 
         // --- Skills Card ---
         if (skills.isNotEmpty)
-          SignUpWidgets.buildReviewCard('Skills', {
-            'Skills': skills.join(', '),
-          }, Icons.lightbulb_outline_rounded, accentColor),
+          SignUpWidgets.buildReviewCard(
+            'Skills',
+            {'Skills': skills.join(', ')},
+            Icons.lightbulb_outline_rounded,
+            accentColor,
+          ),
 
         // --- Education Card ---
         if (educations.isNotEmpty)
-          SignUpWidgets.buildReviewCard('Education', {
-            'Entries': '${educations.length} education record(s) added',
-          }, Icons.school_outlined, primaryColor),
+          SignUpWidgets.buildReviewCard(
+            'Education',
+            {'Entries': '${educations.length} education record(s) added'},
+            Icons.school_outlined,
+            primaryColor,
+          ),
 
         // --- Experience Card ---
         if (experiences.isNotEmpty)
-          SignUpWidgets.buildReviewCard('Experience', {
-            'Entries': '${experiences.length} experience record(s) added',
-          }, Icons.work_outline_rounded, secondaryColor),
+          SignUpWidgets.buildReviewCard(
+            'Experience',
+            {'Entries': '${experiences.length} experience record(s) added'},
+            Icons.work_outline_rounded,
+            secondaryColor,
+          ),
       ]);
     }
 
@@ -786,9 +1240,22 @@ class SignUpSteps {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Almost There! ✨', style: GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text(
+          'Almost There! ✨',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey.shade800,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('Review your information before submitting', style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Colors.grey.shade600)),
+        Text(
+          'Review your information before submitting',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+          ),
+        ),
         const SizedBox(height: 24),
 
         // --- Paginator/Carousel Area ---
@@ -809,13 +1276,15 @@ class SignUpSteps {
                 left: 0,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
-                  onPressed: currentReviewPage > 0 // Use the passed index
+                  onPressed:
+                      currentReviewPage >
+                          0 // Use the passed index
                       ? () {
-                    reviewPageController.previousPage(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOut,
-                    );
-                  }
+                          reviewPageController.previousPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOut,
+                          );
+                        }
                       : null,
                 ),
               ),
@@ -824,14 +1293,20 @@ class SignUpSteps {
               Positioned(
                 right: 0,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, color: Colors.black54),
-                  onPressed: currentReviewPage < reviewCards.length - 1 // Use the passed index
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.black54,
+                  ),
+                  onPressed:
+                      currentReviewPage <
+                          reviewCards.length -
+                              1 // Use the passed index
                       ? () {
-                    reviewPageController.nextPage(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOut,
-                    );
-                  }
+                          reviewPageController.nextPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOut,
+                          );
+                        }
                       : null,
                 ),
               ),
@@ -849,9 +1324,13 @@ class SignUpSteps {
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 4.0),
                 height: 8.0,
-                width: currentReviewPage == index ? 24.0 : 8.0, // Use the passed index
+                width: currentReviewPage == index
+                    ? 24.0
+                    : 8.0, // Use the passed index
                 decoration: BoxDecoration(
-                  color: currentReviewPage == index ? primaryColor : Colors.grey.shade300,
+                  color: currentReviewPage == index
+                      ? primaryColor
+                      : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(4.0),
                 ),
               );
@@ -859,7 +1338,6 @@ class SignUpSteps {
           ),
         ),
       ],
-
     );
   }
 }

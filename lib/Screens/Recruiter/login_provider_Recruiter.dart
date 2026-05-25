@@ -42,12 +42,14 @@ class LoginProvider_Recruiter with ChangeNotifier {
       }
 
       // 3. Authenticate
-      await _auth.signInWithEmailAndPassword(email: email, password: password.trim());
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password.trim(),
+      );
 
       _isLoading = false;
       notifyListeners();
       return null; // success
-
     } on FirebaseAuthException catch (e) {
       _isLoading = false;
       notifyListeners();

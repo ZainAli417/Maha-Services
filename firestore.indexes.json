@@ -51,6 +51,20 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "recruiterUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Posted_jobs_public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "status",
           "order": "ASCENDING"
         },

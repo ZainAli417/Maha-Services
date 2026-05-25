@@ -8,11 +8,19 @@ class StepDetails {
   final IconData icon;
   final String title;
   final String subtitle;
-  StepDetails({required this.icon, required this.title, required this.subtitle});
+  StepDetails({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 }
 
 class SignUpWidgets {
-  static Widget buildLeftPanel(Color primaryColor, Color secondaryColor, Color accentColor) {
+  static Widget buildLeftPanel(
+    Color primaryColor,
+    Color secondaryColor,
+    Color accentColor,
+  ) {
     return SizedBox.expand(
       child: Container(
         decoration: BoxDecoration(
@@ -63,7 +71,9 @@ class SignUpWidgets {
                                     borderRadius: BorderRadius.circular(14),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.14),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.14,
+                                        ),
                                         blurRadius: 18,
                                         offset: const Offset(0, 6),
                                       ),
@@ -77,7 +87,7 @@ class SignUpWidgets {
                                 ),
                               ),
 
-                              const SizedBox(width:20),
+                              const SizedBox(width: 20),
 
                               // Larger headline
                               Expanded(
@@ -86,7 +96,7 @@ class SignUpWidgets {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 42,
                                     color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                     height: 1.05,
                                     letterSpacing: -0.6,
                                   ),
@@ -103,7 +113,10 @@ class SignUpWidgets {
 
                   // Subtext (kept readable)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
@@ -118,7 +131,7 @@ class SignUpWidgets {
                         color: Colors.white,
                         fontSize: 16,
                         height: 1.5,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -137,13 +150,24 @@ class SignUpWidgets {
                               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                               child: Container(
                                 height: 90,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.14),
+                                    width: 1,
+                                  ),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
                                   ],
                                 ),
                                 child: Row(
@@ -151,18 +175,41 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.18),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.18,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Icon(Icons.people_rounded, color: Colors.white, size: 22),
+                                      child: const Icon(
+                                        Icons.people_rounded,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
                                     ),
                                     const SizedBox(width: 10),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('50K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Active Users', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                        Text(
+                                          '50K+',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Active Users',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                            fontSize: 12,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -182,13 +229,24 @@ class SignUpWidgets {
                               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                               child: Container(
                                 height: 80,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.14),
+                                    width: 1,
+                                  ),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
                                   ],
                                 ),
                                 child: Row(
@@ -196,18 +254,41 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.18),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.18,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Icon(Icons.work_rounded, color: Colors.white, size: 22),
+                                      child: const Icon(
+                                        Icons.work_rounded,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
                                     ),
                                     const SizedBox(width: 10),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('10K+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Jobs Posted', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                        Text(
+                                          '10K+',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Jobs Posted',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                            fontSize: 12,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -227,13 +308,24 @@ class SignUpWidgets {
                               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                               child: Container(
                                 height: 80,
-                                padding: const EdgeInsets.symmetric(horizontal: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 1),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.14),
+                                    width: 1,
+                                  ),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 6)),
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.06,
+                                      ),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
                                   ],
                                 ),
                                 child: Row(
@@ -241,18 +333,41 @@ class SignUpWidgets {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.18),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.18,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Icon(Icons.business_rounded, color: Colors.white, size: 22),
+                                      child: const Icon(
+                                        Icons.business_rounded,
+                                        color: Colors.white,
+                                        size: 22,
+                                      ),
                                     ),
                                     const SizedBox(width: 10),
                                     Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text('500+', style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                                        Text('Companies', style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                                        Text(
+                                          '500+',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Companies',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                            fontSize: 12,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -273,7 +388,9 @@ class SignUpWidgets {
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -283,13 +400,20 @@ class SignUpWidgets {
                             color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
+                          child: const Icon(
+                            Icons.verified_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Trusted platform — verified employers and secure hiring',
-                            style: GoogleFonts.plusJakartaSans(color: Colors.white.withValues(alpha: 0.95), fontSize: 14),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white.withValues(alpha: 0.95),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -305,7 +429,6 @@ class SignUpWidgets {
       ),
     );
   }
-
 
   static Widget buildFormContent({
     required BuildContext context,
@@ -340,7 +463,7 @@ class SignUpWidgets {
                       'Create Account',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                         color: Colors.grey.shade800,
                       ),
                     ),
@@ -366,10 +489,7 @@ class SignUpWidgets {
                   // Wrap only the form content in FadeTransition with flexible height
                   FadeTransition(
                     opacity: fadeAnimation,
-                    child: Form(
-                      key: ValueKey<int>(step),
-                      child: stepContent,
-                    ),
+                    child: Form(key: ValueKey<int>(step), child: stepContent),
                   ),
 
                   const SizedBox(height: 20),
@@ -451,7 +571,13 @@ class SignUpWidgets {
     );
   }
 
-  static Widget buildProgressBar(BuildContext context, int step, int totalSteps, Map<int, StepDetails> steps, Color primaryColor) {
+  static Widget buildProgressBar(
+    BuildContext context,
+    int step,
+    int totalSteps,
+    Map<int, StepDetails> steps,
+    Color primaryColor,
+  ) {
     final progress = (step + 1) / (steps.length);
     final secondaryColor = const Color(0xFF8B5CF6);
 
@@ -462,11 +588,19 @@ class SignUpWidgets {
           children: [
             Text(
               'Step ${step + 1} of ${steps.length}',
-              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: primaryColor),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: primaryColor,
+              ),
             ),
             Text(
               '${(progress * 100).toInt()}% Complete',
-              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade600),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade600,
+              ),
             ),
           ],
         ),
@@ -476,7 +610,7 @@ class SignUpWidgets {
             Container(
               height: 8,
               decoration: BoxDecoration(
-                                                                    color: Color(0xff5C738A),
+                color: Color(0xff5C738A),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -486,9 +620,17 @@ class SignUpWidgets {
               height: 8,
               width: MediaQuery.of(context).size.width * progress * 0.8,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
+                gradient: LinearGradient(
+                  colors: [primaryColor, secondaryColor],
+                ),
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [BoxShadow(color: primaryColor.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))],
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
             ),
           ],
@@ -509,8 +651,20 @@ class SignUpWidgets {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(steps[step]!.title, style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text(steps[step]!.subtitle, style: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.grey.shade600)),
+                  Text(
+                    steps[step]!.title,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    steps[step]!.subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -532,8 +686,7 @@ class SignUpWidgets {
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(                                                    color: Color(0xff5C738A),
-),
+        border: Border.all(color: Color(0xff5C738A)),
       ),
       child: TextField(
         controller: controller,
@@ -547,22 +700,35 @@ class SignUpWidgets {
           prefixIcon: Icon(icon, color: const Color(0xFF6366F1), size: 22),
           suffixIcon: suffix,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
       ),
     );
   }
 
-  static Widget buildReviewCard(String title, Map<String, dynamic> data, IconData icon, Color color) {
+  static Widget buildReviewCard(
+    String title,
+    Map<String, dynamic> data,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(                                                    color: Color(0xff5C738A),
-),
-        boxShadow: [BoxShadow(color: Colors.grey.shade100, blurRadius: 10, offset: const Offset(0, 4))],
+        border: Border.all(color: Color(0xff5C738A)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,7 +744,13 @@ class SignUpWidgets {
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 12),
-              Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -595,12 +767,21 @@ class SignUpWidgets {
                 children: [
                   SizedBox(
                     width: 140,
-                    child: Text('${e.key}:', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600, fontSize: 14)),
+                    child: Text(
+                      '${e.key}:',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: Text(
                       e.value.toString(),
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -619,14 +800,20 @@ class SignUpWidgets {
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(                                                    color: Color(0xff5C738A),
- style: BorderStyle.solid, width: 2),
+          border: Border.all(
+            color: Color(0xff5C738A),
+            style: BorderStyle.solid,
+            width: 2,
+          ),
         ),
         child: Column(
           children: [
             Icon(icon, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            Text(message, style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+            Text(
+              message,
+              style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600),
+            ),
           ],
         ),
       ),
@@ -635,7 +822,11 @@ class SignUpWidgets {
 }
 
 class SignUpDialogs {
-  static Future<void> addEducationDialog(BuildContext context, Color primaryColor, Function(Map<String, String>) onAdd) async {
+  static Future<void> addEducationDialog(
+    BuildContext context,
+    Color primaryColor,
+    Function(Map<String, String>) onAdd,
+  ) async {
     final degreeCtrl = TextEditingController();
     final instCtrl = TextEditingController();
     final fromCtrl = TextEditingController();
@@ -660,22 +851,52 @@ class SignUpDialogs {
                       color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.school_outlined, color: primaryColor, size: 24),
+                    child: Icon(
+                      Icons.school_outlined,
+                      color: primaryColor,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  Text('Add Education', style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Add Education',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
-              SignUpWidgets.elegantTextField(controller: degreeCtrl, label: 'Degree / Qualification', icon: Icons.school_outlined),
+              SignUpWidgets.elegantTextField(
+                controller: degreeCtrl,
+                label: 'Degree / Qualification',
+                icon: Icons.school_outlined,
+              ),
               const SizedBox(height: 16),
-              SignUpWidgets.elegantTextField(controller: instCtrl, label: 'Institution / University', icon: Icons.business_outlined),
+              SignUpWidgets.elegantTextField(
+                controller: instCtrl,
+                label: 'Institution / University',
+                icon: Icons.business_outlined,
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: SignUpWidgets.elegantTextField(controller: fromCtrl, label: 'From (Year)', icon: Icons.calendar_today_outlined)),
+                  Expanded(
+                    child: SignUpWidgets.elegantTextField(
+                      controller: fromCtrl,
+                      label: 'From (Year)',
+                      icon: Icons.calendar_today_outlined,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: SignUpWidgets.elegantTextField(controller: toCtrl, label: 'To (Year)', icon: Icons.event_outlined)),
+                  Expanded(
+                    child: SignUpWidgets.elegantTextField(
+                      controller: toCtrl,
+                      label: 'To (Year)',
+                      icon: Icons.event_outlined,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -684,12 +905,20 @@ class SignUpDialogs {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: () {
-                      if (degreeCtrl.text.trim().isEmpty || instCtrl.text.trim().isEmpty) return;
+                      if (degreeCtrl.text.trim().isEmpty ||
+                          instCtrl.text.trim().isEmpty) {
+                        return;
+                      }
                       onAdd({
                         'degree': degreeCtrl.text.trim(),
                         'institution': instCtrl.text.trim(),
@@ -701,11 +930,21 @@ class SignUpDialogs {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Add Education', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Add Education',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -716,7 +955,11 @@ class SignUpDialogs {
     );
   }
 
-  static Future<void> addExperienceDialog(BuildContext context, Color secondaryColor, Function(Map<String, String>) onAdd) async {
+  static Future<void> addExperienceDialog(
+    BuildContext context,
+    Color secondaryColor,
+    Function(Map<String, String>) onAdd,
+  ) async {
     final title = TextEditingController();
     final duration = TextEditingController();
     final roles = TextEditingController();
@@ -740,25 +983,53 @@ class SignUpDialogs {
                       color: secondaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.work_outline_rounded, color: secondaryColor, size: 24),
+                    child: Icon(
+                      Icons.work_outline_rounded,
+                      color: secondaryColor,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
-                  Text('Add Experience', style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Add Experience',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
-              SignUpWidgets.elegantTextField(controller: title, label: 'Job Title / Role', icon: Icons.work_outline_rounded),
+              SignUpWidgets.elegantTextField(
+                controller: title,
+                label: 'Job Title / Role',
+                icon: Icons.work_outline_rounded,
+              ),
               const SizedBox(height: 16),
-              SignUpWidgets.elegantTextField(controller: duration, label: 'Duration (e.g., Jan 2020 - Dec 2022)', icon: Icons.calendar_month_outlined),
+              SignUpWidgets.elegantTextField(
+                controller: duration,
+                label: 'Duration (e.g., Jan 2020 - Dec 2022)',
+                icon: Icons.calendar_month_outlined,
+              ),
               const SizedBox(height: 16),
-              SignUpWidgets.elegantTextField(controller: roles, label: 'Key Responsibilities', icon: Icons.list_alt_rounded, maxLines: 4),
+              SignUpWidgets.elegantTextField(
+                controller: roles,
+                label: 'Key Responsibilities',
+                icon: Icons.list_alt_rounded,
+                maxLines: 4,
+              ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -774,11 +1045,21 @@ class SignUpDialogs {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: secondaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Add Experience', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Add Experience',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -790,12 +1071,12 @@ class SignUpDialogs {
   }
 
   static Future<void> addSimpleItemDialog(
-      BuildContext context,
-      String title,
-      String fieldLabel,
-      Color color,
-      Function(String) onAdd,
-      ) async {
+    BuildContext context,
+    String title,
+    String fieldLabel,
+    Color color,
+    Function(String) onAdd,
+  ) async {
     final controller = TextEditingController();
 
     await showDialog(
@@ -809,16 +1090,31 @@ class SignUpDialogs {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: GoogleFonts.plusJakartaSans(fontSize: 24, fontWeight: FontWeight.w600)),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 24),
-              SignUpWidgets.elegantTextField(controller: controller, label: fieldLabel, icon: Icons.edit_outlined),
+              SignUpWidgets.elegantTextField(
+                controller: controller,
+                label: fieldLabel,
+                icon: Icons.edit_outlined,
+              ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -831,11 +1127,21 @@ class SignUpDialogs {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    child: Text('Add', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Add',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),

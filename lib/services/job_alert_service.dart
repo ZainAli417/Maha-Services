@@ -20,7 +20,9 @@ class JobAlertService {
       await _firestore.collection('users').doc(uid).update({
         'job_alerts_enabled': enabled,
       });
-      debugPrint('✅ JobAlertService: Alert preference updated for $uid → $enabled');
+      debugPrint(
+        '✅ JobAlertService: Alert preference updated for $uid → $enabled',
+      );
     } catch (e) {
       debugPrint('❌ JobAlertService: Failed to update preference — $e');
     }

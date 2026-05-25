@@ -43,7 +43,11 @@ class CvExtractionResult {
   );
 
   factory CvExtractionResult.fromJson(Map<String, dynamic> j) {
-    final personal = (j['personalProfile'] as Map?)?.map((k, v) => MapEntry(k.toString(), v)) ?? {};
+    final personal =
+        (j['personalProfile'] as Map?)?.map(
+          (k, v) => MapEntry(k.toString(), v),
+        ) ??
+        {};
 
     final edu = <Map<String, String>>[];
     if (j['educationalProfile'] is List) {
@@ -90,17 +94,20 @@ class CvExtractionResult {
             'name': (c['name'] ?? '').toString(),
           });
         } else if (c is String && c.isNotEmpty) {
-          certs.add({
-            'organization': '',
-            'name': c,
-          });
+          certs.add({'organization': '', 'name': c});
         }
       }
     }
 
     List<String> listFrom(dynamic v) {
       if (v is List) return v.map((e) => e.toString()).toList();
-      if (v is String && v.isNotEmpty) return v.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+      if (v is String && v.isNotEmpty) {
+        return v
+            .split('\n')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
       return [];
     }
 
@@ -121,14 +128,12 @@ class CvExtractionResult {
 class CvExtractor {
   final Duration timeout;
 
-  CvExtractor({
-    this.timeout = const Duration(seconds: 90),
-  });
+  CvExtractor({this.timeout = const Duration(seconds: 90)});
 
   Future<CvExtractionResult> extractFromFileBytes(
-      Uint8List bytes, {
-        required String filename,
-      }) async {
+    Uint8List bytes, {
+    required String filename,
+  }) async {
     try {
       final response = await _callServerParser(bytes, filename);
       return response;
@@ -138,9 +143,9 @@ class CvExtractor {
   }
 
   Future<CvExtractionResult> _callServerParser(
-      Uint8List fileBytes,
-      String filename,
-      ) async {
+    Uint8List fileBytes,
+    String filename,
+  ) async {
     final uri = Uri.parse('${Env.backendUrl}/cv-parser');
 
     try {
@@ -160,7 +165,9 @@ class CvExtractor {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final jsonResponse = json.decode(response.body);
-        return CvExtractionResult.fromJson(jsonResponse as Map<String, dynamic>);
+        return CvExtractionResult.fromJson(
+          jsonResponse as Map<String, dynamic>,
+        );
       } else {
         final errorBody = response.body;
         String errorMsg = 'Server API error (${response.statusCode})';

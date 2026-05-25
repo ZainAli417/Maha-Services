@@ -16,6 +16,7 @@ import 'Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
 import 'Screens/Job_Seeker/List_applied_jobs_provider.dart';
 import 'Screens/Job_Seeker/job_seeker_provider.dart';
 import 'Screens/Job_Seeker/jobs_application_provider.dart';
+import 'Screens/Job_Seeker/saved_jobs_provider.dart';
 import 'Screens/Recruiter/AI Candidate Matching_Provider.dart';
 import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Recruiter_provider_Job_listing.dart';
@@ -44,8 +45,7 @@ void main() async {
 
   // ── Pre-load Google Fonts BEFORE runApp to avoid lazy_path.dart crash ──
   // Trigger font downloads so the engine never measures text with a missing font.
-  GoogleFonts.plusJakartaSans();       // enqueues the plusJakartaSans download
-  GoogleFonts.inter();         // enqueues the Inter download
+  GoogleFonts.plusJakartaSans(); // enqueues the plusJakartaSans download
   try {
     await GoogleFonts.pendingFonts();
   } catch (_) {
@@ -74,7 +74,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => JS_TopNavProvider()),
 
         ChangeNotifierProvider(create: (_) => ProfileProvider_NEW()),
-        ChangeNotifierProvider(create: (_) => AuthNotifier()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => CVAnalyzerBackendProvider()),
         ChangeNotifierProvider(create: (_) => AdminAuthProvider()),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
@@ -85,6 +85,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => JobSeekerProvider()),
         ChangeNotifierProvider(create: (_) => JobApplicationsProvider()),
         ChangeNotifierProvider(create: (_) => ListAppliedJobsProvider()),
+        ChangeNotifierProvider(create: (_) => SavedJobsProvider()),
         ChangeNotifierProvider(create: (_) => ApplicantsProvider()),
         ChangeNotifierProvider(create: (_) => AIMatchProvider()),
 
@@ -104,14 +105,14 @@ class JobPortalApp extends StatelessWidget {
       title: 'Maha Services',
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
-        FlutterQuillLocalizations.delegate,   // ⭐ REQUIRED
+        FlutterQuillLocalizations.delegate, // ⭐ REQUIRED
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
 
       supportedLocales: const [
-        Locale('en'),  // Add more if needed
+        Locale('en'), // Add more if needed
       ],
 
       routerConfig: router,
@@ -122,7 +123,10 @@ class JobPortalApp extends StatelessWidget {
           secondary: const Color(0xFF6366F1),
         ),
         fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-        textTheme: GoogleFonts.interTextTheme(),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
+          bodyColor: const Color(0xFF0F172A),
+          displayColor: const Color(0xFF0F172A),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: const Color(0xFFFAFAFA),
@@ -158,5 +162,5 @@ class RoleProvider extends ChangeNotifier {
 
 /// Environment configuration — reads from .env at runtime
 class Env {
-  static String get backendUrl =>'https://backend.taasgrid.com';
+  static String get backendUrl => 'https://backend.taasgrid.com';
 }

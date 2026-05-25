@@ -12,6 +12,7 @@ class ListAppliedJobsProvider with ChangeNotifier {
 
   /// Real‑time subscription to the user's applied_jobs collection
   StreamSubscription<QuerySnapshot>? _appsSub;
+  StreamSubscription<User?>? _authSub;
 
   /// One subscription per jobId to its Posted_jobs_public/{jobId} doc
   final Map<String, StreamSubscription<DocumentSnapshot>> _jobDocSubs = {};
@@ -25,14 +26,47 @@ class ListAppliedJobsProvider with ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
-  List<_AppRecord> _applications = [];
+  List<AppRecord> _applications = [];
 
   bool get isLoading => _isLoading;
   String? get error => _error;
-  List<_AppRecord> get applications => List.unmodifiable(_applications);
+  List<AppRecord> get applications => List.unmodifiable(_applications);
 
   ListAppliedJobsProvider() {
-    _startListeners();
+    _authSub = _auth.authStateChanges().listen((user) {
+      _clearSubscriptions();
+      _jobDataMap.clear();
+      _appliedDocs = [];
+      _applications = [];
+
+      if (user == null) {
+        _error = 'Not authenticated';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      _error = null;
+      _isLoading = true;
+      notifyListeners();
+      _startListeners();
+    });
+
+    if (_auth.currentUser != null) {
+      _startListeners();
+    } else {
+      _error = 'Not authenticated';
+      _isLoading = false;
+    }
+  }
+
+  void _clearSubscriptions() {
+    _appsSub?.cancel();
+    _appsSub = null;
+    for (final sub in _jobDocSubs.values) {
+      sub.cancel();
+    }
+    _jobDocSubs.clear();
   }
 
   void _startListeners() {
@@ -50,19 +84,32 @@ class ListAppliedJobsProvider with ChangeNotifier {
         .collection('applied_jobs')
         .orderBy('appliedAt', descending: true)
         .snapshots()
-        .listen((snap) {
-      _appliedDocs = snap.docs;
-      _subscribeToJobDocs(_extractJobIds());
-    }, onError: (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    });
+        .listen(
+          (snap) {
+            _appliedDocs = snap.docs;
+            _subscribeToJobDocs(_extractJobIds());
+          },
+          onError: (e) {
+            _error = e.toString();
+            _isLoading = false;
+            notifyListeners();
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _clearSubscriptions();
+    super.dispose();
   }
 
   List<String> _extractJobIds() {
     return _appliedDocs
-        .map((d) => (d.data() as Map<String, dynamic>)['jobId'] as String)
+        .map((d) {
+          final data = d.data() as Map<String, dynamic>;
+          return (data['jobId'] ?? d.id).toString();
+        })
         .toSet()
         .toList();
   }
@@ -83,16 +130,19 @@ class ListAppliedJobsProvider with ChangeNotifier {
           .collection('Posted_jobs_public')
           .doc(id)
           .snapshots()
-          .listen((docSnap) {
-        if (docSnap.exists) {
-          _jobDataMap[id] = docSnap.data() as Map<String, dynamic>;
-        } else {
-          _jobDataMap.remove(id);
-        }
-        _rebuildRecords();
-      }, onError: (e) {
-        debugPrint('Job doc listener error for $id: $e');
-      });
+          .listen(
+            (docSnap) {
+              if (docSnap.exists) {
+                _jobDataMap[id] = docSnap.data() as Map<String, dynamic>;
+              } else {
+                _jobDataMap.remove(id);
+              }
+              _rebuildRecords();
+            },
+            onError: (e) {
+              debugPrint('Job doc listener error for $id: $e');
+            },
+          );
       _jobDocSubs[id] = sub;
     }
 
@@ -101,7 +151,7 @@ class ListAppliedJobsProvider with ChangeNotifier {
   }
 
   void _rebuildRecords() {
-    final List<_AppRecord> recs = [];
+    final List<AppRecord> recs = [];
 
     for (var doc in _appliedDocs) {
       final data = doc.data() as Map<String, dynamic>;
@@ -142,18 +192,20 @@ class ListAppliedJobsProvider with ChangeNotifier {
         }
       }
 
-      recs.add(_AppRecord(
-        jobId: jid,
-        title: jobData['title'] ?? '—',
-        company: jobData['company'] ?? '—',
-        contactEmail: jobData['contactEmail'] ?? '—',
-        department: jobData['department'] ?? 'General',
-        createdAt: parseDate(jobData['createdAt'] ?? ''),
-        deadline: parseDate(jobData['deadline'] ?? ''),
-        appliedAt: parseAppliedAt(data['appliedAt']),
-        status: data['status'] ?? 'pending',
-        responseDate: responseDate,
-      ));
+      recs.add(
+        AppRecord(
+          jobId: jid,
+          title: jobData['title'] ?? '—',
+          company: jobData['company'] ?? '—',
+          contactEmail: jobData['contactEmail'] ?? '—',
+          department: jobData['department'] ?? 'General',
+          createdAt: parseDate(jobData['createdAt'] ?? ''),
+          deadline: parseDate(jobData['deadline'] ?? ''),
+          appliedAt: parseAppliedAt(data['appliedAt']),
+          status: data['status'] ?? 'pending',
+          responseDate: responseDate,
+        ),
+      );
     }
 
     // Sort by appliedAt descending
@@ -166,13 +218,18 @@ class ListAppliedJobsProvider with ChangeNotifier {
 
   /// Analytics computation based on filtered applications
   Map<String, dynamic> getAnalytics(List<dynamic> filteredApps) {
-    // Cast to _AppRecord
-    final apps = filteredApps.cast<_AppRecord>();
+    // Cast to AppRecord
+    final apps = filteredApps.cast<AppRecord>();
 
     if (apps.isEmpty) {
       return {
         'totalApplications': 0,
-        'statusBreakdown': {'pending': 0, 'shortlist': 0, 'accepted': 0, 'rejected': 0},
+        'statusBreakdown': {
+          'pending': 0,
+          'shortlist': 0,
+          'accepted': 0,
+          'rejected': 0,
+        },
         'responseRate': 0.0,
         'averageResponseTime': 0,
         'topCompanies': <Map<String, dynamic>>[],
@@ -203,7 +260,9 @@ class ListAppliedJobsProvider with ChangeNotifier {
         respondedCount++;
       }
     }
-    final avgResponseTime = respondedCount > 0 ? (totalResponseDays / respondedCount).round() : 0;
+    final avgResponseTime = respondedCount > 0
+        ? (totalResponseDays / respondedCount).round()
+        : 0;
 
     // Top Companies by Application Count
     final companyCount = <String, int>{};
@@ -212,24 +271,25 @@ class ListAppliedJobsProvider with ChangeNotifier {
         companyCount[app.company] = (companyCount[app.company] ?? 0) + 1;
       }
     }
-    final topCompanies = companyCount.entries
-        .map((e) => {'company': e.key, 'count': e.value})
-        .toList()
-      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    final topCompanies =
+        companyCount.entries
+            .map((e) => {'company': e.key, 'count': e.value})
+            .toList()
+          ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
 
     // Application Trend (Last 30 days)
     final now = DateTime.now();
-    final last30Days = List.generate(30, (i) => now.subtract(Duration(days: 29 - i)));
+    final last30Days = List.generate(
+      30,
+      (i) => now.subtract(Duration(days: 29 - i)),
+    );
     final trendData = last30Days.map((date) {
       final count = apps.where((app) {
         return app.appliedAt.year == date.year &&
             app.appliedAt.month == date.month &&
             app.appliedAt.day == date.day;
       }).length;
-      return {
-        'date': date,
-        'count': count,
-      };
+      return {'date': date, 'count': count};
     }).toList();
 
     // Department Distribution
@@ -239,10 +299,11 @@ class ListAppliedJobsProvider with ChangeNotifier {
         deptCount[app.department] = (deptCount[app.department] ?? 0) + 1;
       }
     }
-    final deptDistribution = deptCount.entries
-        .map((e) => {'department': e.key, 'count': e.value})
-        .toList()
-      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    final deptDistribution =
+        deptCount.entries
+            .map((e) => {'department': e.key, 'count': e.value})
+            .toList()
+          ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
 
     // Success Rate by Department
     final deptSuccess = <String, Map<String, int>>{};
@@ -251,25 +312,27 @@ class ListAppliedJobsProvider with ChangeNotifier {
       if (!deptSuccess.containsKey(app.department)) {
         deptSuccess[app.department] = {'total': 0, 'accepted': 0};
       }
-      deptSuccess[app.department]!['total'] = deptSuccess[app.department]!['total']! + 1;
+      deptSuccess[app.department]!['total'] =
+          deptSuccess[app.department]!['total']! + 1;
       if (app.status == 'accepted') {
-        deptSuccess[app.department]!['accepted'] = deptSuccess[app.department]!['accepted']! + 1;
+        deptSuccess[app.department]!['accepted'] =
+            deptSuccess[app.department]!['accepted']! + 1;
       }
     }
-    final successByDept = deptSuccess.entries
-        .map((e) {
-      final total = e.value['total']!;
-      final accepted = e.value['accepted']!;
-      final rate = total > 0 ? (accepted / total * 100) : 0.0;
-      return {
-        'department': e.key,
-        'rate': rate,
-        'accepted': accepted,
-        'total': total,
-      };
-    })
-        .toList()
-      ..sort((a, b) => (b['rate'] as double).compareTo(a['rate'] as double));
+    final successByDept =
+        deptSuccess.entries.map((e) {
+          final total = e.value['total']!;
+          final accepted = e.value['accepted']!;
+          final rate = total > 0 ? (accepted / total * 100) : 0.0;
+          return {
+            'department': e.key,
+            'rate': rate,
+            'accepted': accepted,
+            'total': total,
+          };
+        }).toList()..sort(
+          (a, b) => (b['rate'] as double).compareTo(a['rate'] as double),
+        );
 
     // Weekly Activity (Last 12 weeks)
     final last12Weeks = List.generate(12, (i) {
@@ -279,13 +342,12 @@ class ListAppliedJobsProvider with ChangeNotifier {
     final weeklyActivity = last12Weeks.map((weekStart) {
       final weekEnd = weekStart.add(const Duration(days: 6));
       final count = apps.where((app) {
-        return app.appliedAt.isAfter(weekStart.subtract(const Duration(days: 1))) &&
+        return app.appliedAt.isAfter(
+              weekStart.subtract(const Duration(days: 1)),
+            ) &&
             app.appliedAt.isBefore(weekEnd.add(const Duration(days: 1)));
       }).length;
-      return {
-        'week': 'W${weekStart.day}/${weekStart.month}',
-        'count': count,
-      };
+      return {'week': 'W${weekStart.day}/${weekStart.month}', 'count': count};
     }).toList();
 
     // Monthly Trend (Last 6 months)
@@ -295,7 +357,8 @@ class ListAppliedJobsProvider with ChangeNotifier {
     });
     final monthlyTrend = last6Months.map((month) {
       final count = apps.where((app) {
-        return app.appliedAt.year == month.year && app.appliedAt.month == month.month;
+        return app.appliedAt.year == month.year &&
+            app.appliedAt.month == month.month;
       }).length;
       return {
         'month': '${_getMonthName(month.month)} ${month.year}',
@@ -323,17 +386,21 @@ class ListAppliedJobsProvider with ChangeNotifier {
   }
 
   String _getMonthName(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
-  }
-
-  @override
-  void dispose() {
-    _appsSub?.cancel();
-    for (var sub in _jobDocSubs.values) {
-      sub.cancel();
-    }
-    super.dispose();
   }
 
   /// Cancel all existing listeners and restart them from scratch.
@@ -359,7 +426,7 @@ class ListAppliedJobsProvider with ChangeNotifier {
 }
 
 /// Internal model for displaying in the UI
-class _AppRecord {
+class AppRecord {
   final String jobId;
   final String title;
   final String company;
@@ -371,7 +438,7 @@ class _AppRecord {
   final String status;
   final DateTime? responseDate;
 
-  _AppRecord({
+  AppRecord({
     required this.jobId,
     required this.title,
     required this.company,

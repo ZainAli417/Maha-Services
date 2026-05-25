@@ -14,27 +14,31 @@ import '../Screens/Job_Seeker/job_seeker_provider.dart';
 import 'cv_analysis_provider.dart';
 
 // ─── Colours ────────────────────────────────────────────────────────────────
-const Color kPrimaryBlue    = Color(0xFF6366F1);
-const Color kAccentBlue     = Color(0xFF6366F1);
-const Color kTextPrimary    = Color(0xFF0F172A);
-const Color kTextSecondary  = Color(0xFF475569);
-const Color kBorderLight    = Color(0xFFE2E8F0);
+const Color kPrimaryBlue = Color(0xFF6366F1);
+const Color kAccentBlue = Color(0xFF6366F1);
+const Color kTextPrimary = Color(0xFF0F172A);
+const Color kTextSecondary = Color(0xFF475569);
+const Color kBorderLight = Color(0xFFE2E8F0);
 const Color kBackgroundGray = Color(0xFFFAFAFA);
-const Color kSuccessGreen   = Color(0xFF059669);
-const Color kWarningOrange  = Color(0xFFEA580C);
-const Color kErrorRed       = Color(0xFFDC2626);
+const Color kSuccessGreen = Color(0xFF059669);
+const Color kWarningOrange = Color(0xFFEA580C);
+const Color kErrorRed = Color(0xFFDC2626);
 
 // ─── Breakpoints ────────────────────────────────────────────────────────────
 class _BP {
-  static const mobile  = 600.0;
+  static const mobile = 600.0;
   static const desktop = 1100.0;
 
-  static bool isMobile(double w)  => w < mobile;
+  static bool isMobile(double w) => w < mobile;
   static bool isDesktop(double w) => w >= desktop;
 
   static EdgeInsets hPad(double w) => EdgeInsets.symmetric(
-    horizontal: w < mobile ? 12 : w < desktop ? 20 : 28,
-    vertical:   w < mobile ? 10 : 14,
+    horizontal: w < mobile
+        ? 12
+        : w < desktop
+        ? 20
+        : 28,
+    vertical: w < mobile ? 10 : 14,
   );
 
   static double contentPad(double w) => w < mobile ? 14 : 20;
@@ -54,7 +58,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     with TickerProviderStateMixin {
   PlatformFile? _pickedFile;
   final _roleController = TextEditingController();
-  final _jdController   = TextEditingController();
+  final _jdController = TextEditingController();
   late AnimationController _animController;
   bool _isAiDialogVisible = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -109,7 +113,10 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   void _showSnackBar(BuildContext ctx, String msg, {bool isError = false}) {
     ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(
-        content: Text(msg, style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500)),
+        content: Text(
+          msg,
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
+        ),
         backgroundColor: isError ? kErrorRed : kSuccessGreen,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -154,6 +161,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
       builder: (context, prov, _) {
         if (prov.isLoading && !_isAiDialogVisible) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             _showAIProcessingDialog(context, prov);
           });
         }
@@ -161,10 +169,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
         return SafeArea(
           child: Column(
             children: [
-              _CompactHeader(
-                provider: prov,
-                scaffoldKey: _scaffoldKey,
-              ),
+              _CompactHeader(provider: prov, scaffoldKey: _scaffoldKey),
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -203,13 +208,20 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
     );
   }
 
-  void _showAIProcessingDialog(BuildContext context, CVAnalyzerBackendProvider prov) {
+  void _showAIProcessingDialog(
+    BuildContext context,
+    CVAnalyzerBackendProvider prov,
+  ) {
     if (!prov.isLoading || _isAiDialogVisible) return;
     _isAiDialogVisible = true;
 
     void listener() {
-      if (!prov.isLoading && _isAiDialogVisible && Navigator.of(context).canPop()) {
-        try { Navigator.of(context).pop(); } catch (_) {}
+      if (!prov.isLoading &&
+          _isAiDialogVisible &&
+          Navigator.of(context).canPop()) {
+        try {
+          Navigator.of(context).pop();
+        } catch (_) {}
       }
     }
 
@@ -221,7 +233,9 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
       barrierColor: Colors.black.withValues(alpha: 0.2),
       builder: (ctx) => _AIProcessingDialog(provider: prov),
     ).then((_) {
-      try { prov.removeListener(listener); } catch (_) {}
+      try {
+        prov.removeListener(listener);
+      } catch (_) {}
       _isAiDialogVisible = false;
     });
   }
@@ -243,10 +257,11 @@ class _CompactHeader extends StatelessWidget {
     final hPad = isMobile ? 10.0 : 20.0;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: isMobile ? 8 : 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: hPad,
+        vertical: isMobile ? 8 : 12,
       ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: SafeArea(
         bottom: false,
         top: isMobile,
@@ -267,7 +282,11 @@ class _CompactHeader extends StatelessWidget {
                 color: kPrimaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.document_scanner_outlined, size: 20, color: kPrimaryBlue),
+              child: Icon(
+                Icons.document_scanner_outlined,
+                size: 20,
+                color: kPrimaryBlue,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -336,7 +355,8 @@ class _ContentLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasResults = provider.score != null ||
+    final hasResults =
+        provider.score != null ||
         provider.advisory != null ||
         provider.highlights.isNotEmpty;
 
@@ -436,7 +456,10 @@ class _InputPanel extends StatelessWidget {
           _FileUploadZone(pickedFile: pickedFile, onPickFile: onPickFile),
 
           SizedBox(height: isMobile ? 16 : 22),
-          _SectionLabel(text: 'Select Job from Hub (Optional)', icon: Icons.hub_outlined),
+          _SectionLabel(
+            text: 'Select Job from Hub (Optional)',
+            icon: Icons.hub_outlined,
+          ),
           SizedBox(height: isMobile ? 8 : 10),
           _JobSelector(
             key: resetKey,
@@ -450,16 +473,24 @@ class _InputPanel extends StatelessWidget {
           SizedBox(height: isMobile ? 16 : 22),
           _SectionLabel(text: 'Target Role', icon: Icons.work_outline),
           SizedBox(height: isMobile ? 8 : 10),
-          _buildTextField(roleController, 'e.g., Senior Flutter Developer',
-              isMobile: isMobile),
+          _buildTextField(
+            roleController,
+            'e.g., Senior Flutter Developer',
+            isMobile: isMobile,
+          ),
 
           SizedBox(height: isMobile ? 14 : 20),
           _SectionLabel(
-              text: 'Job Description (Optional)',
-              icon: Icons.description_outlined),
+            text: 'Job Description (Optional)',
+            icon: Icons.description_outlined,
+          ),
           SizedBox(height: isMobile ? 8 : 10),
-          _buildTextField(jdController, 'Paste job requirements here...',
-              maxLines: isMobile ? 4 : 6, isMobile: isMobile),
+          _buildTextField(
+            jdController,
+            'Paste job requirements here...',
+            maxLines: isMobile ? 4 : 6,
+            isMobile: isMobile,
+          ),
 
           SizedBox(height: isMobile ? 18 : 24),
           Row(
@@ -474,16 +505,17 @@ class _InputPanel extends StatelessWidget {
                   label: Text(
                     isLoading ? 'Analyzing…' : 'Analyze CV',
                     style: GoogleFonts.plusJakartaSans(
-                        fontSize: isMobile ? 13 : 14,
-                        fontWeight: FontWeight.w600),
+                      fontSize: isMobile ? 13 : 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimaryBlue,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                        vertical: isMobile ? 14 : 18),
+                    padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 18),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     elevation: 0,
                   ),
                 ),
@@ -495,17 +527,20 @@ class _InputPanel extends StatelessWidget {
                 label: Text(
                   'Reset',
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 13 : 14,
-                      fontWeight: FontWeight.w600),
+                    fontSize: isMobile ? 13 : 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: kTextSecondary,
                   side: const BorderSide(color: kBorderLight),
                   padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 12 : 16,
-                      vertical: isMobile ? 14 : 18),
+                    horizontal: isMobile ? 12 : 16,
+                    vertical: isMobile ? 14 : 18,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -516,18 +551,25 @@ class _InputPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint,
-      {int maxLines = 1, bool isMobile = false}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint, {
+    int maxLines = 1,
+    bool isMobile = false,
+  }) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
       style: GoogleFonts.plusJakartaSans(
-          fontSize: isMobile ? 13 : 14, color: kTextPrimary),
+        fontSize: isMobile ? 13 : 14,
+        color: kTextPrimary,
+      ),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.plusJakartaSans(
-            color: kTextSecondary.withValues(alpha: 0.6),
-            fontSize: isMobile ? 12 : 14),
+          color: kTextSecondary.withValues(alpha: 0.6),
+          fontSize: isMobile ? 12 : 14,
+        ),
         filled: true,
         fillColor: kBackgroundGray,
         border: OutlineInputBorder(
@@ -543,7 +585,9 @@ class _InputPanel extends StatelessWidget {
           borderSide: BorderSide(color: kAccentBlue, width: 1.5),
         ),
         contentPadding: EdgeInsets.symmetric(
-            horizontal: 12, vertical: isMobile ? 10 : 12),
+          horizontal: 12,
+          vertical: isMobile ? 10 : 12,
+        ),
       ),
     );
   }
@@ -608,8 +652,11 @@ class _FileUploadZone extends StatelessWidget {
                 color: kAccentBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(_getFileIcon(pickedFile!),
-                  color: kAccentBlue, size: 20),
+              child: Icon(
+                _getFileIcon(pickedFile!),
+                color: kAccentBlue,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -619,7 +666,9 @@ class _FileUploadZone extends StatelessWidget {
                   Text(
                     pickedFile!.name,
                     style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13, fontWeight: FontWeight.w600),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -627,7 +676,9 @@ class _FileUploadZone extends StatelessWidget {
                     Text(
                       _formatSize(pickedFile!.size),
                       style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11, color: kTextSecondary),
+                        fontSize: 11,
+                        color: kTextSecondary,
+                      ),
                     ),
                 ],
               ),
@@ -656,9 +707,10 @@ class _FileUploadZone extends StatelessWidget {
           color: kBackgroundGray,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: kAccentBlue.withValues(alpha: 0.3),
-              width: 1.5,
-              style: BorderStyle.solid),
+            color: kAccentBlue.withValues(alpha: 0.3),
+            width: 1.5,
+            style: BorderStyle.solid,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -676,7 +728,10 @@ class _FileUploadZone extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               'PDF files only',
-              style: GoogleFonts.plusJakartaSans(fontSize: 11, color: kTextSecondary),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                color: kTextSecondary,
+              ),
             ),
           ],
         ),
@@ -686,10 +741,13 @@ class _FileUploadZone extends StatelessWidget {
 
   IconData _getFileIcon(PlatformFile file) {
     switch (file.extension?.toLowerCase() ?? '') {
-      case 'pdf':  return Icons.picture_as_pdf;
+      case 'pdf':
+        return Icons.picture_as_pdf;
       case 'doc':
-      case 'docx': return Icons.description;
-      default:     return Icons.insert_drive_file;
+      case 'docx':
+        return Icons.description;
+      default:
+        return Icons.insert_drive_file;
     }
   }
 
@@ -707,7 +765,11 @@ class _JobSelector extends StatefulWidget {
   final Function(Map<String, dynamic>) onJobSelected;
   final bool isMobile;
 
-  const _JobSelector({super.key, required this.onJobSelected, this.isMobile = false});
+  const _JobSelector({
+    super.key,
+    required this.onJobSelected,
+    this.isMobile = false,
+  });
 
   @override
   State<_JobSelector> createState() => _JobSelectorState();
@@ -721,7 +783,7 @@ class _JobSelectorState extends State<_JobSelector> {
     return Consumer<JobSeekerProvider>(
       builder: (context, provider, _) {
         final jobs = provider.activeJobs;
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
@@ -769,7 +831,6 @@ class _JobSelectorState extends State<_JobSelector> {
   }
 }
 
-
 // ════════════════════════════════════════════════════════════════════════════
 //  RESULTS PANEL
 // ════════════════════════════════════════════════════════════════════════════
@@ -799,7 +860,11 @@ class _ResultsPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: kBorderLight),
         boxShadow: const [
-          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3)),
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Column(
@@ -829,15 +894,16 @@ class _ResultsPanel extends StatelessWidget {
           const SizedBox(height: 16),
 
           if (provider.advisory != null) ...[
-            _InsightsSection(advisory: provider.advisory!,
-                isMobile: isMobile),
+            _InsightsSection(advisory: provider.advisory!, isMobile: isMobile),
             if (provider.highlights.isNotEmpty)
               SizedBox(height: isMobile ? 18 : 24),
           ],
 
           if (provider.highlights.isNotEmpty)
             _HighlightsSection(
-                highlights: provider.highlights, isMobile: isMobile),
+              highlights: provider.highlights,
+              isMobile: isMobile,
+            ),
         ],
       ),
     );
@@ -853,8 +919,16 @@ class _CompactScoreBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = score >= 80 ? kSuccessGreen : score >= 60 ? kWarningOrange : kErrorRed;
-    final label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : 'Needs Work';
+    final color = score >= 80
+        ? kSuccessGreen
+        : score >= 60
+        ? kWarningOrange
+        : kErrorRed;
+    final label = score >= 80
+        ? 'Excellent'
+        : score >= 60
+        ? 'Good'
+        : 'Needs Work';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -869,17 +943,25 @@ class _CompactScoreBadge extends StatelessWidget {
           Text(
             '${score.toStringAsFixed(0)}%',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 13, fontWeight: FontWeight.w700, color: color),
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
           const SizedBox(width: 5),
           Container(
-              width: 3, height: 3,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+            width: 3,
+            height: 3,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 5),
           Text(
             label,
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 12, fontWeight: FontWeight.w600, color: color),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -923,7 +1005,7 @@ class _InsightsSection extends StatelessWidget {
               PConfig(
                 textStyle: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 13,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   color: kTextSecondary,
                   height: 1.6,
                 ),
@@ -938,8 +1020,11 @@ class _InsightsSection extends StatelessWidget {
   String _formatAdvisory(String text) {
     text = text.trim();
     text = text.replaceAllMapped(
-      RegExp(r'\b(Strengths?|Weaknesses?|Recommendations?):', caseSensitive: false),
-          (match) => '\n\n**${match.group(0)}**\n',
+      RegExp(
+        r'\b(Strengths?|Weaknesses?|Recommendations?):',
+        caseSensitive: false,
+      ),
+      (match) => '\n\n**${match.group(0)}**\n',
     );
     return text;
   }
@@ -952,8 +1037,7 @@ class _HighlightsSection extends StatelessWidget {
   final List<Map<String, dynamic>> highlights;
   final bool isMobile;
 
-  const _HighlightsSection(
-      {required this.highlights, this.isMobile = false});
+  const _HighlightsSection({required this.highlights, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
@@ -962,8 +1046,7 @@ class _HighlightsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.stars_outlined,
-                size: 16, color: kWarningOrange),
+            Icon(Icons.stars_outlined, size: 16, color: kWarningOrange),
             const SizedBox(width: 7),
             Text(
               'Key Highlights',
@@ -975,24 +1058,26 @@ class _HighlightsSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                  color: kBackgroundGray,
-                  borderRadius: BorderRadius.circular(10)),
+                color: kBackgroundGray,
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Text(
                 '${highlights.length}',
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: kTextSecondary),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: kTextSecondary,
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        ...highlights.map((h) =>
-            _HighlightRow(highlight: h, isMobile: isMobile)),
+        ...highlights.map(
+          (h) => _HighlightRow(highlight: h, isMobile: isMobile),
+        ),
       ],
     );
   }
@@ -1009,7 +1094,7 @@ class _HighlightRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final type   = highlight['type']?.toString().toLowerCase() ?? 'info';
+    final type = highlight['type']?.toString().toLowerCase() ?? 'info';
     final config = _getConfig(type);
 
     return Padding(
@@ -1021,9 +1106,14 @@ class _HighlightRow extends StatelessWidget {
             margin: const EdgeInsets.only(top: 2),
             padding: EdgeInsets.all(isMobile ? 5 : 6),
             decoration: BoxDecoration(
-                color: config['bgColor'], shape: BoxShape.circle),
-            child: Icon(config['icon'],
-                color: config['iconColor'], size: isMobile ? 12 : 14),
+              color: config['bgColor'],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              config['icon'],
+              color: config['iconColor'],
+              size: isMobile ? 12 : 14,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1034,7 +1124,7 @@ class _HighlightRow extends StatelessWidget {
                   highlight['text'] ?? '',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 12 : 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: kTextPrimary,
                     height: 1.4,
                   ),
@@ -1100,15 +1190,17 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.analytics_outlined,
-                size: isMobile ? 38 : 48,
-                color: kTextSecondary.withValues(alpha: 0.4)),
+            Icon(
+              Icons.analytics_outlined,
+              size: isMobile ? 38 : 48,
+              color: kTextSecondary.withValues(alpha: 0.4),
+            ),
             SizedBox(height: isMobile ? 12 : 16),
             Text(
               'No analysis yet',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 14 : 15,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: kTextSecondary,
               ),
             ),
@@ -1116,8 +1208,9 @@ class _EmptyState extends StatelessWidget {
             Text(
               'Upload a CV and tap Analyze',
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 12 : 13,
-                  color: kTextSecondary.withValues(alpha: 0.7)),
+                fontSize: isMobile ? 12 : 13,
+                color: kTextSecondary.withValues(alpha: 0.7),
+              ),
             ),
           ],
         ),
@@ -1155,14 +1248,19 @@ class _ErrorDisplay extends StatelessWidget {
                 Text(
                   'Analysis Failed',
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: kErrorRed),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: kErrorRed,
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text(error,
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12, color: kTextSecondary)),
+                Text(
+                  error,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: kTextSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1187,7 +1285,7 @@ class _AIProcessingDialog extends StatelessWidget {
     return AnimatedBuilder(
       animation: provider,
       builder: (context, _) {
-        final progress  = provider.progress.clamp(0.0, 1.0);
+        final progress = provider.progress.clamp(0.0, 1.0);
         final stageText = _getStageText(progress);
 
         return Center(
@@ -1199,7 +1297,8 @@ class _AIProcessingDialog extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 insetPadding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 20 : 40),
+                  horizontal: isMobile ? 20 : 40,
+                ),
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 380),
                   padding: EdgeInsets.all(isMobile ? 22 : 28),
@@ -1224,8 +1323,11 @@ class _AIProcessingDialog extends StatelessWidget {
                           color: kPrimaryBlue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.auto_awesome_outlined,
-                            size: 32, color: kPrimaryBlue),
+                        child: Icon(
+                          Icons.auto_awesome_outlined,
+                          size: 32,
+                          color: kPrimaryBlue,
+                        ),
                       ),
                       const SizedBox(height: 18),
                       Text(
@@ -1251,9 +1353,10 @@ class _AIProcessingDialog extends StatelessWidget {
                       Text(
                         '${(progress * 100).toStringAsFixed(0)}%',
                         style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: kTextSecondary),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: kTextSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -1282,7 +1385,10 @@ class _AIProcessingDialog extends StatelessWidget {
 class _SmoothScrollBehavior extends ScrollBehavior {
   @override
   Widget buildScrollbar(
-      BuildContext context, Widget child, ScrollableDetails details) {
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) {
     return child;
   }
 

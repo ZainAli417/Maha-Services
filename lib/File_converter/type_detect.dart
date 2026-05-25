@@ -10,7 +10,10 @@ DetectedFile detectFileType(Uint8List bytes, String filename) {
     if (header == '%PDF') return DetectedFile.pdf;
 
     // ZIP (docx, pptx, xlsx) starts with PK\x03\x04
-    if (bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04) {
+    if (bytes[0] == 0x50 &&
+        bytes[1] == 0x4B &&
+        bytes[2] == 0x03 &&
+        bytes[3] == 0x04) {
       final fn = filename.toLowerCase();
       if (fn.endsWith('.docx')) return DetectedFile.docx;
       return DetectedFile.docx; // treat zip-like as docx by default

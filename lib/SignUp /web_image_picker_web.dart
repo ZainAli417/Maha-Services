@@ -4,7 +4,9 @@ import 'dart:js_interop';
 import 'package:web/web.dart';
 
 /// Web-only implementation of image picking using the File API.
-Future<Map<String, dynamic>?> pickImageWebImpl({int maxBytes = 2 * 1024 * 1024}) async {
+Future<Map<String, dynamic>?> pickImageWebImpl({
+  int maxBytes = 2 * 1024 * 1024,
+}) async {
   try {
     final uploadInput = HTMLInputElement();
     uploadInput.type = 'file';
@@ -16,10 +18,11 @@ Future<Map<String, dynamic>?> pickImageWebImpl({int maxBytes = 2 * 1024 * 1024})
     final completer = Completer<void>();
 
     uploadInput.addEventListener(
-        'change',
-            (Event e) {
-          completer.complete();
-        }.toJS);
+      'change',
+      (Event e) {
+        completer.complete();
+      }.toJS,
+    );
 
     uploadInput.click();
 
@@ -47,16 +50,17 @@ Future<Map<String, dynamic>?> pickImageWebImpl({int maxBytes = 2 * 1024 * 1024})
     final readerDataUrl = FileReader();
     readerDataUrl.addEventListener(
       'load',
-          (Event e) {
+      (Event e) {
         final jsResult = readerDataUrl.result as JSString?;
         dataUrlCompleter.complete(jsResult?.toDart);
       }.toJS,
     );
     readerDataUrl.addEventListener(
-        'error',
-            (Event e) {
-          dataUrlCompleter.completeError('Error reading file as DataURL');
-        }.toJS);
+      'error',
+      (Event e) {
+        dataUrlCompleter.completeError('Error reading file as DataURL');
+      }.toJS,
+    );
 
     readerDataUrl.readAsDataURL(file);
     final dataUrl = await dataUrlCompleter.future;
@@ -65,16 +69,18 @@ Future<Map<String, dynamic>?> pickImageWebImpl({int maxBytes = 2 * 1024 * 1024})
     final readerBinary = FileReader();
 
     readerBinary.addEventListener(
-        'load',
-            (Event e) {
-          bytesCompleter.complete(readerBinary.result);
-        }.toJS);
+      'load',
+      (Event e) {
+        bytesCompleter.complete(readerBinary.result);
+      }.toJS,
+    );
 
     readerBinary.addEventListener(
-        'error',
-            (Event e) {
-          bytesCompleter.completeError('Error reading file as ArrayBuffer');
-        }.toJS);
+      'error',
+      (Event e) {
+        bytesCompleter.completeError('Error reading file as ArrayBuffer');
+      }.toJS,
+    );
 
     readerBinary.readAsArrayBuffer(file);
     final resultBuffer = await bytesCompleter.future;

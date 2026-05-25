@@ -32,7 +32,11 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   static const int maxRetries = 3;
 
   static const List<String> supportedExtensions = [
-    'pdf', 'doc', 'docx', 'txt', 'rtf'
+    'pdf',
+    'doc',
+    'docx',
+    'txt',
+    'rtf',
   ];
 
   void _setLoading(bool v) {
@@ -92,7 +96,7 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     final extension = file.extension?.toLowerCase() ?? '';
     if (!supportedExtensions.contains(extension)) {
       throw Exception(
-          'Unsupported file type: .$extension\nSupported: ${supportedExtensions.join(", ")}'
+        'Unsupported file type: .$extension\nSupported: ${supportedExtensions.join(", ")}',
       );
     }
 
@@ -102,7 +106,7 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     }
     if (size > maxFileBytes) {
       throw Exception(
-          'File size (${_formatBytes(size)}) exceeds maximum (${_formatBytes(maxFileBytes)})'
+        'File size (${_formatBytes(size)}) exceeds maximum (${_formatBytes(maxFileBytes)})',
       );
     }
   }
@@ -166,7 +170,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
       await _validateFile(file);
 
       await _analyzeWithServer(file, roleName, jobDescription);
-
     } catch (e) {
       if (!_isCancelled) {
         _setError(e.toString().replaceAll('Exception: ', ''));
@@ -181,10 +184,10 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   }
 
   Future<void> _analyzeWithServer(
-      PlatformFile file,
-      String roleName,
-      String jobDescription,
-      ) async {
+    PlatformFile file,
+    String roleName,
+    String jobDescription,
+  ) async {
     _animateProgress(from: _progress, to: 0.25, durationMs: 1000);
     final fileBytes = await _getFileBytes(file);
 
@@ -251,7 +254,9 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
 
     // Determine MIME type from extension
     final ext = fileName.toLowerCase().split('.').last;
-    final mimeType = ext == 'pdf' ? 'application/pdf' : 'application/octet-stream';
+    final mimeType = ext == 'pdf'
+        ? 'application/pdf'
+        : 'application/octet-stream';
 
     // Build a multipart request (no base64 bloat)
     final request = http.MultipartRequest('POST', uri)
@@ -297,7 +302,8 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   void _parseAndSetResult(Map<String, dynamic> response) {
     try {
       final score = _parseScore(response['score']);
-      final advisory = response['advisory']?.toString().trim() ?? 'Analysis completed';
+      final advisory =
+          response['advisory']?.toString().trim() ?? 'Analysis completed';
       final highlights = _parseHighlights(response['highlights']);
 
       if (score < 0 || score > 100) {
@@ -305,7 +311,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
       }
 
       _setResult(sc: score, adv: advisory, hl: highlights);
-
     } catch (e) {
       throw Exception('Failed to parse server response: ${e.toString()}');
     }
@@ -324,10 +329,7 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     return highlights
         .whereType<Map>()
         .map((item) => Map<String, dynamic>.from(item))
-        .where((item) =>
-    item['type'] != null &&
-        item['text'] != null
-    )
+        .where((item) => item['type'] != null && item['text'] != null)
         .toList();
   }
 

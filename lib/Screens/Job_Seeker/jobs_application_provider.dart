@@ -11,7 +11,6 @@ class JobApplicationsProvider with ChangeNotifier {
   String? _errorMessage;
   final Set<String> _appliedJobs = {};
 
-
   String? _currentlyApplyingJobId;
   bool isApplyingTo(String jobId) => _currentlyApplyingJobId == jobId;
 
@@ -36,7 +35,12 @@ class JobApplicationsProvider with ChangeNotifier {
 
       _appliedJobs
         ..clear()
-        ..addAll(userApps.docs.map((doc) => doc.data()['jobId'] as String));
+        ..addAll(
+          userApps.docs.map((doc) {
+            final data = doc.data();
+            return (data['jobId'] ?? doc.id).toString();
+          }),
+        );
       notifyListeners();
     } catch (e) {
       debugPrint('loadAppliedJobs error: $e');
@@ -60,25 +64,18 @@ class JobApplicationsProvider with ChangeNotifier {
       return;
     }
 
-    // 2️⃣ Server-side guard
     final appliedRef = _firestore
         .collection('applications')
         .doc(user.uid)
         .collection('applied_jobs');
+    final applicationRef = appliedRef.doc(jobId);
 
-    try {
-      final existing = await appliedRef
-          .where('jobId', isEqualTo: jobId)
-          .limit(1)
-          .get();
-      if (existing.docs.isNotEmpty) {
-        _errorMessage = 'You have already applied to this job.';
-        _appliedJobs.add(jobId); // Sync local state
-        notifyListeners();
-        return;
-      }
-    } catch (e) {
-      debugPrint('applyForJob: server-side guard check failed: $e');
+    final existing = await applicationRef.get();
+    if (existing.exists) {
+      _errorMessage = 'You have already applied to this job.';
+      _appliedJobs.add(jobId);
+      notifyListeners();
+      return;
     }
 
     // 3️⃣ Set loading state
@@ -89,13 +86,24 @@ class JobApplicationsProvider with ChangeNotifier {
     try {
       // 4️⃣ FETCH THE JOB DOCUMENT TO GET RECRUITER UID
       // We need the recruiterUid to know which recruiter's counter to increment
-      final jobDocSnap = await _firestore.collection('Posted_jobs_public').doc(jobId).get();
+      final jobDocSnap = await _firestore
+          .collection('Posted_jobs_public')
+          .doc(jobId)
+          .get();
 
       if (!jobDocSnap.exists) {
         throw Exception('Operational error: Job posting not found.');
       }
 
       final jobData = jobDocSnap.data()!;
+      final jobStatus = (jobData['status'] ?? 'active')
+          .toString()
+          .toLowerCase()
+          .trim();
+      if (jobStatus != 'active') {
+        throw Exception('This job is no longer accepting applications.');
+      }
+
       final String? recruiterUid = jobData['recruiterUid'];
 
       if (recruiterUid == null || recruiterUid.isEmpty) {
@@ -103,9 +111,14 @@ class JobApplicationsProvider with ChangeNotifier {
       }
 
       // 5️⃣ GET SEEKER PROFILE DATA
-      final seekerSnap = await _firestore.collection('Job_Seeker').doc(user.uid).get();
+      final seekerSnap = await _firestore
+          .collection('Job_Seeker')
+          .doc(user.uid)
+          .get();
       if (!seekerSnap.exists) {
-        throw Exception('Seeker profile not found. Please complete your profile.');
+        throw Exception(
+          'Seeker profile not found. Please complete your profile.',
+        );
       }
 
       final seekerDoc = seekerSnap.data()!;
@@ -127,24 +140,20 @@ class JobApplicationsProvider with ChangeNotifier {
       // 6️⃣ ATOMIC BATCH OPERATION
       final batch = _firestore.batch();
 
-      // A. Record the application in user's list
-      final newAppRef = appliedRef.doc();
-      batch.set(newAppRef, applicationData);
+      // A. Record the application in user's list using a deterministic job ID.
+      batch.set(applicationRef, applicationData);
 
       // B. Increment PUBLIC counter
-      final publicJobRef = _firestore.collection('Posted_jobs_public').doc(jobId);
-      batch.update(publicJobRef, {
-        'applicationCount': FieldValue.increment(1),
-      });
-
-
+      final publicJobRef = _firestore
+          .collection('Posted_jobs_public')
+          .doc(jobId);
+      batch.update(publicJobRef, {'applicationCount': FieldValue.increment(1)});
 
       // Execute the transaction
       await batch.commit();
 
       _appliedJobs.add(jobId);
       _errorMessage = null;
-
     } catch (e, st) {
       debugPrint('applyForJob full error: $e\n$st');
       _errorMessage = "Application Failed: ${e.toString()}";
@@ -153,5 +162,4 @@ class JobApplicationsProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
 }

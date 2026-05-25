@@ -123,7 +123,7 @@ class _CVGeneratorButtonState extends State<CVGeneratorButton> {
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.white,
                     fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
                   ),
                 ),

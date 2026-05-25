@@ -21,7 +21,6 @@ class ScrollAwareCTAButtons extends StatefulWidget {
 
 class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
     with TickerProviderStateMixin {
-
   // Animation controller for floating CTAs
   late final AnimationController _floatingController;
   late final Animation<Offset> _floatingSlide;
@@ -40,10 +39,10 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
       duration: const Duration(milliseconds: 320),
     );
 
-    _floatingSlide = Tween<Offset>(
-      begin: const Offset(0, 0.25),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _floatingController, curve: Curves.easeOut));
+    _floatingSlide =
+        Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+          CurvedAnimation(parent: _floatingController, curve: Curves.easeOut),
+        );
 
     _floatingOpacity = CurvedAnimation(
       parent: _floatingController,
@@ -51,7 +50,9 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
     );
 
     // Wait until first frame to attach to scroll position
-    WidgetsBinding.instance.addPostFrameCallback((_) => _attachToScrollPosition());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _attachToScrollPosition(),
+    );
   }
 
   /// Attach to the provided ScrollController's position if available, otherwise to the nearest Scrollable's position.
@@ -109,7 +110,9 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
     super.didUpdateWidget(oldWidget);
     // if the widget's tree changed (maybe moved into/out of a scrollable),
     // reattach to the scroll position on next frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _attachToScrollPosition());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _attachToScrollPosition(),
+    );
   }
 
   @override
@@ -123,7 +126,8 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
-    final bottomOffset = MediaQuery.of(context).viewPadding.bottom + (isMobile ? 120 : 120);
+    final bottomOffset =
+        MediaQuery.of(context).viewPadding.bottom + (isMobile ? 120 : 120);
     final sideOffset = isMobile ? 15.0 : 20.0;
 
     return Positioned.fill(
@@ -258,18 +262,16 @@ class _FloatingCTAState extends State<_FloatingCTA>
           final hover = _hoverController.value;
           final pulse = _pulseController.value * 0.015;
 
-          final scale = entranceScale *
-              (1.0 + hover * 0.04) *
-              (1.0 + pulse);
+          final scale = entranceScale * (1.0 + hover * 0.04) * (1.0 + pulse);
 
-          final elevation = (3 + hover * 5 + widget.entranceProgress * 4)
-              .clamp(3.0, 12.0);
+          final elevation = (3 + hover * 5 + widget.entranceProgress * 4).clamp(
+            3.0,
+            12.0,
+          );
 
           final backgroundColor = widget.isPrimary
               ? const Color(0xFF6366F1)
-              : (widget.isDarkMode
-              ? const Color(0xFF1E293B)
-              : Colors.white);
+              : (widget.isDarkMode ? const Color(0xFF1E293B) : Colors.white);
 
           final foregroundColor = widget.isPrimary
               ? Colors.white
@@ -300,18 +302,14 @@ class _FloatingCTAState extends State<_FloatingCTA>
                     border: widget.isPrimary
                         ? null
                         : Border.all(
-                      color: const Color(0xFF10B981),
-                      width: widget.isMobile ? 1.5 : 2,
-                    ),
+                            color: const Color(0xFF10B981),
+                            width: widget.isMobile ? 1.5 : 2,
+                          ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        widget.icon,
-                        size: iconSize,
-                        color: foregroundColor,
-                      ),
+                      Icon(widget.icon, size: iconSize, color: foregroundColor),
                       SizedBox(width: widget.isMobile ? 6 : 10),
                       Text(
                         widget.label,
@@ -333,4 +331,5 @@ class _FloatingCTAState extends State<_FloatingCTA>
     );
   }
 }
+
 /// Full-width buttons used in the original layout (desktop friendly).

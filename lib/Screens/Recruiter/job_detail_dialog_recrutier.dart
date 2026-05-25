@@ -11,14 +11,14 @@ class JobDetailModal_recruiter extends StatelessWidget {
   const JobDetailModal_recruiter({super.key, required this.jobId});
 
   // ─── Color Palette ────────────────────────────────────────────────────────
-  static const Color _bgSurface     = Colors.white;
-  static const Color _bgBackground  = Color(0xFFF8FAFC);
-  static const Color _textPrimary   = Color(0xFF0F172A);
+  static const Color _bgSurface = Colors.white;
+  static const Color _bgBackground = Color(0xFFF8FAFC);
+  static const Color _textPrimary = Color(0xFF0F172A);
   static const Color _textSecondary = Color(0xFF64748B);
   static const Color _accentPrimary = Color(0xFF4F46E5);
-  static const Color _borderColor   = Color(0xFFE2E8F0);
-  static const Color _dangerColor   = Color(0xFFEF4444);
-  static const Color _successColor  = Color(0xFF10B981);
+  static const Color _borderColor = Color(0xFFE2E8F0);
+  static const Color _dangerColor = Color(0xFFEF4444);
+  static const Color _successColor = Color(0xFF10B981);
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
   String _fmtDate(dynamic ts) {
@@ -41,12 +41,12 @@ class JobDetailModal_recruiter extends StatelessWidget {
 
   String _two(int n) => n.toString().padLeft(2, '0');
 
-  Future<Map<String, dynamic>?> _fetchJobFromFirestore() async {
-    final doc = await FirebaseFirestore.instance
+  Stream<Map<String, dynamic>?> _jobStream() {
+    return FirebaseFirestore.instance
         .collection('Posted_jobs_public')
         .doc(jobId)
-        .get();
-    return doc.exists ? {...doc.data()!, 'id': doc.id} : null;
+        .snapshots(includeMetadataChanges: true)
+        .map((doc) => doc.exists ? {...doc.data()!, 'id': doc.id} : null);
   }
 
   // ─── Build ────────────────────────────────────────────────────────────────
@@ -56,8 +56,8 @@ class JobDetailModal_recruiter extends StatelessWidget {
     final screenH = MediaQuery.of(context).size.height;
     final isMobile = screenW < 600;
 
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: _fetchJobFromFirestore(),
+    return StreamBuilder<Map<String, dynamic>?>(
+      stream: _jobStream(),
       builder: (context, snapshot) {
         // Loading
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -72,9 +72,13 @@ class JobDetailModal_recruiter extends StatelessWidget {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 14),
-                  Text('Loading job details…',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13, color: _textSecondary)),
+                  Text(
+                    'Loading job details…',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: _textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -92,13 +96,20 @@ class JobDetailModal_recruiter extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: _dangerColor),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: _dangerColor,
+                  ),
                   const SizedBox(height: 12),
-                  Text('Job not found',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: _textPrimary)),
+                  Text(
+                    'Job not found',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -106,15 +117,20 @@ class JobDetailModal_recruiter extends StatelessWidget {
                       'This job may have been removed or archived.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12, color: _textSecondary),
+                        fontSize: 12,
+                        color: _textSecondary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Close',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w600)),
+                    child: Text(
+                      'Close',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -124,29 +140,39 @@ class JobDetailModal_recruiter extends StatelessWidget {
 
         // ── Data ready ──────────────────────────────────────────────────────
         final jobData = snapshot.data!;
-        final title    = jobData['title']   as String? ?? 'Untitled Position';
-        final company  = jobData['company'] as String? ?? 'Unknown Company';
-        final logoUrl  = jobData['logoUrl'] as String? ?? '';
-        final description     = jobData['description']      as String? ?? 'No description provided.';
-        final responsibilities = jobData['responsibilities'] as String?
-            ?? jobData['responsibilitiesHtml'] ?? 'Not specified.';
-        final qualifications  = jobData['qualifications']   as String? ?? 'Not specified.';
-        final skills     = (jobData['skills']    as List?)?.cast<String>() ?? [];
-        final workModes  = (jobData['workModes'] as List?)?.cast<String>() ?? [];
-        final benefits   = (jobData['benefits']  as List?)?.cast<String>() ?? [];
-        final department = jobData['department']    as String? ?? '';
-        final experience = jobData['experience']    as String? ?? '';
-        final deadline   = _fmtDate(jobData['deadline'] ?? jobData['applicationDeadline']);
-        final contact    = jobData['contactEmail'] as String?
-            ?? jobData['contact'] as String? ?? '';
-        final status     = (jobData['status'] as String?)?.toLowerCase() ?? 'active';
+        final title = jobData['title'] as String? ?? 'Untitled Position';
+        final company = jobData['company'] as String? ?? 'Unknown Company';
+        final logoUrl = jobData['logoUrl'] as String? ?? '';
+        final description =
+            jobData['description'] as String? ?? 'No description provided.';
+        final responsibilities =
+            jobData['responsibilities'] as String? ??
+            jobData['responsibilitiesHtml'] ??
+            'Not specified.';
+        final qualifications =
+            jobData['qualifications'] as String? ?? 'Not specified.';
+        final skills = (jobData['skills'] as List?)?.cast<String>() ?? [];
+        final workModes = (jobData['workModes'] as List?)?.cast<String>() ?? [];
+        final benefits = (jobData['benefits'] as List?)?.cast<String>() ?? [];
+        final department = jobData['department'] as String? ?? '';
+        final experience = jobData['experience'] as String? ?? '';
+        final deadline = _fmtDate(
+          jobData['deadline'] ?? jobData['applicationDeadline'],
+        );
+        final contact =
+            jobData['contactEmail'] as String? ??
+            jobData['contact'] as String? ??
+            '';
+        final rawStatus =
+            (jobData['status'] as String?)?.toLowerCase() ?? 'active';
+        final status = rawStatus == 'archive' ? 'archived' : rawStatus;
         final jobIdField = jobData['id']?.toString() ?? jobId;
-        final salary     = jobData['salary'] ?? jobData['pay'] ?? 'Not disclosed';
-        final nature     = jobData['nature'] ?? jobData['type'] ?? 'Full-time';
-        final location   = jobData['location']?.toString() ?? 'Remote';
-        final timestampRaw      = jobData['timestamp'];
-        final viewCount         = jobData['viewCount'] ?? 0;
-        final applicationCount  = jobData['applicationCount'] ?? 0;
+        final salary = jobData['salary'] ?? jobData['pay'] ?? 'Not disclosed';
+        final nature = jobData['nature'] ?? jobData['type'] ?? 'Full-time';
+        final location = jobData['location']?.toString() ?? 'Remote';
+        final timestampRaw = jobData['timestamp'];
+        final viewCount = jobData['viewCount'] ?? 0;
+        final applicationCount = jobData['applicationCount'] ?? 0;
 
         return _wrapDialog(
           isMobile: isMobile,
@@ -158,14 +184,15 @@ class JobDetailModal_recruiter extends StatelessWidget {
               // ── Header ───────────────────────────────────────────────────
               Padding(
                 padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 14 : 20,
-                    vertical: isMobile ? 14 : 20),
+                  horizontal: isMobile ? 14 : 20,
+                  vertical: isMobile ? 14 : 20,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Logo
                     Container(
-                      width:  isMobile ? 44 : 56,
+                      width: isMobile ? 44 : 56,
                       height: isMobile ? 44 : 56,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -175,13 +202,22 @@ class JobDetailModal_recruiter extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: logoUrl.isNotEmpty
-                            ? Image.network(logoUrl, fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const Center(
-                                child: Icon(Icons.business,
-                                    color: _textSecondary)))
+                            ? Image.network(
+                                logoUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => const Center(
+                                  child: Icon(
+                                    Icons.business,
+                                    color: _textSecondary,
+                                  ),
+                                ),
+                              )
                             : const Center(
-                            child: Icon(Icons.business,
-                                color: _textSecondary)),
+                                child: Icon(
+                                  Icons.business,
+                                  color: _textSecondary,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -190,18 +226,24 @@ class JobDetailModal_recruiter extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title,
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: isMobile ? 15 : 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: _textPrimary,
-                                  height: 1.2)),
+                          Text(
+                            title,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isMobile ? 15 : 20,
+                              fontWeight: FontWeight.w700,
+                              color: _textPrimary,
+                              height: 1.2,
+                            ),
+                          ),
                           const SizedBox(height: 3),
-                          Text(company,
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: isMobile ? 12 : 14,
-                                  color: _textSecondary,
-                                  fontWeight: FontWeight.w500)),
+                          Text(
+                            company,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isMobile ? 12 : 14,
+                              color: _textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -212,8 +254,11 @@ class JobDetailModal_recruiter extends StatelessWidget {
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close,
-                            size: 18, color: _textSecondary),
+                        icon: const Icon(
+                          Icons.close,
+                          size: 18,
+                          color: _textSecondary,
+                        ),
                         tooltip: 'Close',
                       ),
                     ),
@@ -226,46 +271,54 @@ class JobDetailModal_recruiter extends StatelessWidget {
               // ── Meta strip (salary / type / location) ─────────────────
               Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 14 : 20,
-                    vertical: isMobile ? 10 : 16),
+                  horizontal: isMobile ? 14 : 20,
+                  vertical: isMobile ? 10 : 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  border: Border(
-                      bottom: BorderSide(color: _borderColor)),
+                  border: Border(bottom: BorderSide(color: _borderColor)),
                 ),
                 child: isMobile
-                // On mobile: 3 chips in a Wrap to avoid overflow
+                    // On mobile: 3 chips in a Wrap to avoid overflow
                     ? Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  children: [
-                    _metaChip(Icons.payments_outlined,
-                        salary.toString()),
-                    _metaChip(
-                        Icons.work_outline, nature.toString()),
-                    _metaChip(
-                        Icons.location_on_outlined, location),
-                  ],
-                )
-                // Desktop: horizontal row with dividers
+                        spacing: 10,
+                        runSpacing: 8,
+                        children: [
+                          _metaChip(Icons.payments_outlined, salary.toString()),
+                          _metaChip(Icons.work_outline, nature.toString()),
+                          _metaChip(Icons.location_on_outlined, location),
+                        ],
+                      )
+                    // Desktop: horizontal row with dividers
                     : IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      _buildMetaItem(Icons.payments_outlined,
-                          'Salary', salary.toString()),
-                      const VerticalDivider(
-                          color: _borderColor, width: 32),
-                      _buildMetaItem(Icons.work_outline,
-                          'Job Type', nature.toString()),
-                      const VerticalDivider(
-                          color: _borderColor, width: 32),
-                      _buildMetaItem(
-                          Icons.location_on_outlined,
-                          'Location',
-                          location),
-                    ],
-                  ),
-                ),
+                        child: Row(
+                          children: [
+                            _buildMetaItem(
+                              Icons.payments_outlined,
+                              'Salary',
+                              salary.toString(),
+                            ),
+                            const VerticalDivider(
+                              color: _borderColor,
+                              width: 32,
+                            ),
+                            _buildMetaItem(
+                              Icons.work_outline,
+                              'Job Type',
+                              nature.toString(),
+                            ),
+                            const VerticalDivider(
+                              color: _borderColor,
+                              width: 32,
+                            ),
+                            _buildMetaItem(
+                              Icons.location_on_outlined,
+                              'Location',
+                              location,
+                            ),
+                          ],
+                        ),
+                      ),
               ),
 
               // ── Scrollable content ────────────────────────────────────
@@ -285,8 +338,11 @@ class JobDetailModal_recruiter extends StatelessWidget {
                           if (deadline.isNotEmpty)
                             _infoBadge('Deadline', deadline, isMobile),
                           if (timestampRaw != null)
-                            _infoBadge('Posted',
-                                _fmtDate(timestampRaw), isMobile),
+                            _infoBadge(
+                              'Posted',
+                              _fmtDate(timestampRaw),
+                              isMobile,
+                            ),
                         ],
                       ),
                       SizedBox(height: isMobile ? 16 : 24),
@@ -294,52 +350,63 @@ class JobDetailModal_recruiter extends StatelessWidget {
                       // About the Role
                       _buildSectionTitle('About the Role', isMobile),
                       AppRichTextViewer(
-                          deltaOrPlainText: description,
-                          fontSize: isMobile ? 13 : 15),
+                        deltaOrPlainText: description,
+                        fontSize: isMobile ? 13 : 15,
+                      ),
                       SizedBox(height: isMobile ? 16 : 24),
 
                       // Key Responsibilities
-                      _buildSectionTitle(
-                          'Key Responsibilities', isMobile),
+                      _buildSectionTitle('Key Responsibilities', isMobile),
                       AppRichTextViewer(
-                          deltaOrPlainText: responsibilities,
-                          fontSize: isMobile ? 13 : 15),
+                        deltaOrPlainText: responsibilities,
+                        fontSize: isMobile ? 13 : 15,
+                      ),
                       SizedBox(height: isMobile ? 16 : 24),
 
                       // Qualifications
                       _buildSectionTitle('Qualifications', isMobile),
                       AppRichTextViewer(
-                          deltaOrPlainText: qualifications,
-                          fontSize: isMobile ? 13 : 15),
+                        deltaOrPlainText: qualifications,
+                        fontSize: isMobile ? 13 : 15,
+                      ),
                       SizedBox(height: isMobile ? 20 : 32),
 
                       // Sidebar detail cards — full width stacked on mobile,
                       // horizontal scroll on desktop
                       isMobile
                           ? _buildSidebarDetails(
-                          skills, workModes, benefits,
-                          department, experience, deadline,
-                          contact,
-                          viewCount.toString(),
-                          applicationCount.toString(),
-                          isMobile)
-                          : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: 580,
-                          child: _buildSidebarDetails(
-                              skills, workModes, benefits,
-                              department, experience, deadline,
+                              skills,
+                              workModes,
+                              benefits,
+                              department,
+                              experience,
+                              deadline,
                               contact,
                               viewCount.toString(),
                               applicationCount.toString(),
-                              isMobile),
-                        ),
-                      ),
+                              isMobile,
+                            )
+                          : SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SizedBox(
+                                width: 580,
+                                child: _buildSidebarDetails(
+                                  skills,
+                                  workModes,
+                                  benefits,
+                                  department,
+                                  experience,
+                                  deadline,
+                                  contact,
+                                  viewCount.toString(),
+                                  applicationCount.toString(),
+                                  isMobile,
+                                ),
+                              ),
+                            ),
 
                       // Bottom safe-area padding for mobile
-                      if (isMobile)
-                        const SizedBox(height: 8),
+                      if (isMobile) const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -350,8 +417,9 @@ class JobDetailModal_recruiter extends StatelessWidget {
               // ── Footer actions ────────────────────────────────────────
               Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 14 : 20,
-                    vertical: isMobile ? 10 : 16),
+                  horizontal: isMobile ? 14 : 20,
+                  vertical: isMobile ? 10 : 16,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -360,29 +428,47 @@ class JobDetailModal_recruiter extends StatelessWidget {
                   ),
                 ),
                 child: isMobile
-                // Mobile: stack status + archive vertically
+                    // Mobile: stack status + archive vertically
                     ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildStatusToggle(
-                        context, status, jobIdField,
-                        jobData, isMobile),
-                    const SizedBox(height: 8),
-                    _buildArchiveButton(
-                        context, jobIdField, isMobile),
-                  ],
-                )
-                // Desktop: horizontal row
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (status != 'archived')
+                            _buildStatusToggle(
+                              context,
+                              status,
+                              jobIdField,
+                              jobData,
+                              isMobile,
+                            ),
+                          const SizedBox(height: 8),
+                          _buildArchiveButton(
+                            context,
+                            jobIdField,
+                            isMobile,
+                            status,
+                          ),
+                        ],
+                      )
+                    // Desktop: horizontal row
                     : Row(
-                  children: [
-                    _buildStatusToggle(
-                        context, status, jobIdField,
-                        jobData, isMobile),
-                    const Spacer(),
-                    _buildArchiveButton(
-                        context, jobIdField, isMobile),
-                  ],
-                ),
+                        children: [
+                          if (status != 'archived')
+                            _buildStatusToggle(
+                              context,
+                              status,
+                              jobIdField,
+                              jobData,
+                              isMobile,
+                            ),
+                          const Spacer(),
+                          _buildArchiveButton(
+                            context,
+                            jobIdField,
+                            isMobile,
+                            status,
+                          ),
+                        ],
+                      ),
               ),
             ],
           ),
@@ -424,10 +510,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: child,
-        ),
+        child: ClipRRect(borderRadius: BorderRadius.circular(12), child: child),
       ),
     );
   }
@@ -435,15 +518,17 @@ class JobDetailModal_recruiter extends StatelessWidget {
   // ─── Footer sub-widgets ───────────────────────────────────────────────────
 
   Widget _buildStatusToggle(
-      BuildContext context,
-      String status,
-      String jobIdField,
-      Map<String, dynamic> jobData,
-      bool isMobile,
-      ) {
+    BuildContext context,
+    String status,
+    String jobIdField,
+    Map<String, dynamic> jobData,
+    bool isMobile,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 10 : 12, vertical: isMobile ? 6 : 8),
+        horizontal: isMobile ? 10 : 12,
+        vertical: isMobile ? 6 : 8,
+      ),
       decoration: BoxDecoration(
         color: _bgBackground,
         borderRadius: BorderRadius.circular(8),
@@ -452,27 +537,35 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Row(
         mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
         children: [
-          Text('Job Status:',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 12 : 13,
-                  color: _textSecondary)),
+          Text(
+            'Job Status:',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 12 : 13,
+              color: _textSecondary,
+            ),
+          ),
           const SizedBox(width: 8),
           Switch.adaptive(
             value: status == 'active',
             activeColor: _successColor,
             onChanged: (val) async {
               final provider = Provider.of<job_listing_provider>(
-                  context, listen: false);
+                context,
+                listen: false,
+              );
               final error = await provider.toggleJobStatus(
-                  jobIdField,
-                  jobData['status']?.toString() ?? 'paused');
+                jobIdField,
+                jobData['status']?.toString() ?? 'paused',
+              );
               if (error == null) {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(val ? 'Job Activated' : 'Job Paused')));
-              } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed: $error')));
+                  SnackBar(content: Text(val ? 'Job Activated' : 'Job Paused')),
+                );
+              } else {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Failed: $error')));
               }
             },
           ),
@@ -480,9 +573,10 @@ class JobDetailModal_recruiter extends StatelessWidget {
           Text(
             status == 'active' ? 'Active' : 'Paused',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: isMobile ? 12 : 14,
-                fontWeight: FontWeight.w600,
-                color: status == 'active' ? _successColor : _textSecondary),
+              fontSize: isMobile ? 12 : 14,
+              fontWeight: FontWeight.w600,
+              color: status == 'active' ? _successColor : _textSecondary,
+            ),
           ),
         ],
       ),
@@ -490,43 +584,75 @@ class JobDetailModal_recruiter extends StatelessWidget {
   }
 
   Widget _buildArchiveButton(
-      BuildContext context, String jobIdField, bool isMobile) {
+    BuildContext context,
+    String jobIdField,
+    bool isMobile,
+    String status,
+  ) {
+    final isArchived = status == 'archived';
     return TextButton.icon(
       style: TextButton.styleFrom(
         padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 10 : 14,
-            vertical: isMobile ? 8 : 10),
+          horizontal: isMobile ? 10 : 14,
+          vertical: isMobile ? 8 : 10,
+        ),
       ),
       onPressed: () async {
         final confirm = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Archive Job'),
-            content: const Text('Are you sure?'),
+            title: Text(isArchived ? 'Restore Job' : 'Archive Job'),
+            content: Text(
+              isArchived
+                  ? 'Restore this job and make it active again?'
+                  : 'Archive this job? It will disappear from candidate job feeds.',
+            ),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancel')),
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Archive',
-                      style: TextStyle(color: Colors.red))),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(
+                  isArchived ? 'Restore' : 'Archive',
+                  style: TextStyle(
+                    color: isArchived ? _successColor : Colors.red,
+                  ),
+                ),
+              ),
             ],
           ),
         );
         if (confirm == true) {
           final provider = Provider.of<job_listing_provider>(
-              context, listen: false);
-          await provider.archiveJob(jobIdField);
+            context,
+            listen: false,
+          );
+          final error = isArchived
+              ? await provider.restoreJob(jobIdField)
+              : await provider.archiveJob(jobIdField);
+          if (error != null && context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error)));
+          }
           Navigator.of(context).pop();
         }
       },
-      icon: const Icon(Icons.archive_outlined, size: 18, color: _dangerColor),
-      label: Text('Archive',
-          style: GoogleFonts.plusJakartaSans(
-              color: _dangerColor,
-              fontSize: isMobile ? 12 : 14,
-              fontWeight: FontWeight.w600)),
+      icon: Icon(
+        isArchived ? Icons.restore_rounded : Icons.archive_outlined,
+        size: 18,
+        color: isArchived ? _successColor : _dangerColor,
+      ),
+      label: Text(
+        isArchived ? 'Restore' : 'Archive',
+        style: GoogleFonts.plusJakartaSans(
+          color: isArchived ? _successColor : _dangerColor,
+          fontSize: isMobile ? 12 : 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -547,12 +673,15 @@ class JobDetailModal_recruiter extends StatelessWidget {
           Icon(icon, size: 13, color: _textSecondary),
           const SizedBox(width: 5),
           Flexible(
-            child: Text(label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: _textPrimary)),
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: _textPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -564,23 +693,31 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(icon, size: 14, color: _textSecondary),
-            const SizedBox(width: 6),
-            Text(label,
+          Row(
+            children: [
+              Icon(icon, size: 14, color: _textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                label,
                 style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: _textSecondary)),
-          ]),
-          const SizedBox(height: 6),
-          Text(value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: _textPrimary)),
+                  color: _textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
+            ),
+          ),
         ],
       ),
     );
@@ -589,28 +726,36 @@ class JobDetailModal_recruiter extends StatelessWidget {
   Widget _buildSectionTitle(String title, bool isMobile) {
     return Padding(
       padding: EdgeInsets.only(bottom: isMobile ? 8 : 12),
-      child: Text(title,
-          style: GoogleFonts.plusJakartaSans(
-              fontSize: isMobile ? 13 : 16,
-              fontWeight: FontWeight.w700,
-              color: _textPrimary)),
+      child: Text(
+        title,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: isMobile ? 13 : 16,
+          fontWeight: FontWeight.w700,
+          color: _textPrimary,
+        ),
+      ),
     );
   }
 
   Widget _buildChip(String label, Color color, bool isMobile) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 8 : 10, vertical: isMobile ? 4 : 6),
+        horizontal: isMobile ? 8 : 10,
+        vertical: isMobile ? 4 : 6,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Text(label,
-          style: GoogleFonts.plusJakartaSans(
-              fontSize: isMobile ? 11 : 12,
-              fontWeight: FontWeight.w500,
-              color: color)),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: isMobile ? 11 : 12,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
     );
   }
 
@@ -621,18 +766,24 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 11 : 13,
-                  color: _textSecondary)),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 11 : 13,
+              color: _textSecondary,
+            ),
+          ),
           const SizedBox(width: 8),
           Flexible(
-            child: Text(value,
-                textAlign: TextAlign.end,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 11 : 13,
-                    fontWeight: FontWeight.w500,
-                    color: _textPrimary)),
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isMobile ? 11 : 13,
+                fontWeight: FontWeight.w600,
+                color: _textPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -642,8 +793,9 @@ class JobDetailModal_recruiter extends StatelessWidget {
   Widget _infoBadge(String label, String value, bool isMobile) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 8 : 10,
-          vertical: isMobile ? 4 : 6),
+        horizontal: isMobile ? 8 : 10,
+        vertical: isMobile ? 4 : 6,
+      ),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(8),
@@ -652,18 +804,24 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('$label: ',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 10 : 12,
-                  fontWeight: FontWeight.w600,
-                  color: _textSecondary)),
+          Text(
+            '$label: ',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 10 : 12,
+              fontWeight: FontWeight.w600,
+              color: _textSecondary,
+            ),
+          ),
           Flexible(
-            child: Text(value,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 10 : 12,
-                    fontWeight: FontWeight.w600,
-                    color: _textPrimary)),
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isMobile ? 10 : 12,
+                fontWeight: FontWeight.w600,
+                color: _textPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -673,17 +831,17 @@ class JobDetailModal_recruiter extends StatelessWidget {
   // ─── Sidebar detail cards ─────────────────────────────────────────────────
 
   Widget _buildSidebarDetails(
-      List<String> skills,
-      List<String> workModes,
-      List<String> benefits,
-      String department,
-      String experience,
-      String deadline,
-      String contact,
-      String applicationCount,
-      String viewCount,
-      bool isMobile,
-      ) {
+    List<String> skills,
+    List<String> workModes,
+    List<String> benefits,
+    String department,
+    String experience,
+    String deadline,
+    String contact,
+    String applicationCount,
+    String viewCount,
+    bool isMobile,
+  ) {
     final gap = SizedBox(height: isMobile ? 10 : 16);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -710,8 +868,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
               spacing: 6,
               runSpacing: 6,
               children: workModes
-                  .map((e) =>
-                  _buildChip(e, Colors.orange.shade700, isMobile))
+                  .map((e) => _buildChip(e, Colors.orange.shade700, isMobile))
                   .toList(),
             ),
           ),
@@ -723,24 +880,31 @@ class JobDetailModal_recruiter extends StatelessWidget {
             isMobile: isMobile,
             child: Column(
               children: benefits
-                  .map((e) => Padding(
-                padding:
-                EdgeInsets.only(bottom: isMobile ? 6 : 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.check,
-                        size: 14, color: _successColor),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(e,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: isMobile ? 12 : 13,
-                              color: _textPrimary)),
+                  .map(
+                    (e) => Padding(
+                      padding: EdgeInsets.only(bottom: isMobile ? 6 : 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: _successColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              e,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: isMobile ? 12 : 13,
+                                color: _textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ))
+                  )
                   .toList(),
             ),
           ),
@@ -778,12 +942,15 @@ class JobDetailModal_recruiter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(),
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 10 : 11,
-                  fontWeight: FontWeight.w700,
-                  color: _textSecondary,
-                  letterSpacing: 0.5)),
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 10 : 11,
+              fontWeight: FontWeight.w700,
+              color: _textSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
           SizedBox(height: isMobile ? 10 : 16),
           child,
         ],

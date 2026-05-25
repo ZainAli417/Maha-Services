@@ -27,12 +27,15 @@ class AIMatchProvider with ChangeNotifier {
   bool get isAnalyzing => _isAnalyzing;
   String? get error => _error;
   Map<String, AIMatchResult> get matchResults => Map.from(_matchResults);
-  double get progress => _totalApplicants > 0 ? _processedApplicants / _totalApplicants : 0.0;
+  double get progress =>
+      _totalApplicants > 0 ? _processedApplicants / _totalApplicants : 0.0;
   int get processedCount => _processedApplicants;
   int get totalCount => _totalApplicants;
 
-  AIMatchResult? getMatchResult(String applicantId) => _matchResults[applicantId];
-  bool isProcessingApplicant(String applicantId) => _isProcessing[applicantId] ?? false;
+  AIMatchResult? getMatchResult(String applicantId) =>
+      _matchResults[applicantId];
+  bool isProcessingApplicant(String applicantId) =>
+      _isProcessing[applicantId] ?? false;
 
   /// Main method to analyze all applicants for a job
   Future<void> analyzeApplicants({
@@ -51,8 +54,12 @@ class AIMatchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('🚀 Starting AI analysis for ${applicants.length} total applicants');
-      debugPrint('📋 All Applicant IDs: ${applicants.map((a) => a.userId).join(", ")}');
+      debugPrint(
+        '🚀 Starting AI analysis for ${applicants.length} total applicants',
+      );
+      debugPrint(
+        '📋 All Applicant IDs: ${applicants.map((a) => a.userId).join(", ")}',
+      );
 
       final jobData = await _fetchJobData(jobId);
       if (jobData == null) {
@@ -71,8 +78,12 @@ class AIMatchProvider with ChangeNotifier {
 
         // Skip if status is shortlisted or rejected
         if (status == 'shortlisted' || status == 'rejected') {
-          skippedStatus.add('${applicant.name} (${applicant.userId}) - Status: $status');
-          debugPrint('⏭️ SKIPPED [STATUS]: ${applicant.name} - ${applicant.status}');
+          skippedStatus.add(
+            '${applicant.name} (${applicant.userId}) - Status: $status',
+          );
+          debugPrint(
+            '⏭️ SKIPPED [STATUS]: ${applicant.name} - ${applicant.status}',
+          );
           continue;
         }
 
@@ -89,7 +100,9 @@ class AIMatchProvider with ChangeNotifier {
 
           if (matchScore != null) {
             skippedAnalyzed.add('${applicant.name} (${applicant.userId})');
-            debugPrint('⏭️ SKIPPED [ALREADY ANALYZED]: ${applicant.name} - Has match_score in DB');
+            debugPrint(
+              '⏭️ SKIPPED [ALREADY ANALYZED]: ${applicant.name} - Has match_score in DB',
+            );
             continue;
           }
         } catch (e) {
@@ -120,7 +133,9 @@ class AIMatchProvider with ChangeNotifier {
       }
 
       if (skippedAnalyzed.isNotEmpty) {
-        debugPrint('🔒 SKIPPED - ALREADY ANALYZED (${skippedAnalyzed.length}):');
+        debugPrint(
+          '🔒 SKIPPED - ALREADY ANALYZED (${skippedAnalyzed.length}):',
+        );
         for (var name in skippedAnalyzed) {
           debugPrint('   ⏭️ $name');
         }
@@ -143,8 +158,9 @@ class AIMatchProvider with ChangeNotifier {
       }
 
       await _processApplicantsInBatches(applicantsToAnalyze, jobData);
-      debugPrint('🎉 Analysis complete! Processed $_processedApplicants applicants');
-
+      debugPrint(
+        '🎉 Analysis complete! Processed $_processedApplicants applicants',
+      );
     } catch (e, stackTrace) {
       _error = e.toString();
       debugPrint('❌ Error during analysis: $e');
@@ -157,7 +173,10 @@ class AIMatchProvider with ChangeNotifier {
 
   Future<Map<String, dynamic>?> _fetchJobData(String jobId) async {
     try {
-      final doc = await _firestore.collection('Posted_jobs_public').doc(jobId).get();
+      final doc = await _firestore
+          .collection('Posted_jobs_public')
+          .doc(jobId)
+          .get();
       return doc.data();
     } catch (e) {
       debugPrint('❌ Error fetching job data: $e');
@@ -166,19 +185,25 @@ class AIMatchProvider with ChangeNotifier {
   }
 
   Future<void> _processApplicantsInBatches(
-      List<ApplicantRecord> applicants,
-      Map<String, dynamic> jobData,
-      ) async {
+    List<ApplicantRecord> applicants,
+    Map<String, dynamic> jobData,
+  ) async {
     const batchSize = 3;
     const delayBetweenBatches = Duration(milliseconds: 1000);
 
-    debugPrint('📦 Processing ${applicants.length} applicants in batches of $batchSize');
+    debugPrint(
+      '📦 Processing ${applicants.length} applicants in batches of $batchSize',
+    );
 
     for (var i = 0; i < applicants.length; i += batchSize) {
-      final end = (i + batchSize < applicants.length) ? i + batchSize : applicants.length;
+      final end = (i + batchSize < applicants.length)
+          ? i + batchSize
+          : applicants.length;
       final batch = applicants.sublist(i, end);
 
-      debugPrint('🔄 Processing batch ${(i ~/ batchSize) + 1}: Applicants ${i + 1}-$end');
+      debugPrint(
+        '🔄 Processing batch ${(i ~/ batchSize) + 1}: Applicants ${i + 1}-$end',
+      );
 
       await Future.wait(
         batch.map((applicant) => _analyzeApplicant(applicant, jobData)),
@@ -192,9 +217,9 @@ class AIMatchProvider with ChangeNotifier {
   }
 
   Future<void> _analyzeApplicant(
-      ApplicantRecord applicant,
-      Map<String, dynamic> jobData,
-      ) async {
+    ApplicantRecord applicant,
+    Map<String, dynamic> jobData,
+  ) async {
     final applicantId = applicant.userId;
 
     try {
@@ -209,7 +234,9 @@ class AIMatchProvider with ChangeNotifier {
       _matchResults[applicantId] = matchResult;
       _processedApplicants++;
 
-      debugPrint('✅ [${applicant.name}] Analysis complete! Score: ${matchResult.overallScore}');
+      debugPrint(
+        '✅ [${applicant.name}] Analysis complete! Score: ${matchResult.overallScore}',
+      );
 
       // ✅ Save match result to Firestore and LOCK the candidate
       await _firestore
@@ -218,22 +245,23 @@ class AIMatchProvider with ChangeNotifier {
           .collection('applied_jobs')
           .doc(applicant.docId)
           .update({
-        'match_score': {
-          'overallScore': matchResult.overallScore,
-          'skillsMatch': matchResult.skillsMatch,
-          'experienceMatch': matchResult.experienceMatch,
-          'educationMatch': matchResult.educationMatch,
-          'strengths': matchResult.strengths,
-          'weaknesses': matchResult.weaknesses,
-          'recommendation': matchResult.recommendation,
-          'detailedAnalysis': matchResult.detailedAnalysis,
-          'analyzedAt': FieldValue.serverTimestamp(),
-          'locked': true, // 🔒 LOCK to prevent re-analysis
-        }
-      });
+            'match_score': {
+              'overallScore': matchResult.overallScore,
+              'skillsMatch': matchResult.skillsMatch,
+              'experienceMatch': matchResult.experienceMatch,
+              'educationMatch': matchResult.educationMatch,
+              'strengths': matchResult.strengths,
+              'weaknesses': matchResult.weaknesses,
+              'recommendation': matchResult.recommendation,
+              'detailedAnalysis': matchResult.detailedAnalysis,
+              'analyzedAt': FieldValue.serverTimestamp(),
+              'locked': true, // 🔒 LOCK to prevent re-analysis
+            },
+          });
 
-      debugPrint('💾 [${applicant.name}] Saved & LOCKED match score to Firestore');
-
+      debugPrint(
+        '💾 [${applicant.name}] Saved & LOCKED match score to Firestore',
+      );
     } catch (e, stackTrace) {
       debugPrint('❌ [${applicant.name}] Analysis failed: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -259,20 +287,26 @@ class AIMatchProvider with ChangeNotifier {
 
   /// ✅ NEW: Call Backend API instead of Groq directly
   Future<AIMatchResult> _callBackendAPI(
-      ApplicantRecord applicant,
-      Map<String, dynamic> jobData,
-      ) async {
+    ApplicantRecord applicant,
+    Map<String, dynamic> jobData,
+  ) async {
     try {
       debugPrint('🌐 [${applicant.name}] Sending request to backend: $apiUrl');
 
       // Prepare applicant data
       final String workExp = applicant.experiences.isEmpty
           ? 'No work experience'
-          : applicant.experiences.take(3).map((e) => '${e['text']} (${e['duration']})').join('; ');
+          : applicant.experiences
+                .take(3)
+                .map((e) => '${e['text']} (${e['duration']})')
+                .join('; ');
 
       final String education = applicant.educations.isEmpty
           ? 'No education details'
-          : applicant.educations.take(2).map((e) => '${e['majorSubjects']} at ${e['institutionName']}').join('; ');
+          : applicant.educations
+                .take(2)
+                .map((e) => '${e['majorSubjects']} at ${e['institutionName']}')
+                .join('; ');
 
       // Build request payload
       final requestPayload = {
@@ -288,29 +322,37 @@ class AIMatchProvider with ChangeNotifier {
           'title': jobData['title'],
           'experience': jobData['experience'],
           'skills': jobData['skills'] ?? [],
-        }
+        },
       };
 
-      debugPrint('📤 [${applicant.name}] Request payload: ${jsonEncode(requestPayload)}');
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(requestPayload),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw TimeoutException('Backend request timed out after 30 seconds');
-        },
+      debugPrint(
+        '📤 [${applicant.name}] Request payload: ${jsonEncode(requestPayload)}',
       );
 
-      debugPrint('📥 [${applicant.name}] Response status: ${response.statusCode}');
+      final response = await http
+          .post(
+            Uri.parse(apiUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(requestPayload),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException(
+                'Backend request timed out after 30 seconds',
+              );
+            },
+          );
+
+      debugPrint(
+        '📥 [${applicant.name}] Response status: ${response.statusCode}',
+      );
       debugPrint('📥 [${applicant.name}] Response body: ${response.body}');
 
       if (response.statusCode != 200) {
-        throw Exception('Backend error ${response.statusCode}: ${response.body}');
+        throw Exception(
+          'Backend error ${response.statusCode}: ${response.body}',
+        );
       }
 
       final Map<String, dynamic> data = jsonDecode(response.body);
@@ -329,7 +371,6 @@ class AIMatchProvider with ChangeNotifier {
         detailedAnalysis: data['detailedAnalysis']?.toString() ?? '',
         timestamp: DateTime.now(),
       );
-
     } catch (e, stackTrace) {
       debugPrint('❌ [${applicant.name}] Backend API call failed: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -400,10 +441,14 @@ class AIMatchResult {
 
   Color getRecommendationColor() {
     switch (recommendation.toLowerCase()) {
-      case 'highly recommended': return const Color(0xFF10B981);
-      case 'recommended': return const Color(0xFF3B82F6);
-      case 'consider': return const Color(0xFFF59E0B);
-      default: return const Color(0xFFEF4444);
+      case 'highly recommended':
+        return const Color(0xFF10B981);
+      case 'recommended':
+        return const Color(0xFF3B82F6);
+      case 'consider':
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFFEF4444);
     }
   }
 }

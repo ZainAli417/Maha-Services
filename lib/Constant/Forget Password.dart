@@ -61,8 +61,10 @@ class _ForgotPasswordDialogContentState
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider =
-        Provider.of<ForgotPasswordProvider>(context, listen: false);
+    final provider = Provider.of<ForgotPasswordProvider>(
+      context,
+      listen: false,
+    );
     provider.setEmail(_emailController.text.trim());
     final success = await provider.submitForgotPassword(context);
 
@@ -185,7 +187,7 @@ class _ForgotPasswordDialogContentState
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: const Color(0xFF64748B),
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w600,
               height: 1.5,
             ),
           ),
@@ -212,7 +214,7 @@ class _ForgotPasswordDialogContentState
                   autofocus: true,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF1E293B),
                   ),
                   decoration: InputDecoration(
@@ -276,8 +278,9 @@ class _ForgotPasswordDialogContentState
                     if (val == null || val.trim().isEmpty) {
                       return 'Please enter your email';
                     }
-                    final emailRegex =
-                        RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+                    final emailRegex = RegExp(
+                      r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
+                    );
                     if (!emailRegex.hasMatch(val.trim())) {
                       return 'Enter a valid email address';
                     }
@@ -300,8 +303,9 @@ class _ForgotPasswordDialogContentState
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6366F1),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        const Color(0xFF6366F1).withValues(alpha: 0.6),
+                    disabledBackgroundColor: const Color(
+                      0xFF6366F1,
+                    ).withValues(alpha: 0.6),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -335,8 +339,10 @@ class _ForgotPasswordDialogContentState
             child: TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -351,7 +357,7 @@ class _ForgotPasswordDialogContentState
                     'Back to Login',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: const Color(0xFF6B7280),
                     ),
                   ),
@@ -456,11 +462,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
     return const Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF6366F1),
-        ),
-      ),
+      body: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
     );
   }
 }

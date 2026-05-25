@@ -9,24 +9,24 @@ import 'package:intl/intl.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../Job_Seeker/job_seeker_provider.dart';
+import 'Recruiter_provider_Job_listing.dart';
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
-const _navy      = Color(0xFF0A1628);
-const _blue      = Color(0xFF6366F1);
+const _navy = Color(0xFF0A1628);
+const _blue = Color(0xFF6366F1);
 const _blueLight = Color(0xFF818CF8);
-const _cyan      = Color(0xFF06B6D4);
-const _emerald   = Color(0xFF10B981);
-const _amber     = Color(0xFFF59E0B);
-const _rose      = Color(0xFFEF4444);
-const _violet    = Color(0xFF002D73);
-const _slate50   = Color(0xFFFAFAFA);
-const _slate100  = Color(0xFFF1F5F9);
-const _slate200  = Color(0xFFE2E8F0);
-const _slate400  = Color(0xFF94A3B8);
-const _slate600  = Color(0xFF475569);
-const _slate900  = Color(0xFF0F172A);
-const _white     = Color(0xFFFFFFFF);
+const _cyan = Color(0xFF06B6D4);
+const _emerald = Color(0xFF10B981);
+const _amber = Color(0xFFF59E0B);
+const _rose = Color(0xFFEF4444);
+const _violet = Color(0xFF002D73);
+const _slate50 = Color(0xFFFAFAFA);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate400 = Color(0xFF94A3B8);
+const _slate600 = Color(0xFF475569);
+const _slate900 = Color(0xFF0F172A);
+const _white = Color(0xFFFFFFFF);
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 class Dashboard_Recruiter extends StatefulWidget {
@@ -43,8 +43,9 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
   void initState() {
     super.initState();
     _fadeCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..forward();
   }
 
   @override
@@ -70,26 +71,20 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
               opacity: _fadeCtrl,
               child: Column(
                 children: [
-                  if (isMobile) _buildMobileAppBar(context),
+                  _RecruiterDashboardTopBar(
+                    scaffoldKey: _scaffoldKey,
+                    isMobile: isMobile,
+                  ),
                   Expanded(
-                    child: Consumer<JobSeekerProvider>(
-                      builder: (context, provider, _) =>
-                          StreamBuilder<List<Map<String, dynamic>>>(
-                            stream: provider.allJobsStream,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const _LoadingView();
-                              }
-                              if (snapshot.hasError) {
-                                return _ErrorView(
-                                    error: snapshot.error.toString());
-                              }
-                              final jobs = snapshot.data ?? [];
-                              if (jobs.isEmpty) return const _EmptyView();
-                              return _AnalyticsDashboard(jobs: jobs);
-                            },
-                          ),
+                    child: Consumer<job_listing_provider>(
+                      builder: (context, provider, _) {
+                        if (!provider.isInitialized) {
+                          return const _LoadingView();
+                        }
+                        final jobs = provider.allOwnedJobList;
+                        if (jobs.isEmpty) return const _EmptyView();
+                        return _AnalyticsDashboard(jobs: jobs);
+                      },
                     ),
                   ),
                 ],
@@ -100,49 +95,84 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
       ),
     );
   }
-  Widget _buildMobileAppBar(BuildContext context) {
+} // End of _Dashboard_RecruiterState
+
+class _RecruiterDashboardTopBar extends StatelessWidget {
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  final bool isMobile;
+
+  const _RecruiterDashboardTopBar({
+    required this.scaffoldKey,
+    required this.isMobile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       bottom: false,
       child: Container(
         height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: _slate50,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
+        decoration: const BoxDecoration(color: _slate50),
         child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, size: 24),
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            ),
-            const SizedBox(width: 4),
+            if (isMobile) ...[
+              IconButton(
+                icon: const Icon(Icons.menu_rounded, size: 24),
+                onPressed: () => scaffoldKey.currentState?.openDrawer(),
+              ),
+              const SizedBox(width: 2),
+            ],
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.recent_actors_outlined,
-                  size: 20, color: Color(0xFF6366F1)),
+              child: const Icon(
+                Icons.recent_actors_outlined,
+                size: 20,
+                color: Color(0xFF6366F1),
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                'Recruiter Dashboard',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: _slate900),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Recruiter Dashboard',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 14 : 16,
+                      fontWeight: FontWeight.w600,
+                      color: _slate900,
+                      height: 1.2,
+                    ),
+                  ),
+                  if (!isMobile)
+                    Text(
+                      'Hiring analytics and job status overview',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        color: _slate600,
+                        height: 1.2,
+                      ),
+                    ),
+                ],
               ),
             ),
             GestureDetector(
               onTap: () => context.go('/post-job'),
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF818CF8)]),
+                    colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -150,11 +180,14 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                   children: [
                     const Icon(Icons.add, color: Colors.white, size: 16),
                     const SizedBox(width: 4),
-                    Text('Post',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white)),
+                    Text(
+                      'Post',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -165,12 +198,9 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
       ),
     );
   }
-} // End of _Dashboard_RecruiterState
+}
 
 // ─── Mobile App Bar ───────────────────────────────────────────────────────────
-
-
-
 
 // ─── State Views ──────────────────────────────────────────────────────────────
 class _LoadingView extends StatelessWidget {
@@ -190,9 +220,10 @@ class _LoadingView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Text('Loading analytics…',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 13, color: _slate600)),
+        Text(
+          'Loading analytics…',
+          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _slate600),
+        ),
       ],
     ),
   );
@@ -217,22 +248,30 @@ class _ErrorView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-                color: _rose.withValues(alpha: 0.1),
-                shape: BoxShape.circle),
-            child: const Icon(Icons.error_outline_rounded,
-                size: 32, color: _rose),
+              color: _rose.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline_rounded,
+              size: 32,
+              color: _rose,
+            ),
           ),
           const SizedBox(height: 14),
-          Text('Something went wrong',
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _slate900)),
+          Text(
+            'Something went wrong',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _slate900,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(error,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13, color: _slate600)),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _slate600),
+          ),
         ],
       ),
     ),
@@ -249,25 +288,30 @@ class _EmptyView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              _blue.withValues(alpha: 0.08),
-              _cyan.withValues(alpha: 0.08)
-            ]),
+            gradient: LinearGradient(
+              colors: [
+                _blue.withValues(alpha: 0.08),
+                _cyan.withValues(alpha: 0.08),
+              ],
+            ),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.work_outline_rounded,
-              size: 48, color: _blue),
+          child: const Icon(Icons.work_outline_rounded, size: 48, color: _blue),
         ),
         const SizedBox(height: 18),
-        Text('No Jobs Posted Yet',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: _slate900)),
+        Text(
+          'No Jobs Posted Yet',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: _slate900,
+          ),
+        ),
         const SizedBox(height: 5),
-        Text('Post your first job to see analytics here',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 13, color: _slate600)),
+        Text(
+          'Post your first job to see analytics here',
+          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _slate600),
+        ),
       ],
     ),
   );
@@ -279,8 +323,7 @@ class _AnalyticsDashboard extends StatefulWidget {
   const _AnalyticsDashboard({required this.jobs});
 
   @override
-  State<_AnalyticsDashboard> createState() =>
-      _AnalyticsDashboardState();
+  State<_AnalyticsDashboard> createState() => _AnalyticsDashboardState();
 }
 
 class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
@@ -326,15 +369,12 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
           controller: _scroll,
           physics: isMobile
               ? const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics())
+                  parent: AlwaysScrollableScrollPhysics(),
+                )
               : (_lockScroll
-              ? const NeverScrollableScrollPhysics()
-              : const BouncingScrollPhysics()),
+                    ? const NeverScrollableScrollPhysics()
+                    : const BouncingScrollPhysics()),
           slivers: [
-            // Desktop header
-            if (!isMobile)
-              SliverToBoxAdapter(child: _buildDesktopHeader()),
-
             // Pull-to-refresh hint — mobile only
             if (isMobile)
               SliverToBoxAdapter(
@@ -346,14 +386,20 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.keyboard_arrow_down_rounded,
-                            size: 13, color: _slate400),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 13,
+                          color: _slate400,
+                        ),
                         const SizedBox(width: 4),
-                        Text('Pull down to refresh',
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
-                                color: _slate400,
-                                letterSpacing: 0.2)),
+                        Text(
+                          'Pull down to refresh',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: _slate400,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -373,6 +419,9 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                   ? _shimmerCharts(isMobile)
                   : _buildCharts(data, isMobile),
             ),
+
+            if (!loading)
+              SliverToBoxAdapter(child: _buildArchivedJobs(isMobile)),
 
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
@@ -394,104 +443,162 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     return scrollView;
   }
 
-  // ─── Desktop Header ──────────────────────────────────────────────────────
-  Widget _buildDesktopHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(32, 20, 32, 16),
-      color: _white,
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  colors: [_blue, _cyan],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                    color: _blue.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4))
-              ],
-            ),
-            child: const Icon(Icons.analytics_outlined,
-                size: 22, color: _white),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Recruiter Dashboard',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: _slate900)),
-                Text('Real-time hiring analytics',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12, color: _slate600)),
-              ],
-            ),
-          ),
-          _PostJobButton(),
-        ],
-      ),
-    );
-  }
-
   // ─── Stats Cards ────────────────────────────────────────────────────────
   Widget _buildStats(Map<String, dynamic> data, bool isMobile) {
-    final total     = data['totalApplicants'] ?? 0;
-    final pending   = data['pending']  ?? 0;
-    final accepted  = data['accepted'] ?? 0;
-    final rejected  = data['rejected'] ?? 0;
+    final totalJobs = data['totalJobs'] ?? 0;
+    final openJobs = data['openJobs'] ?? 0;
+    final archivedJobs = data['archivedJobs'] ?? 0;
+    final total = data['totalApplicants'] ?? 0;
+    final pending = data['pending'] ?? 0;
     final shortlist = data['shortlist'] ?? 0;
 
     final cards = [
-      _StatMeta('Total',      total.toString(),     Icons.people_alt_outlined,         _blue,    'All applicants'),
-      _StatMeta('Pending',    pending.toString(),   Icons.hourglass_top_rounded,        _amber,   'Needs review'),
-      _StatMeta('Accepted',   accepted.toString(),  Icons.check_circle_outline_rounded, _emerald, 'Moved forward'),
-      _StatMeta('Rejected',   rejected.toString(),  Icons.cancel_outlined,              _rose,    'Not selected'),
-      _StatMeta('Shortlisted',shortlist.toString(), Icons.star_rounded,                 _violet,  'Interview stage'),
+      _StatMeta(
+        'Total Jobs',
+        totalJobs.toString(),
+        Icons.work_outline_rounded,
+        _blue,
+        'All postings',
+      ),
+      _StatMeta(
+        'Open',
+        openJobs.toString(),
+        Icons.radio_button_checked_rounded,
+        _emerald,
+        'Visible jobs',
+      ),
+      _StatMeta(
+        'Archived',
+        archivedJobs.toString(),
+        Icons.archive_outlined,
+        _slate600,
+        'Hidden jobs',
+      ),
+      _StatMeta(
+        'Applicants',
+        total.toString(),
+        Icons.people_alt_outlined,
+        _cyan,
+        'All applicants',
+      ),
+      _StatMeta(
+        'Pending',
+        pending.toString(),
+        Icons.hourglass_top_rounded,
+        _amber,
+        'Needs review',
+      ),
+      _StatMeta(
+        'Shortlisted',
+        shortlist.toString(),
+        Icons.star_rounded,
+        _violet,
+        'Interview stage',
+      ),
     ];
 
     final pad = EdgeInsets.fromLTRB(
-        isMobile ? 14 : 32, isMobile ? 12 : 20,
-        isMobile ? 14 : 32, isMobile ? 12 : 16);
+      isMobile ? 14 : 32,
+      isMobile ? 12 : 20,
+      isMobile ? 14 : 32,
+      isMobile ? 12 : 16,
+    );
 
     if (isMobile) {
       return Padding(
         padding: pad,
-        child: Column(children: [
-          Row(children: [
-            Expanded(child: _StatCard(meta: cards[0], isMobile: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _StatCard(meta: cards[1], isMobile: true)),
-          ]),
-          const SizedBox(height: 10),
-          Row(children: [
-            Expanded(child: _StatCard(meta: cards[2], isMobile: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _StatCard(meta: cards[3], isMobile: true)),
-          ]),
-          const SizedBox(height: 10),
-          _StatCard(meta: cards[4], isMobile: true),
-        ]),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: cards.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.35,
+          ),
+          itemBuilder: (context, index) =>
+              _StatCard(meta: cards[index], isMobile: true),
+        ),
       );
     }
 
     return Padding(
       padding: pad,
       child: Row(
-        children: cards.asMap().entries.map((e) => Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-                right: e.key < cards.length - 1 ? 14 : 0),
-            child: _StatCard(meta: e.value, isMobile: false),
-          ),
-        )).toList(),
+        children: cards
+            .asMap()
+            .entries
+            .map(
+              (e) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: e.key < cards.length - 1 ? 14 : 0,
+                  ),
+                  child: _StatCard(meta: e.value, isMobile: false),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildArchivedJobs(bool isMobile) {
+    final archived = widget.jobs.where((job) {
+      final status = (job['status'] ?? 'active').toString().toLowerCase();
+      return status == 'archived' || status == 'archive';
+    }).toList();
+
+    if (archived.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 14 : 32,
+        0,
+        isMobile ? 14 : 32,
+        16,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _slate200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _CardHeader(
+              title: 'Archived Jobs',
+              subtitle: 'Hidden from job seekers and active hiring tools',
+              isMobile: isMobile,
+              badge: archived.length.toString(),
+              badgeColor: _slate600,
+            ),
+            const SizedBox(height: 12),
+            ...archived.take(5).map((job) => _ArchivedJobRow(job: job)),
+            if (archived.length > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  '+${archived.length - 5} more archived jobs',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: _slate600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -503,57 +610,73 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     if (isMobile) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: hPad),
-        child: Column(children: [
-          _TrendChart(data: data, isMobile: true),
-          const SizedBox(height: 14),
-          _StatusPie(data: data, isMobile: true),
-          const SizedBox(height: 14),
-          _TopSkillsCard(
+        child: Column(
+          children: [
+            _TrendChart(data: data, isMobile: true),
+            const SizedBox(height: 14),
+            _StatusPie(data: data, isMobile: true),
+            const SizedBox(height: 14),
+            _TopSkillsCard(
               data: data,
               isMobile: true,
-              onLockScroll: (v) => setState(() => _lockScroll = v)),
-          const SizedBox(height: 14),
-          _TopJobsCard(data: data, isMobile: true, cache: _jobCache),
-        ]),
+              onLockScroll: (v) => setState(() => _lockScroll = v),
+            ),
+            const SizedBox(height: 14),
+            _TopJobsCard(data: data, isMobile: true, cache: _jobCache),
+          ],
+        ),
       );
     }
 
     return Padding(
       padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 0),
-      child: Column(children: [
-        SizedBox(
-          height: 320,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(flex: 3,
-                  child: _TrendChart(data: data, isMobile: false)),
-              const SizedBox(width: 16),
-              Expanded(flex: 2,
-                  child: _StatusPie(data: data, isMobile: false)),
-            ],
+      child: Column(
+        children: [
+          SizedBox(
+            height: 320,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _TrendChart(data: data, isMobile: false),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
+                  child: _StatusPie(data: data, isMobile: false),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 360,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(flex: 3,
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 360,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 3,
                   child: _TopSkillsCard(
-                      data: data,
-                      isMobile: false,
-                      onLockScroll: (v) =>
-                          setState(() => _lockScroll = v))),
-              const SizedBox(width: 16),
-              Expanded(flex: 2,
+                    data: data,
+                    isMobile: false,
+                    onLockScroll: (v) => setState(() => _lockScroll = v),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 2,
                   child: _TopJobsCard(
-                      data: data, isMobile: false, cache: _jobCache)),
-            ],
+                    data: data,
+                    isMobile: false,
+                    cache: _jobCache,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -562,38 +685,43 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 14 : 32),
       child: isMobile
-          ? Column(children: [
-        Row(children: [
-          Expanded(child: _ShimmerBox(height: 78, radius: 16)),
-          const SizedBox(width: 10),
-          Expanded(child: _ShimmerBox(height: 78, radius: 16)),
-        ]),
-        const SizedBox(height: 10),
-        _ShimmerBox(height: 78, radius: 16),
-      ])
+          ? Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _ShimmerBox(height: 78, radius: 16),
+              ],
+            )
           : Row(
-        children: List.generate(
-            5,
+              children: List.generate(
+                6,
                 (i) => Expanded(
-              child: Padding(
-                padding:
-                EdgeInsets.only(right: i < 4 ? 14 : 0),
-                child: _ShimmerBox(height: 110, radius: 18),
+                  child: Padding(
+                    padding: EdgeInsets.only(right: i < 5 ? 14 : 0),
+                    child: _ShimmerBox(height: 110, radius: 18),
+                  ),
+                ),
               ),
-            )),
-      ),
+            ),
     );
   }
 
   Widget _shimmerCharts(bool isMobile) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 14 : 32),
-      child: Column(children: [
-        _ShimmerBox(height: isMobile ? 260 : 300, radius: 18),
-        const SizedBox(height: 14),
-        _ShimmerBox(height: 240, radius: 18),
-      ]),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 14 : 32),
+      child: Column(
+        children: [
+          _ShimmerBox(height: isMobile ? 260 : 300, radius: 18),
+          const SizedBox(height: 14),
+          _ShimmerBox(height: 240, radius: 18),
+        ],
+      ),
     );
   }
 
@@ -609,22 +737,28 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
       int total = snap.docs.length;
       int pending = 0, accepted = 0, rejected = 0, shortlist = 0;
       final skillsCount = <String, int>{};
-      final jobCount    = <String, int>{};
-      final daily       = <DateTime, int>{};
+      final jobCount = <String, int>{};
+      final daily = <DateTime, int>{};
 
       for (var doc in snap.docs) {
         final d = doc.data();
         switch ((d['status']?.toString().toLowerCase() ?? 'pending')) {
-          case 'accepted':  accepted++;  break;
-          case 'rejected':  rejected++;  break;
-          case 'shortlist': shortlist++; break;
-          default:          pending++;
+          case 'accepted':
+            accepted++;
+            break;
+          case 'rejected':
+            rejected++;
+            break;
+          case 'shortlist':
+            shortlist++;
+            break;
+          default:
+            pending++;
         }
         final jid = d['jobId']?.toString() ?? '';
         if (jid.isNotEmpty) jobCount[jid] = (jobCount[jid] ?? 0) + 1;
 
-        final pp =
-        ((d['profileSnapshot'] as Map?) ?? {})['user_Account_Data'];
+        final pp = ((d['profileSnapshot'] as Map?) ?? {})['user_Account_Data'];
         final personal = (pp as Map?)?['personalProfile'] as Map?;
         for (var s in (personal?['skills'] as List? ?? [])) {
           final sk = s.toString();
@@ -639,14 +773,26 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
         }
       }
 
-      final topSkills = (skillsCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(10)
-          .toList();
-      final topJobs = (jobCount.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)))
-          .take(5)
-          .toList();
+      final topSkills =
+          (skillsCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(10)
+              .toList();
+      final topJobs =
+          (jobCount.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value)))
+              .take(5)
+              .toList();
+      final totalJobs = widget.jobs.length;
+      final archivedJobs = widget.jobs.where((job) {
+        final status = (job['status'] ?? 'active').toString().toLowerCase();
+        return status == 'archived' || status == 'archive';
+      }).length;
+      final pausedJobs = widget.jobs.where((job) {
+        final status = (job['status'] ?? 'active').toString().toLowerCase();
+        return status == 'paused';
+      }).length;
+      final openJobs = max(0, totalJobs - archivedJobs - pausedJobs);
 
       final sortedDays = daily.keys.toList()..sort();
       int cum = 0;
@@ -662,6 +808,10 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
         'accepted': accepted,
         'rejected': rejected,
         'shortlist': shortlist,
+        'totalJobs': totalJobs,
+        'openJobs': openJobs,
+        'pausedJobs': pausedJobs,
+        'archivedJobs': archivedJobs,
         'topSkills': topSkills,
         'topJobs': topJobs,
         'trendData': spots,
@@ -674,6 +824,89 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
   }
 }
 
+class _ArchivedJobRow extends StatelessWidget {
+  final Map<String, dynamic> job;
+
+  const _ArchivedJobRow({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = (job['title'] ?? 'Untitled job').toString();
+    final company = (job['company'] ?? 'Unknown company').toString();
+    final applications = job['applicationCount'] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _slate50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _slate200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _slate600.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.archive_outlined,
+              size: 18,
+              color: _slate600,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _slate900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$company • $applications applicants',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    color: _slate600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: _slate600.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Archived',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: _slate600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Post Job Button ──────────────────────────────────────────────────────────
 class _PostJobButton extends StatelessWidget {
   @override
@@ -681,19 +914,20 @@ class _PostJobButton extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.go('/post-job'),
       child: Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-              colors: [_blue, _blueLight],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight),
+            colors: [_blue, _blueLight],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: _blue.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
+              color: _blue.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -701,11 +935,14 @@ class _PostJobButton extends StatelessWidget {
           children: [
             const Icon(Icons.add_rounded, color: _white, size: 20),
             const SizedBox(width: 8),
-            Text('Post',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: _white)),
+            Text(
+              'Post',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: _white,
+              ),
+            ),
           ],
         ),
       ),
@@ -718,8 +955,7 @@ class _StatMeta {
   final String label, value, subtitle;
   final IconData icon;
   final Color color;
-  const _StatMeta(
-      this.label, this.value, this.icon, this.color, this.subtitle);
+  const _StatMeta(this.label, this.value, this.icon, this.color, this.subtitle);
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
@@ -732,17 +968,17 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isMobile) {
       return Container(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: _white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _slate200),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: Row(
@@ -750,8 +986,9 @@ class _StatCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                  color: meta.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10)),
+                color: meta.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Icon(meta.icon, color: meta.color, size: 18),
             ),
             const SizedBox(width: 12),
@@ -759,18 +996,24 @@ class _StatCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(meta.value,
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: _slate900,
-                          height: 1.1)),
-                  Text(meta.label,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: _slate600)),
+                  Text(
+                    meta.value,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: _slate900,
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    meta.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _slate600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -788,9 +1031,10 @@ class _StatCard extends StatelessWidget {
         border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4))
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -802,8 +1046,9 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: meta.color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12)),
+                  color: meta.color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Icon(meta.icon, color: meta.color, size: 20),
               ),
               // accent bar
@@ -811,28 +1056,36 @@ class _StatCard extends StatelessWidget {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: meta.color.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(2)),
+                  color: meta.color.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(meta.value,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: _slate900,
-                  height: 1.0)),
+          Text(
+            meta.value,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              color: _slate900,
+              height: 1.0,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(meta.label,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: _slate900)),
+          Text(
+            meta.label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: _slate900,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(meta.subtitle,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11, color: _slate400)),
+          Text(
+            meta.subtitle,
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _slate400),
+          ),
         ],
       ),
     );
@@ -848,7 +1101,7 @@ class _TrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spots = data['trendData'] as List<FlSpot>? ?? [];
-    final dates = data['dates']    as List<DateTime>? ?? [];
+    final dates = data['dates'] as List<DateTime>? ?? [];
 
     return _ChartCard(
       isMobile: isMobile,
@@ -866,9 +1119,7 @@ class _TrendChart extends StatelessWidget {
           SizedBox(height: isMobile ? 14 : 20),
           Expanded(
             child: spots.isEmpty
-                ? _EmptyHint(
-                message: 'No trend data yet',
-                isMobile: isMobile)
+                ? _EmptyHint(message: 'No trend data yet', isMobile: isMobile)
                 : LineChart(_lineData(spots, dates)),
           ),
         ],
@@ -888,28 +1139,30 @@ class _TrendChart extends StatelessWidget {
       ),
       borderData: FlBorderData(show: false),
       titlesData: FlTitlesData(
-        topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false)),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false)),
+          sideTitles: SideTitles(showTitles: false),
+        ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             reservedSize: isMobile ? 28 : 36,
-            getTitlesWidget: (v, m) => Text('${v.toInt()}',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 9 : 10,
-                    color: _slate400)),
+            getTitlesWidget: (v, m) => Text(
+              '${v.toInt()}',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isMobile ? 9 : 10,
+                color: _slate400,
+              ),
+            ),
           ),
         ),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             interval: max(
-                1,
-                (spots.length / (isMobile ? 4 : 6))
-                    .ceil())
-                .toDouble(),
+              1,
+              (spots.length / (isMobile ? 4 : 6)).ceil(),
+            ).toDouble(),
             getTitlesWidget: (v, m) {
               final i = v.toInt();
               if (i < 0 || i >= dates.length) {
@@ -918,11 +1171,11 @@ class _TrendChart extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(top: 5),
                 child: Text(
-                  DateFormat(isMobile ? 'M/d' : 'MMM d')
-                      .format(dates[i]),
+                  DateFormat(isMobile ? 'M/d' : 'MMM d').format(dates[i]),
                   style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 9 : 10,
-                      color: _slate400),
+                    fontSize: isMobile ? 9 : 10,
+                    color: _slate400,
+                  ),
                 ),
               );
             },
@@ -943,17 +1196,18 @@ class _TrendChart extends StatelessWidget {
           dotData: FlDotData(
             show: spots.length < 15,
             getDotPainter: (s, p, b, i) => FlDotCirclePainter(
-                radius: 3.5,
-                color: _blue,
-                strokeWidth: 2,
-                strokeColor: _white),
+              radius: 3.5,
+              color: _blue,
+              strokeWidth: 2,
+              strokeColor: _white,
+            ),
           ),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
               colors: [
                 _blue.withValues(alpha: 0.16),
-                _blue.withValues(alpha: 0.0)
+                _blue.withValues(alpha: 0.0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -973,9 +1227,10 @@ class _TrendChart extends StatelessWidget {
             return LineTooltipItem(
               '$d\n${t.y.toInt()} total',
               GoogleFonts.plusJakartaSans(
-                  color: _white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600),
+                color: _white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             );
           }).toList(),
         ),
@@ -992,9 +1247,9 @@ class _StatusPie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pending   = (data['pending']   ?? 0) as int;
-    final accepted  = (data['accepted']  ?? 0) as int;
-    final rejected  = (data['rejected']  ?? 0) as int;
+    final pending = (data['pending'] ?? 0) as int;
+    final accepted = (data['accepted'] ?? 0) as int;
+    final rejected = (data['rejected'] ?? 0) as int;
     final shortlist = (data['shortlist'] ?? 0) as int;
     final total = pending + accepted + rejected + shortlist;
 
@@ -1012,50 +1267,57 @@ class _StatusPie extends StatelessWidget {
           SizedBox(height: isMobile ? 14 : 20),
           Expanded(
             child: total == 0
-                ? _EmptyHint(
-                message: 'No applicants yet',
-                isMobile: isMobile)
+                ? _EmptyHint(message: 'No applicants yet', isMobile: isMobile)
                 : Row(
-              children: [
-                Expanded(
-                  flex: isMobile ? 5 : 4,
-                  child: PieChart(PieChartData(
-                    sections: [
-                      _pieSection(_amber,   pending,   total),
-                      _pieSection(_emerald, accepted,  total),
-                      _pieSection(_rose,    rejected,  total),
-                      _pieSection(_violet,  shortlist, total),
-                    ],
-                    centerSpaceRadius: isMobile ? 28 : 38,
-                    sectionsSpace: 3,
-                  )),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: isMobile ? 4 : 3,
-                  child: Column(
-                    mainAxisAlignment:
-                    MainAxisAlignment.center,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
                     children: [
-                      _PieLegend('Pending',     pending,   _amber,   isMobile),
-                      _PieLegend('Accepted',    accepted,  _emerald, isMobile),
-                      _PieLegend('Rejected',    rejected,  _rose,    isMobile),
-                      _PieLegend('Shortlisted', shortlist, _violet,  isMobile),
+                      Expanded(
+                        flex: isMobile ? 5 : 4,
+                        child: PieChart(
+                          PieChartData(
+                            sections: [
+                              _pieSection(_amber, pending, total),
+                              _pieSection(_emerald, accepted, total),
+                              _pieSection(_rose, rejected, total),
+                              _pieSection(_violet, shortlist, total),
+                            ],
+                            centerSpaceRadius: isMobile ? 28 : 38,
+                            sectionsSpace: 3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: isMobile ? 4 : 3,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _PieLegend('Pending', pending, _amber, isMobile),
+                            _PieLegend(
+                              'Accepted',
+                              accepted,
+                              _emerald,
+                              isMobile,
+                            ),
+                            _PieLegend('Rejected', rejected, _rose, isMobile),
+                            _PieLegend(
+                              'Shortlisted',
+                              shortlist,
+                              _violet,
+                              isMobile,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 
-  PieChartSectionData _pieSection(
-      Color color, int value, int total) {
+  PieChartSectionData _pieSection(Color color, int value, int total) {
     final pct = total == 0 ? 0 : (value / total * 100).round();
     return PieChartSectionData(
       color: color,
@@ -1063,9 +1325,10 @@ class _StatusPie extends StatelessWidget {
       title: value == 0 ? '' : '$pct%',
       radius: isMobile ? 34 : 44,
       titleStyle: GoogleFonts.plusJakartaSans(
-          fontSize: isMobile ? 9 : 11,
-          fontWeight: FontWeight.w700,
-          color: _white),
+        fontSize: isMobile ? 9 : 11,
+        fontWeight: FontWeight.w700,
+        color: _white,
+      ),
     );
   }
 }
@@ -1084,24 +1347,32 @@ class _PieLegend extends StatelessWidget {
       child: Row(
         children: [
           Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(3))),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
           const SizedBox(width: 7),
           Expanded(
-            child: Text(label,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 11 : 12,
-                    color: _slate600)),
-          ),
-          Text('$value',
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 12 : 13,
-                  fontWeight: FontWeight.w700,
-                  color: _slate900)),
+                fontSize: isMobile ? 11 : 12,
+                color: _slate600,
+              ),
+            ),
+          ),
+          Text(
+            '$value',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 12 : 13,
+              fontWeight: FontWeight.w700,
+              color: _slate900,
+            ),
+          ),
         ],
       ),
     );
@@ -1121,10 +1392,8 @@ class _TopSkillsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final skills =
-        data['topSkills'] as List<MapEntry<String, int>>? ?? [];
-    final maxVal =
-    skills.isEmpty ? 1.0 : skills.first.value.toDouble();
+    final skills = data['topSkills'] as List<MapEntry<String, int>>? ?? [];
+    final maxVal = skills.isEmpty ? 1.0 : skills.first.value.toDouble();
 
     return _ChartCard(
       isMobile: isMobile,
@@ -1142,104 +1411,91 @@ class _TopSkillsCard extends StatelessWidget {
           SizedBox(height: isMobile ? 14 : 18),
           Expanded(
             child: skills.isEmpty
-                ? _EmptyHint(
-                message: 'No skill data yet',
-                isMobile: isMobile)
+                ? _EmptyHint(message: 'No skill data yet', isMobile: isMobile)
                 : MouseRegion(
-              onEnter: (_) => onLockScroll(true),
-              onExit: (_) => onLockScroll(false),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                physics: const ClampingScrollPhysics(),
-                itemCount:
-                skills.length > 10 ? 10 : skills.length,
-                itemBuilder: (ctx, i) {
-                  final sk = skills[i];
-                  final pct = sk.value / maxVal;
-                  final isTop = i < 3;
+                    onEnter: (_) => onLockScroll(true),
+                    onExit: (_) => onLockScroll(false),
+                    child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: skills.length > 10 ? 10 : skills.length,
+                      itemBuilder: (ctx, i) {
+                        final sk = skills[i];
+                        final pct = sk.value / maxVal;
+                        final isTop = i < 3;
 
-                  return Padding(
-                    padding: EdgeInsets.only(
-                        bottom: isMobile ? 10 : 12),
-                    child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            // Rank badge
-                            Container(
-                              width:  isMobile ? 22 : 26,
-                              height: isMobile ? 22 : 26,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isTop
-                                    ? _violet
-                                    .withValues(alpha: 0.12)
-                                    : _slate100,
-                                borderRadius:
-                                BorderRadius.circular(
-                                    7),
-                              ),
-                              child: Text('${i + 1}',
-                                  style: GoogleFonts.plusJakartaSans(
-                                      fontSize:
-                                      isMobile ? 10 : 11,
-                                      fontWeight:
-                                      FontWeight.w800,
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: isMobile ? 10 : 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  // Rank badge
+                                  Container(
+                                    width: isMobile ? 22 : 26,
+                                    height: isMobile ? 22 : 26,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
                                       color: isTop
-                                          ? _violet
-                                          : _slate400)),
-                            ),
-                            const SizedBox(width: 8),
-                            // Skill name
-                            Expanded(
-                              child: Text(sk.key,
-                                  overflow:
-                                  TextOverflow.ellipsis,
-                                  style: GoogleFonts.plusJakartaSans(
-                                      fontSize:
-                                      isMobile ? 12 : 13,
-                                      fontWeight:
-                                      FontWeight.w600,
-                                      color: _slate900)),
-                            ),
-                            const SizedBox(width: 8),
-                            // Count
-                            Text('${sk.value}',
-                                style: GoogleFonts.plusJakartaSans(
-                                    fontSize:
-                                    isMobile ? 11 : 12,
-                                    fontWeight:
-                                    FontWeight.w700,
-                                    color: isTop
+                                          ? _violet.withValues(alpha: 0.12)
+                                          : _slate100,
+                                      borderRadius: BorderRadius.circular(7),
+                                    ),
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: isMobile ? 10 : 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: isTop ? _violet : _slate400,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Skill name
+                                  Expanded(
+                                    child: Text(
+                                      sk.key,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: isMobile ? 12 : 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: _slate900,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Count
+                                  Text(
+                                    '${sk.value}',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: isMobile ? 11 : 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: isTop ? _violet : _slate600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: pct,
+                                  minHeight: isMobile ? 5 : 6,
+                                  backgroundColor: _slate100,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    isTop
                                         ? _violet
-                                        : _slate600)),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        ClipRRect(
-                          borderRadius:
-                          BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: pct,
-                            minHeight: isMobile ? 5 : 6,
-                            backgroundColor: _slate100,
-                            valueColor:
-                            AlwaysStoppedAnimation(
-                                isTop
-                                    ? _violet
-                                    : _blue
-                                    .withValues(alpha: 
-                                    0.5)),
+                                        : _blue.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -1260,16 +1516,16 @@ class _TopJobsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jobs =
-        data['topJobs'] as List<MapEntry<String, int>>? ?? [];
+    final jobs = data['topJobs'] as List<MapEntry<String, int>>? ?? [];
 
     for (var e in jobs.take(5)) {
       cache.putIfAbsent(
-          e.key,
-              () => FirebaseFirestore.instance
-              .collection('Posted_jobs_public')
-              .doc(e.key)
-              .get());
+        e.key,
+        () => FirebaseFirestore.instance
+            .collection('Posted_jobs_public')
+            .doc(e.key)
+            .get(),
+      );
     }
 
     return _ChartCard(
@@ -1286,113 +1542,107 @@ class _TopJobsCard extends StatelessWidget {
           SizedBox(height: isMobile ? 14 : 18),
           Expanded(
             child: jobs.isEmpty
-                ? _EmptyHint(
-                message: 'No job data yet',
-                isMobile: isMobile)
+                ? _EmptyHint(message: 'No job data yet', isMobile: isMobile)
                 : ListView.builder(
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: jobs.take(5).length,
-              itemBuilder: (ctx, i) {
-                final entry = jobs[i];
-                final rankColor = i == 0
-                    ? _amber
-                    : i == 1
-                    ? _slate400
-                    : _blue.withValues(alpha: 0.55);
+                    padding: EdgeInsets.zero,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: jobs.take(5).length,
+                    itemBuilder: (ctx, i) {
+                      final entry = jobs[i];
+                      final rankColor = i == 0
+                          ? _amber
+                          : i == 1
+                          ? _slate400
+                          : _blue.withValues(alpha: 0.55);
 
-                return FutureBuilder<DocumentSnapshot>(
-                  future: cache[entry.key],
-                  builder: (ctx, snap) {
-                    String title = '…';
-                    if (snap.hasData &&
-                        snap.data!.data() != null) {
-                      title = ((snap.data!.data()
-                      as Map)['title']
-                          ?.toString()) ??
-                          'Untitled';
-                    }
+                      return FutureBuilder<DocumentSnapshot>(
+                        future: cache[entry.key],
+                        builder: (ctx, snap) {
+                          String title = '…';
+                          if (snap.hasData && snap.data!.data() != null) {
+                            title =
+                                ((snap.data!.data() as Map)['title']
+                                    ?.toString()) ??
+                                'Untitled';
+                          }
 
-                    return Container(
-                      margin: EdgeInsets.only(
-                          bottom: isMobile ? 8 : 10),
-                      padding: EdgeInsets.all(
-                          isMobile ? 12 : 14),
-                      decoration: BoxDecoration(
-                        color: i == 0
-                            ? _amber.withValues(alpha: 0.05)
-                            : _slate50,
-                        borderRadius:
-                        BorderRadius.circular(12),
-                        border: Border.all(
-                            color: i == 0
-                                ? _amber.withValues(alpha: 0.2)
-                                : _slate200),
-                      ),
-                      child: Row(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.center,
-                        children: [
-                          // Rank circle — fixed size
-                          Container(
-                            width:  isMobile ? 30 : 34,
-                            height: isMobile ? 30 : 34,
-                            alignment: Alignment.center,
+                          return Container(
+                            margin: EdgeInsets.only(bottom: isMobile ? 8 : 10),
+                            padding: EdgeInsets.all(isMobile ? 12 : 14),
                             decoration: BoxDecoration(
-                              color: rankColor
-                                  .withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
+                              color: i == 0
+                                  ? _amber.withValues(alpha: 0.05)
+                                  : _slate50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: i == 0
+                                    ? _amber.withValues(alpha: 0.2)
+                                    : _slate200,
+                              ),
                             ),
-                            child: Text('${i + 1}',
-                                style: GoogleFonts.plusJakartaSans(
-                                    fontSize:
-                                    isMobile ? 12 : 13,
-                                    fontWeight:
-                                    FontWeight.w800,
-                                    color: rankColor)),
-                          ),
-                          const SizedBox(width: 10),
-                          // Title + count — left-aligned
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              mainAxisSize:
-                              MainAxisSize.min,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow
-                                        .ellipsis,
+                                // Rank circle — fixed size
+                                Container(
+                                  width: isMobile ? 30 : 34,
+                                  height: isMobile ? 30 : 34,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: rankColor.withValues(alpha: 0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${i + 1}',
                                     style: GoogleFonts.plusJakartaSans(
-                                        fontSize: isMobile
-                                            ? 12
-                                            : 13,
-                                        fontWeight:
-                                        FontWeight.w700,
-                                        color: _slate900)),
-                                const SizedBox(height: 2),
-                                Text(
-                                    '${entry.value} application${entry.value == 1 ? '' : 's'}',
-                                    style: GoogleFonts.plusJakartaSans(
-                                        fontSize: isMobile
-                                            ? 10
-                                            : 11,
-                                        color: _slate400)),
+                                      fontSize: isMobile ? 12 : 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: rankColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                // Title + count — left-aligned
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: isMobile ? 12 : 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: _slate900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${entry.value} application${entry.value == 1 ? '' : 's'}',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: isMobile ? 10 : 11,
+                                          color: _slate400,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Trailing icon
+                                Icon(
+                                  Icons.trending_up_rounded,
+                                  color: _emerald,
+                                  size: isMobile ? 16 : 18,
+                                ),
                               ],
                             ),
-                          ),
-                          // Trailing icon
-                          Icon(Icons.trending_up_rounded,
-                              color: _emerald,
-                              size: isMobile ? 16 : 18),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -1405,16 +1655,13 @@ class _ChartCard extends StatelessWidget {
   final Widget child;
   final bool isMobile;
   final double? height;
-  const _ChartCard(
-      {required this.child, required this.isMobile, this.height});
+  const _ChartCard({required this.child, required this.isMobile, this.height});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: height,
-      constraints: height == null
-          ? const BoxConstraints(minHeight: 220)
-          : null,
+      constraints: height == null ? const BoxConstraints(minHeight: 220) : null,
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: _white,
@@ -1422,9 +1669,10 @@ class _ChartCard extends StatelessWidget {
         border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4))
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: child,
@@ -1455,17 +1703,23 @@ class _CardHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w800,
-                      color: _slate900)),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 14 : 16,
+                  fontWeight: FontWeight.w800,
+                  color: _slate900,
+                ),
+              ),
               const SizedBox(height: 2),
-              Text(subtitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 11 : 12,
-                      color: _slate400)),
+              Text(
+                subtitle,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 11 : 12,
+                  color: _slate400,
+                ),
+              ),
             ],
           ),
         ),
@@ -1473,16 +1727,21 @@ class _CardHeader extends StatelessWidget {
           const SizedBox(width: 8),
           Container(
             padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 8 : 10,
-                vertical: isMobile ? 3 : 4),
+              horizontal: isMobile ? 8 : 10,
+              vertical: isMobile ? 3 : 4,
+            ),
             decoration: BoxDecoration(
-                color: (badgeColor ?? _blue).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20)),
-            child: Text(badge!,
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 10 : 11,
-                    fontWeight: FontWeight.w700,
-                    color: badgeColor ?? _blue)),
+              color: (badgeColor ?? _blue).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              badge!,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isMobile ? 10 : 11,
+                fontWeight: FontWeight.w700,
+                color: badgeColor ?? _blue,
+              ),
+            ),
           ),
         ],
       ],
@@ -1502,14 +1761,19 @@ class _EmptyHint extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bar_chart_rounded,
-              size: isMobile ? 36 : 44,
-              color: _slate200),
+          Icon(
+            Icons.bar_chart_rounded,
+            size: isMobile ? 36 : 44,
+            color: _slate200,
+          ),
           const SizedBox(height: 8),
-          Text(message,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 12 : 13,
-                  color: _slate400)),
+          Text(
+            message,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: isMobile ? 12 : 13,
+              color: _slate400,
+            ),
+          ),
         ],
       ),
     );
@@ -1535,11 +1799,13 @@ class _ShimmerBoxState extends State<_ShimmerBox>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1200))
-      ..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.35, end: 0.85).animate(
-        CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _anim = Tween<double>(
+      begin: 0.35,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override

@@ -27,157 +27,168 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
   @override
   Widget build(BuildContext context) {
     return Consumer<JS_TopNavProvider>(
-        builder: (context, provider, child) {
-          final initials = provider.initials;
-          final sidebarWidth = widget.isDrawer
-              ? (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 280.0)
-              : 260.0;
-          return Container(
-            width: sidebarWidth,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAFAFA),
-              border: Border(
-                right: BorderSide(
-                  color: Colors.grey.shade200,
-                  width: 1,
-                ),
+      builder: (context, provider, child) {
+        final initials = provider.initials;
+        final sidebarWidth = widget.isDrawer
+            ? (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 280.0)
+            : 260.0;
+        return Container(
+          width: sidebarWidth,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAFAFA),
+            border: Border(
+              right: BorderSide(color: Colors.grey.shade200, width: 1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(2, 0),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(2, 0),
+            ],
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo Section
+                _buildLogoSection(),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Profile Card
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildProfileCard(initials),
                 ),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Menu Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 12,
+                    ),
+                    children: [
+                      _buildSectionLabel('MAIN MENU'),
+                      const SizedBox(height: 8),
+                      _buildMenuItem(
+                        icon: Icons.dashboard_outlined,
+                        activeIcon: Icons.dashboard,
+                        label: 'Dashboard',
+                        index: 0,
+                        isActive: widget.activeIndex == 0,
+                        onTap: () => context.go('/dashboard'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: 'Profile',
+                        index: 1,
+                        isActive: widget.activeIndex == 1,
+                        onTap: () => context.go('/profile'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.auto_awesome_outlined,
+                        activeIcon: Icons.auto_awesome,
+                        label: 'ATS Cv Analyzer',
+                        index: 2,
+                        isActive: widget.activeIndex == 2,
+                        onTap: () => context.go('/ai-tools'),
+                      ),
+
+                      const SizedBox(height: 20),
+                      _buildSectionLabel('JOB SEARCH'),
+                      const SizedBox(height: 8),
+                      _buildMenuItem(
+                        icon: Icons.work_outline,
+                        activeIcon: Icons.work,
+                        label: 'Job Hub',
+                        index: 3,
+                        isActive: widget.activeIndex == 3,
+                        onTap: () => context.go('/job-hub'),
+                      ),
+                      _buildMenuItem(
+                        icon: Icons.bookmark_outline,
+                        activeIcon: Icons.bookmark,
+                        label: 'Saved Jobs',
+                        index: 5,
+                        isActive: widget.activeIndex == 5,
+                        onTap: () => context.go('/saved-jobs'),
+                      ),
+
+                      // _buildProMenuItem(
+                      //   icon: Icons.send_outlined,
+                      //   label: 'Applications',
+                      // ),
+                      const SizedBox(height: 20),
+                      _buildSectionLabel('COMMUNICATION'),
+                      const SizedBox(height: 8),
+                      _buildProMenuItem(
+                        icon: Icons.video_call_outlined,
+                        label: 'Interviews',
+                      ),
+                      _buildProMenuItem(
+                        icon: Icons.chat_bubble_outline,
+                        label: 'Messages',
+                      ),
+                      _buildProMenuItem(
+                        icon: Icons.notifications_outlined,
+                        label: 'Notifications',
+                      ),
+
+                      const SizedBox(height: 20),
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(FirebaseAuth.instance.currentUser?.uid)
+                            .get(),
+                        builder: (context, snapshot) {
+                          final role =
+                              (snapshot.data?.data()
+                                  as Map<String, dynamic>?)?['role'] ??
+                              '';
+                          if (role != 'Job Seeker') {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionLabel('ACCOUNT'),
+                              const SizedBox(height: 8),
+                              _buildMenuItem(
+                                icon: Icons.settings_outlined,
+                                activeIcon: Icons.settings,
+                                label: 'Settings',
+                                index: 4,
+                                isActive: widget.activeIndex == 4,
+                                onTap: () => context.go('/js-settings'),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      _buildProMenuItem(
+                        icon: Icons.help_outline,
+                        label: 'Help & Support',
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Divider(height: 1, thickness: 1),
+
+                // Footer
+                _buildFooter(),
               ],
             ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo Section
-                  _buildLogoSection(),
-
-                  const Divider(height: 1, thickness: 1),
-
-                  // Profile Card
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildProfileCard(initials),
-                  ),
-
-                  const Divider(height: 1, thickness: 1),
-
-                  // Menu Items
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                      children: [
-                        _buildSectionLabel('MAIN MENU'),
-                        const SizedBox(height: 8),
-                        _buildMenuItem(
-                          icon: Icons.dashboard_outlined,
-                          activeIcon: Icons.dashboard,
-                          label: 'Dashboard',
-                          index: 0,
-                          isActive: widget.activeIndex == 0,
-                          onTap: () => context.go('/dashboard'),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.person_outline,
-                          activeIcon: Icons.person,
-                          label: 'Profile',
-                          index: 1,
-                          isActive: widget.activeIndex == 1,
-                          onTap: () => context.go('/profile'),
-                        ),
-                        _buildMenuItem(
-                          icon: Icons.auto_awesome_outlined,
-                          activeIcon: Icons.auto_awesome,
-                          label: 'ATS Cv Analyzer',
-                          index: 2,
-                          isActive: widget.activeIndex == 2,
-                          onTap: () => context.go('/ai-tools'),
-                        ),
-
-                        const SizedBox(height: 20),
-                        _buildSectionLabel('JOB SEARCH'),
-                        const SizedBox(height: 8),
-                        _buildMenuItem(
-                          icon: Icons.work_outline,
-                          activeIcon: Icons.work,
-                          label: 'Job Hub',
-                          index: 3,
-                          isActive: widget.activeIndex == 3,
-                          onTap: () => context.go('/job-hub'),
-                        ),
-                        _buildProMenuItem(
-                          icon: Icons.bookmark_outline,
-                          label: 'Saved Jobs',
-                        ),
-                        // _buildProMenuItem(
-                        //   icon: Icons.send_outlined,
-                        //   label: 'Applications',
-                        // ),
-
-                        const SizedBox(height: 20),
-                        _buildSectionLabel('COMMUNICATION'),
-                        const SizedBox(height: 8),
-                        _buildProMenuItem(
-                          icon: Icons.video_call_outlined,
-                          label: 'Interviews',
-                        ),
-                        _buildProMenuItem(
-                          icon: Icons.chat_bubble_outline,
-                          label: 'Messages',
-                        ),
-                        _buildProMenuItem(
-                          icon: Icons.notifications_outlined,
-                          label: 'Notifications',
-                        ),
-
-                        const SizedBox(height: 20),
-                        FutureBuilder<DocumentSnapshot>(
-                          future: FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get(),
-                          builder: (context, snapshot) {
-                            final role = (snapshot.data?.data() as Map<String, dynamic>?)?['role'] ?? '';
-                            if (role != 'Job Seeker') return const SizedBox.shrink();
-                            
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildSectionLabel('ACCOUNT'),
-                                const SizedBox(height: 8),
-                                _buildMenuItem(
-                                  icon: Icons.settings_outlined,
-                                  activeIcon: Icons.settings,
-                                  label: 'Settings',
-                                  index: 4,
-                                  isActive: widget.activeIndex == 4,
-                                  onTap: () => context.go('/js-settings'),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                        _buildProMenuItem(
-                          icon: Icons.help_outline,
-                          label: 'Help & Support',
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const Divider(height: 1, thickness: 1),
-
-                  // Footer
-                  _buildFooter(),
-                ],
-              ),
-            ),
-          );
-        },
-      
+          ),
+        );
+      },
     );
   }
 
@@ -218,7 +229,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                   'Job Seeker Portal',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -297,7 +308,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                   'Job Seeker',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                 ),
@@ -324,10 +335,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
     );
   }
 
-  Widget _buildProMenuItem({
-    required IconData icon,
-    required String label,
-  }) {
+  Widget _buildProMenuItem({required IconData icon, required String label}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
@@ -348,14 +356,17 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                 label,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: const Color(0xFFCBD5E1),
                 ),
               ),
             ),
             // Lock icon
-            const Icon(Icons.lock_outline_rounded,
-                size: 14, color: Color(0xFFCBD5E1)),
+            const Icon(
+              Icons.lock_outline_rounded,
+              size: 14,
+              color: Color(0xFFCBD5E1),
+            ),
             const SizedBox(width: 6),
             // PRO badge
             Container(
@@ -437,7 +448,9 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                       label,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         color: isActive
                             ? const Color(0xFF0F172A)
                             : const Color(0xFF475569),
@@ -447,7 +460,10 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                   // Badge
                   if (badge != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEF4444),
                         borderRadius: BorderRadius.circular(10),
@@ -537,12 +553,19 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                 color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 24),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFEF4444),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             Text(
               'Confirm Logout',
-              style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),
@@ -553,7 +576,10 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -589,7 +615,6 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
               style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
           ),
-
         ],
       ),
     );

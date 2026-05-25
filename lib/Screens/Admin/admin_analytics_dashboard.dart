@@ -9,31 +9,34 @@ import 'admin_analytics_dashboard_Provider.dart';
 //  DESIGN TOKENS  — Light Professional
 // ═══════════════════════════════════════════════════════════════════════════
 class _C {
-  static const canvas   = Color(0xFFF8FAFC);
-  static const surface  = Color(0xFFFFFFFF);
+  static const canvas = Color(0xFFF8FAFC);
+  static const surface = Color(0xFFFFFFFF);
   static const surfaceL = Color(0xFFFAFBFD);
-  static const border   = Color(0xFFE8ECF4);
+  static const border = Color(0xFFE8ECF4);
 
-  static const indigo   = Color(0xFF4F46E5);
+  static const indigo = Color(0xFF4F46E5);
   static const indigoLt = Color(0xFFEEEDFC);
-  static const teal     = Color(0xFF0891B2);
-  static const tealLt   = Color(0xFFE0F5FA);
-  static const emerald  = Color(0xFF059669);
+  static const teal = Color(0xFF0891B2);
+  static const tealLt = Color(0xFFE0F5FA);
+  static const emerald = Color(0xFF059669);
   static const emeraldL = Color(0xFFDCFCED);
-  static const amber    = Color(0xFFD97706);
-  static const amberLt  = Color(0xFFFEF3CD);
-  static const rose     = Color(0xFFE11D48);
-  static const roseLt   = Color(0xFFFCE7ED);
-  static const violet   = Color(0xFF7C3AED);
+  static const amber = Color(0xFFD97706);
+  static const amberLt = Color(0xFFFEF3CD);
+  static const rose = Color(0xFFE11D48);
+  static const roseLt = Color(0xFFFCE7ED);
+  static const violet = Color(0xFF7C3AED);
   static const violetLt = Color(0xFFF1ECFE);
-  static const slate    = Color(0xFF64748B);
+  static const slate = Color(0xFF64748B);
 
   static const t1 = Color(0xFF0F172A);
   static const t2 = Color(0xFF475569);
   static const t3 = Color(0xFF94A3B8);
 
-  static TextStyle p(double size,
-      {FontWeight fw = FontWeight.w600, Color color = t1}) =>
+  static TextStyle p(
+    double size, {
+    FontWeight fw = FontWeight.w600,
+    Color color = t1,
+  }) =>
       GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: fw, color: color);
 }
 
@@ -65,9 +68,9 @@ class _AdminAnalyticsDashboardScreenState
       backgroundColor: _C.canvas,
       body: Consumer<AdminAnalyticsProvider>(
         builder: (context, prov, _) {
-          final w      = MediaQuery.of(context).size.width;
+          final w = MediaQuery.of(context).size.width;
           final isWide = w > 1180;
-          final isMid  = w > 760;
+          final isMid = w > 760;
 
           return Column(
             children: [
@@ -75,30 +78,34 @@ class _AdminAnalyticsDashboardScreenState
               Expanded(
                 child: prov.loading && prov.totalUsers == 0
                     ? const Center(
-                    child: CircularProgressIndicator(
-                        color: _C.indigo, strokeWidth: 2))
+                        child: CircularProgressIndicator(
+                          color: _C.indigo,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : RefreshIndicator(
-                  onRefresh: prov.refresh,
-                  color: _C.indigo,
-                  backgroundColor: _C.surface,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.all(isWide ? 28 : 16),
-                          child: _MainContent(
-                              prov: prov,
-                              isWide: isWide,
-                              isMid: isMid,
-                              onNavigate: widget.onNavigate),
+                        onRefresh: prov.refresh,
+                        color: _C.indigo,
+                        backgroundColor: _C.surface,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: EdgeInsets.all(isWide ? 28 : 16),
+                                child: _MainContent(
+                                  prov: prov,
+                                  isWide: isWide,
+                                  isMid: isMid,
+                                  onNavigate: widget.onNavigate,
+                                ),
+                              ),
+                            ),
+                            if (isWide) _RightPanel(prov: prov),
+                          ],
                         ),
                       ),
-                      if (isWide) _RightPanel(prov: prov),
-                    ],
-                  ),
-                ),
               ),
             ],
           );
@@ -106,13 +113,12 @@ class _AdminAnalyticsDashboardScreenState
       ),
     );
   }
+
   Widget _buildModernHeader(BuildContext context, AdminAnalyticsProvider prov) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
       height: 72,
-      decoration: BoxDecoration(
-        color: Color(0xFFF8FAFC),
-      ),
+      decoration: BoxDecoration(color: Color(0xFFF8FAFC)),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: Row(
         children: [
@@ -146,7 +152,7 @@ class _AdminAnalyticsDashboardScreenState
                   'View Your Platform Performance at a Glance',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -156,15 +162,14 @@ class _AdminAnalyticsDashboardScreenState
           ),
           const SizedBox(width: 8),
           _BarBtn(
-              icon: Icons.refresh_rounded,
-              onTap: prov.refresh,
-              tooltip: 'Refresh'),
+            icon: Icons.refresh_rounded,
+            onTap: prov.refresh,
+            tooltip: 'Refresh',
+          ),
         ],
       ),
     );
   }
-
-
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -205,8 +210,12 @@ class _MainContent extends StatelessWidget {
   final AdminAnalyticsProvider prov;
   final bool isWide, isMid;
   final Function(String)? onNavigate;
-  const _MainContent(
-      {required this.prov, required this.isWide, required this.isMid, this.onNavigate});
+  const _MainContent({
+    required this.prov,
+    required this.isWide,
+    required this.isMid,
+    this.onNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -223,19 +232,29 @@ class _MainContent extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                            color: _C.emerald, shape: BoxShape.circle)),
+                      width: 7,
+                      height: 7,
+                      decoration: const BoxDecoration(
+                        color: _C.emerald,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Text('Live · Real-time data',
-                        style: _C.p(12, fw: FontWeight.w500, color: _C.t3)),
+                    Text(
+                      'Live · Real-time data',
+                      style: _C.p(12, fw: FontWeight.w500, color: _C.t3),
+                    ),
                   ],
                 ),
               ],
             ),
             const Spacer(),
-            _Chip(label: 'Today', icon: Icons.calendar_today_rounded, color: _C.indigo, tiny: false,),
+            _Chip(
+              label: 'Today',
+              icon: Icons.calendar_today_rounded,
+              color: _C.indigo,
+              tiny: false,
+            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -252,42 +271,49 @@ class _MainContent extends StatelessWidget {
 
         // SKILLS + RECRUITERS
         _SectionHead(
-            icon: Icons.stacked_bar_chart_rounded,
-            title: 'Demand Intelligence'),
-        const SizedBox(height: 14),
-        isMid
-            ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(flex: 3, child: _SkillsChart(prov: prov)),
-          const SizedBox(width: 20),
-          // Expanded(flex: 2, child: _TopRecruiters(prov: prov)),
-        ])
-            : Column(children: [
-          _SkillsChart(prov: prov),
-          // const SizedBox(height: 20),
-          // _TopRecruiters(prov: prov),
-        ]),
-        const SizedBox(height: 28),
-
-        // STATUS BREAKDOWN  — line chart + bar chart
-        _SectionHead(
-            icon: Icons.analytics_outlined, title: 'Status Breakdown'),
+          icon: Icons.stacked_bar_chart_rounded,
+          title: 'Demand Intelligence',
+        ),
         const SizedBox(height: 14),
         isMid
             ? Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                  child: _RequestsLineCard(
-                      data: prov.requestsByStatus)),
-              const SizedBox(width: 20),
-              Expanded(
-                  child: _JobsBarCard(data: prov.jobsByStatus)),
-            ])
-            : Column(children: [
-          _RequestsLineCard(data: prov.requestsByStatus),
-          const SizedBox(height: 20),
-          _JobsBarCard(data: prov.jobsByStatus),
-        ]),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: _SkillsChart(prov: prov)),
+                  const SizedBox(width: 20),
+                  // Expanded(flex: 2, child: _TopRecruiters(prov: prov)),
+                ],
+              )
+            : Column(
+                children: [
+                  _SkillsChart(prov: prov),
+                  // const SizedBox(height: 20),
+                  // _TopRecruiters(prov: prov),
+                ],
+              ),
+        const SizedBox(height: 28),
+
+        // STATUS BREAKDOWN  — line chart + bar chart
+        _SectionHead(icon: Icons.analytics_outlined, title: 'Status Breakdown'),
+        const SizedBox(height: 14),
+        isMid
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _RequestsLineCard(data: prov.requestsByStatus),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(child: _JobsBarCard(data: prov.jobsByStatus)),
+                ],
+              )
+            : Column(
+                children: [
+                  _RequestsLineCard(data: prov.requestsByStatus),
+                  const SizedBox(height: 20),
+                  _JobsBarCard(data: prov.jobsByStatus),
+                ],
+              ),
         const SizedBox(height: 32),
       ],
     );
@@ -316,7 +342,10 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
             children: [
               // HEADER
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
                 decoration: const BoxDecoration(
                   color: _C.tealLt,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -329,15 +358,29 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
                         color: _C.teal,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.work_history_rounded, color: Colors.white, size: 24),
+                      child: const Icon(
+                        Icons.work_history_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Recent Jobs', style: _C.p(20, fw: FontWeight.w800, color: _C.teal)),
-                          Text('Overview of latest posted listings', style: _C.p(13, color: _C.t2)),
+                          Text(
+                            'Recent Jobs',
+                            style: _C.p(
+                              20,
+                              fw: FontWeight.w800,
+                              color: _C.teal,
+                            ),
+                          ),
+                          Text(
+                            'Overview of latest posted listings',
+                            style: _C.p(13, color: _C.t2),
+                          ),
                         ],
                       ),
                     ),
@@ -345,14 +388,19 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
                       icon: const Icon(Icons.close_rounded, color: _C.t2),
                       onPressed: () => Navigator.pop(context),
                       splashRadius: 24,
-                    )
+                    ),
                   ],
                 ),
               ),
               // BODY
               Expanded(
                 child: prov.allJobs.isEmpty
-                    ? Center(child: Text('No jobs found.', style: _C.p(15, color: _C.t3)))
+                    ? Center(
+                        child: Text(
+                          'No jobs found.',
+                          style: _C.p(15, color: _C.t3),
+                        ),
+                      )
                     : ListView.separated(
                         padding: const EdgeInsets.all(24),
                         itemCount: prov.allJobs.length,
@@ -361,14 +409,19 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
                           final job = prov.allJobs[i];
                           final status = (job['status'] ?? 'Open').toString();
                           final isOpen = status.toLowerCase() == 'open';
-                          
+
                           return Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: _C.surface,
                               border: Border.all(color: _C.border),
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 8)],
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x05000000),
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,41 +429,78 @@ void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
                                 // Left details
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(job['title'] ?? 'Untitled Job', style: _C.p(16, fw: FontWeight.w700)),
+                                      Text(
+                                        job['title'] ?? 'Untitled Job',
+                                        style: _C.p(16, fw: FontWeight.w700),
+                                      ),
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          const Icon(Icons.business_center_rounded, size: 14, color: _C.t3),
+                                          const Icon(
+                                            Icons.business_center_rounded,
+                                            size: 14,
+                                            color: _C.t3,
+                                          ),
                                           const SizedBox(width: 4),
-                                          Expanded(child: Text(job['company'] ?? 'Unknown Company', style: _C.p(13, color: _C.t2), overflow: TextOverflow.ellipsis)),
+                                          Expanded(
+                                            child: Text(
+                                              job['company'] ??
+                                                  'Unknown Company',
+                                              style: _C.p(13, color: _C.t2),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
-                                          const Icon(Icons.location_on_rounded, size: 14, color: _C.t3),
+                                          const Icon(
+                                            Icons.location_on_rounded,
+                                            size: 14,
+                                            color: _C.t3,
+                                          ),
                                           const SizedBox(width: 4),
-                                          Text(job['location'] ?? 'Remote', style: _C.p(12, color: _C.t3)),
+                                          Text(
+                                            job['location'] ?? 'Remote',
+                                            style: _C.p(12, color: _C.t3),
+                                          ),
                                           const SizedBox(width: 12),
-                                          const Icon(Icons.access_time_rounded, size: 14, color: _C.t3),
+                                          const Icon(
+                                            Icons.access_time_rounded,
+                                            size: 14,
+                                            color: _C.t3,
+                                          ),
                                           const SizedBox(width: 4),
-                                          Text(job['type'] ?? 'Full-time', style: _C.p(12, color: _C.t3)),
+                                          Text(
+                                            job['type'] ?? 'Full-time',
+                                            style: _C.p(12, color: _C.t3),
+                                          ),
                                         ],
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
                                 // Right Badge
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: isOpen ? _C.emeraldL : _C.roseLt,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: Text(status.toUpperCase(), 
-                                    style: _C.p(11, fw: FontWeight.w700, color: isOpen ? _C.emerald : _C.rose)
+                                  child: Text(
+                                    status.toUpperCase(),
+                                    style: _C.p(
+                                      11,
+                                      fw: FontWeight.w700,
+                                      color: isOpen ? _C.emerald : _C.rose,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -463,7 +553,12 @@ void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
                   builder: (context, p, _) {
                     final allSkills = p.getAllRawSkills();
                     if (allSkills.isEmpty) {
-                      return Center(child: Text('No skills available', style: _C.p(14, color: _C.t3)));
+                      return Center(
+                        child: Text(
+                          'No skills available',
+                          style: _C.p(14, color: _C.t3),
+                        ),
+                      );
                     }
                     return Scrollbar(
                       child: ListView.builder(
@@ -471,7 +566,10 @@ void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
                         itemBuilder: (context, i) {
                           final skill = allSkills[i];
                           return CheckboxListTile(
-                            title: Text(skill, style: _C.p(14, fw: FontWeight.w600)),
+                            title: Text(
+                              skill,
+                              style: _C.p(14, fw: FontWeight.w600),
+                            ),
                             value: p.selectedSkills.contains(skill),
                             onChanged: (_) => p.toggleSkill(skill),
                             contentPadding: EdgeInsets.zero,
@@ -493,10 +591,15 @@ void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
                     backgroundColor: _C.indigo,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Done', style: _C.p(14, fw: FontWeight.w700, color: Colors.white)),
+                  child: Text(
+                    'Done',
+                    style: _C.p(14, fw: FontWeight.w700, color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -517,7 +620,15 @@ class _KD {
   final int value;
   final Color accent, bg;
   final VoidCallback? onTap;
-  const _KD(this.icon, this.label, this.value, this.sub, this.accent, this.bg, {this.onTap});
+  const _KD(
+    this.icon,
+    this.label,
+    this.value,
+    this.sub,
+    this.accent,
+    this.bg, {
+    this.onTap,
+  });
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -536,24 +647,52 @@ class _KpiGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _KD(Icons.groups_rounded, 'Total Users', prov.totalUsers,
-          '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters · ${prov.totalAdmins} Admins',
-          _C.indigo, _C.indigoLt, onTap: () => onNavigate?.call('User Management')),
-      _KD(Icons.work_rounded, 'Jobs Posted', prov.totalJobs,
-          'Public listings', _C.teal, _C.tealLt, onTap: () => _showJobsPopup(context, prov)),
-      _KD(Icons.inbox_rounded, 'Requests', prov.totalRequests,
-          'From recruiters', _C.amber, _C.amberLt, onTap: () => onNavigate?.call('Recruiter Requests')),
+      _KD(
+        Icons.groups_rounded,
+        'Total Users',
+        prov.totalUsers,
+        '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters · ${prov.totalAdmins} Admins',
+        _C.indigo,
+        _C.indigoLt,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.work_rounded,
+        'Jobs Posted',
+        prov.totalJobs,
+        'Public listings',
+        _C.teal,
+        _C.tealLt,
+        onTap: () => _showJobsPopup(context, prov),
+      ),
+      _KD(
+        Icons.inbox_rounded,
+        'Requests',
+        prov.totalRequests,
+        'From recruiters',
+        _C.amber,
+        _C.amberLt,
+        onTap: () => onNavigate?.call('Recruiter Requests'),
+      ),
     ];
 
     // Desktop — existing single-row behaviour
     if (isMid) {
       return Row(
-        children: items.asMap().entries.map((e) => Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: e.key < items.length - 1 ? 16 : 0),
-            child: _KpiCardVertical(d: e.value),
-          ),
-        )).toList(),
+        children: items
+            .asMap()
+            .entries
+            .map(
+              (e) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: e.key < items.length - 1 ? 16 : 0,
+                  ),
+                  child: _KpiCardVertical(d: e.value),
+                ),
+              ),
+            )
+            .toList(),
       );
     }
 
@@ -577,10 +716,18 @@ class _KpiGrid extends StatelessWidget {
 
     // Mobile (<480) — horizontal list cards, fixed height, never overflows
     return Column(
-      children: items.asMap().entries.map((e) => Padding(
-        padding: EdgeInsets.only(bottom: e.key < items.length - 1 ? 10 : 0),
-        child: _KpiCardHorizontal(d: e.value),
-      )).toList(),
+      children: items
+          .asMap()
+          .entries
+          .map(
+            (e) => Padding(
+              padding: EdgeInsets.only(
+                bottom: e.key < items.length - 1 ? 10 : 0,
+              ),
+              child: _KpiCardHorizontal(d: e.value),
+            ),
+          )
+          .toList(),
     );
   }
 }
@@ -604,62 +751,86 @@ class _KpiCardVertical extends StatelessWidget {
         color: _C.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _C.border),
-        boxShadow: const [BoxShadow(
-            color: Color(0x06000000), blurRadius: 10, offset: Offset(0, 3))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x06000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Container(
-              padding: EdgeInsets.all(compact ? 7 : 9),
-              decoration: BoxDecoration(
-                  color: d.bg, borderRadius: BorderRadius.circular(9)),
-              child: Icon(d.icon,
-                  color: d.accent, size: compact ? 15 : 18),
-            ),
-            if (d.onTap != null)
-              InkWell(
-                onTap: d.onTap,
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: d.bg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('View', style: _C.p(10, color: d.accent, fw: FontWeight.w700)),
-                      const SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_ios_rounded, size: 8, color: d.accent),
-                    ],
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(compact ? 7 : 9),
+                decoration: BoxDecoration(
+                  color: d.bg,
+                  borderRadius: BorderRadius.circular(9),
                 ),
-              )
-            else
-              Icon(Icons.trending_up_rounded,
-                  color: d.accent.withValues(alpha: 0.35), size: 15),
-          ]),
+                child: Icon(d.icon, color: d.accent, size: compact ? 15 : 18),
+              ),
+              if (d.onTap != null)
+                InkWell(
+                  onTap: d.onTap,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: d.bg,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View',
+                          style: _C.p(10, color: d.accent, fw: FontWeight.w700),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 8,
+                          color: d.accent,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Icon(
+                  Icons.trending_up_rounded,
+                  color: d.accent.withValues(alpha: 0.35),
+                  size: 15,
+                ),
+            ],
+          ),
           SizedBox(height: compact ? 10 : 14),
           TweenAnimationBuilder<int>(
             tween: IntTween(begin: 0, end: d.value),
             duration: const Duration(milliseconds: 1200),
             curve: Curves.easeOutCubic,
-            builder: (_, v, _) => Text(_fmt(v),
-                style: _C.p(compact ? 20 : 26, fw: FontWeight.w800)),
+            builder: (_, v, _) => Text(
+              _fmt(v),
+              style: _C.p(compact ? 20 : 26, fw: FontWeight.w800),
+            ),
           ),
           const SizedBox(height: 2),
-          Text(d.label,
-              style: _C.p(compact ? 10 : 11, color: _C.t2)),
+          Text(d.label, style: _C.p(compact ? 10 : 11, color: _C.t2)),
           const SizedBox(height: 1),
-          Text(d.sub,
-              style: _C.p(compact ? 9 : 10,
-                  fw: FontWeight.w500, color: _C.t3),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1),
+          Text(
+            d.sub,
+            style: _C.p(compact ? 9 : 10, fw: FontWeight.w500, color: _C.t3),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ],
       ),
     );
@@ -685,69 +856,91 @@ class _KpiCardHorizontal extends StatelessWidget {
         color: _C.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _C.border),
-        boxShadow: const [BoxShadow(
-            color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 2))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(children: [
-        // Icon box
-        Container(
-          width: 36, height: 36,
-          decoration: BoxDecoration(
-              color: d.bg, borderRadius: BorderRadius.circular(9)),
-          child: Icon(d.icon, color: d.accent, size: 17),
-        ),
-        const SizedBox(width: 12),
+      child: Row(
+        children: [
+          // Icon box
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: d.bg,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(d.icon, color: d.accent, size: 17),
+          ),
+          const SizedBox(width: 12),
 
-        // Label + subtitle
-        Expanded(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(d.label, style: _C.p(12, fw: FontWeight.w700)),
-            const SizedBox(height: 1),
-            Text(d.sub,
-                style: _C.p(10, color: _C.t3),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1),
-          ],
-        )),
+          // Label + subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(d.label, style: _C.p(12, fw: FontWeight.w700)),
+                const SizedBox(height: 1),
+                Text(
+                  d.sub,
+                  style: _C.p(10, color: _C.t3),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
 
-        // Animated count — right-aligned
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (d.onTap != null) ...[
-              InkWell(
-                onTap: d.onTap,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('View', style: _C.p(10, color: d.accent, fw: FontWeight.w700)),
-                      const SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_ios_rounded, size: 8, color: d.accent),
-                    ],
+          // Animated count — right-aligned
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (d.onTap != null) ...[
+                InkWell(
+                  onTap: d.onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View',
+                          style: _C.p(10, color: d.accent, fw: FontWeight.w700),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 8,
+                          color: d.accent,
+                        ),
+                      ],
+                    ),
                   ),
+                ),
+              ],
+              TweenAnimationBuilder<int>(
+                tween: IntTween(begin: 0, end: d.value),
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutCubic,
+                builder: (_, v, _) => Text(
+                  _fmt(v),
+                  style: _C.p(22, fw: FontWeight.w800, color: d.accent),
                 ),
               ),
             ],
-            TweenAnimationBuilder<int>(
-              tween: IntTween(begin: 0, end: d.value),
-              duration: const Duration(milliseconds: 1200),
-              curve: Curves.easeOutCubic,
-              builder: (_, v, _) => Text(
-                _fmt(v),
-                style: _C.p(22, fw: FontWeight.w800, color: d.accent),
-              ),
-            ),
-          ],
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
-}// ═══════════════════════════════════════════════════════════════════════════
+} // ═══════════════════════════════════════════════════════════════════════════
+
 //  USER BREAKDOWN ROW
 // ═══════════════════════════════════════════════════════════════════════════
 class _UserBreakdown extends StatelessWidget {
@@ -759,12 +952,30 @@ class _UserBreakdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = prov.totalUsers;
     final tiles = [
-      _UD('Job Seekers', prov.totalJobSeekers, Icons.person_search_rounded,
-          _C.teal, _C.tealLt, total),
-      _UD('Recruiters', prov.totalRecruiters, Icons.business_center_rounded,
-          _C.indigo, _C.indigoLt, total),
-      _UD('Admins', prov.totalAdmins, Icons.admin_panel_settings_rounded,
-          _C.violet, _C.violetLt, total),
+      _UD(
+        'Job Seekers',
+        prov.totalJobSeekers,
+        Icons.person_search_rounded,
+        _C.teal,
+        _C.tealLt,
+        total,
+      ),
+      _UD(
+        'Recruiters',
+        prov.totalRecruiters,
+        Icons.business_center_rounded,
+        _C.indigo,
+        _C.indigoLt,
+        total,
+      ),
+      _UD(
+        'Admins',
+        prov.totalAdmins,
+        Icons.admin_panel_settings_rounded,
+        _C.violet,
+        _C.violetLt,
+        total,
+      ),
     ];
 
     return Container(
@@ -775,59 +986,74 @@ class _UserBreakdown extends StatelessWidget {
         border: Border.all(color: _C.border),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x06000000), blurRadius: 12, offset: Offset(0, 4))
+            color: Color(0x06000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: isMid
           ? Row(
-        children: [
-          SizedBox(
-            width: 100,
-            height: 100,
-            child: total == 0
-                ? const Icon(Icons.donut_large_rounded,
-                color: _C.border, size: 48)
-                : PieChart(
-              PieChartData(
-                sectionsSpace: 3,
-                centerSpaceRadius: 30,
-                sections: [
-                  PieChartSectionData(
-                      color: _C.teal,
-                      value: prov.totalJobSeekers.toDouble(),
-                      title: '',
-                      radius: 16),
-                  PieChartSectionData(
-                      color: _C.indigo,
-                      value: prov.totalRecruiters.toDouble(),
-                      title: '',
-                      radius: 16),
-                  PieChartSectionData(
-                      color: _C.violet,
-                      value: prov.totalAdmins.toDouble(),
-                      title: '',
-                      radius: 16),
-                ],
-              ),
-              swapAnimationDuration:
-              const Duration(milliseconds: 700),
-            ),
-          ),
-          const SizedBox(width: 24),
-          Container(width: 1, height: 80, color: _C.border),
-          const SizedBox(width: 24),
-          ...tiles.map((t) => Expanded(child: _UserTile(d: t))),
-        ],
-      )
+              children: [
+                SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: total == 0
+                      ? const Icon(
+                          Icons.donut_large_rounded,
+                          color: _C.border,
+                          size: 48,
+                        )
+                      : PieChart(
+                          PieChartData(
+                            sectionsSpace: 3,
+                            centerSpaceRadius: 30,
+                            sections: [
+                              PieChartSectionData(
+                                color: _C.teal,
+                                value: prov.totalJobSeekers.toDouble(),
+                                title: '',
+                                radius: 16,
+                              ),
+                              PieChartSectionData(
+                                color: _C.indigo,
+                                value: prov.totalRecruiters.toDouble(),
+                                title: '',
+                                radius: 16,
+                              ),
+                              PieChartSectionData(
+                                color: _C.violet,
+                                value: prov.totalAdmins.toDouble(),
+                                title: '',
+                                radius: 16,
+                              ),
+                            ],
+                          ),
+                          swapAnimationDuration: const Duration(
+                            milliseconds: 700,
+                          ),
+                        ),
+                ),
+                const SizedBox(width: 24),
+                Container(width: 1, height: 80, color: _C.border),
+                const SizedBox(width: 24),
+                ...tiles.map((t) => Expanded(child: _UserTile(d: t))),
+              ],
+            )
           : Column(
-          children: tiles
-              .map((t) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _UserTile(d: t)))
-              .toList()),
+              children: tiles
+                  .map(
+                    (t) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _UserTile(d: t),
+                    ),
+                  )
+                  .toList(),
+            ),
     );
   }
 }
+
 // 1. A wrapper to lay them out as compact cards
 Widget _buildUserStatsGrid(List<_UD> stats) {
   return GridView.builder(
@@ -871,7 +1097,8 @@ class _UserTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final pct = d.total > 0 ? (d.value / d.total).clamp(0.0, 1.0) : 0.0;
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center, // Added for compact vertical centering
+      mainAxisAlignment:
+          MainAxisAlignment.center, // Added for compact vertical centering
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -879,7 +1106,9 @@ class _UserTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                  color: d.bg, borderRadius: BorderRadius.circular(8)),
+                color: d.bg,
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Icon(d.icon, color: d.accent, size: 15),
             ),
             const SizedBox(width: 10),
@@ -887,14 +1116,21 @@ class _UserTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(d.label,
-                      style: _C.p(11, fw: FontWeight.w500, color: _C.t2)),
-                  Text('${d.value}', style: _C.p(16, fw: FontWeight.w800)), // Slightly smaller for compact
+                  Text(
+                    d.label,
+                    style: _C.p(11, fw: FontWeight.w500, color: _C.t2),
+                  ),
+                  Text(
+                    '${d.value}',
+                    style: _C.p(16, fw: FontWeight.w800),
+                  ), // Slightly smaller for compact
                 ],
               ),
             ),
-            Text('${(pct * 100).toStringAsFixed(0)}%',
-                style: _C.p(11, color: d.accent, fw: FontWeight.w700)),
+            Text(
+              '${(pct * 100).toStringAsFixed(0)}%',
+              style: _C.p(11, color: d.accent, fw: FontWeight.w700),
+            ),
           ],
         ),
         const SizedBox(height: 10), // Spacing before progress bar
@@ -911,15 +1147,21 @@ class _UserTile extends StatelessWidget {
     );
   }
 }
+
 class _UD {
   final String label;
   final int value, total;
   final IconData icon;
   final Color accent, bg;
-  const _UD(this.label, this.value, this.icon, this.accent, this.bg,
-      this.total);
+  const _UD(
+    this.label,
+    this.value,
+    this.icon,
+    this.accent,
+    this.bg,
+    this.total,
+  );
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  SKILLS BAR CHART
@@ -960,24 +1202,45 @@ class _SkillsChart extends StatelessWidget {
                 onTap: () => _showMultiSelectSkills(context, prov),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: prov.selectedSkills.isNotEmpty ? _C.indigoLt : _C.surface,
-                    border: Border.all(color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.border),
+                    color: prov.selectedSkills.isNotEmpty
+                        ? _C.indigoLt
+                        : _C.surface,
+                    border: Border.all(
+                      color: prov.selectedSkills.isNotEmpty
+                          ? _C.indigo
+                          : _C.border,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.filter_list_rounded, size: 16, color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.t3),
+                      Icon(
+                        Icons.filter_list_rounded,
+                        size: 16,
+                        color: prov.selectedSkills.isNotEmpty
+                            ? _C.indigo
+                            : _C.t3,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        prov.selectedSkills.isNotEmpty 
-                          ? '${prov.selectedSkills.length} Selected'
-                          : 'Select Skills',
-                        style: _C.p(12, fw: FontWeight.w600, color: prov.selectedSkills.isNotEmpty ? _C.indigo : _C.t2)
+                        prov.selectedSkills.isNotEmpty
+                            ? '${prov.selectedSkills.length} Selected'
+                            : 'Select Skills',
+                        style: _C.p(
+                          12,
+                          fw: FontWeight.w600,
+                          color: prov.selectedSkills.isNotEmpty
+                              ? _C.indigo
+                              : _C.t2,
+                        ),
                       ),
-                    ]
+                    ],
                   ),
                 ),
               ),
@@ -987,95 +1250,111 @@ class _SkillsChart extends StatelessWidget {
           Expanded(
             child: skills.isEmpty
                 ? _Empty(
-                icon: Icons.bar_chart_rounded, label: 'No skill data yet')
+                    icon: Icons.bar_chart_rounded,
+                    label: 'No skill data yet',
+                  )
                 : BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxY,
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => _C.t1,
-                    tooltipBorderRadius: BorderRadius.circular(8),
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: maxY,
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipColor: (_) => _C.t1,
+                          tooltipBorderRadius: BorderRadius.circular(8),
 
-                    getTooltipItem: (group, gi, rod, ri) =>
-                        BarTooltipItem(
-                          '${skills[group.x]}\n${rod.toY.round()}',
-                          _C.p(11, color: Colors.white),
-                        ),
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (v, _) {
-                        final i = v.toInt();
-                        if (i < 0 || i >= skills.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final lbl = skills[i].length > 9
-                            ? '${skills[i].substring(0, 7)}..'
-                            : skills[i];
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(lbl,
-                              style: _C.p(9,
-                                  fw: FontWeight.w500, color: _C.t3)),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 36,
-                      getTitlesWidget: (v, _) => Text(v.toInt().toString(),
-                          style:
-                          _C.p(9, fw: FontWeight.w500, color: _C.t3)),
-                    ),
-                  ),
-                  topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) =>
-                  const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: List.generate(skills.length, (i) {
-                  final pct = maxY > 0 ? counts[i] / maxY : 0.0;
-                  final col = Color.lerp(
-                      _C.indigo, _C.teal, pct.clamp(0.0, 1.0).toDouble())!;
-                  return BarChartGroupData(
-                    x: i,
-                    barRods: [
-                      BarChartRodData(
-                        toY: counts[i].toDouble(),
-                        gradient: LinearGradient(
-                          colors: [col.withValues(alpha: 0.5), col],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                        ),
-                        width: 22,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(7)),
-                        backDrawRodData: BackgroundBarChartRodData(
-                          show: true,
-                          toY: maxY,
-                          color: const Color(0xFFF4F6FB),
+                          getTooltipItem: (group, gi, rod, ri) =>
+                              BarTooltipItem(
+                                '${skills[group.x]}\n${rod.toY.round()}',
+                                _C.p(11, color: Colors.white),
+                              ),
                         ),
                       ),
-                    ],
-                  );
-                }),
-              ),
-              swapAnimationDuration: const Duration(milliseconds: 700),
-              swapAnimationCurve: Curves.easeOutCubic,
-            ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (v, _) {
+                              final i = v.toInt();
+                              if (i < 0 || i >= skills.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final lbl = skills[i].length > 9
+                                  ? '${skills[i].substring(0, 7)}..'
+                                  : skills[i];
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  lbl,
+                                  style: _C.p(
+                                    9,
+                                    fw: FontWeight.w500,
+                                    color: _C.t3,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 36,
+                            getTitlesWidget: (v, _) => Text(
+                              v.toInt().toString(),
+                              style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                            ),
+                          ),
+                        ),
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                      ),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        getDrawingHorizontalLine: (_) => const FlLine(
+                          color: Color(0xFFF0F3FA),
+                          strokeWidth: 1,
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      barGroups: List.generate(skills.length, (i) {
+                        final pct = maxY > 0 ? counts[i] / maxY : 0.0;
+                        final col = Color.lerp(
+                          _C.indigo,
+                          _C.teal,
+                          pct.clamp(0.0, 1.0).toDouble(),
+                        )!;
+                        return BarChartGroupData(
+                          x: i,
+                          barRods: [
+                            BarChartRodData(
+                              toY: counts[i].toDouble(),
+                              gradient: LinearGradient(
+                                colors: [col.withValues(alpha: 0.5), col],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                              width: 22,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(7),
+                              ),
+                              backDrawRodData: BackgroundBarChartRodData(
+                                show: true,
+                                toY: maxY,
+                                color: const Color(0xFFF4F6FB),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                    swapAnimationDuration: const Duration(milliseconds: 700),
+                    swapAnimationCurve: Curves.easeOutCubic,
+                  ),
           ),
         ],
       ),
@@ -1199,7 +1478,7 @@ class _RequestsLineCard extends StatelessWidget {
             icon: Icons.forward_to_inbox_rounded,
             title: 'Requests by Status',
             sub: 'Distribution across all requests',
-            badge: _Chip(label: '$total total', color: _C.indigo,tiny: false,),
+            badge: _Chip(label: '$total total', color: _C.indigo, tiny: false),
           ),
           const SizedBox(height: 16),
           if (!hasData)
@@ -1236,8 +1515,10 @@ class _RequestsLineCard extends StatelessWidget {
                           }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
-                            child: Text(labels[i],
-                                style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
+                            child: Text(
+                              labels[i],
+                              style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                            ),
                           );
                         },
                       ),
@@ -1252,20 +1533,28 @@ class _RequestsLineCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
-                    getDrawingHorizontalLine: (_) => const FlLine(
-                        color: Color(0xFFF0F3FA), strokeWidth: 1),
+                    getDrawingHorizontalLine: (_) =>
+                        const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   barGroups: List.generate(labels.length, (i) {
                     // Gradient logic exactly from jobs/skills
                     final pct = maxY > 0 ? values[i] / maxY : 0.0;
-                    final col = Color.lerp(_C.indigo, _C.teal, pct.clamp(0.0, 1.0))!;
+                    final col = Color.lerp(
+                      _C.indigo,
+                      _C.teal,
+                      pct.clamp(0.0, 1.0),
+                    )!;
                     return BarChartGroupData(
                       x: i,
                       barRods: [
@@ -1277,7 +1566,9 @@ class _RequestsLineCard extends StatelessWidget {
                             end: Alignment.topCenter,
                           ),
                           width: 40,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(7)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(7),
+                          ),
                           backDrawRodData: BackgroundBarChartRodData(
                             show: true,
                             toY: maxY,
@@ -1298,21 +1589,31 @@ class _RequestsLineCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(labels.length, (i) {
                 final pct = maxY > 0 ? values[i] / maxY : 0.0;
-                final col = Color.lerp(_C.indigo, _C.teal, pct.clamp(0.0, 1.0))!;
-                return Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                        color: col, borderRadius: BorderRadius.circular(2)),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(labels[i],
-                      style: _C.p(10, fw: FontWeight.w500, color: _C.t2)),
-                  const SizedBox(width: 4),
-                  Text('${values[i].toInt()}',
-                      style: _C.p(10, color: col)),
-                ]);
+                final col = Color.lerp(
+                  _C.indigo,
+                  _C.teal,
+                  pct.clamp(0.0, 1.0),
+                )!;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: col,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      labels[i],
+                      style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('${values[i].toInt()}', style: _C.p(10, color: col)),
+                  ],
+                );
               }),
             ),
           ],
@@ -1321,6 +1622,7 @@ class _RequestsLineCard extends StatelessWidget {
     );
   }
 }
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  JOBS BAR CHART  (replaces jobs donut)  — same gradient style as skills
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1346,13 +1648,16 @@ class _JobsBarCard extends StatelessWidget {
             icon: Icons.work_outline_rounded,
             title: 'Jobs by Status',
             sub: 'Open vs closed listings',
-            badge: _Chip(label: '$total total', color: _C.teal,tiny: false,),
+            badge: _Chip(label: '$total total', color: _C.teal, tiny: false),
           ),
           const SizedBox(height: 16),
           if (!hasData)
             Expanded(
-                child: _Empty(
-                    icon: Icons.work_outline_rounded, label: 'No data yet'))
+              child: _Empty(
+                icon: Icons.work_outline_rounded,
+                label: 'No data yet',
+              ),
+            )
           else ...[
             Expanded(
               child: BarChart(
@@ -1362,8 +1667,9 @@ class _JobsBarCard extends StatelessWidget {
                   barTouchData: BarTouchData(
                     touchTooltipData: BarTouchTooltipData(
                       getTooltipColor: (_) => _C.t1,
-                      tooltipBorderRadius:
-                      const BorderRadius.all(Radius.circular(8)),
+                      tooltipBorderRadius: const BorderRadius.all(
+                        Radius.circular(8),
+                      ),
                       getTooltipItem: (group, _, rod, _) {
                         final i = group.x;
                         return BarTooltipItem(
@@ -1384,9 +1690,10 @@ class _JobsBarCard extends StatelessWidget {
                           }
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
-                            child: Text(labels[i],
-                                style: _C.p(9,
-                                    fw: FontWeight.w500, color: _C.t3)),
+                            child: Text(
+                              labels[i],
+                              style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                            ),
                           );
                         },
                       ),
@@ -1402,22 +1709,27 @@ class _JobsBarCard extends StatelessWidget {
                       ),
                     ),
                     topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                     rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
-                    getDrawingHorizontalLine: (_) => const FlLine(
-                        color: Color(0xFFF0F3FA), strokeWidth: 1),
+                    getDrawingHorizontalLine: (_) =>
+                        const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   barGroups: List.generate(labels.length, (i) {
                     // Lerp indigo→teal based on bar value (same as skills chart)
                     final pct = maxY > 0 ? values[i] / maxY : 0.0;
                     final col = Color.lerp(
-                        _C.indigo, _C.teal, pct.clamp(0.0, 1.0))!;
+                      _C.indigo,
+                      _C.teal,
+                      pct.clamp(0.0, 1.0),
+                    )!;
                     return BarChartGroupData(
                       x: i,
                       barRods: [
@@ -1430,7 +1742,8 @@ class _JobsBarCard extends StatelessWidget {
                           ),
                           width: 40,
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(7)),
+                            top: Radius.circular(7),
+                          ),
                           backDrawRodData: BackgroundBarChartRodData(
                             show: true,
                             toY: maxY,
@@ -1451,23 +1764,31 @@ class _JobsBarCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(labels.length, (i) {
                 final pct = maxY > 0 ? values[i] / maxY : 0.0;
-                final col =
-                Color.lerp(_C.indigo, _C.teal, pct.clamp(0.0, 1.0))!;
-                return Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                        color: col, borderRadius: BorderRadius.circular(2)),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(labels[i],
-                      style:
-                      _C.p(10, fw: FontWeight.w500, color: _C.t2)),
-                  const SizedBox(width: 4),
-                  Text('${values[i].toInt()}',
-                      style: _C.p(10, color: col)),
-                ]);
+                final col = Color.lerp(
+                  _C.indigo,
+                  _C.teal,
+                  pct.clamp(0.0, 1.0),
+                )!;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: col,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      labels[i],
+                      style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('${values[i].toInt()}', style: _C.p(10, color: col)),
+                  ],
+                );
               }),
             ),
           ],
@@ -1499,9 +1820,11 @@ class _RightPanel extends StatelessWidget {
             title: 'Jobs at a Glance',
             sub: 'Platform listings overview',
             badge: _Chip(
-                label: '${prov.totalJobs} total',
-                icon: Icons.numbers_rounded,
-                color: _C.teal,tiny: true,),
+              label: '${prov.totalJobs} total',
+              icon: Icons.numbers_rounded,
+              color: _C.teal,
+              tiny: true,
+            ),
           ),
           _JobsGlance(prov: prov),
 
@@ -1515,8 +1838,10 @@ class _RightPanel extends StatelessWidget {
             title: 'Request Metrics',
             sub: 'Quick snapshot',
             badge: _Chip(
-                label: '${prov.totalRequests} total',
-                color: _C.amber,tiny: false,),
+              label: '${prov.totalRequests} total',
+              color: _C.amber,
+              tiny: false,
+            ),
           ),
           _RequestMetrics(prov: prov),
 
@@ -1529,29 +1854,38 @@ class _RightPanel extends StatelessWidget {
             iconColor: _C.indigo,
             title: 'Live Feed',
             sub: '${prov.recentRequests.length} recent requests',
-            badge: Row(mainAxisSize: MainAxisSize.min, children: [
-              Container(
+            badge: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
                   width: 7,
                   height: 7,
                   decoration: BoxDecoration(
-                      color: prov.loading ? _C.amber : _C.emerald,
-                      shape: BoxShape.circle)),
-              const SizedBox(width: 5),
-              Text(prov.loading ? 'Syncing' : 'Live',
-                  style: _C.p(10,
-                      color: prov.loading ? _C.amber : _C.emerald)),
-            ]),
+                    color: prov.loading ? _C.amber : _C.emerald,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  prov.loading ? 'Syncing' : 'Live',
+                  style: _C.p(10, color: prov.loading ? _C.amber : _C.emerald),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: prov.recentRequests.isEmpty
-                ? _Empty(icon: Icons.inbox_outlined, label: 'No recent requests')
+                ? _Empty(
+                    icon: Icons.inbox_outlined,
+                    label: 'No recent requests',
+                  )
                 : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-              itemCount: prov.recentRequests.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (_, i) =>
-                  _RequestTile(r: prov.recentRequests[i]),
-            ),
+                    padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                    itemCount: prov.recentRequests.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) =>
+                        _RequestTile(r: prov.recentRequests[i]),
+                  ),
           ),
         ],
       ),
@@ -1582,7 +1916,9 @@ class _PanelHdr extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-                color: iconBg, borderRadius: BorderRadius.circular(8)),
+              color: iconBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(icon, color: iconColor, size: 15),
           ),
           const SizedBox(width: 10),
@@ -1591,7 +1927,10 @@ class _PanelHdr extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: _C.p(13)),
-                Text(sub, style: _C.p(10, fw: FontWeight.w500, color: _C.t3)),
+                Text(
+                  sub,
+                  style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
+                ),
               ],
             ),
           ),
@@ -1608,10 +1947,10 @@ class _JobsGlance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final open   = prov.jobsByStatus['Open'] ?? 0;
+    final open = prov.jobsByStatus['Open'] ?? 0;
     final closed = prov.jobsByStatus['Closed'] ?? 0;
-    final total  = open + closed;
-    final pct    = total > 0 ? open / total : 0.0;
+    final total = open + closed;
+    final pct = total > 0 ? open / total : 0.0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -1620,32 +1959,38 @@ class _JobsGlance extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child: _MiniTile(
-                    icon: Icons.radio_button_checked_rounded,
-                    label: 'Open',
-                    value: open,
-                    accent: _C.emerald,
-                    bg: _C.emeraldL,
-                  )),
+                child: _MiniTile(
+                  icon: Icons.radio_button_checked_rounded,
+                  label: 'Open',
+                  value: open,
+                  accent: _C.emerald,
+                  bg: _C.emeraldL,
+                ),
+              ),
               const SizedBox(width: 10),
               Expanded(
-                  child: _MiniTile(
-                    icon: Icons.lock_outline_rounded,
-                    label: 'Closed',
-                    value: closed,
-                    accent: _C.slate,
-                    bg: const Color(0xFFF1F5F9),
-                  )),
+                child: _MiniTile(
+                  icon: Icons.lock_outline_rounded,
+                  label: 'Closed',
+                  value: closed,
+                  accent: _C.slate,
+                  bg: const Color(0xFFF1F5F9),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Open rate',
-                  style: _C.p(10, fw: FontWeight.w500, color: _C.t3)),
-              Text('${(pct * 100).toStringAsFixed(0)}%',
-                  style: _C.p(10, color: _C.emerald)),
+              Text(
+                'Open rate',
+                style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
+              ),
+              Text(
+                '${(pct * 100).toStringAsFixed(0)}%',
+                style: _C.p(10, color: _C.emerald),
+              ),
             ],
           ),
           const SizedBox(height: 5),
@@ -1670,7 +2015,7 @@ class _RequestMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pending  = prov.requestsByStatus['Pending']  ?? 0;
+    final pending = prov.requestsByStatus['Pending'] ?? 0;
     final approved = prov.requestsByStatus['Approved'] ?? 0;
     final rejected = prov.requestsByStatus['Rejected'] ?? 0;
 
@@ -1678,26 +2023,35 @@ class _RequestMetrics extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
       child: Row(
         children: [
-          Expanded(child: _MiniTile(
+          Expanded(
+            child: _MiniTile(
               icon: Icons.timelapse_rounded,
               label: 'Pending',
               value: pending,
               accent: _C.amber,
-              bg: _C.amberLt)),
+              bg: _C.amberLt,
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: _MiniTile(
+          Expanded(
+            child: _MiniTile(
               icon: Icons.check_circle_outline_rounded,
               label: 'Approved',
               value: approved,
               accent: _C.emerald,
-              bg: _C.emeraldL)),
+              bg: _C.emeraldL,
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: _MiniTile(
+          Expanded(
+            child: _MiniTile(
               icon: Icons.cancel_outlined,
               label: 'Rejected',
               value: rejected,
               accent: _C.rose,
-              bg: _C.roseLt)),
+              bg: _C.roseLt,
+            ),
+          ),
         ],
       ),
     );
@@ -1732,7 +2086,10 @@ class _MiniTile extends StatelessWidget {
           Icon(icon, color: accent, size: 15),
           const SizedBox(height: 6),
           Text('$value', style: _C.p(16, fw: FontWeight.w800)),
-          Text(label, style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
+          Text(
+            label,
+            style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+          ),
         ],
       ),
     );
@@ -1767,7 +2124,10 @@ class _RequestTile extends StatelessWidget {
         border: Border.all(color: _C.border),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x04000000), blurRadius: 6, offset: Offset(0, 2))
+            color: Color(0x04000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -1779,8 +2139,10 @@ class _RequestTile extends StatelessWidget {
               const SizedBox(width: 5),
               Text(s.toUpperCase(), style: _C.p(9, color: sCol)),
               const Spacer(),
-              Text(r['createdStr'],
-                  style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
+              Text(
+                r['createdStr'],
+                style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+              ),
             ],
           ),
           const SizedBox(height: 9),
@@ -1798,9 +2160,11 @@ class _RequestTile extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(r['recruiterEmail'],
-                    style: _C.p(12, color: _C.t1),
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  r['recruiterEmail'],
+                  style: _C.p(12, color: _C.t1),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -1809,8 +2173,10 @@ class _RequestTile extends StatelessWidget {
             children: [
               const Icon(Icons.people_alt_rounded, size: 12, color: _C.t3),
               const SizedBox(width: 5),
-              Text('${r['candidatesCount']} candidates processed',
-                  style: _C.p(10, fw: FontWeight.w500, color: _C.t2)),
+              Text(
+                '${r['candidatesCount']} candidates processed',
+                style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
+              ),
             ],
           ),
         ],
@@ -1839,7 +2205,10 @@ class _Card extends StatelessWidget {
         border: Border.all(color: _C.border),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x06000000), blurRadius: 12, offset: Offset(0, 4))
+            color: Color(0x06000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: child,
@@ -1851,11 +2220,12 @@ class _CardHead extends StatelessWidget {
   final IconData icon;
   final String title, sub;
   final Widget? badge;
-  const _CardHead(
-      {required this.icon,
-        required this.title,
-        required this.sub,
-        this.badge});
+  const _CardHead({
+    required this.icon,
+    required this.title,
+    required this.sub,
+    this.badge,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1869,7 +2239,10 @@ class _CardHead extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: _C.p(14)),
-              Text(sub, style: _C.p(11, fw: FontWeight.w500, color: _C.t3)),
+              Text(
+                sub,
+                style: _C.p(11, fw: FontWeight.w500, color: _C.t3),
+              ),
             ],
           ),
         ),
@@ -1903,16 +2276,20 @@ class _Chip extends StatelessWidget {
   final Color color;
   final IconData? icon;
   final bool tiny;
-  const _Chip(
-      {required this.label,
-        required this.color,
-        this.icon, required this.tiny});
+  const _Chip({
+    required this.label,
+    required this.color,
+    this.icon,
+    required this.tiny,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: tiny ? 8 : 10, vertical: tiny ? 3 : 4),
+        horizontal: tiny ? 8 : 10,
+        vertical: tiny ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
@@ -1945,7 +2322,10 @@ class _Empty extends StatelessWidget {
         children: [
           Icon(icon, color: _C.border, size: 34),
           const SizedBox(height: 8),
-          Text(label, style: _C.p(12, fw: FontWeight.w500, color: _C.t3)),
+          Text(
+            label,
+            style: _C.p(12, fw: FontWeight.w500, color: _C.t3),
+          ),
         ],
       ),
     );

@@ -109,10 +109,10 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
       initialValue: widget.initialDelta,
       validator: widget.validator != null
           ? (_) {
-        // Extract plain text for validation
-        final text = _controller.document.toPlainText().trim();
-        return widget.validator!(text.isEmpty ? null : text);
-      }
+              // Extract plain text for validation
+              final text = _controller.document.toPlainText().trim();
+              return widget.validator!(text.isEmpty ? null : text);
+            }
           : null,
       builder: (state) {
         final borderColor = state.hasError
@@ -131,9 +131,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: labelSize,
                 fontWeight: FontWeight.w600,
-                color: state.hasError
-                    ? Colors.redAccent
-                    : Colors.grey.shade700,
+                color: state.hasError ? Colors.redAccent : Colors.grey.shade700,
               ),
             ),
             const SizedBox(height: 6),
@@ -147,12 +145,12 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                 border: Border.all(color: borderColor, width: borderWidth),
                 boxShadow: _hasFocus
                     ? [
-                  BoxShadow(
-                    color: _primary.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
+                        BoxShadow(
+                          color: _primary.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
                     : [],
               ),
               child: Column(
@@ -163,10 +161,11 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                     decoration: BoxDecoration(
                       color: _toolbarBg,
                       borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(radius)),
+                        top: Radius.circular(radius),
+                      ),
                       border: const Border(
-                          bottom:
-                          BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                        bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                      ),
                     ),
                     child: QuillSimpleToolbar(
                       controller: _controller,
@@ -174,7 +173,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                         showFontFamily: false,
                         showFontSize: widget.isMobile ? false : true,
                         showBoldButton: true,
-                        showIndent:false,
+                        showIndent: false,
                         showItalicButton: true,
                         showUnderLineButton: false,
                         showStrikeThrough: false,
@@ -275,7 +274,7 @@ class _AppRichTextEditorState extends State<AppRichTextEditor> {
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.redAccent,
                     fontSize: widget.isMobile ? 10 : 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -437,7 +436,8 @@ class _AppRichTextViewerState extends State<AppRichTextViewer> {
             VerticalSpacing.zero,
             BoxDecoration(
               border: const Border(
-                  left: BorderSide(color: Color(0xFF4A90A4), width: 3)),
+                left: BorderSide(color: Color(0xFF4A90A4), width: 3),
+              ),
               color: const Color(0xFFF0F6FA),
               borderRadius: BorderRadius.circular(4),
             ),

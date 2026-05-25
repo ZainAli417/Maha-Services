@@ -10,7 +10,8 @@ class AdminSidebar extends StatefulWidget {
   const AdminSidebar({
     super.key,
     required this.onMenuSelected,
-    required this.selectedMenu, required bool isDrawer,
+    required this.selectedMenu,
+    required bool isDrawer,
   });
 
   @override
@@ -18,16 +19,21 @@ class AdminSidebar extends StatefulWidget {
 }
 
 class _AdminSidebarState extends State<AdminSidebar> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 260,
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
-        border: Border(right: BorderSide(color: Colors.grey.shade200, width: 1)),
+        border: Border(
+          right: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(2, 0)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(2, 0),
+          ),
         ],
       ),
       child: SafeArea(
@@ -44,7 +50,10 @@ class _AdminSidebarState extends State<AdminSidebar> {
             const Divider(height: 1, thickness: 1),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 12,
+                ),
                 children: [
                   _buildSectionLabel('MAIN'),
                   const SizedBox(height: 8),
@@ -111,7 +120,9 @@ class _AdminSidebarState extends State<AdminSidebar> {
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+              : Colors.transparent,
         ),
       ),
       child: Material(
@@ -127,17 +138,26 @@ class _AdminSidebarState extends State<AdminSidebar> {
             child: Row(
               children: [
                 Icon(
-                  isSelected ? Icons.business_center : Icons.business_center_outlined,
+                  isSelected
+                      ? Icons.business_center
+                      : Icons.business_center_outlined,
                   size: 20,
-                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                  color: isSelected
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF64748B),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Recruiter Requests',
+                  child: Text(
+                    'Recruiter Requests',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFF475569),
                     ),
                   ),
                 ),
@@ -148,26 +168,30 @@ class _AdminSidebarState extends State<AdminSidebar> {
                       .where('status', isEqualTo: 'pending')
                       .snapshots(),
                   builder: (context, snapshot) {
-                    final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                    final count = snapshot.hasData
+                        ? snapshot.data!.docs.length
+                        : 0;
                     if (count == 0) return const SizedBox.shrink();
                     return TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0.0, end: 1.0),
                       duration: const Duration(milliseconds: 400),
                       curve: Curves.elasticOut,
                       builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: child,
-                        );
+                        return Transform.scale(scale: value, child: child);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFEF4444),
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                              color: const Color(
+                                0xFFEF4444,
+                              ).withValues(alpha: 0.35),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -206,10 +230,11 @@ class _AdminSidebarState extends State<AdminSidebar> {
               Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(label,
+                child: Text(
+                  label,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF94A3B8),
                   ),
                 ),
@@ -222,7 +247,8 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('Soon',
+                child: Text(
+                  'Soon',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -244,10 +270,14 @@ class _AdminSidebarState extends State<AdminSidebar> {
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image: const DecorationImage(image: AssetImage('images/logo.png'), fit: BoxFit.cover),
+              image: const DecorationImage(
+                image: AssetImage('images/logo.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -255,13 +285,24 @@ class _AdminSidebarState extends State<AdminSidebar> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('MAHA SERVICES',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A), letterSpacing: 0.3)),
+                Text(
+                  'MAHA SERVICES',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                    letterSpacing: 0.3,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text('Admin Portal',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B))),
+                Text(
+                  'Admin Portal',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
               ],
             ),
           ),
@@ -273,9 +314,15 @@ class _AdminSidebarState extends State<AdminSidebar> {
   Widget _buildSectionLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 12, bottom: 4),
-      child: Text(label,
-        style: GoogleFonts.plusJakartaSans(fontSize: 10, fontWeight: FontWeight.w700,
-            color: const Color(0xFF94A3B8), letterSpacing: 1)),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF94A3B8),
+          letterSpacing: 1,
+        ),
+      ),
     );
   }
 
@@ -294,7 +341,9 @@ class _AdminSidebarState extends State<AdminSidebar> {
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.transparent,
+          color: isSelected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+              : Colors.transparent,
         ),
       ),
       child: Material(
@@ -312,15 +361,22 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 Icon(
                   isSelected ? activeIcon : icon,
                   size: 20,
-                  color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                  color: isSelected
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF64748B),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(label,
+                  child: Text(
+                    label,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF475569),
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFF475569),
                     ),
                   ),
                 ),
@@ -344,19 +400,41 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 final shouldLogout = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    title: Text('Confirm Logout', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
-                    content: Text('Are you sure you want to logout?', style: GoogleFonts.plusJakartaSans()),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    title: Text(
+                      'Confirm Logout',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    content: Text(
+                      'Are you sure you want to logout?',
+                      style: GoogleFonts.plusJakartaSans(),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600)),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        style: TextButton.styleFrom(backgroundColor: Colors.red.shade50),
-                        child: Text('Logout',
-                          style: GoogleFonts.plusJakartaSans(color: Colors.red.shade600, fontWeight: FontWeight.w600)),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.red.shade50,
+                        ),
+                        child: Text(
+                          'Logout',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.red.shade600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -375,19 +453,34 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.logout_rounded, size: 16, color: Colors.red.shade600),
+                    Icon(
+                      Icons.logout_rounded,
+                      size: 16,
+                      color: Colors.red.shade600,
+                    ),
                     const SizedBox(width: 8),
-                    Text('Logout',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.red.shade600)),
+                    Text(
+                      'Logout',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Text('© 2025 Maha Services',
-            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: Colors.grey.shade500),
-            textAlign: TextAlign.center),
+          Text(
+            '© 2025 Maha Services',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -414,14 +507,23 @@ class AdminProfile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40,
+            height: 40,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+              gradient: LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              ),
             ),
             child: Center(
-              child: Text(name.substring(0, 1).toUpperCase(),
-                style: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+              child: Text(
+                name.substring(0, 1).toUpperCase(),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -432,19 +534,33 @@ class AdminProfile extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(
-                      child: Text(name.capitalize(),
-                        style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A)),
-                        overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        name.capitalize(),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0F172A),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.verified, size: 14, color: Color(0xFF6366F1)),
+                    const Icon(
+                      Icons.verified,
+                      size: 14,
+                      color: Color(0xFF6366F1),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text('Super Admin',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 11, fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B))),
+                Text(
+                  'Super Admin',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
               ],
             ),
           ),

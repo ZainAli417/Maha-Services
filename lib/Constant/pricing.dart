@@ -27,20 +27,17 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
-    )
-      ..forward();
+    )..forward();
 
     _gridController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
-    )
-      ..repeat();
+    )..repeat();
 
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
-    )
-      ..forward();
+    )..forward();
   }
 
   @override
@@ -61,7 +58,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       backgroundColor: const Color(0xFFFAFAFC),
       body: Stack(
         children: [
-
           // Animated grid pattern background
           Positioned.fill(
             child: AnimatedBuilder(
@@ -85,13 +81,16 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       FadeTransition(
                         opacity: _fadeController,
                         child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 0.3),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: _slideController,
-                            curve: Curves.easeOutCubic,
-                          )),
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.3),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _slideController,
+                                  curve: Curves.easeOutCubic,
+                                ),
+                              ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 0),
                             child: Column(
@@ -184,7 +183,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: isMobile ? 16 : 18,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w600,
                 color: const Color(0xFF64748B),
                 height: 1.6,
                 letterSpacing: -0.2,
@@ -219,15 +218,19 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
         ],
       ),
-      child: isMobile 
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            children: userTypes.map((type) => _buildUserTypeItem(type, isMobile)).toList(),
-          )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: userTypes.map((type) => _buildUserTypeItem(type, isMobile)).toList(),
-          ),
+      child: isMobile
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: userTypes
+                  .map((type) => _buildUserTypeItem(type, isMobile))
+                  .toList(),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: userTypes
+                  .map((type) => _buildUserTypeItem(type, isMobile))
+                  .toList(),
+            ),
     );
   }
 
@@ -236,7 +239,8 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     return Padding(
       padding: const EdgeInsets.all(4),
       child: GestureDetector(
-        onTap: () => setState(() => _selectedUserType = type['label'] as String),
+        onTap: () =>
+            setState(() => _selectedUserType = type['label'] as String),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: isMobile ? double.infinity : null,
@@ -251,7 +255,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
-            mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+            mainAxisAlignment: isMobile
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.start,
             children: [
               Icon(
                 type['icon'] as IconData,
@@ -306,8 +312,12 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildToggleOption(String label, bool isActive, VoidCallback onTap,
-      {bool showBadge = false}) {
+  Widget _buildToggleOption(
+    String label,
+    bool isActive,
+    VoidCallback onTap, {
+    bool showBadge = false,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -363,10 +373,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
 
         if (isMobile) {
           return Column(
-            children: plans
-                .asMap()
-                .entries
-                .map((entry) {
+            children: plans.asMap().entries.map((entry) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: _buildPricingCard(entry.key, entry.value),
@@ -378,10 +385,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: plans
-              .asMap()
-              .entries
-              .map((entry) {
+          children: plans.asMap().entries.map((entry) {
             return Flexible(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -591,8 +595,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        transform: Matrix4.identity()
-          ..translate(0.0, isHovered ? -8.0 : 0.0),
+        transform: Matrix4.identity()..translate(0.0, isHovered ? -8.0 : 0.0),
         child: Container(
           constraints: BoxConstraints(maxWidth: isHovered ? 400 : 380),
           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -600,16 +603,17 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isPopular ? const Color(0xFF6366F1) : const Color(
-                  0xFFE2E8F0),
+              color: isPopular
+                  ? const Color(0xFF6366F1)
+                  : const Color(0xFFE2E8F0),
               width: isPopular ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isHovered
                     ? (isPopular
-                    ? const Color(0xFF6366F1).withValues(alpha: 0.15)
-                    : const Color(0xFF0F172A).withValues(alpha: 0.08))
+                          ? const Color(0xFF6366F1).withValues(alpha: 0.15)
+                          : const Color(0xFF0F172A).withValues(alpha: 0.08))
                     : const Color(0xFF0F172A).withValues(alpha: 0.04),
                 blurRadius: isHovered ? 32 : 16,
                 offset: Offset(0, isHovered ? 12 : 4),
@@ -626,7 +630,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                     if (isPopular)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -658,7 +664,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       plan['subtitle'],
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF64748B),
                         letterSpacing: -0.1,
                       ),
@@ -707,29 +713,31 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       plan['period'],
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF64748B),
                         letterSpacing: -0.1,
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _buildCTAButton(plan['buttonText'], isPopular, isHovered, () => context.go('/login')),
+                    _buildCTAButton(
+                      plan['buttonText'],
+                      isPopular,
+                      isHovered,
+                      () => context.go('/login'),
+                    ),
                     const SizedBox(height: 32),
                     Container(height: 1, color: const Color(0xFFE2E8F0)),
                     const SizedBox(height: 24),
-                    ...List.generate(
-                      (plan['features'] as List).length,
-                          (i) {
-                        final feature = (plan['features'] as List)[i];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _buildFeatureItem(
-                            feature['text'],
-                            feature['included'],
-                          ),
-                        );
-                      },
-                    ),
+                    ...List.generate((plan['features'] as List).length, (i) {
+                      final feature = (plan['features'] as List)[i];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildFeatureItem(
+                          feature['text'],
+                          feature['included'],
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -760,47 +768,52 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildCTAButton(String text, bool isPrimary, bool isHovered, VoidCallback onTap) {
+  Widget _buildCTAButton(
+    String text,
+    bool isPrimary,
+    bool isHovered,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        gradient: isPrimary
-            ? const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-        )
-            : null,
-        color: isPrimary ? null : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: isPrimary
-            ? null
-            : Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-        boxShadow: isHovered
-            ? [
-          BoxShadow(
-            color: isPrimary
-                ? const Color(0xFF6366F1).withValues(alpha: 0.4)
-                : const Color(0xFF0F172A).withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          gradient: isPrimary
+              ? const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                )
+              : null,
+          color: isPrimary ? null : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: isPrimary
+              ? null
+              : Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+          boxShadow: isHovered
+              ? [
+                  BoxShadow(
+                    color: isPrimary
+                        ? const Color(0xFF6366F1).withValues(alpha: 0.4)
+                        : const Color(0xFF0F172A).withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: isPrimary ? Colors.white : const Color(0xFF0F172A),
+            letterSpacing: -0.2,
           ),
-        ]
-            : null,
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: isPrimary ? Colors.white : const Color(0xFF0F172A),
-          letterSpacing: -0.2,
         ),
       ),
-    ),
     );
   }
 
@@ -820,8 +833,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             child: Icon(
               included ? Icons.check_rounded : Icons.close_rounded,
               size: 14,
-              color: included ? const Color(0xFF6366F1) : const Color(
-                  0xFF94A3B8),
+              color: included
+                  ? const Color(0xFF6366F1)
+                  : const Color(0xFF94A3B8),
             ),
           ),
         ),
@@ -831,9 +845,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             text,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: included ? const Color(0xFF334155) : const Color(
-                  0xFF94A3B8),
+              fontWeight: FontWeight.w600,
+              color: included
+                  ? const Color(0xFF334155)
+                  : const Color(0xFF94A3B8),
               letterSpacing: -0.1,
               decoration: included ? null : TextDecoration.lineThrough,
             ),
@@ -890,9 +905,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -911,7 +924,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             answer,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFF64748B),
               height: 1.6,
               letterSpacing: -0.1,
@@ -948,65 +961,65 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 children: [
                   isMobile
                       ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildFooterBrand(),
-                      // const SizedBox(height: 24),
-                      // _buildFooterColumn('For Candidates', [
-                      //   'Create Profile',
-                      //   'Build CV',
-                      //   'Browse Jobs',
-                      //   'Career Resources',
-                      // ]),
-                      // const SizedBox(height: 20),
-                      // _buildFooterColumn('For Recruiters', [
-                      //   'Find Talent',
-                      //   'Submit Requests',
-                      //   'Pricing Plans',
-                      //   'Success Stories',
-                      // ]),
-                      // const SizedBox(height: 20),
-                      // _buildFooterColumn('Company', [
-                      //   'About Us',
-                      //   'Contact',
-                      //   'Careers',
-                      //   'Privacy Policy',
-                      // ]),
-                    ],
-                  )
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildFooterBrand(),
+                            // const SizedBox(height: 24),
+                            // _buildFooterColumn('For Candidates', [
+                            //   'Create Profile',
+                            //   'Build CV',
+                            //   'Browse Jobs',
+                            //   'Career Resources',
+                            // ]),
+                            // const SizedBox(height: 20),
+                            // _buildFooterColumn('For Recruiters', [
+                            //   'Find Talent',
+                            //   'Submit Requests',
+                            //   'Pricing Plans',
+                            //   'Success Stories',
+                            // ]),
+                            // const SizedBox(height: 20),
+                            // _buildFooterColumn('Company', [
+                            //   'About Us',
+                            //   'Contact',
+                            //   'Careers',
+                            //   'Privacy Policy',
+                            // ]),
+                          ],
+                        )
                       : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: _buildFooterBrand()),
-                      // SizedBox(width: isTablet ? 30 : 80),
-                      // Expanded(
-                      //   child: _buildFooterColumn('For Candidates', [
-                      //     'Create Profile',
-                      //     'Build CV',
-                      //     'Browse Jobs',
-                      //     'Career Resources',
-                      //   ]),
-                      // ),
-                      // SizedBox(width: isTablet ? 20 : 60),
-                      // Expanded(
-                      //   child: _buildFooterColumn('For Recruiters', [
-                      //     'Find Talent',
-                      //     'Submit Requests',
-                      //     'Pricing Plans',
-                      //     'Success Stories',
-                      //   ]),
-                      // ),
-                      // SizedBox(width: isTablet ? 20 : 60),
-                      // Expanded(
-                      //   child: _buildFooterColumn('Company', [
-                      //     'About Us',
-                      //     'Contact',
-                      //     'Careers',
-                      //     'Privacy Policy',
-                      //   ]),
-                      // ),
-                    ],
-                  ),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: _buildFooterBrand()),
+                            // SizedBox(width: isTablet ? 30 : 80),
+                            // Expanded(
+                            //   child: _buildFooterColumn('For Candidates', [
+                            //     'Create Profile',
+                            //     'Build CV',
+                            //     'Browse Jobs',
+                            //     'Career Resources',
+                            //   ]),
+                            // ),
+                            // SizedBox(width: isTablet ? 20 : 60),
+                            // Expanded(
+                            //   child: _buildFooterColumn('For Recruiters', [
+                            //     'Find Talent',
+                            //     'Submit Requests',
+                            //     'Pricing Plans',
+                            //     'Success Stories',
+                            //   ]),
+                            // ),
+                            // SizedBox(width: isTablet ? 20 : 60),
+                            // Expanded(
+                            //   child: _buildFooterColumn('Company', [
+                            //     'About Us',
+                            //     'Contact',
+                            //     'Careers',
+                            //     'Privacy Policy',
+                            //   ]),
+                            // ),
+                          ],
+                        ),
                 ],
               ),
             ),
@@ -1044,7 +1057,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           ),
         ),
         SizedBox(height: isMobile ? 16 : 24),
-
       ],
     );
   }
@@ -1132,38 +1144,71 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             style: GoogleFonts.plusJakartaSans(
               fontSize: subtitleFontSize,
               color: Colors.white.withValues(alpha: 0.7),
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: isMobile ? 24 : 70),
           isMobile
               ? Wrap(
-            spacing: statSpacing,
-            runSpacing: statSpacing,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-            ],
-          )
+                  spacing: statSpacing,
+                  runSpacing: statSpacing,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildSuccessMetric(
+                      '15K+',
+                      'Successfully Hired',
+                      Icons.people_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '98%',
+                      'Success Rate',
+                      Icons.trending_up_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '24h',
+                      'Avg. Response',
+                      Icons.schedule_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '500+',
+                      'Active Recruiters',
+                      Icons.business_rounded,
+                    ),
+                  ],
+                )
               : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-            ],
-          ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSuccessMetric(
+                      '15K+',
+                      'Successfully Hired',
+                      Icons.people_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '98%',
+                      'Success Rate',
+                      Icons.trending_up_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '24h',
+                      'Avg. Response',
+                      Icons.schedule_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '500+',
+                      'Active Recruiters',
+                      Icons.business_rounded,
+                    ),
+                  ],
+                ),
         ],
       ),
     );
   }
+
   Widget _buildSuccessMetric(String value, String label, IconData icon) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 600;
@@ -1183,7 +1228,11 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: iconSize),
+          Icon(
+            icon,
+            color: Colors.white.withValues(alpha: 0.6),
+            size: iconSize,
+          ),
           SizedBox(width: isMobile ? 8 : 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1201,7 +1250,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: labelFontSize,
                   color: Colors.white.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1227,91 +1276,91 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       ),
       child: isMobile
           ? Column(
-        children: [
-          Text(
-            '© 2026 Maha Services. All rights reserved.',
-            style: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF6B7280),
-              fontSize: copyrightFontSize,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.psychology_rounded,
-                  color: Color(0xFF6366F1),
-                  size: 14,
-                ),
-                const SizedBox(width: 4),
                 Text(
-                  'Developed by MahaServices',
+                  '© 2026 Maha Services. All rights reserved.',
                   style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFF6366F1),
-                    fontSize: aiFontSize,
-                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFontSize,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.psychology_rounded,
+                        color: Color(0xFF6366F1),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Developed by MahaServices',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF6366F1),
+                          fontSize: aiFontSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      )
+            )
           : Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '© 2025 Maha Services. All rights reserved.',
-            style: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF6B7280),
-              fontSize: copyrightFontSize,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(
-                  Icons.psychology_rounded,
-                  color: Color(0xFF6366F1),
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
                 Text(
-                  'Powered by AI',
+                  '© 2025 Maha Services. All rights reserved.',
                   style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFF6366F1),
-                    fontSize: aiFontSize,
-                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFontSize,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.psychology_rounded,
+                        color: Color(0xFF6366F1),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Powered by AI',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: const Color(0xFF6366F1),
+                          fontSize: aiFontSize,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
-
-
-
 }
 
 class _GridPainter extends CustomPainter {
@@ -1338,16 +1387,13 @@ class _GridPainter extends CustomPainter {
 
     // Draw vertical lines with moving beam effect
     int verticalIndex = 0;
-    for (double x = -gridSize + (offset % gridSize);
-    x < size.width + gridSize;
-    x += gridSize) {
-
+    for (
+      double x = -gridSize + (offset % gridSize);
+      x < size.width + gridSize;
+      x += gridSize
+    ) {
       // Draw base line
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        baseGridPaint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), baseGridPaint);
 
       // Create moving beam along the line
       final beamProgress = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
@@ -1368,12 +1414,12 @@ class _GridPainter extends CustomPainter {
       );
 
       beamPaint.shader = verticalGradient.createShader(
-        Rect.fromLTWH(x - 20, beamStart - beamLength/2, 40, beamLength),
+        Rect.fromLTWH(x - 20, beamStart - beamLength / 2, 40, beamLength),
       );
 
       canvas.drawLine(
-        Offset(x, math.max(0, beamStart - beamLength/2)),
-        Offset(x, math.min(size.height, beamStart + beamLength/2)),
+        Offset(x, math.max(0, beamStart - beamLength / 2)),
+        Offset(x, math.min(size.height, beamStart + beamLength / 2)),
         beamPaint,
       );
 
@@ -1382,19 +1428,17 @@ class _GridPainter extends CustomPainter {
 
     // Draw horizontal lines with moving beam effect
     int horizontalIndex = 0;
-    for (double y = -gridSize + (offset % gridSize);
-    y < size.height + gridSize;
-    y += gridSize) {
-
+    for (
+      double y = -gridSize + (offset % gridSize);
+      y < size.height + gridSize;
+      y += gridSize
+    ) {
       // Draw base line
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        baseGridPaint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), baseGridPaint);
 
       // Create moving beam along the line
-      final beamProgress = (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
+      final beamProgress =
+          (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
       final beamStart = beamProgress * size.width;
       final beamLength = size.width * 0.6; // Beam covers 30% of line
 
@@ -1410,12 +1454,12 @@ class _GridPainter extends CustomPainter {
       );
 
       beamPaint.shader = horizontalGradient.createShader(
-        Rect.fromLTWH(beamStart - beamLength/2, y - 20, beamLength, 40),
+        Rect.fromLTWH(beamStart - beamLength / 2, y - 20, beamLength, 40),
       );
 
       canvas.drawLine(
-        Offset(math.max(0, beamStart - beamLength/2), y),
-        Offset(math.min(size.width, beamStart + beamLength/2), y),
+        Offset(math.max(0, beamStart - beamLength / 2), y),
+        Offset(math.min(size.width, beamStart + beamLength / 2), y),
         beamPaint,
       );
 
@@ -1428,27 +1472,28 @@ class _GridPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
     verticalIndex = 0;
-    for (double x = -gridSize + (offset % gridSize);
-    x < size.width + gridSize;
-    x += gridSize) {
+    for (
+      double x = -gridSize + (offset % gridSize);
+      x < size.width + gridSize;
+      x += gridSize
+    ) {
       horizontalIndex = 0;
-      for (double y = -gridSize + (offset % gridSize);
-      y < size.height + gridSize;
-      y += gridSize) {
-
+      for (
+        double y = -gridSize + (offset % gridSize);
+        y < size.height + gridSize;
+        y += gridSize
+      ) {
         final beamProgressV = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-        final beamProgressH = (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
+        final beamProgressH =
+            (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
 
         // Check if beams are near intersection
         final verticalBeamY = beamProgressV * size.height;
         final horizontalBeamX = beamProgressH * size.width;
 
-        if ((verticalBeamY - y).abs() < 50 && (horizontalBeamX - x).abs() < 50) {
-          canvas.drawCircle(
-            Offset(x, y),
-            8,
-            intersectionPaint,
-          );
+        if ((verticalBeamY - y).abs() < 50 &&
+            (horizontalBeamX - x).abs() < 50) {
+          canvas.drawCircle(Offset(x, y), 8, intersectionPaint);
         }
 
         horizontalIndex++;

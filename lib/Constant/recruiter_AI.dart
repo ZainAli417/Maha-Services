@@ -29,9 +29,13 @@ class ChatMessage {
   bool isAnimated; // Track if we've already done the "streaming" animation
   int displayedLength; // Track how many characters are currently displayed
 
-  ChatMessage(this.text, {this.isUser = false, this.isAnimated = false, DateTime? timestamp})
-      : timestamp = timestamp ?? DateTime.now(),
-        displayedLength = isAnimated ? text.length : 0;
+  ChatMessage(
+    this.text, {
+    this.isUser = false,
+    this.isAnimated = false,
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now(),
+       displayedLength = isAnimated ? text.length : 0;
 }
 
 // --------------------------------------------------
@@ -84,7 +88,9 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
     if (text.isEmpty || _isTyping) return;
 
     setState(() {
-      _persistentMessages.add(ChatMessage(text, isUser: true, isAnimated: true));
+      _persistentMessages.add(
+        ChatMessage(text, isUser: true, isAnimated: true),
+      );
       _isTyping = true;
       _controller.clear();
     });
@@ -98,7 +104,9 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
     if (mounted) {
       setState(() {
         _persistentHistory.add({'role': 'assistant', 'content': botResponse});
-        _persistentMessages.add(ChatMessage(botResponse, isUser: false, isAnimated: false));
+        _persistentMessages.add(
+          ChatMessage(botResponse, isUser: false, isAnimated: false),
+        );
         _isTyping = false;
       });
       _scrollToBottom();
@@ -106,13 +114,21 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
   }
 
   // Placeholder for your backend service logic
-  Future<String> _generateContent(String prompt, List<Map<String, String>> history) async {
+  Future<String> _generateContent(
+    String prompt,
+    List<Map<String, String>> history,
+  ) async {
     try {
-      final response = await http.post(
-        Uri.parse('${Env.backendUrl}/ai-jdbuild'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'prompt': prompt, 'conversationHistory': history}),
-      ).timeout(const Duration(seconds: 60));
+      final response = await http
+          .post(
+            Uri.parse('${Env.backendUrl}/ai-jdbuild'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'prompt': prompt,
+              'conversationHistory': history,
+            }),
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -140,7 +156,9 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
     setState(() {
       _persistentMessages.clear();
       _persistentHistory.clear();
-      _persistentMessages.add(ChatMessage("👋 **Ready for a fresh start.**", isAnimated: true));
+      _persistentMessages.add(
+        ChatMessage("👋 **Ready for a fresh start.**", isAnimated: true),
+      );
     });
   }
 
@@ -153,7 +171,11 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 20,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -169,14 +191,22 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppTheme.border))),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppTheme.border)),
+      ),
       child: Row(
         children: [
           const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 22),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('JD Architect',
-                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700, fontSize: 16, color: AppTheme.textPrimary)),
+            child: Text(
+              'JD Architect',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: AppTheme.textPrimary,
+              ),
+            ),
           ),
           IconButton(
             onPressed: _clearChat,
@@ -199,7 +229,9 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
       padding: const EdgeInsets.all(20),
       itemCount: _persistentMessages.length + (_isTyping ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == _persistentMessages.length) return const _TypingIndicator();
+        if (index == _persistentMessages.length) {
+          return const _TypingIndicator();
+        }
         return _MessageBubble(message: _persistentMessages[index]);
       },
     );
@@ -217,7 +249,10 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
                 hintText: 'Describe the role...',
                 filled: true,
                 fillColor: AppTheme.background,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -229,7 +264,7 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
               icon: const Icon(Icons.arrow_upward, color: Colors.white),
               onPressed: _hasText ? _sendMessage : null,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -258,7 +293,10 @@ class _MessageBubbleState extends State<_MessageBubble> {
       _displayedText = widget.message.text;
     } else {
       // Start from where we left off
-      _displayedText = widget.message.text.substring(0, widget.message.displayedLength);
+      _displayedText = widget.message.text.substring(
+        0,
+        widget.message.displayedLength,
+      );
       _startStreaming();
     }
   }
@@ -275,7 +313,10 @@ class _MessageBubbleState extends State<_MessageBubble> {
         if (mounted) {
           setState(() {
             widget.message.displayedLength++;
-            _displayedText = widget.message.text.substring(0, widget.message.displayedLength);
+            _displayedText = widget.message.text.substring(
+              0,
+              widget.message.displayedLength,
+            );
           });
         }
       } else {
@@ -297,25 +338,35 @@ class _MessageBubbleState extends State<_MessageBubble> {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
             const CircleAvatar(
               radius: 16,
               backgroundColor: AppTheme.primaryLight,
-              child: Icon(Icons.auto_awesome, size: 16, color: AppTheme.primary),
+              child: Icon(
+                Icons.auto_awesome,
+                size: 16,
+                color: AppTheme.primary,
+              ),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(14),
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.65),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.65,
+                  ),
                   decoration: BoxDecoration(
                     color: isUser ? AppTheme.primary : AppTheme.background,
                     borderRadius: BorderRadius.circular(18).copyWith(
@@ -323,7 +374,10 @@ class _MessageBubbleState extends State<_MessageBubble> {
                       bottomLeft: !isUser ? const Radius.circular(0) : null,
                     ),
                   ),
-                  child: _RichTextRenderer(text: _displayedText, isUser: isUser),
+                  child: _RichTextRenderer(
+                    text: _displayedText,
+                    isUser: isUser,
+                  ),
                 ),
                 if (!isUser && widget.message.isAnimated)
                   Padding(
@@ -390,7 +444,7 @@ class _CopyButtonState extends State<_CopyButton> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: AppTheme.textSecondary,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -413,7 +467,11 @@ class _RichTextRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableText.rich(
       TextSpan(
-        style: GoogleFonts.plusJakartaSans(fontSize: 14, height: 1.5, color: isUser ? Colors.white : AppTheme.textPrimary),
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          height: 1.5,
+          color: isUser ? Colors.white : AppTheme.textPrimary,
+        ),
         children: _parseMarkdown(text),
       ),
     );
@@ -428,7 +486,7 @@ class _RichTextRenderer extends StatelessWidget {
     // Remove header symbols (##, ###, ####, etc.) at start of lines
     cleanContent = cleanContent.replaceAllMapped(
       RegExp(r'^#{1,6}\s+', multiLine: true),
-          (match) => '', // Just remove the hash symbols
+      (match) => '', // Just remove the hash symbols
     );
 
     // Split by lines to handle line breaks properly
@@ -448,10 +506,12 @@ class _RichTextRenderer extends StatelessWidget {
         }
 
         // Add bold text WITHOUT the ** symbols
-        spans.add(TextSpan(
-          text: match.group(1), // Only the text inside **, not the ** itself
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ));
+        spans.add(
+          TextSpan(
+            text: match.group(1), // Only the text inside **, not the ** itself
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        );
 
         lastIndex = match.end;
       }
@@ -484,7 +544,11 @@ class _TypingIndicator extends StatelessWidget {
             const CircleAvatar(
               radius: 16,
               backgroundColor: AppTheme.primaryLight,
-              child: Icon(Icons.auto_awesome, size: 16, color: AppTheme.primary),
+              child: Icon(
+                Icons.auto_awesome,
+                size: 16,
+                color: AppTheme.primary,
+              ),
             ),
             const SizedBox(width: 8),
             const SizedBox(

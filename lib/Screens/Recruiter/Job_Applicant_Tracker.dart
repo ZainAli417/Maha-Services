@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
@@ -77,10 +78,17 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
                   // ── Content ────────────────────────────────────────────
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
+                      key: ValueKey(
+                        FirebaseAuth.instance.currentUser?.uid ?? '',
+                      ),
                       stream: FirebaseFirestore.instance
                           .collection('Posted_jobs_public')
+                          .where(
+                            'recruiterUid',
+                            isEqualTo: FirebaseAuth.instance.currentUser?.uid,
+                          )
                           .orderBy('timestamp', descending: true)
-                          .snapshots(),
+                          .snapshots(includeMetadataChanges: true),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -91,10 +99,27 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
                         if (snapshot.hasError) {
                           return _ErrorWidget(error: snapshot.error.toString());
                         }
-                        final jobIds =
-                            snapshot.data?.docs.map((d) => d.id).toList() ?? [];
+                        final docs = snapshot.data?.docs ?? [];
+                        final activeDocs = docs.where((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          final status = (data['status'] ?? 'active')
+                              .toString()
+                              .toLowerCase()
+                              .trim();
+                          return status != 'archived' && status != 'archive';
+                        }).toList();
+                        final jobIds = activeDocs.map((d) => d.id).toList();
+                        final version = activeDocs
+                            .map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              return '${doc.id}:${data['status']}:${data['updatedAt']}:${data['applicationCount']}:${data['viewCount']}';
+                            })
+                            .join('|');
                         if (jobIds.isEmpty) return const _EmptyWidget();
-                        return Job_Applicant_Wrapper(jobIds: jobIds);
+                        return Job_Applicant_Wrapper(
+                          jobIds: jobIds,
+                          snapshotVersion: version,
+                        );
                       },
                     ),
                   ),
@@ -202,8 +227,7 @@ class _AppBar extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(width: 10,)
-
+            SizedBox(width: 10),
           ],
         ),
       ),
@@ -216,7 +240,12 @@ class _AppBar extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class Job_Applicant_Wrapper extends StatefulWidget {
   final List<String> jobIds;
-  const Job_Applicant_Wrapper({super.key, required this.jobIds});
+  final String snapshotVersion;
+  const Job_Applicant_Wrapper({
+    super.key,
+    required this.jobIds,
+    required this.snapshotVersion,
+  });
 
   @override
   State<Job_Applicant_Wrapper> createState() => _Job_Applicant_WrapperState();
@@ -248,7 +277,10 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   @override
   void didUpdateWidget(covariant Job_Applicant_Wrapper old) {
     super.didUpdateWidget(old);
-    if (!_listEq(old.jobIds, widget.jobIds)) _loadMetadata();
+    if (!_listEq(old.jobIds, widget.jobIds) ||
+        old.snapshotVersion != widget.snapshotVersion) {
+      _loadMetadata();
+    }
   }
 
   Future<void> _loadMetadata() async {
@@ -259,8 +291,6 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
     try {
       await Future.wait(
         widget.jobIds.map((id) async {
-          if (_cache.containsKey(id)) return;
-
           final doc = await FirebaseFirestore.instance
               .collection('Posted_jobs_public')
               .doc(id)
@@ -425,7 +455,9 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: hasFilter ? _kPrimary.withValues(alpha: 0.1) : _kSurfaceEl,
+                  color: hasFilter
+                      ? _kPrimary.withValues(alpha: 0.1)
+                      : _kSurfaceEl,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: hasFilter ? _kPrimary : _kBorder,
@@ -498,7 +530,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: _kTxtSec,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -581,7 +613,10 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
       itemBuilder: (_) => [
         PopupMenuItem(
           value: '',
-          child: Text('All $label', style: GoogleFonts.plusJakartaSans(fontSize: 13)),
+          child: Text(
+            'All $label',
+            style: GoogleFonts.plusJakartaSans(fontSize: 13),
+          ),
         ),
         ...opts.map(
           (o) => PopupMenuItem(
@@ -611,7 +646,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
               active ? value : label,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: active ? _kPrimary : _kTxtSec,
               ),
             ),
@@ -659,7 +694,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
               'Sort',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: _kTxtSec,
               ),
             ),
@@ -1073,7 +1108,10 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
               const SizedBox(height: 6),
               Text(
                 'Adjust your filters or post a new position',
-                style: GoogleFonts.plusJakartaSans(fontSize: 14, color: _kTxtSec),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: _kTxtSec,
+                ),
               ),
             ],
           ),
@@ -1452,7 +1490,9 @@ class _Job_CardsState extends State<Job_Cards>
               color: _kSurface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: _hovered ? _kPrimary.withValues(alpha: 0.28) : _kBorderLt,
+                color: _hovered
+                    ? _kPrimary.withValues(alpha: 0.28)
+                    : _kBorderLt,
                 width: _hovered ? 1.5 : 1,
               ),
               boxShadow: _hovered

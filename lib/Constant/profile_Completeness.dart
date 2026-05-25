@@ -4,14 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
 
 class ProfileCompletenessCard extends StatelessWidget {
-  const ProfileCompletenessCard({
-    super.key,
-    required this.totalScore,
-  });
+  const ProfileCompletenessCard({super.key, required this.totalScore});
 
   factory ProfileCompletenessCard.fromProvider(ProfileProvider_NEW provider) {
-    final int score =
-    _ScoreCalculator.computeFromProvider(provider).clamp(0, 100);
+    final int score = _ScoreCalculator.computeFromProvider(
+      provider,
+    ).clamp(0, 100);
     return ProfileCompletenessCard(totalScore: score);
   }
 
@@ -62,8 +60,7 @@ class ProfileCompletenessCard extends StatelessWidget {
                   color: scoreColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.bar_chart_sharp,
-                    color: scoreColor, size: 22),
+                child: Icon(Icons.bar_chart_sharp, color: scoreColor, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -90,8 +87,10 @@ class ProfileCompletenessCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: scoreColor,
                   borderRadius: BorderRadius.circular(20),
@@ -139,19 +138,17 @@ class ProfileCompletenessCard extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 foregroundColor: Colors.white,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
                 shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
                 elevation: 4,
               ),
-              icon: const Icon(
-                Icons.edit,
-                size: 16,
-                color: Colors.white,
-              ),
+              icon: const Icon(Icons.edit, size: 16, color: Colors.white),
               label: Text(
                 'View / Edit Profile',
                 style: GoogleFonts.plusJakartaSans(
@@ -190,31 +187,33 @@ class _ScoreCalculator {
     if (provider.personalSummary.trim().isNotEmpty) scorePersonal += 1;
     scorePersonal = scorePersonal.clamp(0, wPersonal);
 
-    final int scoreEducation =
-    provider.educationalProfile.isNotEmpty ? wEducation : 0;
+    final int scoreEducation = provider.educationalProfile.isNotEmpty
+        ? wEducation
+        : 0;
     final int scoreProfessional =
-    provider.professionalProfileSummary.trim().isNotEmpty
+        provider.professionalProfileSummary.trim().isNotEmpty
         ? wProfessionalProfile
         : 0;
-    final int scoreExperience =
-    provider.professionalExperience.isNotEmpty ? wExperience : 0;
-    final int scoreCerts =
-    provider.certifications.isNotEmpty ? wCertifications : 0;
-    final int scorePubs =
-    provider.publications.isNotEmpty ? wPublications : 0;
+    final int scoreExperience = provider.professionalExperience.isNotEmpty
+        ? wExperience
+        : 0;
+    final int scoreCerts = provider.certifications.isNotEmpty
+        ? wCertifications
+        : 0;
+    final int scorePubs = provider.publications.isNotEmpty ? wPublications : 0;
     final int scoreAwards = provider.awards.isNotEmpty ? wAwards : 0;
     final int scoreRefs = provider.references.isNotEmpty ? wReferences : 0;
     final int scoreDocs = provider.documents.isNotEmpty ? wDocuments : 0;
 
     return (scorePersonal +
-        scoreEducation +
-        scoreProfessional +
-        scoreExperience +
-        scoreCerts +
-        scorePubs +
-        scoreAwards +
-        scoreRefs +
-        scoreDocs)
+            scoreEducation +
+            scoreProfessional +
+            scoreExperience +
+            scoreCerts +
+            scorePubs +
+            scoreAwards +
+            scoreRefs +
+            scoreDocs)
         .clamp(0, 100);
   }
 }

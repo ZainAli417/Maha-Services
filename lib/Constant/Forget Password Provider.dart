@@ -39,16 +39,16 @@ class ForgotPasswordProvider with ChangeNotifier {
         showErrorSnackBar(context, 'The email address is badly formatted.');
       } else {
         showErrorSnackBar(
-            context,
-            e.message ?? 'Failed to send password reset email.'
+          context,
+          e.message ?? 'Failed to send password reset email.',
         );
       }
       return false;
     } catch (e) {
       // 3. Generic Error Handling
       showErrorSnackBar(
-          context,
-          'An unexpected error occurred. Please try again.'
+        context,
+        'An unexpected error occurred. Please try again.',
       );
       return false;
     } finally {
@@ -78,7 +78,11 @@ class ForgotPasswordProvider with ChangeNotifier {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 40),
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 40,
+                  ),
                   const SizedBox(width: 20),
                   Expanded(
                     child: Column(
@@ -87,16 +91,16 @@ class ForgotPasswordProvider with ChangeNotifier {
                       children: [
                         Text(
                           "Oh Snap!",
-                          style: GoogleFonts.montserrat(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 18,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           message,
-                          style: GoogleFonts.montserrat(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             color: Colors.white,
                           ),
@@ -126,7 +130,7 @@ class ForgotPasswordProvider with ChangeNotifier {
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         behavior: SnackBarBehavior.floating,

@@ -12,7 +12,6 @@ class FirestoreAutoInspector extends StatefulWidget {
 }
 
 class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
-
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
   bool loading = false;
@@ -26,7 +25,6 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
   }
 
   Future<void> loadCollection() async {
-
     setState(() {
       loading = true;
       error = "";
@@ -34,31 +32,23 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
     });
 
     try {
-
-      final snapshot =
-      await db.collection("recruiter_requests").get();
+      final snapshot = await db.collection("recruiter_requests").get();
 
       Map<String, dynamic> result = {};
 
       for (var doc in snapshot.docs) {
-
         result[doc.id] = sanitize(doc.data());
-
       }
 
-      final jsonString =
-      const JsonEncoder.withIndent("  ").convert(result);
+      final jsonString = const JsonEncoder.withIndent("  ").convert(result);
 
       setState(() {
         jsonOutput = jsonString;
       });
-
     } catch (e) {
-
       setState(() {
         error = e.toString();
       });
-
     }
 
     setState(() {
@@ -67,7 +57,6 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
   }
 
   dynamic sanitize(dynamic value) {
-
     if (value == null) return null;
 
     if (value is Timestamp) {
@@ -75,10 +64,7 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
     }
 
     if (value is GeoPoint) {
-      return {
-        "lat": value.latitude,
-        "lng": value.longitude
-      };
+      return {"lat": value.latitude, "lng": value.longitude};
     }
 
     if (value is DocumentReference) {
@@ -98,7 +84,6 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Firestore Inspector"),
@@ -106,7 +91,7 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: loadCollection,
-          )
+          ),
         ],
       ),
 
@@ -115,19 +100,19 @@ class _FirestoreAutoInspectorState extends State<FirestoreAutoInspector> {
           : error.isNotEmpty
           ? Center(child: Text(error))
           : Container(
-        padding: const EdgeInsets.all(16),
-        color: Colors.black,
-        child: SingleChildScrollView(
-          child: SelectableText(
-            jsonOutput,
-            style: const TextStyle(
-              color: Colors.greenAccent,
-              fontFamily: "monospace",
-              fontSize: 13,
+              padding: const EdgeInsets.all(16),
+              color: Colors.black,
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  jsonOutput,
+                  style: const TextStyle(
+                    color: Colors.greenAccent,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

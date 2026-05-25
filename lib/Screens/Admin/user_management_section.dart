@@ -11,8 +11,10 @@ class UserManagementSection extends StatefulWidget {
   @override
   State<UserManagementSection> createState() => _UserManagementSectionState();
 }
+
 class _UserManagementSectionState extends State<UserManagementSection>
-    with TickerProviderStateMixin, WidgetsBindingObserver { // ADD WidgetsBindingObserver
+    with TickerProviderStateMixin, WidgetsBindingObserver {
+  // ADD WidgetsBindingObserver
 
   String _searchQuery = '';
   String _selectedRoleFilter = 'all';
@@ -49,13 +51,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.05),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutQuart,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutQuart),
+        );
 
     // Stagger animation for list items
     _staggerController = AnimationController(
@@ -80,7 +79,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   @override
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
@@ -119,14 +117,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-
   Widget _buildModernHeader(BuildContext context, AdminProvider prov) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
       height: 72,
-      decoration: const BoxDecoration(
-        color: Color(0xFFFAFAFA),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
       child: Row(
         children: [
@@ -161,7 +156,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   'Add, Upgrade or Suspend Users from the portal',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF64748B),
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -176,58 +171,66 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-
-
-
-  Widget _buildAddUserButton(BuildContext context, AdminProvider provider, bool isMobile) {
+  Widget _buildAddUserButton(
+    BuildContext context,
+    AdminProvider provider,
+    bool isMobile,
+  ) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         child: isMobile
             ? IconButton(
-          onPressed: () => _showAddUserDialog(context, provider),
-          icon: const Icon(Icons.person_add_rounded, size: 20),
-          style: IconButton.styleFrom(
-            backgroundColor: const Color(0xFF6366F1),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.all(12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        )
+                onPressed: () => _showAddUserDialog(context, provider),
+                icon: const Icon(Icons.person_add_rounded, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.all(12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              )
             : ElevatedButton.icon(
-          onPressed: () => _showAddUserDialog(context, provider),
-          icon: const Icon(Icons.person_add_rounded, size: 18),
-          label: Text(
-            'Add User',
-            style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              letterSpacing: 0.3,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6366F1),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            elevation: 0,
-            shadowColor: const Color(0xFF6366F1).withValues(alpha: 0.4),
-          ).copyWith(
-            elevation: WidgetStateProperty.resolveWith<double>(
-                  (states) => states.contains(WidgetState.hovered) ? 4 : 0,
-            ),
-            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (states) => states.contains(WidgetState.hovered)
-                  ? const Color(0xFF4F46E5)
-                  : const Color(0xFF6366F1),
-            ),
-          ),
-        ),
+                onPressed: () => _showAddUserDialog(context, provider),
+                icon: const Icon(Icons.person_add_rounded, size: 18),
+                label: Text(
+                  'Add User',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style:
+                    ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                      shadowColor: const Color(
+                        0xFF6366F1,
+                      ).withValues(alpha: 0.4),
+                    ).copyWith(
+                      elevation: WidgetStateProperty.resolveWith<double>(
+                        (states) =>
+                            states.contains(WidgetState.hovered) ? 4 : 0,
+                      ),
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (states) => states.contains(WidgetState.hovered)
+                            ? const Color(0xFF4F46E5)
+                            : const Color(0xFF6366F1),
+                      ),
+                    ),
+              ),
       ),
     );
   }
@@ -238,60 +241,61 @@ class _UserManagementSectionState extends State<UserManagementSection>
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: isMobile
           ? Column(
-        children: [
-          const SizedBox(height: 12),
-
-          _buildSearchBar(),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
               children: [
+                const SizedBox(height: 12),
+
+                _buildSearchBar(),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFilterDropdown(
+                        'Role',
+                        _selectedRoleFilter,
+                        ['all', 'Job Seeker', 'Recruiter', 'Admin'],
+                        (value) => setState(() => _selectedRoleFilter = value!),
+                        Icons.work_outline,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildFilterDropdown(
+                        'Status',
+                        _selectedStatusFilter,
+                        ['all', 'active', 'suspended'],
+                        (value) =>
+                            setState(() => _selectedStatusFilter = value!),
+                        Icons.toggle_on_outlined,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildRefreshButton(),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(flex: 3, child: _buildSearchBar()),
+                const SizedBox(width: 16),
                 _buildFilterDropdown(
                   'Role',
                   _selectedRoleFilter,
                   ['all', 'Job Seeker', 'Recruiter', 'Admin'],
-                      (value) => setState(() => _selectedRoleFilter = value!),
+                  (value) => setState(() => _selectedRoleFilter = value!),
                   Icons.work_outline,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 _buildFilterDropdown(
                   'Status',
                   _selectedStatusFilter,
                   ['all', 'active', 'suspended'],
-                      (value) => setState(() => _selectedStatusFilter = value!),
+                  (value) => setState(() => _selectedStatusFilter = value!),
                   Icons.toggle_on_outlined,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 _buildRefreshButton(),
               ],
             ),
-          ),
-        ],
-      )
-          : Row(
-        children: [
-          Expanded(flex: 3, child: _buildSearchBar()),
-          const SizedBox(width: 16),
-          _buildFilterDropdown(
-            'Role',
-            _selectedRoleFilter,
-            ['all', 'Job Seeker', 'Recruiter', 'Admin'],
-                (value) => setState(() => _selectedRoleFilter = value!),
-            Icons.work_outline,
-          ),
-          const SizedBox(width: 12),
-          _buildFilterDropdown(
-            'Status',
-            _selectedStatusFilter,
-            ['all', 'active', 'suspended'],
-                (value) => setState(() => _selectedStatusFilter = value!),
-            Icons.toggle_on_outlined,
-          ),
-          const SizedBox(width: 12),
-          _buildRefreshButton(),
-        ],
-      ),
     );
   }
 
@@ -330,21 +334,20 @@ class _UserManagementSectionState extends State<UserManagementSection>
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
         style: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           color: const Color(0xFF0F172A),
-          fontWeight: FontWeight.w400,
+          fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
           hintText: 'Search by name or email...',
           hintStyle: GoogleFonts.plusJakartaSans(
             color: const Color(0xFF94A3B8),
             fontSize: 14,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w600,
           ),
           filled: false,
           prefixIcon: const Icon(
@@ -354,24 +357,31 @@ class _UserManagementSectionState extends State<UserManagementSection>
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-            icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 18),
-            onPressed: () => setState(() => _searchQuery = ''),
-          )
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 18,
+                  ),
+                  onPressed: () => setState(() => _searchQuery = ''),
+                )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildFilterDropdown(
-      String label,
-      String value,
-      List<String> items,
-      ValueChanged<String?> onChanged,
-      IconData icon,
-      ) {
+    String label,
+    String value,
+    List<String> items,
+    ValueChanged<String?> onChanged,
+    IconData icon,
+  ) {
     return Container(
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -394,9 +404,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF64748B)),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 20,
+            color: Color(0xFF64748B),
+          ),
           isExpanded: false,
           items: items.map((item) {
             return DropdownMenuItem(
@@ -404,16 +418,19 @@ class _UserManagementSectionState extends State<UserManagementSection>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    icon,
-                    size: 16,
-                    color: const Color(0xFF64748B),
-                  ),
+                  Icon(icon, size: 16, color: const Color(0xFF64748B)),
                   const SizedBox(width: 8),
                   Text(
                     item == 'all'
                         ? 'All ${label}s'
-                        : item.replaceAll('_', ' ').split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' '),
+                        : item
+                              .replaceAll('_', ' ')
+                              .split(' ')
+                              .map(
+                                (word) =>
+                                    word[0].toUpperCase() + word.substring(1),
+                              )
+                              .join(' '),
                     style: GoogleFonts.plusJakartaSans(fontSize: 14),
                   ),
                 ],
@@ -431,7 +448,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
     return Center(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 1600),
-        margin: EdgeInsets.fromLTRB(isMobile ? 12 : 32, 0, isMobile ? 12 : 32, 32),
+        margin: EdgeInsets.fromLTRB(
+          isMobile ? 12 : 32,
+          0,
+          isMobile ? 12 : 32,
+          32,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -477,31 +499,53 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   children: [
                     // Compact count header
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: const BoxDecoration(
                         color: Color(0xFFFAFAFA),
-                        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.people_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
+                          const Icon(
+                            Icons.people_outline_rounded,
+                            size: 16,
+                            color: Color(0xFF94A3B8),
+                          ),
                           const SizedBox(width: 8),
-                          Text('${users.length} user${users.length != 1 ? 's' : ''}',
-                              style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF64748B))),
+                          Text(
+                            '${users.length} user${users.length != 1 ? 's' : ''}',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     Expanded(
                       child: ListView.separated(
                         controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         itemCount: users.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
                           final doc = users[index];
                           final data = doc.data() as Map<String, dynamic>;
-                          return _buildMobileUserCard(context, provider, doc.id, data);
+                          return _buildMobileUserCard(
+                            context,
+                            provider,
+                            doc.id,
+                            data,
+                          );
                         },
                       ),
                     ),
@@ -544,9 +588,19 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 offset: Offset(0, 20 * (1 - animationValue)),
                                 child: Column(
                                   children: [
-                                    _buildUserRow(context, provider, doc.id, data, index),
+                                    _buildUserRow(
+                                      context,
+                                      provider,
+                                      doc.id,
+                                      data,
+                                      index,
+                                    ),
                                     if (index < users.length - 1)
-                                      const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                                      const Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: Color(0xFFF1F5F9),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -567,18 +621,24 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   // ── Mobile user card — replaces horizontal scrolling table ──
-  Widget _buildMobileUserCard(BuildContext ctx, AdminProvider provider, String docId, Map<String, dynamic> data) {
-    final status    = data['account_status'] ?? 'active';
-    final name      = data['name'] ?? 'Unknown';
-    final email     = data['email'] ?? 'No email';
-    final role      = data['role'] ?? 'N/A';
+  Widget _buildMobileUserCard(
+    BuildContext ctx,
+    AdminProvider provider,
+    String docId,
+    Map<String, dynamic> data,
+  ) {
+    final status = data['account_status'] ?? 'active';
+    final name = data['name'] ?? 'Unknown';
+    final email = data['email'] ?? 'No email';
+    final role = data['role'] ?? 'N/A';
     final userLevel = data['user_lvl'] ?? 'basic';
 
     return FutureBuilder<String>(
       future: provider.fetchUnifiedName(data['uid'] ?? docId),
       builder: (context, snapshot) {
         if (!mounted) return const SizedBox.shrink();
-        final displayName = (snapshot.data != null && snapshot.data != 'Unknown User')
+        final displayName =
+            (snapshot.data != null && snapshot.data != 'Unknown User')
             ? snapshot.data!
             : (data['name']?.toString() ?? 'Unknown');
 
@@ -596,17 +656,27 @@ class _UserManagementSectionState extends State<UserManagementSection>
               Row(
                 children: [
                   Container(
-                    width: 38, height: 38,
+                    width: 38,
+                    height: 38,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [Color(0xFF6366F1), Color(0xFF7C3AED)],
-                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
                     child: Center(
-                      child: Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                      child: Text(
+                        displayName.isNotEmpty
+                            ? displayName[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -614,13 +684,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(displayName,
-                            style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600,
-                                color: const Color(0xFF0F172A)),
-                            overflow: TextOverflow.ellipsis, maxLines: 1),
-                        Text(email,
-                            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF64748B)),
-                            overflow: TextOverflow.ellipsis, maxLines: 1),
+                        Text(
+                          displayName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        Text(
+                          email,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ],
                     ),
                   ),
@@ -637,20 +719,34 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   const Spacer(),
                   // Compact actions
                   _buildActionButton(
-                    Icons.edit_note_rounded, 'Edit', const Color(0xFF6366F1),
-                        () => _showEditUserDialog(context, provider, data, docId, displayName),
+                    Icons.edit_note_rounded,
+                    'Edit',
+                    const Color(0xFF6366F1),
+                    () => _showEditUserDialog(
+                      context,
+                      provider,
+                      data,
+                      docId,
+                      displayName,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   _buildActionButton(
-                    status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
+                    status == 'active'
+                        ? Icons.block_rounded
+                        : Icons.check_circle_rounded,
                     status == 'active' ? 'Suspend' : 'Activate',
-                    status == 'active' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                        () async => await provider.suspendUser(docId, status),
+                    status == 'active'
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF10B981),
+                    () async => await provider.suspendUser(docId, status),
                   ),
                   const SizedBox(width: 4),
                   _buildActionButton(
-                    Icons.lock_reset_rounded, 'Reset', const Color(0xFF8B5CF6),
-                        () => _showResetPasswordDialog(context, provider, email),
+                    Icons.lock_reset_rounded,
+                    'Reset',
+                    const Color(0xFF8B5CF6),
+                    () => _showResetPasswordDialog(context, provider, email),
                   ),
                 ],
               ),
@@ -669,16 +765,20 @@ class _UserManagementSectionState extends State<UserManagementSection>
       final role = data['role'] ?? '';
       final status = data['account_status'] ?? 'active';
 
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesSearch =
+          _searchQuery.isEmpty ||
           name.contains(_searchQuery.toLowerCase()) ||
           email.contains(_searchQuery.toLowerCase());
 
-      final matchesRole = _selectedRoleFilter == 'all' || role == _selectedRoleFilter;
-      final matchesStatus = _selectedStatusFilter == 'all' || status == _selectedStatusFilter;
+      final matchesRole =
+          _selectedRoleFilter == 'all' || role == _selectedRoleFilter;
+      final matchesStatus =
+          _selectedStatusFilter == 'all' || status == _selectedStatusFilter;
 
       return matchesSearch && matchesRole && matchesStatus;
     }).toList();
   }
+
   Widget _buildTableHeader() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -694,19 +794,47 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
       child: Row(
         children: [
-          Expanded(flex: 3, child: _buildHeaderCell('USER', icon: Icons.person_outline)),
-          Expanded(flex: 2, child: _buildHeaderCell('ROLE', icon: Icons.badge_outlined)),
-          Expanded(flex: 2, child: _buildHeaderCell('LEVEL', icon: Icons.stars_outlined)),
-          Expanded(flex: 2, child: _buildHeaderCell('STATUS', icon: Icons.online_prediction_outlined)),
-          Expanded(flex: 2, child: _buildHeaderCell('ACTIONS', align: TextAlign.center, icon: Icons.touch_app_outlined)),
+          Expanded(
+            flex: 3,
+            child: _buildHeaderCell('USER', icon: Icons.person_outline),
+          ),
+          Expanded(
+            flex: 2,
+            child: _buildHeaderCell('ROLE', icon: Icons.badge_outlined),
+          ),
+          Expanded(
+            flex: 2,
+            child: _buildHeaderCell('LEVEL', icon: Icons.stars_outlined),
+          ),
+          Expanded(
+            flex: 2,
+            child: _buildHeaderCell(
+              'STATUS',
+              icon: Icons.online_prediction_outlined,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _buildHeaderCell(
+              'ACTIONS',
+              align: TextAlign.center,
+              icon: Icons.touch_app_outlined,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderCell(String title, {TextAlign align = TextAlign.left, IconData? icon}) {
+  Widget _buildHeaderCell(
+    String title, {
+    TextAlign align = TextAlign.left,
+    IconData? icon,
+  }) {
     return Row(
-      mainAxisAlignment: align == TextAlign.center ? MainAxisAlignment.center : MainAxisAlignment.start,
+      mainAxisAlignment: align == TextAlign.center
+          ? MainAxisAlignment.center
+          : MainAxisAlignment.start,
       children: [
         if (icon != null) ...[
           Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
@@ -727,12 +855,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildUserRow(
-      BuildContext context,
-      AdminProvider provider,
-      String docId,
-      Map<String, dynamic> data,
-      int index,
-      ) {
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    Map<String, dynamic> data,
+    int index,
+  ) {
     final status = data['account_status'] ?? 'active';
     final name = data['name'] ?? 'Unknown';
     final email = data['email'] ?? 'No email';
@@ -752,15 +880,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
             builder: (context, snapshot) {
               if (!mounted) return const SizedBox.shrink(); // ADD THIS
 
-              final displayName = (snapshot.data != null && snapshot.data != 'Unknown User')
+              final displayName =
+                  (snapshot.data != null && snapshot.data != 'Unknown User')
                   ? snapshot.data!
-                  : (data['name']?.toString() ?? 'Unknown');              return Row(
+                  : (data['name']?.toString() ?? 'Unknown');
+              return Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: _buildUserInfo(displayName, email),
-                  ),
+                  Expanded(flex: 3, child: _buildUserInfo(displayName, email)),
                   Expanded(flex: 2, child: _buildRoleBadge(role)),
                   Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
                   Expanded(flex: 2, child: _buildStatusBadge(status)),
@@ -843,7 +970,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 email,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   color: const Color(0xFF64748B),
                   height: 1.3,
                 ),
@@ -868,13 +995,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(6),
         ),
-        textStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.white),
+        textStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 12,
+          color: Colors.white,
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: roleConfig['bgColor'],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: roleConfig['color']!.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: roleConfig['color']!.withValues(alpha: 0.15),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -882,7 +1014,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
               Icon(roleConfig['icon'], size: 13, color: roleConfig['color']),
               const SizedBox(width: 6),
               Text(
-                role.replaceAll('_', ' ').split(' ').map((word) => word[0].toUpperCase() + word.substring(1)).join(' '),
+                role
+                    .replaceAll('_', ' ')
+                    .split(' ')
+                    .map((word) => word[0].toUpperCase() + word.substring(1))
+                    .join(' '),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -899,7 +1035,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
   Widget _buildLevelBadge(String userLevel) {
     final level = userLevel.toLowerCase();
     final isPremium = level == 'premium';
-    final isBasic = level == 'basic' || level == 'free'; // Treat legacy free as basic
+    final isBasic =
+        level == 'basic' || level == 'free'; // Treat legacy free as basic
 
     Color bgColor;
     Color borderColor;
@@ -959,7 +1096,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
           color: isActive ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? const Color(0xFF6EE7B7).withValues(alpha: 0.5) : const Color(0xFFFCA5A5).withValues(alpha: 0.5),
+            color: isActive
+                ? const Color(0xFF6EE7B7).withValues(alpha: 0.5)
+                : const Color(0xFFFCA5A5).withValues(alpha: 0.5),
           ),
         ),
         child: Row(
@@ -970,7 +1109,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
               height: 6,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isActive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                color: isActive
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEF4444),
               ),
             ),
             const SizedBox(width: 6),
@@ -979,7 +1120,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isActive ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                color: isActive
+                    ? const Color(0xFF059669)
+                    : const Color(0xFFDC2626),
               ),
             ),
           ],
@@ -989,14 +1132,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildActions(
-      BuildContext context,
-      AdminProvider provider,
-      String docId,
-      Map<String, dynamic> data,
-      String status,
-      String email,
-      String? name,
-      ) {
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    Map<String, dynamic> data,
+    String status,
+    String email,
+    String? name,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1004,14 +1147,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Icons.edit_note_rounded,
           'Edit User',
           const Color(0xFF6366F1),
-              () => _showEditUserDialog(context, provider, data, docId, name),
+          () => _showEditUserDialog(context, provider, data, docId, name),
         ),
         const SizedBox(width: 6),
         _buildActionButton(
           status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
           status == 'active' ? 'Suspend User' : 'Activate User',
-          status == 'active' ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-              () async {
+          status == 'active'
+              ? const Color(0xFFEF4444)
+              : const Color(0xFF10B981),
+          () async {
             await provider.suspendUser(docId, status);
             // Don't assume context is valid here - the provider should handle its own state
           },
@@ -1021,13 +1166,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
           Icons.lock_reset_rounded,
           'Reset Password',
           const Color(0xFF8B5CF6),
-              () => _showResetPasswordDialog(context, provider, email),
+          () => _showResetPasswordDialog(context, provider, email),
         ),
       ],
     );
   }
 
-  Widget _buildActionButton(IconData icon, String tooltip, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(
+    IconData icon,
+    String tooltip,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Tooltip(
       message: tooltip,
       preferBelow: false,
@@ -1042,7 +1192,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
           ),
         ],
       ),
-      textStyle: GoogleFonts.plusJakartaSans(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w500),
+      textStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 12,
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -1064,6 +1218,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
     );
   }
+
   Widget _buildTableFooter(int totalCount, int totalPages) {
     int start = totalCount == 0 ? 0 : (_currentPage - 1) * _itemsPerPage + 1;
     int end = (_currentPage * _itemsPerPage).clamp(0, totalCount);
@@ -1083,7 +1238,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               'Showing $start-$end of $totalCount',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: const Color(0xFF64748B),
               ),
               overflow: TextOverflow.ellipsis,
@@ -1093,11 +1248,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
             children: [
               _buildPageButton(
                 icon: Icons.chevron_left_rounded,
-                onTap: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+                onTap: _currentPage > 1
+                    ? () => setState(() => _currentPage--)
+                    : null,
               ),
               const SizedBox(width: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -1114,7 +1274,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
               const SizedBox(width: 4),
               _buildPageButton(
                 icon: Icons.chevron_right_rounded,
-                onTap: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
+                onTap: _currentPage < totalPages
+                    ? () => setState(() => _currentPage++)
+                    : null,
               ),
             ],
           ),
@@ -1130,10 +1292,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
       visualDensity: VisualDensity.compact,
       style: IconButton.styleFrom(
         backgroundColor: onTap != null ? Colors.white : Colors.transparent,
-        foregroundColor: onTap != null ? const Color(0xFF6366F1) : Colors.grey.shade400,
+        foregroundColor: onTap != null
+            ? const Color(0xFF6366F1)
+            : Colors.grey.shade400,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: onTap != null ? const Color(0xFFE2E8F0) : Colors.transparent),
+          side: BorderSide(
+            color: onTap != null ? const Color(0xFFE2E8F0) : Colors.transparent,
+          ),
         ),
       ),
     );
@@ -1178,7 +1344,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF6366F1),
+              ),
               strokeWidth: 3,
               backgroundColor: const Color(0xFFE0E7FF),
             ),
@@ -1189,7 +1357,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               color: const Color(0xFF64748B),
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -1209,7 +1377,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFFEE2E2), width: 2),
             ),
-            child: const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFDC2626)),
+            child: const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Color(0xFFDC2626),
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -1245,7 +1417,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
               backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ],
@@ -1266,7 +1440,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
             ),
-            child: Icon(Icons.people_outline_rounded, size: 56, color: const Color(0xFF94A3B8)),
+            child: Icon(
+              Icons.people_outline_rounded,
+              size: 56,
+              color: const Color(0xFF94A3B8),
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -1309,25 +1487,29 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-
-
   void _showAddUserDialog(BuildContext context, AdminProvider provider) {
     provider.clearForm();
     _showUserDialog(context, provider, 'Add New User', false, null);
   }
 
   void _showEditUserDialog(
-      BuildContext context,
-      AdminProvider provider,
-      Map<String, dynamic> data,
-      String docId,
-      String? resolvedName,
-      ) {
+    BuildContext context,
+    AdminProvider provider,
+    Map<String, dynamic> data,
+    String docId,
+    String? resolvedName,
+  ) {
     provider.editUser(data, docId, resolvedName: resolvedName);
     _showUserDialog(context, provider, 'Edit User', true, data);
   }
 
-  void _showUserDialog(BuildContext context, AdminProvider provider, String title, bool isEdit, Map<String, dynamic>? existingData) {
+  void _showUserDialog(
+    BuildContext context,
+    AdminProvider provider,
+    String title,
+    bool isEdit,
+    Map<String, dynamic>? existingData,
+  ) {
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;
 
@@ -1346,7 +1528,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 horizontal: isMobile ? 16 : 40,
                 vertical: 24,
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               elevation: 0,
               backgroundColor: Colors.transparent,
               child: Container(
@@ -1392,7 +1576,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
-                              isEdit ? Icons.edit_note_rounded : Icons.person_add_rounded,
+                              isEdit
+                                  ? Icons.edit_note_rounded
+                                  : Icons.person_add_rounded,
                               color: Colors.white,
                               size: isMobile ? 20 : 24,
                             ),
@@ -1413,7 +1599,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  isEdit ? 'Update user information' : 'Create new account',
+                                  isEdit
+                                      ? 'Update user information'
+                                      : 'Create new account',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12,
                                     color: Colors.white.withValues(alpha: 0.8),
@@ -1427,9 +1615,15 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               provider.clearForm();
                               Navigator.pop(dialogContext);
                             },
-                            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withValues(alpha: 0.1),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.1,
+                              ),
                               padding: const EdgeInsets.all(8),
                             ),
                           ),
@@ -1464,7 +1658,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                   provider.passwordController,
                                   Icons.lock_outline_rounded,
                                   obscureText: true,
-                                  validator: (v) => (v?.length ?? 0) < 6 ? 'Password must be at least 6 characters' : null,
+                                  validator: (v) => (v?.length ?? 0) < 6
+                                      ? 'Password must be at least 6 characters'
+                                      : null,
                                 ),
                                 const SizedBox(height: 24),
                               ],
@@ -1495,7 +1691,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       padding: EdgeInsets.all(isMobile ? 16 : 24),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
-                        border: Border(top: BorderSide(color: Colors.grey.shade100)),
+                        border: Border(
+                          top: BorderSide(color: Colors.grey.shade100),
+                        ),
                         borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(24),
                           bottomRight: Radius.circular(24),
@@ -1510,8 +1708,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
                               Navigator.pop(dialogContext);
                             },
                             style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                             child: Text(
                               'Cancel',
@@ -1527,36 +1730,53 @@ class _UserManagementSectionState extends State<UserManagementSection>
                             onPressed: provider.isLoading
                                 ? null
                                 : () async {
-                              if (provider.formKey.currentState!.validate()) {
-                                provider.roleController.text = selectedRole;
-                                provider.userLevelController.text = selectedLevel;
+                                    if (provider.formKey.currentState!
+                                        .validate()) {
+                                      provider.roleController.text =
+                                          selectedRole;
+                                      provider.userLevelController.text =
+                                          selectedLevel;
 
-                                final success = await provider.addOrEditUser();
+                                      final success = await provider
+                                          .addOrEditUser();
 
-                                // CRITICAL FIX: Check mounted on the CORRECT context
-                                if (!mounted) return; // Check the widget's context first
+                                      // CRITICAL FIX: Check mounted on the CORRECT context
+                                      if (!mounted) {
+                                        return; // Check the widget's context first
+                                      }
 
-                                if (success) {
-                                  CustomSnackbars.showSuccess(context, provider.message);
-                                  // Check dialog context separately
-                                  if (stfContext.mounted) {
-                                    Navigator.pop(dialogContext);
-                                  }
-                                } else {
-                                  CustomSnackbars.showError(context, provider.message);
-                                }
-                              }
-                            },
+                                      if (success) {
+                                        CustomSnackbars.showSuccess(
+                                          context,
+                                          provider.message,
+                                        );
+                                        // Check dialog context separately
+                                        if (stfContext.mounted) {
+                                          Navigator.pop(dialogContext);
+                                        }
+                                      } else {
+                                        CustomSnackbars.showError(
+                                          context,
+                                          provider.message,
+                                        );
+                                      }
+                                    }
+                                  },
                             icon: provider.isLoading
                                 ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                                : Icon(isEdit ? Icons.save_rounded : Icons.add_rounded, size: 18),
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    isEdit
+                                        ? Icons.save_rounded
+                                        : Icons.add_rounded,
+                                    size: 18,
+                                  ),
                             label: Text(
                               isEdit ? 'Save Changes' : 'Create User',
                               style: GoogleFonts.plusJakartaSans(
@@ -1564,18 +1784,30 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                 fontSize: 14,
                               ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6366F1),
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: const Color(0xFFCBD5E1),
-                              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              elevation: 0,
-                            ).copyWith(
-                              elevation: WidgetStateProperty.resolveWith<double>(
-                                    (states) => states.contains(WidgetState.hovered) ? 2 : 0,
-                              ),
-                            ),
+                            style:
+                                ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6366F1),
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor: const Color(
+                                    0xFFCBD5E1,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 28,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 0,
+                                ).copyWith(
+                                  elevation:
+                                      WidgetStateProperty.resolveWith<double>(
+                                        (states) =>
+                                            states.contains(WidgetState.hovered)
+                                            ? 2
+                                            : 0,
+                                      ),
+                                ),
                           ),
                         ],
                       ),
@@ -1590,8 +1822,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-
-  Widget _buildRoleSelector(String selectedRole, ValueChanged<String?> onChanged) {
+  Widget _buildRoleSelector(
+    String selectedRole,
+    ValueChanged<String?> onChanged,
+  ) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -1601,17 +1835,35 @@ class _UserManagementSectionState extends State<UserManagementSection>
       child: Row(
         children: [
           Expanded(
-            child: _buildRoleOption('Job Seeker', 'Job Seeker', selectedRole, Icons.work_outline_rounded, onChanged),
+            child: _buildRoleOption(
+              'Job Seeker',
+              'Job Seeker',
+              selectedRole,
+              Icons.work_outline_rounded,
+              onChanged,
+            ),
           ),
           Expanded(
-            child: _buildRoleOption('Recruiter', 'Recruiter', selectedRole, Icons.business_center_rounded, onChanged),
+            child: _buildRoleOption(
+              'Recruiter',
+              'Recruiter',
+              selectedRole,
+              Icons.business_center_rounded,
+              onChanged,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRoleOption(String label, String value, String groupValue, IconData icon, ValueChanged<String?> onChanged) {
+  Widget _buildRoleOption(
+    String label,
+    String value,
+    String groupValue,
+    IconData icon,
+    ValueChanged<String?> onChanged,
+  ) {
     final isSelected = value == groupValue;
     return GestureDetector(
       onTap: () => onChanged(value),
@@ -1622,13 +1874,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isSelected
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))]
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
               : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8)),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected
+                  ? const Color(0xFF4F46E5)
+                  : const Color(0xFF94A3B8),
+            ),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -1636,7 +1900,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFF64748B),
+                  color: isSelected
+                      ? const Color(0xFF4F46E5)
+                      : const Color(0xFF64748B),
                 ),
               ),
             ),
@@ -1646,15 +1912,22 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
-
-
-
-  Widget _buildLevelDropdown(String selectedLevel, ValueChanged<String?> onChanged) {
+  Widget _buildLevelDropdown(
+    String selectedLevel,
+    ValueChanged<String?> onChanged,
+  ) {
     return DropdownButtonFormField<String>(
       value: selectedLevel,
-      style: GoogleFonts.plusJakartaSans(fontSize: 14, color: const Color(0xFF0F172A), fontWeight: FontWeight.w500),
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        color: const Color(0xFF0F172A),
+        fontWeight: FontWeight.w600,
+      ),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 15,
+        ),
         filled: true,
         fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
@@ -1666,13 +1939,20 @@ class _UserManagementSectionState extends State<UserManagementSection>
           borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
         ),
       ),
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
+      icon: const Icon(
+        Icons.keyboard_arrow_down_rounded,
+        color: Color(0xFF94A3B8),
+      ),
       items: [
         DropdownMenuItem(
           value: 'basic',
           child: Row(
             children: [
-              const Icon(Icons.person_outline, size: 18, color: Color(0xFF64748B)),
+              const Icon(
+                Icons.person_outline,
+                size: 18,
+                color: Color(0xFF64748B),
+              ),
               const SizedBox(width: 12),
               Text('Basic Account', style: GoogleFonts.plusJakartaSans()),
             ],
@@ -1682,11 +1962,22 @@ class _UserManagementSectionState extends State<UserManagementSection>
           value: 'premium',
           child: Row(
             children: [
-              const Icon(Icons.workspace_premium_rounded, size: 18, color: Color(0xFFF59E0B)),
+              const Icon(
+                Icons.workspace_premium_rounded,
+                size: 18,
+                color: Color(0xFFF59E0B),
+              ),
               const SizedBox(width: 12),
-              Text('Premium Account', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+              Text(
+                'Premium Account',
+                style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(width: 8),
-              const Badge(label: Text('PRO'), backgroundColor: Color(0xFFFEF3C7), textColor: Color(0xFFD97706)),
+              const Badge(
+                label: Text('PRO'),
+                backgroundColor: Color(0xFFFEF3C7),
+                textColor: Color(0xFFD97706),
+              ),
             ],
           ),
         ),
@@ -1694,8 +1985,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
       onChanged: onChanged,
     );
   }
-
-
 
   Widget _buildSectionLabel(String label) {
     return Padding(
@@ -1713,13 +2002,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildDialogField(
-      String label,
-      TextEditingController controller,
-      IconData icon, {
-        bool obscureText = false,
-        bool readOnly = false,
-        String? Function(String?)? validator,
-      }) {
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    bool obscureText = false,
+    bool readOnly = false,
+    String? Function(String?)? validator,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1728,21 +2017,33 @@ class _UserManagementSectionState extends State<UserManagementSection>
           controller: controller,
           obscureText: obscureText,
           readOnly: readOnly,
-          style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w500),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
             hintText: 'Enter $label',
-            hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: const Color(0xFFCBD5E1)),
+            hintStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: const Color(0xFFCBD5E1),
+            ),
             filled: true,
             fillColor: readOnly ? const Color(0xFFF8FAFC) : Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFF4F46E5),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1750,29 +2051,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1.5,
+              ),
             ),
           ),
-          validator: validator ?? (v) => v?.trim().isEmpty ?? true ? '$label is required' : null,
+          validator:
+              validator ??
+              (v) => v?.trim().isEmpty ?? true ? '$label is required' : null,
         ),
       ],
     );
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  void _showResetPasswordDialog(BuildContext context, AdminProvider provider, String email) {
+  void _showResetPasswordDialog(
+    BuildContext context,
+    AdminProvider provider,
+    String email,
+  ) {
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;
 
@@ -1835,7 +2132,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     ),
                     const SizedBox(height: 20),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
@@ -1844,7 +2144,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.alternate_email_rounded, size: 16, color: Color(0xFF94A3B8)),
+                          const Icon(
+                            Icons.alternate_email_rounded,
+                            size: 16,
+                            color: Color(0xFF94A3B8),
+                          ),
                           const SizedBox(width: 10),
                           Flexible(
                             child: Text(
@@ -1879,7 +2183,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     Expanded(
                       child: TextButton(
                         onPressed: () => Navigator.pop(dialogContext),
-                        child: Text('Cancel', style: GoogleFonts.plusJakartaSans(color: const Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1889,16 +2199,26 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         onPressed: () {
                           provider.resetPassword(email);
                           Navigator.pop(dialogContext);
-                          CustomSnackbars.showSuccess(context, 'Reset link sent successfully');
+                          CustomSnackbars.showSuccess(
+                            context,
+                            'Reset link sent successfully',
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF8B5CF6),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           elevation: 0,
                         ),
-                        child: Text('Send Link', style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Send Link',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -1910,7 +2230,6 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
     );
   }
-
 
   @override
   void dispose() {
@@ -1925,5 +2244,4 @@ class _UserManagementSectionState extends State<UserManagementSection>
     _scrollController.dispose();
     super.dispose();
   }
-
 }

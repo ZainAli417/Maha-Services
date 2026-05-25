@@ -42,10 +42,15 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
     super.dispose();
   }
 
-
-  void showCustomSnackBar(BuildContext context, String message, {required bool isError}) {
+  void showCustomSnackBar(
+    BuildContext context,
+    String message, {
+    required bool isError,
+  }) {
     // Define colors and icons based on the type
-    final bgColor = isError ? const Color(0xFFC72C41) : const Color(0xFF2E7D32); // Red or Green
+    final bgColor = isError
+        ? const Color(0xFFC72C41)
+        : const Color(0xFF2E7D32); // Red or Green
     final title = isError ? "Oh Snap!" : "Success!";
     final icon = isError ? Icons.error_outline : Icons.check_circle_outline;
 
@@ -78,16 +83,16 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                       children: [
                         Text(
                           title,
-                          style: GoogleFonts.montserrat(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 18,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           message,
-                          style: GoogleFonts.montserrat(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             color: Colors.white,
                           ),
@@ -117,7 +122,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         behavior: SnackBarBehavior.floating,
@@ -132,7 +137,10 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
   Future<void> _onLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = Provider.of<LoginProvider_Recruiter>(context, listen: false);
+    final provider = Provider.of<LoginProvider_Recruiter>(
+      context,
+      listen: false,
+    );
 
     // Assuming provider.login returns String? (null if success, string if error)
     final error = await provider.login(
@@ -157,11 +165,13 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
       });
     }
   }
+
   double _getResponsivePadding(double width) {
     if (width > 1200) return 180;
     if (width > 800) return 60;
     return 16;
   }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).primaryColor;
@@ -175,11 +185,14 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
             child: Padding(
               // 1. Use MediaQuery here instead of constraints to avoid the "Undefined" error
               padding: EdgeInsets.symmetric(
-                horizontal: _getResponsivePadding(MediaQuery.of(context).size.width),
+                horizontal: _getResponsivePadding(
+                  MediaQuery.of(context).size.width,
+                ),
                 vertical: 5,
               ),
               child: LayoutBuilder(
-                builder: (context, internalConstraints) { // 2. Renamed to avoid confusion
+                builder: (context, internalConstraints) {
+                  // 2. Renamed to avoid confusion
                   final isWide = internalConstraints.maxWidth > 800;
 
                   return Row(
@@ -209,7 +222,9 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 16),
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
                               child: Form(
                                 key: _formKey,
                                 child: Column(
@@ -222,7 +237,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                       child: Text(
                                         "Login to your account",
                                         textAlign: TextAlign.center,
-                                        style: GoogleFonts.montserrat(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black87,
@@ -238,9 +253,9 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                       children: [
                                         Text(
                                           "Email",
-                                          style: GoogleFonts.montserrat(
+                                          style: GoogleFonts.plusJakartaSans(
                                             fontSize: 14,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.w600,
                                             color: Colors.black87,
                                           ),
                                         ),
@@ -264,9 +279,9 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                       children: [
                                         Text(
                                           "Password",
-                                          style: GoogleFonts.montserrat(
+                                          style: GoogleFonts.plusJakartaSans(
                                             fontSize: 14,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.w600,
                                             color: Colors.black87,
                                           ),
                                         ),
@@ -283,16 +298,18 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                           },
                                           decoration: InputDecoration(
                                             hintText: "Enter your password",
-                                            hintStyle: GoogleFonts.montserrat(
-                                                color: Color(0xff5C738A),
-                                                fontWeight: FontWeight.w400),
+                                            hintStyle:
+                                                GoogleFonts.plusJakartaSans(
+                                                  color: Color(0xff5C738A),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                             filled: true,
                                             fillColor: Color(0xffEBEDF2),
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
-                                              vertical: 12,
-                                              horizontal: 16,
-                                            ),
+                                                  vertical: 12,
+                                                  horizontal: 16,
+                                                ),
                                             suffixIcon: IconButton(
                                               icon: Icon(
                                                 _obscurePassword
@@ -339,13 +356,13 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              borderSide: BorderSide(
-                                                color: Colors.red,
-                                                width: 2,
-                                              ),
-                                            ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  borderSide: BorderSide(
+                                                    color: Colors.red,
+                                                    width: 2,
+                                                  ),
+                                                ),
                                           ),
                                         ),
                                       ],
@@ -368,28 +385,33 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                                   : _onLogin, // keep enabled to preserve color
                                               style: ButtonStyle(
                                                 backgroundColor:
-                                                    WidgetStateProperty
-                                                        .resolveWith<Color>(
-                                                  (states) {
-                                                    if (provider.isLoading) {
-                                                      return primaryColor
-                                                          .withValues(alpha: 0.7);
-                                                    }
-                                                    return primaryColor;
-                                                  },
-                                                ),
+                                                    WidgetStateProperty.resolveWith<
+                                                      Color
+                                                    >((states) {
+                                                      if (provider.isLoading) {
+                                                        return primaryColor
+                                                            .withValues(
+                                                              alpha: 0.7,
+                                                            );
+                                                      }
+                                                      return primaryColor;
+                                                    }),
                                                 // ensure the disabled/pressed states don’t default to grey:
                                                 foregroundColor:
                                                     WidgetStateProperty.all(
-                                                        Colors.white),
-                                                shape: WidgetStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            25),
-                                                  ),
-                                                ),
+                                                      Colors.white,
+                                                    ),
+                                                shape:
+                                                    WidgetStateProperty.all<
+                                                      RoundedRectangleBorder
+                                                    >(
+                                                      RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              25,
+                                                            ),
+                                                      ),
+                                                    ),
                                                 elevation:
                                                     WidgetStateProperty.all(0),
                                               ),
@@ -399,19 +421,19 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                                       height: 24,
                                                       child:
                                                           CircularProgressIndicator(
-                                                        color: Colors.white,
-                                                        strokeWidth: 2,
-                                                      ),
+                                                            color: Colors.white,
+                                                            strokeWidth: 2,
+                                                          ),
                                                     )
                                                   : Text(
                                                       "Login",
-                                                      style: GoogleFonts
-                                                          .montserrat(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: Colors.white,
-                                                      ),
+                                                      style:
+                                                          GoogleFonts.plusJakartaSans(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white,
+                                                          ),
                                                     ),
                                             ),
                                           ),
@@ -430,11 +452,12 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                             ForgotPasswordModal.show(context);
                                           },
                                           style: TextButton.styleFrom(
-                                              foregroundColor: primaryColor),
+                                            foregroundColor: primaryColor,
+                                          ),
                                           child: Text(
                                             "Forgot Password?",
-                                            style: GoogleFonts.montserrat(
-                                              fontWeight: FontWeight.w500,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -445,11 +468,12 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
                                             context.go('/recruiter-signup');
                                           },
                                           style: TextButton.styleFrom(
-                                              foregroundColor: primaryColor),
+                                            foregroundColor: primaryColor,
+                                          ),
                                           child: Text(
                                             "New here? Create Account",
-                                            style: GoogleFonts.montserrat(
-                                              fontWeight: FontWeight.w500,
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontWeight: FontWeight.w600,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -489,7 +513,8 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: false,
-      validator: validator ??
+      validator:
+          validator ??
           (val) {
             if (val == null || val.trim().isEmpty) return "Required";
             if (isEmail && !val.contains("@")) return "Enter valid email";
@@ -497,9 +522,9 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
           },
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: GoogleFonts.montserrat(
+        hintStyle: GoogleFonts.plusJakartaSans(
           color: Color(0xff5C738A),
-          fontWeight: FontWeight.w400,
+          fontWeight: FontWeight.w600,
         ),
         filled: true,
         fillColor: Color(0xffEBEDF2),
@@ -520,10 +545,7 @@ class _Recruiter_LoginScreenState extends State<Recruiter_LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: primaryColor,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

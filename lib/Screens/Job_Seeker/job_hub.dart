@@ -33,8 +33,7 @@ class job_hub extends StatefulWidget {
   State<job_hub> createState() => _job_hubState();
 }
 
-class _job_hubState extends State<job_hub>
-    with TickerProviderStateMixin {
+class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -63,21 +62,14 @@ class _job_hubState extends State<job_hub>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     // Start animations
     _fadeController.forward();
@@ -110,9 +102,7 @@ class _job_hubState extends State<job_hub>
         key: _scaffoldKey,
         backgroundColor: Colors.white,
         drawer: isMobile
-            ? Drawer(
-                child: JobSeekerSidebar(activeIndex: 3, isDrawer: true),
-              )
+            ? Drawer(child: JobSeekerSidebar(activeIndex: 3, isDrawer: true))
             : null,
         body: Row(
           children: [
@@ -136,23 +126,41 @@ class _job_hubState extends State<job_hub>
                             child: Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.menu_rounded, size: 22),
-                                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                  icon: const Icon(
+                                    Icons.menu_rounded,
+                                    size: 22,
+                                  ),
+                                  onPressed: () =>
+                                      _scaffoldKey.currentState?.openDrawer(),
                                   padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 36,
+                                    minHeight: 36,
+                                  ),
                                 ),
                                 const SizedBox(width: 4),
                                 Container(
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                                    color: const Color(
+                                      0xFF6366F1,
+                                    ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(7),
                                   ),
-                                  child: const Icon(Icons.screen_search_desktop_outlined, size: 16, color: Color(0xFF6366F1)),
+                                  child: const Icon(
+                                    Icons.screen_search_desktop_outlined,
+                                    size: 16,
+                                    color: Color(0xFF6366F1),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
-                                Text('Job Hub',
-                                  style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                                Text(
+                                  'Job Hub',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF0F172A),
+                                  ),
                                 ),
                               ],
                             ),
@@ -174,77 +182,84 @@ class _job_hubState extends State<job_hub>
     // Responsive 3-column main layout:
     return Padding(
       padding: const EdgeInsets.all(0),
-      child: LayoutBuilder(builder: (context, constraints) {
-        final maxW = constraints.maxWidth;
-        final isDesktop = maxW > 1100;
-        final isTablet = maxW > 760 && maxW <= 1100;
-        final isMobile = maxW <= 760;
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxW = constraints.maxWidth;
+          final isDesktop = maxW > 1100;
+          final isTablet = maxW > 760 && maxW <= 1100;
+          final isMobile = maxW <= 760;
 
-        if (isDesktop) {
-          return Column(
-            children: [
-              // Header above the 3-column layout
-              _buildWelcomeSection(),
+          if (isDesktop) {
+            return Column(
+              children: [
+                // Header above the 3-column layout
+                _buildWelcomeSection(),
 
-
-              // The 3 columns themselves fill remaining space
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Center column: main content (jobs list)
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: Selector<JobSeekerProvider, Tuple2<bool, List<Map<String, dynamic>>>>(
-                              selector: (_, p) => Tuple2(
-                                p.isLoadingActiveJobs,
-                                p.filteredJobs,
-                              ),
-                              builder: (context, data, _) {
-                                final isLoading = data.item1;
-                                final jobs = data.item2;
-
-                                if (isLoading) {
-                                  return const Center(child: CircularProgressIndicator());
-                                }
-
-                                if (jobs.isEmpty) {
-                                  return Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.work_outline_rounded,
-                                          size: 80,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                        const SizedBox(height: 16),
-                                        const Text(
-                                          'No jobs available right now.\nPlease check back later.',
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
+                // The 3 columns themselves fill remaining space
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Center column: main content (jobs list)
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child:
+                                  Selector<
+                                    JobSeekerProvider,
+                                    Tuple2<bool, List<Map<String, dynamic>>>
+                                  >(
+                                    selector: (_, p) => Tuple2(
+                                      p.isLoadingActiveJobs,
+                                      p.activeJobs,
                                     ),
-                                  );
-                                }
+                                    builder: (context, data, _) {
+                                      final isLoading = data.item1;
+                                      final jobs = data.item2;
 
-                                return LiveJobsForSeeker(jobs: jobs);
-                              },
+                                      if (isLoading) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
+
+                                      if (jobs.isEmpty) {
+                                        return Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.work_outline_rounded,
+                                                size: 80,
+                                                color: Colors.grey.shade400,
+                                              ),
+                                              const SizedBox(height: 16),
+                                              const Text(
+                                                'No jobs available right now.\nPlease check back later.',
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+
+                                      return LiveJobsForSeeker(jobs: jobs);
+                                    },
+                                  ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(width: 20),
+                      const SizedBox(width: 20),
 
-                    // Right column: AI Assistant (and potential extras)
-                    /*   Expanded(
+                      // Right column: AI Assistant (and potential extras)
+                      /*   Expanded(
                       flex: 1,
                       child: Column(
                         children: [
@@ -263,82 +278,80 @@ class _job_hubState extends State<job_hub>
                     ),
 
                   */
-
-
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          } else {
+            // Tablet / Mobile: single column, jobs list fills all remaining space
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // On mobile the hamburger bar already shows the title, skip duplicate header
+                if (!isMobile) _buildWelcomeSection(),
+                Expanded(
+                  child: Consumer<JobSeekerProvider>(
+                    builder: (context, provider, _) {
+                      if (provider.isLoadingActiveJobs) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-        else {
-          // Tablet / Mobile: single column, jobs list fills all remaining space
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // On mobile the hamburger bar already shows the title, skip duplicate header
-              if (!isMobile) _buildWelcomeSection(),
-              Expanded(
-                child: Consumer<JobSeekerProvider>(
-                  builder: (context, provider, _) {
-                    if (provider.isLoadingActiveJobs) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                      final jobs = provider.activeJobs;
 
-                    final jobs = provider.filteredJobs;
-
-                    if (jobs.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.work_outline_rounded,
-                                size: 56, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No jobs available right now.',
-                              style: GoogleFonts.plusJakartaSans(
+                      if (jobs.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.work_outline_rounded,
+                                size: 56,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No jobs available right now.',
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 14,
-                                  color: Colors.grey.shade600),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      );
-                    }
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      }
 
-                    return LiveJobsForSeeker(jobs: jobs);
-                  },
+                      return LiveJobsForSeeker(jobs: jobs);
+                    },
+                  ),
                 ),
-              ),
-            ],
-          );
-        }
-
-
-      }),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
+
   Widget _buildWelcomeSection() {
-    const Color kPrimaryBlue   = Color(0xFF6366F1);
-    const Color kTextPrimary   = Color(0xFF0F172A);
+    const Color kPrimaryBlue = Color(0xFF6366F1);
+    const Color kTextPrimary = Color(0xFF0F172A);
     const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight   = Color(0xFFE2E8F0);
+    const Color kBorderLight = Color(0xFFE2E8F0);
 
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 768;
-    final hPad   = isMobile ? 12.0 : 24.0;
-    final vPad   = isMobile ? 10.0 : 16.0;
+    final hPad = isMobile ? 12.0 : 24.0;
+    final vPad = isMobile ? 10.0 : 16.0;
     final iconSz = isMobile ? 18.0 : 24.0;
     final titleSz = isMobile ? 15.0 : 18.0;
-    final subSz   = isMobile ? 11.0 : 13.0;
+    final subSz = isMobile ? 11.0 : 13.0;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           Container(
@@ -384,15 +397,7 @@ class _job_hubState extends State<job_hub>
       ),
     );
   }
-
-
 }
-
-
-
-
-
-
 
 class _EnhancedStatCard extends StatefulWidget {
   final IconData icon;
@@ -427,13 +432,15 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
       vsync: this,
     );
 
-    _elevationAnimation = Tween<double>(begin: 0, end: 8).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeOut),
-    );
+    _elevationAnimation = Tween<double>(
+      begin: 0,
+      end: 8,
+    ).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.03).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.03,
+    ).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
   }
 
   @override
@@ -503,11 +510,7 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
         color: widget.bgColor,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(
-        widget.icon,
-        color: widget.iconColor,
-        size: 22,
-      ),
+      child: Icon(widget.icon, color: widget.iconColor, size: 22),
     );
   }
 
@@ -528,7 +531,7 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
       widget.label,
       style: GoogleFonts.plusJakartaSans(
         fontSize: 12,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: const Color(0xFF6B7280),
         letterSpacing: -0.1,
       ),
@@ -543,6 +546,7 @@ class _EnhancedStatCardState extends State<_EnhancedStatCard>
     }
   }
 }
+
 /*
 /// AI Assistant and helper components (unchanged functional behavior)
 class _EnhancedAIAssistant extends StatefulWidget {
@@ -751,7 +755,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
                   'Ask me about your profile, career goals, or job search strategy.',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: Colors.grey.shade700,
                     letterSpacing: -0.1,
                     height: 1.35,
@@ -818,7 +822,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
                   textCapitalization: TextCapitalization.sentences,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     color: jetBlack,
                     height: 1.4,
                   ),
@@ -827,7 +831,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
                     filled: false,
                     hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w600,
                       color: Colors.grey.shade600,
                     ),
                     border: InputBorder.none,
@@ -1016,7 +1020,7 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
                     'AI-powered insights & recommendations',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: Colors.grey.shade600,
                       letterSpacing: -0.1,
                     ),
@@ -1087,7 +1091,6 @@ class _EnhancedAIAssistantState extends State<_EnhancedAIAssistant>
         _isAnalyzing = false;
       });
       _shimmerController.stop();
-      // TODO: Navigate to profile analysis results
     }
   }
 }

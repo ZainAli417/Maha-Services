@@ -9,10 +9,7 @@ import 'LIst_of_Applicants_provider.dart';
 class ApplicantFilterWidget extends StatefulWidget {
   final VoidCallback? onFilterApplied;
 
-  const ApplicantFilterWidget({
-    super.key,
-    this.onFilterApplied,
-  });
+  const ApplicantFilterWidget({super.key, this.onFilterApplied});
 
   @override
   State<ApplicantFilterWidget> createState() => _ApplicantFilterWidgetState();
@@ -70,7 +67,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
     if (_tempProfessionalStatusFilter != 'All') _activeFiltersCount++;
     if (_tempSkillsFilter.isNotEmpty) _activeFiltersCount++;
     if (_tempDateRange != null) _activeFiltersCount++;
-    if (_tempExperienceYearsRange.start > 0 || _tempExperienceYearsRange.end < 30) _activeFiltersCount++;
+    if (_tempExperienceYearsRange.start > 0 ||
+        _tempExperienceYearsRange.end < 30) {
+      _activeFiltersCount++;
+    }
     if (_tempHasCertifications) _activeFiltersCount++;
     if (_tempHasPublications) _activeFiltersCount++;
     if (_tempHasAwards) _activeFiltersCount++;
@@ -146,7 +146,13 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.assignment_turned_in,
                         _buildDropdownFilter(
                           value: _tempStatusFilter,
-                          items: ['All', 'Pending', 'Shortlist', 'Rejected', 'Accepted'],
+                          items: [
+                            'All',
+                            'Pending',
+                            'Shortlist',
+                            'Rejected',
+                            'Accepted',
+                          ],
                           onChanged: (val) => setState(() {
                             _tempStatusFilter = val!;
                             _calculateActiveFilters();
@@ -174,7 +180,14 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.workspace_premium,
                         _buildDropdownFilter(
                           value: _tempExperienceFilter,
-                          items: ['All', 'Entry Level', '1-2 years', '3-5 years', '6-10 years', '10+ years'],
+                          items: [
+                            'All',
+                            'Entry Level',
+                            '1-2 years',
+                            '3-5 years',
+                            '6-10 years',
+                            '10+ years',
+                          ],
                           onChanged: (val) => setState(() {
                             _tempExperienceFilter = val!;
                             _calculateActiveFilters();
@@ -265,7 +278,13 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         Icons.event_available,
                         _buildDropdownFilter(
                           value: _tempRetirementStatusFilter,
-                          items: ['All', 'Within 1 Year', '1-3 Years', '3-5 Years', '5+ Years'],
+                          items: [
+                            'All',
+                            'Within 1 Year',
+                            '1-3 Years',
+                            '3-5 Years',
+                            '5+ Years',
+                          ],
                           onChanged: (val) => setState(() {
                             _tempRetirementStatusFilter = val!;
                             _calculateActiveFilters();
@@ -285,7 +304,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Certifications',
                         Icons.verified_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with certifications', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
+                          title: Text(
+                            'Only candidates with certifications',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                          ),
                           value: _tempHasCertifications,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -301,7 +323,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Publications',
                         Icons.article_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with publications', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
+                          title: Text(
+                            'Only candidates with publications',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                          ),
                           value: _tempHasPublications,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -317,7 +342,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                         'Awards & Recognition',
                         Icons.emoji_events_outlined,
                         CheckboxListTile(
-                          title: Text('Only candidates with awards', style: GoogleFonts.plusJakartaSans(fontSize: 14)),
+                          title: Text(
+                            'Only candidates with awards',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                          ),
                           value: _tempHasAwards,
                           activeColor: Color(0xFF8B5CF6),
                           onChanged: (val) => setState(() {
@@ -468,7 +496,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           value: value,
           isExpanded: true,
           icon: Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
-          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Color(0xFF0F172A)),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: Color(0xFF0F172A),
+          ),
           items: items.map((item) {
             return DropdownMenuItem(
               value: item,
@@ -555,7 +586,10 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               _tempDateRange == null
                   ? 'Select date range'
                   : '${_tempDateRange!.start.toString().split(' ')[0]} - ${_tempDateRange!.end.toString().split(' ')[0]}',
-              style: GoogleFonts.plusJakartaSans(fontSize: 14, color: Color(0xFF0F172A)),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                color: Color(0xFF0F172A),
+              ),
             ),
             Spacer(),
             if (_tempDateRange != null)
@@ -638,4 +672,3 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
     );
   }
 }
-

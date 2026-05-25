@@ -12,7 +12,7 @@ String parseDocxBytes(Uint8List bytes) {
 
   // find main document.xml
   final archiveFile = archive.files.firstWhere(
-        (f) => f.name == 'word/document.xml',
+    (f) => f.name == 'word/document.xml',
     orElse: () => ArchiveFile('word/document.xml', 0, Uint8List(0)),
   );
 

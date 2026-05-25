@@ -15,11 +15,13 @@ import 'Screens/Job_Seeker/JS_Profile/JS_Profile.dart';
 import 'Login.dart';
 import 'Screens/Job_Seeker/job_hub.dart';
 import 'Screens/Job_Seeker/job_seeker_dashboard.dart';
+import 'Screens/Job_Seeker/saved_jobs_screen.dart';
 import 'Screens/Recruiter/Job_Applicant_Tracker.dart';
 import 'Constant/Splash.dart';
 import 'Screens/Recruiter/Recruiter_Dashbaord.dart';
 import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
 import 'Screens/Recruiter/Request_Box.dart';
+import 'Screens/Recruiter/archived_jobs_screen.dart';
 import 'SignUp /profile_builder.dart';
 import 'SignUp /signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
@@ -40,10 +42,10 @@ class RoleService {
         _firestore.collection('users').doc(uid).get(),
       ]);
 
-      final jsDoc    = results[0];
-      final recDoc   = results[1];
+      final jsDoc = results[0];
+      final recDoc = results[1];
       final adminDoc = results[2];
-      final userDoc  = results[3];
+      final userDoc = results[3];
 
       String? role;
       bool isNew = false;
@@ -61,7 +63,10 @@ class RoleService {
       // 4. Resolve isNew and Backup Role from 'users' collection
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
-        status = (userData['account_status'] ?? 'active').toString().toLowerCase().trim();
+        status = (userData['account_status'] ?? 'active')
+            .toString()
+            .toLowerCase()
+            .trim();
 
         // Resolve isNew status
         final rawIsNew = userData['isNew'];
@@ -70,18 +75,21 @@ class RoleService {
         } else if (rawIsNew is bool) {
           isNew = rawIsNew;
         } else {
-          isNew = true; // Default
+          isNew =
+              false; // Legacy users without the flag are treated as existing.
         }
 
         // Backup role resolution if not found in specific collections
         role ??= _normalizeRole(userData['role']?.toString());
       }
 
-      debugPrint('✅ RoleService: UID=$uid, Role=$role, isNew=$isNew, Status=$status');
+      debugPrint(
+        '✅ RoleService: UID=$uid, Role=$role, isNew=$isNew, Status=$status',
+      );
       return {'role': role, 'isNew': isNew, 'status': status};
     } catch (e) {
       debugPrint('❌ RoleService Error: $e');
-      return {'role': null, 'isNew': true, 'status': 'error'};
+      return {'role': null, 'isNew': false, 'status': 'error'};
     }
   }
 
@@ -89,7 +97,9 @@ class RoleService {
     if (role == null) return null;
     final r = role.toLowerCase().trim();
     if (['recruiter', 'employer'].contains(r)) return 'recruiter';
-    if (['job seeker', 'jobseeker', 'candidate'].contains(r)) return 'Job Seeker';
+    if (['job seeker', 'jobseeker', 'candidate'].contains(r)) {
+      return 'Job Seeker';
+    }
     if (['admin', 'superadmin'].contains(r)) return 'admin';
     return null;
   }
@@ -98,15 +108,19 @@ class RoleService {
 // ========== 2. AUTH STATE PROVIDER (Architecture from Code B) ==========
 class AuthNotifier extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   User? user;
   String? role;
   bool isNewUser = false;
   bool isInitialized = false;
-  bool _isFetching = false; // ✅ NEW: Track if we're currently fetching data
+  bool _isFetching = false;
+  StreamSubscription<User?>? _authSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
+  int _authVersion = 0;
 
   AuthNotifier() {
-    _auth.authStateChanges().listen(_handleAuthChange);
+    _authSub = _auth.authStateChanges().listen(_handleAuthChange);
   }
 
   Future<void> initialize() async {
@@ -120,8 +134,10 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> _handleAuthChange(User? newUser) async {
-    // ✅ CRITICAL FIX: Don't reset isInitialized during fetch
+    final version = ++_authVersion;
     _isFetching = true;
+    await _userDocSub?.cancel();
+    _userDocSub = null;
 
     if (newUser == null) {
       user = null;
@@ -130,29 +146,72 @@ class AuthNotifier extends ChangeNotifier {
       isInitialized = true;
       _isFetching = false;
     } else {
-      // Add a small delay for Firebase state to stabilize
-      await Future.delayed(const Duration(milliseconds: 300));
       debugPrint('🔄 Fetching role data for: ${newUser.uid}');
 
       final data = await RoleService.fetchUserData(newUser.uid);
-      final status = data['status']?.toString().toLowerCase() ?? 'active';
+      if (version != _authVersion) return;
 
-      if (status != 'active' && status != 'error') {
-        debugPrint('🚫 Suspended account detected in AuthNotifier, signing out...');
-        user = null;
-        role = null;
-        isNewUser = false;
-        isInitialized = true;
-        _isFetching = false;
-        await _auth.signOut();
-      } else {
-        user = newUser;
-        role = data['role'];
-        isNewUser = data['isNew'];
-        isInitialized = true;
-        _isFetching = false;
-        debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
-      }
+      _applyUserData(newUser, data);
+
+      _userDocSub = _firestore
+          .collection('users')
+          .doc(newUser.uid)
+          .snapshots(includeMetadataChanges: true)
+          .listen(
+            (snapshot) async {
+              if (version != _authVersion) return;
+              if (!snapshot.exists) {
+                final fallback = await RoleService.fetchUserData(newUser.uid);
+                if (version == _authVersion) _applyUserData(newUser, fallback);
+                return;
+              }
+
+              final userData = snapshot.data()!;
+              _applyUserData(newUser, {
+                'role': RoleService._normalizeRole(
+                  userData['role']?.toString(),
+                ),
+                'isNew': _parseIsNew(userData['isNew']),
+                'status': (userData['account_status'] ?? 'active')
+                    .toString()
+                    .toLowerCase()
+                    .trim(),
+              });
+            },
+            onError: (e) {
+              debugPrint('❌ AuthNotifier user stream error: $e');
+            },
+          );
+    }
+    notifyListeners();
+  }
+
+  bool _parseIsNew(dynamic raw) {
+    if (raw is String) return raw.toLowerCase().trim() == 'yes';
+    if (raw is bool) return raw;
+    return false;
+  }
+
+  void _applyUserData(User newUser, Map<String, dynamic> data) {
+    final status = data['status']?.toString().toLowerCase() ?? 'active';
+
+    if (status != 'active' && status != 'error') {
+      debugPrint(
+        '🚫 Suspended account detected in AuthNotifier, signing out...',
+      );
+      user = null;
+      role = null;
+      isNewUser = false;
+      isInitialized = true;
+      _isFetching = false;
+      _auth.signOut().ignore();
+    } else {
+      user = newUser;
+      role = data['role'];
+      isNewUser = data['isNew'] == true;
+      isInitialized = true;
+      _isFetching = false;
+      debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
     }
     notifyListeners();
   }
@@ -164,13 +223,51 @@ class AuthNotifier extends ChangeNotifier {
 
   // ✅ NEW: Helper to check if we should wait
   bool get shouldWait => _isFetching || !isInitialized;
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _userDocSub?.cancel();
+    super.dispose();
+  }
 }
 
 final authProvider = AuthNotifier();
 
 // ========== 3. CLEAN ROUTE CONFIG ==========
 class RouteConfig {
-  static const publicPaths = {'/', '/login', '/register', '/recover-password', '/pricing', '/admin'};
+  static const publicPaths = {
+    '/',
+    '/login',
+    '/register',
+    '/recover-password',
+    '/pricing',
+    '/admin',
+  };
+  static const jobSeekerPaths = {
+    '/dashboard',
+    '/profile-builder',
+    '/profile',
+    '/ai-tools',
+    '/job-hub',
+    '/saved-jobs',
+    '/js-settings',
+  };
+  static const recruiterPaths = {
+    '/recruiter-dashboard',
+    '/shortlisting',
+    '/job-application-tracker',
+    '/request-box',
+    '/archived-jobs',
+    '/post-job',
+  };
+  static const loggedInRedirectPaths = {
+    '/',
+    '/login',
+    '/register',
+    '/recover-password',
+    '/admin',
+  };
 
   static String getHome(String? role) {
     if (role == 'admin') return '/admin_dashboard';
@@ -186,7 +283,9 @@ final GoRouter router = GoRouter(
   redirect: (context, state) {
     final location = state.uri.path;
 
-    debugPrint('🔀 Router Check: $location | Init: ${authProvider.isInitialized} | User: ${authProvider.user?.uid} | Role: ${authProvider.role}');
+    debugPrint(
+      '🔀 Router Check: $location | Init: ${authProvider.isInitialized} | User: ${authProvider.user?.uid} | Role: ${authProvider.role}',
+    );
 
     // ✅ CRITICAL FIX: Wait for BOTH initialization AND data fetching
     if (authProvider.shouldWait) {
@@ -225,13 +324,15 @@ final GoRouter router = GoRouter(
     }
 
     // B. Prevent New Users going to Dashboard
-    if (role == 'Job Seeker' && !authProvider.isNewUser && location == '/profile-builder') {
+    if (role == 'Job Seeker' &&
+        !authProvider.isNewUser &&
+        location == '/profile-builder') {
       debugPrint('➡️ Completed profile, going to dashboard');
       return '/dashboard';
     }
 
-    // C. Logged in users trying to hit Login/Register
-    if (isPublic && location != '/pricing' && location != '/') {
+    // C. Logged in users trying to hit auth/landing routes
+    if (RouteConfig.loggedInRedirectPaths.contains(location)) {
       debugPrint('➡️ Already logged in, redirecting to home');
       return RouteConfig.getHome(role);
     }
@@ -242,10 +343,14 @@ final GoRouter router = GoRouter(
       return RouteConfig.getHome(role);
     }
 
-    // E. ✅ NEW: Redirect admin from /admin (login page) to dashboard if already logged in
-    if (location == '/admin' && role == 'admin') {
-      debugPrint('➡️ Admin already logged in, going to dashboard');
-      return '/admin_dashboard';
+    if (RouteConfig.recruiterPaths.contains(location) && role != 'recruiter') {
+      debugPrint('🚫 Non-recruiter trying to access recruiter route');
+      return RouteConfig.getHome(role);
+    }
+
+    if (RouteConfig.jobSeekerPaths.contains(location) && role != 'Job Seeker') {
+      debugPrint('🚫 Non-job seeker trying to access job seeker route');
+      return RouteConfig.getHome(role);
     }
 
     debugPrint('✅ Staying at: $location');
@@ -253,30 +358,86 @@ final GoRouter router = GoRouter(
   },
   routes: [
     GoRoute(path: '/', builder: (c, s) => const SplashScreen()),
-    GoRoute(path: '/login', pageBuilder: (c, s) => _fadePage(const JobSeekerLoginScreen(), s)),
-    GoRoute(path: '/register', pageBuilder: (c, s) => _fadePage(const SignUp_Screen(), s)),
-    GoRoute(path: '/recover-password', pageBuilder: (c, s) => _fadePage(const ForgotPasswordScreen(), s)),
-    GoRoute(path: '/pricing', pageBuilder: (c, s) => _fadePage(const PremiumPricingPage(), s)),
+    GoRoute(
+      path: '/login',
+      pageBuilder: (c, s) => _fadePage(const JobSeekerLoginScreen(), s),
+    ),
+    GoRoute(
+      path: '/register',
+      pageBuilder: (c, s) => _fadePage(const SignUp_Screen(), s),
+    ),
+    GoRoute(
+      path: '/recover-password',
+      pageBuilder: (c, s) => _fadePage(const ForgotPasswordScreen(), s),
+    ),
+    GoRoute(
+      path: '/pricing',
+      pageBuilder: (c, s) => _fadePage(const PremiumPricingPage(), s),
+    ),
 
     // Admin
-    GoRoute(path: '/admin', pageBuilder: (c, s) => _fadePage(const AdminLoginScreen(), s)),
-    GoRoute(path: '/admin_dashboard', pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen(), s)),
+    GoRoute(
+      path: '/admin',
+      pageBuilder: (c, s) => _fadePage(const AdminLoginScreen(), s),
+    ),
+    GoRoute(
+      path: '/admin_dashboard',
+      pageBuilder: (c, s) => _fadePage(const AdminDashboardScreen(), s),
+    ),
 
     // Job Seeker
-    GoRoute(path: '/dashboard', pageBuilder: (c, s) => _fadePage(const job_seeker_dashboard(), s)),
-    GoRoute(path: '/profile-builder', pageBuilder: (c, s) => _fadePage(const ProfileBuilderScreen(), s)),
-    GoRoute(path: '/profile', pageBuilder: (c, s) => _fadePage(const ProfileScreen_NEW(), s)),
-    GoRoute(path: '/ai-tools', pageBuilder: (c, s) => _fadePage(CVAnalysisScreen(), s)),
+    GoRoute(
+      path: '/dashboard',
+      pageBuilder: (c, s) => _fadePage(const job_seeker_dashboard(), s),
+    ),
+    GoRoute(
+      path: '/profile-builder',
+      pageBuilder: (c, s) => _fadePage(const ProfileBuilderScreen(), s),
+    ),
+    GoRoute(
+      path: '/profile',
+      pageBuilder: (c, s) => _fadePage(const ProfileScreen_NEW(), s),
+    ),
+    GoRoute(
+      path: '/ai-tools',
+      pageBuilder: (c, s) => _fadePage(CVAnalysisScreen(), s),
+    ),
     GoRoute(path: '/job-hub', pageBuilder: (c, s) => _fadePage(job_hub(), s)),
-    GoRoute(path: '/js-settings', pageBuilder: (c, s) => _fadePage(const JSSettingsScreen(), s)),
+    GoRoute(
+      path: '/saved-jobs',
+      pageBuilder: (c, s) => _fadePage(const SavedJobsScreen(), s),
+    ),
+    GoRoute(
+      path: '/js-settings',
+      pageBuilder: (c, s) => _fadePage(const JSSettingsScreen(), s),
+    ),
 
     // Recruiter
-    GoRoute(path: '/recruiter-dashboard', pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s)),
-    GoRoute(path: '/shortlisting', pageBuilder: (c, s) => _fadePage(const Shortlisting(), s)),
-    GoRoute(path: '/job-application-tracker', pageBuilder: (c, s) => _fadePage(const Job_Applicant_Tracker(), s)),
-    GoRoute(path: '/request-box', pageBuilder: (c, s) => _fadePage(const RequestBoxScreen(), s)),
-    GoRoute(path: '/post-job', pageBuilder: (c, s) => _fadePage(const PostJobScreen(), s)),
+    GoRoute(
+      path: '/recruiter-dashboard',
+      pageBuilder: (c, s) => _fadePage(const Dashboard_Recruiter(), s),
+    ),
 
+    GoRoute(
+      path: '/shortlisting',
+      pageBuilder: (c, s) => _fadePage(const Shortlisting(), s),
+    ),
+    GoRoute(
+      path: '/job-application-tracker',
+      pageBuilder: (c, s) => _fadePage(const Job_Applicant_Tracker(), s),
+    ),
+    GoRoute(
+      path: '/request-box',
+      pageBuilder: (c, s) => _fadePage(const RequestBoxScreen(), s),
+    ),
+    GoRoute(
+      path: '/archived-jobs',
+      pageBuilder: (c, s) => _fadePage(const ArchivedJobsScreen(), s),
+    ),
+    GoRoute(
+      path: '/post-job',
+      pageBuilder: (c, s) => _fadePage(const PostJobScreen(), s),
+    ),
   ],
 );
 

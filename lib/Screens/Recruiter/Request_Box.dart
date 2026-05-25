@@ -24,23 +24,25 @@ class _T {
     double fs = 11,
     Color? c,
     FontWeight fw = FontWeight.w500,
-  }) => GoogleFonts.plusJakartaSans
-(
+  }) => GoogleFonts.plusJakartaSans(
     fontSize: fs,
     fontWeight: fw,
     color: c ?? textSec,
   );
 
-  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.plusJakartaSans
-(
-    fontSize: fs,
-    fontWeight: FontWeight.w600,
-    color: c ?? textPri,
-  );
+  static TextStyle head({double fs = 14, Color? c}) =>
+      GoogleFonts.plusJakartaSans(
+        fontSize: fs,
+        fontWeight: FontWeight.w600,
+        color: c ?? textPri,
+      );
 
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.plusJakartaSans
-(fontSize: fs, color: c ?? textPri, height: 1.55);
+      GoogleFonts.plusJakartaSans(
+        fontSize: fs,
+        color: c ?? textPri,
+        height: 1.55,
+      );
 }
 
 // ─── Layout breakpoint InheritedWidget (computed ONCE at root) ────────────────
@@ -278,7 +280,7 @@ class _DesktopHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-    color: _T.white,
+
     child: Row(
       children: [
         const _HeaderIcon(size: 22),

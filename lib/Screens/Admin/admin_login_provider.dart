@@ -43,9 +43,9 @@ class AdminAuthProvider extends ChangeNotifier {
   bool get hasValidated => _hasValidated;
   bool get isFormValid =>
       _emailError == null &&
-          _passwordError == null &&
-          emailController.text.trim().isNotEmpty &&
-          passwordController.text.trim().isNotEmpty;
+      _passwordError == null &&
+      emailController.text.trim().isNotEmpty &&
+      passwordController.text.trim().isNotEmpty;
 
   AdminAuthProvider() {
     _initializeListeners();
@@ -258,7 +258,7 @@ class AdminAuthProvider extends ChangeNotifier {
         // Sign out immediately if not admin
         await _auth.signOut();
         _errorMessage =
-        'Access denied. This account does not have administrator privileges.';
+            'Access denied. This account does not have administrator privileges.';
         return false;
       }
 
@@ -274,7 +274,7 @@ class AdminAuthProvider extends ChangeNotifier {
       return true;
     } on TimeoutException catch (_) {
       _errorMessage =
-      'Connection timeout. Please check your internet connection.';
+          'Connection timeout. Please check your internet connection.';
       return false;
     } on FirebaseAuthException catch (ex) {
       // Comprehensive error handling with user-friendly messages

@@ -11,17 +11,21 @@ import 'List_applied_jobs_provider.dart';
 //  RESPONSIVE BREAKPOINTS
 // ═══════════════════════════════════════════════════════════════════════════
 class _BP {
-  static const mobile  = 600.0;
-  static const tablet  = 900.0;
+  static const mobile = 600.0;
+  static const tablet = 900.0;
   static const desktop = 1180.0;
 
-  static bool isMobile(double w)  => w < mobile;
-  static bool isTablet(double w)  => w >= mobile && w < desktop;
+  static bool isMobile(double w) => w < mobile;
+  static bool isTablet(double w) => w >= mobile && w < desktop;
   static bool isDesktop(double w) => w >= desktop;
 
   // Responsive padding
-  static double hPad(double w) => w < mobile ? 10 : w < desktop ? 16 : 22;
-  static double vPad(double w) => w < mobile ? 8  : 12;
+  static double hPad(double w) => w < mobile
+      ? 10
+      : w < desktop
+      ? 16
+      : 22;
+  static double vPad(double w) => w < mobile ? 8 : 12;
   static double cardPad(double w) => w < mobile ? 10 : 14;
 }
 
@@ -29,31 +33,34 @@ class _BP {
 //  DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════════════
 class _C {
-  static const canvas   = Color(0xFFFFFFFF);
-  static const surface  = Color(0xFFFFFFFF);
+  static const canvas = Color(0xFFFFFFFF);
+  static const surface = Color(0xFFFFFFFF);
   static const surfaceL = Color(0xFFFFFFFF);
-  static const border   = Color(0xFFE8ECF4);
+  static const border = Color(0xFFE8ECF4);
 
-  static const indigo   = Color(0xFF6366F1);
+  static const indigo = Color(0xFF6366F1);
   static const indigoLt = Color(0xFFEEEDFC);
-  static const teal     = Color(0xFF0891B2);
-  static const tealLt   = Color(0xFFE0F5FA);
-  static const emerald  = Color(0xFF059669);
+  static const teal = Color(0xFF0891B2);
+  static const tealLt = Color(0xFFE0F5FA);
+  static const emerald = Color(0xFF059669);
   static const emeraldL = Color(0xFFDCFCED);
-  static const amber    = Color(0xFFD97706);
-  static const amberLt  = Color(0xFFFEF3CD);
-  static const rose     = Color(0xFFE11D48);
-  static const roseLt   = Color(0xFFFCE7ED);
-  static const violet   = Color(0xFF7C3AED);
+  static const amber = Color(0xFFD97706);
+  static const amberLt = Color(0xFFFEF3CD);
+  static const rose = Color(0xFFE11D48);
+  static const roseLt = Color(0xFFFCE7ED);
+  static const violet = Color(0xFF7C3AED);
   static const violetLt = Color(0xFFF1ECFE);
-  static const slate    = Color(0xFF64748B);
+  static const slate = Color(0xFF64748B);
 
   static const t1 = Color(0xFF0F172A);
   static const t2 = Color(0xFF475569);
   static const t3 = Color(0xFF94A3B8);
 
-  static TextStyle p(double size,
-      {FontWeight fw = FontWeight.w600, Color color = t1}) =>
+  static TextStyle p(
+    double size, {
+    FontWeight fw = FontWeight.w600,
+    Color color = t1,
+  }) =>
       GoogleFonts.plusJakartaSans(fontSize: size, fontWeight: fw, color: color);
 }
 
@@ -92,33 +99,40 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _searchController = TextEditingController();
-  String _selectedStatus  = 'All';
+  String _selectedStatus = 'All';
   String _selectedCompany = 'All';
   DateTimeRange? _appliedRange;
   final List<String> _statusOptions = [
-    'All', 'pending', 'shortlist', 'accepted', 'rejected'
+    'All',
+    'pending',
+    'shortlist',
+    'accepted',
+    'rejected',
   ];
   List<String> _companyOptions = ['All'];
-  String _sortBy    = 'applied_desc';
+  String _sortBy = 'applied_desc';
   bool _showFilters = true;
 
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
-        duration: const Duration(milliseconds: 500), vsync: this)
-      ..forward();
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    )..forward();
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
     _slideController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this)
-      ..forward();
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.10),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-        parent: _slideController, curve: Curves.easeOutCubic));
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.10), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
   }
 
   @override
@@ -138,35 +152,45 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   List<dynamic> _sortApplications(List apps) {
     final list = List.from(apps);
     switch (_sortBy) {
-      case 'applied_desc': list.sort((a, b) => b.appliedAt.compareTo(a.appliedAt)); break;
-      case 'applied_asc':  list.sort((a, b) => a.appliedAt.compareTo(b.appliedAt)); break;
-      case 'title_asc':    list.sort((a, b) => a.title.compareTo(b.title));         break;
-      case 'company_asc':  list.sort((a, b) => a.company.compareTo(b.company));     break;
-      case 'status':       list.sort((a, b) => a.status.compareTo(b.status));       break;
+      case 'applied_desc':
+        list.sort((a, b) => b.appliedAt.compareTo(a.appliedAt));
+        break;
+      case 'applied_asc':
+        list.sort((a, b) => a.appliedAt.compareTo(b.appliedAt));
+        break;
+      case 'title_asc':
+        list.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case 'company_asc':
+        list.sort((a, b) => a.company.compareTo(b.company));
+        break;
+      case 'status':
+        list.sort((a, b) => a.status.compareTo(b.status));
+        break;
     }
     return list;
   }
 
   void _clearFilters() => setState(() {
     _searchController.clear();
-    _selectedStatus  = 'All';
+    _selectedStatus = 'All';
     _selectedCompany = 'All';
-    _appliedRange    = null;
+    _appliedRange = null;
   });
 
   bool _hasActiveFilters() =>
       _searchController.text.isNotEmpty ||
-          _selectedStatus  != 'All' ||
-          _selectedCompany != 'All' ||
-          _appliedRange    != null;
+      _selectedStatus != 'All' ||
+      _selectedCompany != 'All' ||
+      _appliedRange != null;
 
   String _getSortLabel() {
     const m = {
       'applied_desc': 'Latest',
-      'applied_asc' : 'Oldest',
-      'title_asc'   : 'Title',
-      'company_asc' : 'Unit / Base',
-      'status'      : 'Status',
+      'applied_asc': 'Oldest',
+      'title_asc': 'Title',
+      'company_asc': 'Unit / Base',
+      'status': 'Status',
     };
     return m[_sortBy] ?? 'Latest';
   }
@@ -182,9 +206,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
         key: _scaffoldKey,
         backgroundColor: _C.canvas,
         drawer: isMobile
-            ? Drawer(
-          child: JobSeekerSidebar(activeIndex: 0, isDrawer: true),
-        )
+            ? Drawer(child: JobSeekerSidebar(activeIndex: 0, isDrawer: true))
             : null,
         body: SafeArea(
           top: isMobile,
@@ -199,8 +221,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     position: _slideAnimation,
                     child: Column(
                       children: [
-                        if (isMobile)
-                          _buildMobileAppBar('My Applications'),
+                        if (isMobile) _buildMobileAppBar('My Applications'),
                         Expanded(child: _buildContent(context)),
                       ],
                     ),
@@ -218,9 +239,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     return Container(
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           IconButton(
@@ -236,20 +255,26 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               color: _C.indigo.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(7),
             ),
-            child: const Icon(Icons.work_history_rounded, color: _C.indigo, size: 16),
+            child: const Icon(
+              Icons.work_history_rounded,
+              color: _C.indigo,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 8),
           Flexible(
-            child: Text(title,
+            child: Text(
+              title,
               style: _C.p(14, fw: FontWeight.w600),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           const Spacer(),
           _FilterToggleBtn(
-              active: _showFilters,
-              onTap: () => setState(() => _showFilters = !_showFilters),
-              compact: true),
+            active: _showFilters,
+            onTap: () => setState(() => _showFilters = !_showFilters),
+            compact: true,
+          ),
         ],
       ),
     );
@@ -263,8 +288,11 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
         builder: (ctx, prov, _) {
           if (prov.isLoading) {
             return const Center(
-                child: CircularProgressIndicator(
-                    color: _C.indigo, strokeWidth: 2));
+              child: CircularProgressIndicator(
+                color: _C.indigo,
+                strokeWidth: 2,
+              ),
+            );
           }
 
           if (prov.error != null) {
@@ -278,25 +306,36 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                                color: _C.roseLt, shape: BoxShape.circle),
-                            child: const Icon(Icons.error_outline,
-                                size: 36, color: _C.rose)),
+                          padding: const EdgeInsets.all(12),
+                          decoration: const BoxDecoration(
+                            color: _C.roseLt,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.error_outline,
+                            size: 36,
+                            color: _C.rose,
+                          ),
+                        ),
                         const SizedBox(height: 14),
-                        Text('Unable to Load Applications',
-                            style: _C.p(15, fw: FontWeight.w700),
-                            textAlign: TextAlign.center),
+                        Text(
+                          'Unable to Load Applications',
+                          style: _C.p(15, fw: FontWeight.w700),
+                          textAlign: TextAlign.center,
+                        ),
                         const SizedBox(height: 6),
-                        Text(prov.error!,
-                            style: _C.p(12, color: _C.t2, fw: FontWeight.w500),
-                            textAlign: TextAlign.center),
+                        Text(
+                          prov.error!,
+                          style: _C.p(12, color: _C.t2, fw: FontWeight.w500),
+                          textAlign: TextAlign.center,
+                        ),
                         const SizedBox(height: 16),
                         _OutlineBtn(
-                            label: 'Retry',
-                            icon: Icons.refresh_rounded,
-                            color: _C.indigo,
-                            onTap: prov.refresh),
+                          label: 'Retry',
+                          icon: Icons.refresh_rounded,
+                          color: _C.indigo,
+                          onTap: prov.refresh,
+                        ),
                       ],
                     ),
                   ),
@@ -306,12 +345,15 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
           }
 
           _companyOptions =
-              ['All'] + prov.applications.map((a) => a.company).toSet().toList();
+              ['All'] +
+              prov.applications.map((a) => a.company).toSet().toList();
 
           final filtered = prov.applications.where((app) {
             final q = _searchController.text.toLowerCase();
-            return (_selectedStatus  == 'All' || app.status  == _selectedStatus) &&
-                (_selectedCompany == 'All' || app.company == _selectedCompany) &&
+            return (_selectedStatus == 'All' ||
+                    app.status == _selectedStatus) &&
+                (_selectedCompany == 'All' ||
+                    app.company == _selectedCompany) &&
                 _inRange(app.appliedAt, _appliedRange) &&
                 (q.isEmpty ||
                     app.title.toLowerCase().contains(q) ||
@@ -319,79 +361,86 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                     app.jobId.toLowerCase().contains(q));
           }).toList();
 
-          final sorted    = _sortApplications(filtered);
+          final sorted = _sortApplications(filtered);
           final analytics = prov.getAnalytics(sorted);
 
-          return LayoutBuilder(builder: (_, constraints) {
-            final w        = constraints.maxWidth;
-            final isMobile = _BP.isMobile(w);
-            final isWide   = _BP.isDesktop(w);
+          return LayoutBuilder(
+            builder: (_, constraints) {
+              final w = constraints.maxWidth;
+              final isMobile = _BP.isMobile(w);
+              final isWide = _BP.isDesktop(w);
 
-            return Column(
-              children: [
-                // Fixed top bar — hide on mobile
-                if (!isMobile) _buildTopBar(analytics, sorted.length, w),
-                if (_showFilters) _buildFilterBar(prov, isMobile, w),
+              return Column(
+                children: [
+                  // Fixed top bar — hide on mobile
+                  if (!isMobile) _buildTopBar(analytics, sorted.length, w),
+                  if (_showFilters) _buildFilterBar(prov, isMobile, w),
 
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // MAIN SCROLLABLE AREA
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: prov.refresh,
-                          color: _C.indigo,
-                          backgroundColor: _C.surface,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.all(_BP.hPad(w)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (prov.applications.isNotEmpty) ...[
-                                  _KpiStrip(
-                                    total: analytics['totalApplications'] as int,
-                                    stats: analytics['statusBreakdown']
-                                    as Map<String, dynamic>,
-                                    responseRate:
-                                    analytics['responseRate'] as double,
-                                    avgResponse:
-                                    analytics['averageResponseTime'] as int,
-                                    screenWidth: w,
-                                  ),
-                                  SizedBox(height: isMobile ? 14 : 18),
-                                  _SectionHead(
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // MAIN SCROLLABLE AREA
+                        Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: prov.refresh,
+                            color: _C.indigo,
+                            backgroundColor: _C.surface,
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.all(_BP.hPad(w)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (prov.applications.isNotEmpty) ...[
+                                    _KpiStrip(
+                                      total:
+                                          analytics['totalApplications'] as int,
+                                      stats:
+                                          analytics['statusBreakdown']
+                                              as Map<String, dynamic>,
+                                      responseRate:
+                                          analytics['responseRate'] as double,
+                                      avgResponse:
+                                          analytics['averageResponseTime']
+                                              as int,
+                                      screenWidth: w,
+                                    ),
+                                    SizedBox(height: isMobile ? 14 : 18),
+                                    _SectionHead(
                                       icon: Icons.analytics_outlined,
-                                      title: 'Analytics Overview'),
-                                  SizedBox(height: isMobile ? 10 : 14),
-                                  _AnalyticsCharts(analytics: analytics),
-                                  SizedBox(height: isMobile ? 14 : 18),
-                                  _SectionHead(
+                                      title: 'Analytics Overview',
+                                    ),
+                                    SizedBox(height: isMobile ? 10 : 14),
+                                    _AnalyticsCharts(analytics: analytics),
+                                    SizedBox(height: isMobile ? 14 : 18),
+                                    _SectionHead(
                                       icon: Icons.list_alt_rounded,
-                                      title: 'Applications'),
-                                  SizedBox(height: isMobile ? 10 : 14),
+                                      title: 'Applications',
+                                    ),
+                                    SizedBox(height: isMobile ? 10 : 14),
+                                  ],
+                                  _buildTable(sorted, isMobile),
+                                  const SizedBox(height: 16),
                                 ],
-                                _buildTable(sorted, isMobile),
-                                const SizedBox(height: 16),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
-                      // RIGHT PANEL (wide screens only)
-                      if (isWide)
-                        _RightPanel(
-                          analytics: analytics,
-                          applications: sorted,
-                        ),
-                    ],
+                        // RIGHT PANEL (wide screens only)
+                        if (isWide)
+                          _RightPanel(
+                            analytics: analytics,
+                            applications: sorted,
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          });
+                ],
+              );
+            },
+          );
         },
       ),
     );
@@ -400,17 +449,19 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   //  TOP BAR
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildTopBar(Map<String, dynamic> analytics, int filteredCount, double w) {
-    final total    = analytics['totalApplications'] as int;
+  Widget _buildTopBar(
+    Map<String, dynamic> analytics,
+    int filteredCount,
+    double w,
+  ) {
+    final total = analytics['totalApplications'] as int;
     final accepted = (analytics['statusBreakdown'] as Map)['accepted'] as int;
-    final pending  = (analytics['statusBreakdown'] as Map)['pending']  as int;
+    final pending = (analytics['statusBreakdown'] as Map)['pending'] as int;
 
     return Container(
       height: 64,
       padding: EdgeInsets.symmetric(horizontal: _BP.hPad(w)),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(color: Colors.white),
       child: Row(
         children: [
           Container(
@@ -419,7 +470,11 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               color: _C.indigo.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.work_history_rounded, color: _C.indigo, size: 20),
+            child: const Icon(
+              Icons.work_history_rounded,
+              color: _C.indigo,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Column(
@@ -427,8 +482,10 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('My Applications', style: _C.p(16, fw: FontWeight.w600)),
-              Text('Trends & insights',
-                  style: _C.p(11, fw: FontWeight.w500, color: _C.t3)),
+              Text(
+                'Trends & insights',
+                style: _C.p(11, fw: FontWeight.w500, color: _C.t3),
+              ),
             ],
           ),
           const SizedBox(width: 20),
@@ -437,19 +494,32 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _MiniStatChip(icon: Icons.inbox_rounded,         label: '$total Total',    color: _C.indigo),
+                  _MiniStatChip(
+                    icon: Icons.inbox_rounded,
+                    label: '$total Total',
+                    color: _C.indigo,
+                  ),
                   const SizedBox(width: 6),
-                  _MiniStatChip(icon: Icons.check_circle_rounded,  label: '$accepted Accepted', color: _C.emerald),
+                  _MiniStatChip(
+                    icon: Icons.check_circle_rounded,
+                    label: '$accepted Accepted',
+                    color: _C.emerald,
+                  ),
                   const SizedBox(width: 6),
-                  _MiniStatChip(icon: Icons.timelapse_rounded,     label: '$pending Pending',   color: _C.amber),
+                  _MiniStatChip(
+                    icon: Icons.timelapse_rounded,
+                    label: '$pending Pending',
+                    color: _C.amber,
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 6),
           _FilterToggleBtn(
-              active: _showFilters,
-              onTap: () => setState(() => _showFilters = !_showFilters)),
+            active: _showFilters,
+            onTap: () => setState(() => _showFilters = !_showFilters),
+          ),
         ],
       ),
     );
@@ -458,7 +528,11 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   //  FILTER BAR
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildFilterBar(ListAppliedJobsProvider prov, bool isMobile, double w) {
+  Widget _buildFilterBar(
+    ListAppliedJobsProvider prov,
+    bool isMobile,
+    double w,
+  ) {
     final hPad = _BP.hPad(w);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
@@ -468,99 +542,125 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       ),
       child: isMobile
           ? Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _CompactSearchField(
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              hint: 'Search...'),
-          const SizedBox(height: 7),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _CompactSearchField(
+                  controller: _searchController,
+                  onChanged: (_) => setState(() {}),
+                  hint: 'Search...',
+                ),
+                const SizedBox(height: 7),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _FilterDropdown(
+                        label: 'Status',
+                        value: _selectedStatus,
+                        items: _statusOptions,
+                        onChanged: (v) => setState(() => _selectedStatus = v!),
+                      ),
+                      const SizedBox(width: 6),
+                      _FilterDropdown(
+                        label: 'Unit',
+                        value: _selectedCompany,
+                        items: _companyOptions,
+                        onChanged: (v) => setState(() => _selectedCompany = v!),
+                      ),
+                      const SizedBox(width: 6),
+                      _DateRangeBtn(
+                        range: _appliedRange,
+                        onTap: _showDatePicker,
+                      ),
+                      // _SortDropdown hidden on mobile to save space as per request
+                      if (_hasActiveFilters()) ...[
+                        const SizedBox(width: 6),
+                        _OutlineBtn(
+                          label: 'Clear',
+                          icon: Icons.clear_all_rounded,
+                          color: _C.rose,
+                          onTap: _clearFilters,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: 4),
+                    child: Text(
+                      'PULL DOWN LONG TO REFRESH DATA',
+                      style: _C.p(
+                        9,
+                        fw: FontWeight.w500,
+                        color: _C.t3.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: _CompactSearchField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    hint: 'Search by title, unit or base...',
+                  ),
+                ),
+                const SizedBox(width: 8),
                 _FilterDropdown(
-                    label: 'Status',
-                    value: _selectedStatus,
-                    items: _statusOptions,
-                    onChanged: (v) => setState(() => _selectedStatus = v!)),
-                const SizedBox(width: 6),
+                  label: 'Status',
+                  value: _selectedStatus,
+                  items: _statusOptions,
+                  onChanged: (v) => setState(() => _selectedStatus = v!),
+                ),
+                const SizedBox(width: 8),
                 _FilterDropdown(
-                    label: 'Unit',
-                    value: _selectedCompany,
-                    items: _companyOptions,
-                    onChanged: (v) => setState(() => _selectedCompany = v!)),
-                const SizedBox(width: 6),
+                  label: 'All Units',
+                  value: _selectedCompany,
+                  items: _companyOptions,
+                  onChanged: (v) => setState(() => _selectedCompany = v!),
+                ),
+                const SizedBox(width: 8),
                 _DateRangeBtn(range: _appliedRange, onTap: _showDatePicker),
-                // _SortDropdown hidden on mobile to save space as per request
+                const SizedBox(width: 8),
+                _SortDropdown(
+                  value: _getSortLabel(),
+                  onChanged: _onSortChanged,
+                ),
                 if (_hasActiveFilters()) ...[
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   _OutlineBtn(
-                      label: 'Clear',
-                      icon: Icons.clear_all_rounded,
-                      color: _C.rose,
-                      onTap: _clearFilters),
+                    label: 'Clear',
+                    icon: Icons.clear_all_rounded,
+                    color: _C.rose,
+                    onTap: _clearFilters,
+                  ),
                 ],
               ],
             ),
-          ),
-          if (Theme.of(context).platform == TargetPlatform.android)
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 4),
-              child: Text(
-                'PULL DOWN LONG TO REFRESH DATA',
-                style: _C.p(9, fw: FontWeight.w500, color: _C.t3.withValues(alpha: 0.7)),
-              ),
-            ),
-        ],
-      )
-          : Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: _CompactSearchField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                hint: 'Search by title, unit or base...'),
-          ),
-          const SizedBox(width: 8),
-          _FilterDropdown(
-              label: 'Status',
-              value: _selectedStatus,
-              items: _statusOptions,
-              onChanged: (v) => setState(() => _selectedStatus = v!)),
-          const SizedBox(width: 8),
-          _FilterDropdown(
-              label: 'All Units',
-              value: _selectedCompany,
-              items: _companyOptions,
-              onChanged: (v) => setState(() => _selectedCompany = v!)),
-          const SizedBox(width: 8),
-          _DateRangeBtn(range: _appliedRange, onTap: _showDatePicker),
-          const SizedBox(width: 8),
-          _SortDropdown(
-              value: _getSortLabel(),
-              onChanged: _onSortChanged),
-          if (_hasActiveFilters()) ...[
-            const SizedBox(width: 8),
-            _OutlineBtn(
-                label: 'Clear',
-                icon: Icons.clear_all_rounded,
-                color: _C.rose,
-                onTap: _clearFilters),
-          ],
-        ],
-      ),
     );
   }
 
   void _onSortChanged(String? val) => setState(() {
     switch (val) {
-      case 'Latest':      _sortBy = 'applied_desc'; break;
-      case 'Oldest':      _sortBy = 'applied_asc';  break;
-      case 'Title':       _sortBy = 'title_asc';    break;
-      case 'Unit / Base': _sortBy = 'company_asc';  break;
-      case 'Status':      _sortBy = 'status';       break;
+      case 'Latest':
+        _sortBy = 'applied_desc';
+        break;
+      case 'Oldest':
+        _sortBy = 'applied_asc';
+        break;
+      case 'Title':
+        _sortBy = 'title_asc';
+        break;
+      case 'Unit / Base':
+        _sortBy = 'company_asc';
+        break;
+      case 'Status':
+        _sortBy = 'status';
+        break;
     }
   });
 
@@ -592,26 +692,39 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       return Container(
         padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 56),
         decoration: BoxDecoration(
-            color: _C.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _C.border)),
+          color: _C.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _C.border),
+        ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: const BoxDecoration(color: _C.canvas, shape: BoxShape.circle),
-                child: const Icon(Icons.work_outline_rounded, size: 40, color: _C.t3),
+                decoration: const BoxDecoration(
+                  color: _C.canvas,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.work_outline_rounded,
+                  size: 40,
+                  color: _C.t3,
+                ),
               ),
               const SizedBox(height: 14),
-              Text('No Applications Found', style: _C.p(16, fw: FontWeight.w700)),
+              Text(
+                'No Applications Found',
+                style: _C.p(16, fw: FontWeight.w700),
+              ),
               const SizedBox(height: 4),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text('Adjust filters or start applying to new positions',
-                    style: _C.p(11, fw: FontWeight.w500, color: _C.t2),
-                    textAlign: TextAlign.center),
+                child: Text(
+                  'Adjust filters or start applying to new positions',
+                  style: _C.p(11, fw: FontWeight.w500, color: _C.t2),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),
@@ -623,28 +736,35 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     if (isMobile) {
       return Column(
         children: [
-          ...apps.map((app) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _MobileAppCard(app: app),
-          )),
+          ...apps.map(
+            (app) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _MobileAppCard(app: app),
+            ),
+          ),
         ],
       );
     }
 
     return Container(
       decoration: BoxDecoration(
-          color: _C.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _C.border),
-          boxShadow: const [
-            BoxShadow(
-                color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3))
-          ]),
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           _TableHeader(),
-          ...apps.asMap().entries.map((e) =>
-              _TableRow(app: e.value, isLast: e.key == apps.length - 1)),
+          ...apps.asMap().entries.map(
+            (e) => _TableRow(app: e.value, isLast: e.key == apps.length - 1),
+          ),
         ],
       ),
     );
@@ -667,7 +787,11 @@ class _MobileAppCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: _C.border),
         boxShadow: const [
-          BoxShadow(color: Color(0x04000000), blurRadius: 5, offset: Offset(0, 2))
+          BoxShadow(
+            color: Color(0x04000000),
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
@@ -677,30 +801,48 @@ class _MobileAppCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(app.title,
-                    style: _C.p(13, fw: FontWeight.w700),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  app.title,
+                  style: _C.p(13, fw: FontWeight.w700),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 3),
-                Text(app.department,
-                    style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  app.department,
+                  style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 6),
-                Row(children: [
-                  const Icon(Icons.business, size: 11, color: _C.t3),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(app.company,
+                Row(
+                  children: [
+                    const Icon(Icons.business, size: 11, color: _C.t3),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        app.company,
                         style: _C.p(11, color: _C.t1),
-                        overflow: TextOverflow.ellipsis),
-                  ),
-                ]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 3),
-                Row(children: [
-                  const Icon(Icons.calendar_today_rounded, size: 11, color: _C.t3),
-                  const SizedBox(width: 4),
-                  Text(DateFormat.yMMMd().format(app.appliedAt),
-                      style: _C.p(10, color: _C.t2)),
-                ]),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 11,
+                      color: _C.t3,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat.yMMMd().format(app.appliedAt),
+                      style: _C.p(10, color: _C.t2),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -722,8 +864,9 @@ class _RightPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stats       = analytics['statusBreakdown']         as Map<String, dynamic>;
-    final topCompanies = analytics['topCompanies']            as List<Map<String, dynamic>>;
+    final stats = analytics['statusBreakdown'] as Map<String, dynamic>;
+    final topCompanies =
+        analytics['topCompanies'] as List<Map<String, dynamic>>;
 
     return SizedBox(
       width: 340,
@@ -731,8 +874,10 @@ class _RightPanel extends StatelessWidget {
         children: [
           _PanelHdr(
             icon: Icons.bar_chart_rounded,
-            iconBg: _C.indigoLt, iconColor: _C.indigo,
-            title: 'Status Overview', sub: 'Application breakdown',
+            iconBg: _C.indigoLt,
+            iconColor: _C.indigo,
+            title: 'Status Overview',
+            sub: 'Application breakdown',
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -744,30 +889,39 @@ class _RightPanel extends StatelessWidget {
           if (topCompanies.isNotEmpty) ...[
             _PanelHdr(
               icon: Icons.business_rounded,
-              iconBg: _C.tealLt, iconColor: _C.teal,
-              title: 'Top Units', sub: 'Most applied to',
+              iconBg: _C.tealLt,
+              iconColor: _C.teal,
+              title: 'Top Units',
+              sub: 'Most applied to',
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 children: topCompanies.take(4).map((c) {
                   final count = c['count'] as int;
-                  final max   = (topCompanies.first['count'] as int).clamp(1, 9999);
-                  final pct   = count / max;
+                  final max = (topCompanies.first['count'] as int).clamp(
+                    1,
+                    9999,
+                  );
+                  final pct = count / max;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 9),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(children: [
-                          Expanded(
-                            child: Text(c['company'],
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                c['company'],
                                 style: _C.p(11, color: _C.t1),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                          const SizedBox(width: 6),
-                          _Chip(label: '$count', color: _C.teal, tiny: true),
-                        ]),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            _Chip(label: '$count', color: _C.teal, tiny: true),
+                          ],
+                        ),
                         const SizedBox(height: 4),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
@@ -789,19 +943,24 @@ class _RightPanel extends StatelessWidget {
 
           _PanelHdr(
             icon: Icons.work_history_rounded,
-            iconBg: _C.violetLt, iconColor: _C.violet,
-            title: 'Recent Applications', sub: '${applications.length} total',
+            iconBg: _C.violetLt,
+            iconColor: _C.violet,
+            title: 'Recent Applications',
+            sub: '${applications.length} total',
             badge: _Chip(label: '${applications.length}', color: _C.violet),
           ),
           Expanded(
             child: applications.isEmpty
-                ? const _Empty(icon: Icons.inbox_outlined, label: 'No applications yet')
+                ? const _Empty(
+                    icon: Icons.inbox_outlined,
+                    label: 'No applications yet',
+                  )
                 : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
-              itemCount: applications.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (_, i) => _JobCard(app: applications[i]),
-            ),
+                    padding: const EdgeInsets.fromLTRB(12, 2, 12, 12),
+                    itemCount: applications.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) => _JobCard(app: applications[i]),
+                  ),
           ),
         ],
       ),
@@ -821,21 +980,22 @@ class _StatusBarChart extends StatelessWidget {
     final labels = ['Pending', 'Shortlist', 'Accepted', 'Rejected'];
     final colors = [_C.amber, _C.violet, _C.emerald, _C.rose];
     final values = [
-      (stats['pending']   as int).toDouble(),
+      (stats['pending'] as int).toDouble(),
       (stats['shortlist'] as int).toDouble(),
-      (stats['accepted']  as int).toDouble(),
-      (stats['rejected']  as int).toDouble(),
+      (stats['accepted'] as int).toDouble(),
+      (stats['rejected'] as int).toDouble(),
     ];
-    final maxY    = values.reduce((a, b) => a > b ? a : b) * 1.3;
+    final maxY = values.reduce((a, b) => a > b ? a : b) * 1.3;
     final safeMax = maxY < 1 ? 5.0 : maxY;
 
     return Container(
       height: 185,
       padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
       decoration: BoxDecoration(
-          color: _C.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _C.border)),
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _C.border),
+      ),
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
@@ -856,31 +1016,41 @@ class _StatusBarChart extends StatelessWidget {
                 showTitles: true,
                 getTitlesWidget: (v, _) {
                   final i = v.toInt();
-                  if (i < 0 || i >= labels.length) return const SizedBox.shrink();
+                  if (i < 0 || i >= labels.length) {
+                    return const SizedBox.shrink();
+                  }
                   return Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(labels[i].substring(0, 3),
-                        style: _C.p(8, fw: FontWeight.w500, color: _C.t3)),
+                    child: Text(
+                      labels[i].substring(0, 3),
+                      style: _C.p(8, fw: FontWeight.w500, color: _C.t3),
+                    ),
                   );
                 },
               ),
             ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
-                showTitles: true, reservedSize: 24,
-                getTitlesWidget: (v, _) =>
-                    Text(v.toInt().toString(),
-                        style: _C.p(8, fw: FontWeight.w500, color: _C.t3)),
+                showTitles: true,
+                reservedSize: 24,
+                getTitlesWidget: (v, _) => Text(
+                  v.toInt().toString(),
+                  style: _C.p(8, fw: FontWeight.w500, color: _C.t3),
+                ),
               ),
             ),
-            topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
           ),
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (_) =>
-            const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
+                const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           barGroups: List.generate(values.length, (i) {
@@ -892,12 +1062,17 @@ class _StatusBarChart extends StatelessWidget {
                   toY: values[i],
                   gradient: LinearGradient(
                     colors: [col.withValues(alpha: 0.5), col],
-                    begin: Alignment.bottomCenter, end: Alignment.topCenter,
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
                   ),
                   width: 22,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(5),
+                  ),
                   backDrawRodData: BackgroundBarChartRodData(
-                    show: true, toY: safeMax, color: const Color(0xFFFFFFFF),
+                    show: true,
+                    toY: safeMax,
+                    color: const Color(0xFFFFFFFF),
                   ),
                 ),
               ],
@@ -921,11 +1096,21 @@ class _JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = (app.status as String).toLowerCase();
-    Color sCol = _C.slate; IconData sIcon = Icons.circle_outlined;
-    if (s == 'accepted')  { sCol = _C.emerald; sIcon = Icons.check_circle_rounded; }
-    else if (s == 'pending')   { sCol = _C.amber;   sIcon = Icons.timelapse_rounded; }
-    else if (s == 'shortlist') { sCol = _C.violet;  sIcon = Icons.star_rounded; }
-    else if (s == 'rejected')  { sCol = _C.rose;    sIcon = Icons.cancel_rounded; }
+    Color sCol = _C.slate;
+    IconData sIcon = Icons.circle_outlined;
+    if (s == 'accepted') {
+      sCol = _C.emerald;
+      sIcon = Icons.check_circle_rounded;
+    } else if (s == 'pending') {
+      sCol = _C.amber;
+      sIcon = Icons.timelapse_rounded;
+    } else if (s == 'shortlist') {
+      sCol = _C.violet;
+      sIcon = Icons.star_rounded;
+    } else if (s == 'rejected') {
+      sCol = _C.rose;
+      sIcon = Icons.cancel_rounded;
+    }
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -934,53 +1119,82 @@ class _JobCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: _C.border),
         boxShadow: const [
-          BoxShadow(color: Color(0x04000000), blurRadius: 4, offset: Offset(0, 2))
+          BoxShadow(
+            color: Color(0x04000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(sIcon, color: sCol, size: 12),
-            const SizedBox(width: 4),
-            Text(s.toUpperCase(), style: _C.p(9, color: sCol)),
-            const Spacer(),
-            Text(DateFormat.MMMd().format(app.appliedAt),
-                style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
-          ]),
+          Row(
+            children: [
+              Icon(sIcon, color: sCol, size: 12),
+              const SizedBox(width: 4),
+              Text(s.toUpperCase(), style: _C.p(9, color: sCol)),
+              const Spacer(),
+              Text(
+                DateFormat.MMMd().format(app.appliedAt),
+                style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+              ),
+            ],
+          ),
           const SizedBox(height: 7),
-          Text(app.title,
-              style: _C.p(12, fw: FontWeight.w700),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            app.title,
+            style: _C.p(12, fw: FontWeight.w700),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 3),
-          Row(children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: _C.canvas, borderRadius: BorderRadius.circular(4)),
-              child: const Icon(Icons.business, size: 10, color: _C.t3),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Text(app.company,
-                  style: _C.p(10, color: _C.t2),
-                  overflow: TextOverflow.ellipsis),
-            ),
-          ]),
-          if ((app.department as String).isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Row(children: [
+          Row(
+            children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: _C.canvas, borderRadius: BorderRadius.circular(4)),
-                child: const Icon(Icons.account_tree_rounded, size: 10, color: _C.t3),
+                decoration: BoxDecoration(
+                  color: _C.canvas,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(Icons.business, size: 10, color: _C.t3),
               ),
               const SizedBox(width: 5),
               Expanded(
-                child: Text(app.department,
-                    style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
-                    overflow: TextOverflow.ellipsis),
+                child: Text(
+                  app.company,
+                  style: _C.p(10, color: _C.t2),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ]),
+            ],
+          ),
+          if ((app.department as String).isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: _C.canvas,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(
+                    Icons.account_tree_rounded,
+                    size: 10,
+                    color: _C.t3,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    app.department,
+                    style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),
@@ -997,35 +1211,46 @@ class _AnalyticsCharts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final trendData = analytics['applicationTrend'] as List<Map<String, dynamic>>;
-    final deptData  = analytics['successRateByDepartment'] as List<Map<String, dynamic>>;
-    final hasTrend  = trendData.any((d) => (d['count'] as int) > 0);
+    final trendData =
+        analytics['applicationTrend'] as List<Map<String, dynamic>>;
+    final deptData =
+        analytics['successRateByDepartment'] as List<Map<String, dynamic>>;
+    final hasTrend = trendData.any((d) => (d['count'] as int) > 0);
 
     if (!hasTrend && deptData.isEmpty) return const SizedBox.shrink();
 
-    return LayoutBuilder(builder: (_, constraints) {
-      final wide = constraints.maxWidth > 640;
-      return wide
-          ? Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (hasTrend)
-            Expanded(
-                flex: 3,
-                child: SizedBox(height: 260, child: _TrendChart(data: trendData))),
-          if (hasTrend && deptData.isNotEmpty) const SizedBox(width: 14),
-          if (deptData.isNotEmpty)
-            Expanded(flex: 2, child: _DeptCard(deptData: deptData)),
-        ],
-      )
-          : Column(children: [
-        if (hasTrend) ...[
-          SizedBox(height: 230, child: _TrendChart(data: trendData)),
-          const SizedBox(height: 12),
-        ],
-        if (deptData.isNotEmpty) _DeptCard(deptData: deptData),
-      ]);
-    });
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        final wide = constraints.maxWidth > 640;
+        return wide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (hasTrend)
+                    Expanded(
+                      flex: 3,
+                      child: SizedBox(
+                        height: 260,
+                        child: _TrendChart(data: trendData),
+                      ),
+                    ),
+                  if (hasTrend && deptData.isNotEmpty)
+                    const SizedBox(width: 14),
+                  if (deptData.isNotEmpty)
+                    Expanded(flex: 2, child: _DeptCard(deptData: deptData)),
+                ],
+              )
+            : Column(
+                children: [
+                  if (hasTrend) ...[
+                    SizedBox(height: 230, child: _TrendChart(data: trendData)),
+                    const SizedBox(height: 12),
+                  ],
+                  if (deptData.isNotEmpty) _DeptCard(deptData: deptData),
+                ],
+              );
+      },
+    );
   }
 }
 
@@ -1045,7 +1270,11 @@ class _KpiCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _C.border),
         boxShadow: const [
-          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3))
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: Row(
@@ -1055,7 +1284,9 @@ class _KpiCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-                color: d.bg, borderRadius: BorderRadius.circular(9)),
+              color: d.bg,
+              borderRadius: BorderRadius.circular(9),
+            ),
             child: Icon(d.icon, color: d.accent, size: 16),
           ),
           const SizedBox(width: 10),
@@ -1069,20 +1300,23 @@ class _KpiCard extends StatelessWidget {
                   tween: IntTween(begin: 0, end: d.value),
                   duration: const Duration(milliseconds: 900),
                   curve: Curves.easeOutExpo,
-                  builder: (_, v, _) => Text(
-                    '$v',
-                    style: _C.p(20, fw: FontWeight.w800),
-                  ),
+                  builder: (_, v, _) =>
+                      Text('$v', style: _C.p(20, fw: FontWeight.w800)),
                 ),
-                Text(d.label,
-                    style: _C.p(10, color: _C.t2, fw: FontWeight.w500),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  d.label,
+                  style: _C.p(10, color: _C.t2, fw: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
           // Subtle trend icon
-          Icon(Icons.trending_up_rounded,
-              color: d.accent.withValues(alpha: 0.25), size: 14),
+          Icon(
+            Icons.trending_up_rounded,
+            color: d.accent.withValues(alpha: 0.25),
+            size: 14,
+          ),
         ],
       ),
     );
@@ -1104,10 +1338,28 @@ class _KpiStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _KD(Icons.inbox_rounded,        'Total',       total,                    _C.indigo,  _C.indigoLt),
-      _KD(Icons.check_circle_rounded, 'Accepted',    stats['accepted'] as int, _C.emerald, _C.emeraldL),
-      _KD(Icons.star_rounded,         'Shortlisted', stats['shortlist'] as int,_C.violet,  _C.violetLt),
-      _KD(Icons.timelapse_rounded,    'Pending',     stats['pending']  as int, _C.amber,   _C.amberLt),
+      _KD(Icons.inbox_rounded, 'Total', total, _C.indigo, _C.indigoLt),
+      _KD(
+        Icons.check_circle_rounded,
+        'Accepted',
+        stats['accepted'] as int,
+        _C.emerald,
+        _C.emeraldL,
+      ),
+      _KD(
+        Icons.star_rounded,
+        'Shortlisted',
+        stats['shortlist'] as int,
+        _C.violet,
+        _C.violetLt,
+      ),
+      _KD(
+        Icons.timelapse_rounded,
+        'Pending',
+        stats['pending'] as int,
+        _C.amber,
+        _C.amberLt,
+      ),
     ];
 
     // On very small screens: 2-col grid; otherwise single horizontal row
@@ -1118,7 +1370,7 @@ class _KpiStrip extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
-        childAspectRatio: 2.4,          // wide + short = compact
+        childAspectRatio: 2.4, // wide + short = compact
         children: items.map((d) => _KpiCard(d: d)).toList(),
       );
     }
@@ -1136,6 +1388,7 @@ class _KpiStrip extends StatelessWidget {
     );
   }
 }
+
 class _KD {
   final IconData icon;
   final String label;
@@ -1143,7 +1396,6 @@ class _KD {
   final Color accent, bg;
   const _KD(this.icon, this.label, this.value, this.accent, this.bg);
 }
-
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  TREND CHART
@@ -1186,17 +1438,17 @@ class _TrendChart extends StatelessWidget {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: safeMax / 4,
-                  getDrawingHorizontalLine: (_) => const FlLine(
-                    color: Color(0xFFF0F3FA),
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (_) =>
+                      const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -1236,7 +1488,9 @@ class _TrendChart extends StatelessWidget {
                     getTooltipColor: (_) => _C.t1,
                     tooltipBorderRadius: BorderRadius.circular(4),
                     tooltipPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     getTooltipItems: (spots) => spots.map((s) {
                       final i = s.x.toInt();
                       final date = i < dates.length
@@ -1248,31 +1502,36 @@ class _TrendChart extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: '${s.y.toInt()} applied',
-                            style: _C.p(11,
-                                fw: FontWeight.w700, color: Colors.white),
+                            style: _C.p(
+                              11,
+                              fw: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       );
                     }).toList(),
                   ),
                   // Only show dot on touch, not permanently
-                  getTouchedSpotIndicator: (_, indices) =>
-                      indices.map((_) => TouchedSpotIndicatorData(
-                        FlLine(
-                          color: _C.indigo.withValues(alpha: 0.3),
-                          strokeWidth: 1.5,
-                          dashArray: [4, 4],
+                  getTouchedSpotIndicator: (_, indices) => indices
+                      .map(
+                        (_) => TouchedSpotIndicatorData(
+                          FlLine(
+                            color: _C.indigo.withValues(alpha: 0.3),
+                            strokeWidth: 1.5,
+                            dashArray: [4, 4],
+                          ),
+                          FlDotData(
+                            getDotPainter: (_, _, _, _) => FlDotCirclePainter(
+                              radius: 5,
+                              color: Colors.white,
+                              strokeColor: _C.indigo,
+                              strokeWidth: 2.5,
+                            ),
+                          ),
                         ),
-                        FlDotData(
-                          getDotPainter: (_, _, _, _) =>
-                              FlDotCirclePainter(
-                                radius: 5,
-                                color: Colors.white,
-                                strokeColor: _C.indigo,
-                                strokeWidth: 2.5,
-                              ),
-                        ),
-                      )).toList(),
+                      )
+                      .toList(),
                 ),
                 lineBarsData: [
                   LineChartBarData(
@@ -1307,6 +1566,7 @@ class _TrendChart extends StatelessWidget {
     );
   }
 }
+
 // ═══════════════════════════════════════════════════════════════════════════
 //  DEPT SUCCESS CARD
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1322,30 +1582,48 @@ class _DeptCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _CardHead(
-              icon: Icons.donut_small_rounded,
-              title: 'Success Rate',
-              sub: 'Acceptance by Unit/Bases'),
+            icon: Icons.donut_small_rounded,
+            title: 'Success Rate',
+            sub: 'Acceptance by Unit/Bases',
+          ),
           const SizedBox(height: 12),
           ...deptData.take(5).map((d) {
-            final rate  = d['rate'] as double;
-            final color = rate >= 50 ? _C.emerald : rate >= 25 ? _C.amber : _C.rose;
+            final rate = d['rate'] as double;
+            final color = rate >= 50
+                ? _C.emerald
+                : rate >= 25
+                ? _C.amber
+                : _C.rose;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: [
-                    Container(
-                        width: 7, height: 7,
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
-                            color: color, borderRadius: BorderRadius.circular(2))),
-                    const SizedBox(width: 7),
-                    Expanded(
-                        child: Text(d['department'],
-                            style: _C.p(11, color: _C.t1),
-                            overflow: TextOverflow.ellipsis)),
-                    _Chip(label: '${rate.toStringAsFixed(0)}%', color: color, tiny: true),
-                  ]),
+                          color: color,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: Text(
+                          d['department'],
+                          style: _C.p(11, color: _C.t1),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      _Chip(
+                        label: '${rate.toStringAsFixed(0)}%',
+                        color: color,
+                        tiny: true,
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 4),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
@@ -1397,12 +1675,15 @@ class _ColLabel extends StatelessWidget {
   final String text;
   const _ColLabel(this.text);
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: _C.p(9, fw: FontWeight.w700, color: _C.t3));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: _C.p(9, fw: FontWeight.w700, color: _C.t3),
+  );
 }
 
 class _TableRow extends StatelessWidget {
-  final dynamic app; final bool isLast;
+  final dynamic app;
+  final bool isLast;
   const _TableRow({required this.app, required this.isLast});
 
   @override
@@ -1424,51 +1705,77 @@ class _TableRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(app.title,
-                    style: _C.p(12, fw: FontWeight.w700),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  app.title,
+                  style: _C.p(12, fw: FontWeight.w700),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
-                Text(app.department,
-                    style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  app.department,
+                  style: _C.p(10, fw: FontWeight.w500, color: _C.t2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
           Expanded(
             flex: 3,
-            child: Row(children: [
-              Container(
+            child: Row(
+              children: [
+                Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                      color: _C.canvas, borderRadius: BorderRadius.circular(5)),
-                  child: const Icon(Icons.business, size: 11, color: _C.t3)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(app.company,
+                    color: _C.canvas,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Icon(Icons.business, size: 11, color: _C.t3),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    app.company,
                     style: _C.p(11, color: _C.t1),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-              ),
-            ]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Row(children: [
-              Container(
+            child: Row(
+              children: [
+                Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                      color: _C.canvas, borderRadius: BorderRadius.circular(5)),
-                  child: const Icon(Icons.calendar_today_rounded, size: 11, color: _C.t3)),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(DateFormat.yMMMd().format(app.appliedAt),
+                    color: _C.canvas,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 11,
+                    color: _C.t3,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    DateFormat.yMMMd().format(app.appliedAt),
                     style: _C.p(11, color: _C.t1),
-                    overflow: TextOverflow.ellipsis),
-              ),
-            ]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           SizedBox(
-              width: 110,
-              child: Center(child: _StatusBadge(status: app.status))),
+            width: 110,
+            child: Center(child: _StatusBadge(status: app.status)),
+          ),
         ],
       ),
     );
@@ -1481,13 +1788,28 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color col; IconData icon;
+    Color col;
+    IconData icon;
     switch (status.toLowerCase()) {
-      case 'pending':   col = _C.amber;   icon = Icons.timelapse_rounded;     break;
-      case 'shortlist': col = _C.violet;  icon = Icons.star_rounded;          break;
-      case 'accepted':  col = _C.emerald; icon = Icons.check_circle_rounded;  break;
-      case 'rejected':  col = _C.rose;    icon = Icons.cancel_rounded;        break;
-      default:          col = _C.slate;   icon = Icons.help_outline_rounded;
+      case 'pending':
+        col = _C.amber;
+        icon = Icons.timelapse_rounded;
+        break;
+      case 'shortlist':
+        col = _C.violet;
+        icon = Icons.star_rounded;
+        break;
+      case 'accepted':
+        col = _C.emerald;
+        icon = Icons.check_circle_rounded;
+        break;
+      case 'rejected':
+        col = _C.rose;
+        icon = Icons.cancel_rounded;
+        break;
+      default:
+        col = _C.slate;
+        icon = Icons.help_outline_rounded;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1496,11 +1818,16 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: col.withValues(alpha: 0.25), width: 1.2),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, size: 11, color: col),
-        const SizedBox(width: 4),
-        Flexible(child: Text(status.toUpperCase(), style: _C.p(8, color: col))),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: col),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(status.toUpperCase(), style: _C.p(8, color: col)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1514,29 +1841,44 @@ class _PanelHdr extends StatelessWidget {
   final String title, sub;
   final Widget? badge;
   const _PanelHdr({
-    required this.icon, required this.iconBg, required this.iconColor,
-    required this.title, required this.sub, this.badge,
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.title,
+    required this.sub,
+    this.badge,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-      child: Row(children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(7)),
-          child: Icon(icon, color: iconColor, size: 14),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: _C.p(12)),
-            Text(sub, style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
-          ]),
-        ),
-        ?badge,
-      ]),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Icon(icon, color: iconColor, size: 14),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: _C.p(12)),
+                Text(
+                  sub,
+                  style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+                ),
+              ],
+            ),
+          ),
+          ?badge,
+        ],
+      ),
     );
   }
 }
@@ -1549,7 +1891,9 @@ class _CompactSearchField extends StatelessWidget {
   final ValueChanged<String> onChanged;
   final String hint;
   const _CompactSearchField({
-    required this.controller, required this.onChanged, required this.hint,
+    required this.controller,
+    required this.onChanged,
+    required this.hint,
   });
 
   @override
@@ -1566,21 +1910,31 @@ class _CompactSearchField extends StatelessWidget {
           prefixIcon: const Icon(Icons.search, size: 16, color: _C.t3),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
-              icon: const Icon(Icons.clear, size: 14),
-              onPressed: () { controller.clear(); onChanged(''); })
+                  icon: const Icon(Icons.clear, size: 14),
+                  onPressed: () {
+                    controller.clear();
+                    onChanged('');
+                  },
+                )
               : null,
           filled: true,
           fillColor: _C.canvas,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 9,
+          ),
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(9),
-              borderSide: const BorderSide(color: _C.border)),
+            borderRadius: BorderRadius.circular(9),
+            borderSide: const BorderSide(color: _C.border),
+          ),
           enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(9),
-              borderSide: const BorderSide(color: _C.border)),
+            borderRadius: BorderRadius.circular(9),
+            borderSide: const BorderSide(color: _C.border),
+          ),
           focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(9),
-              borderSide: const BorderSide(color: _C.indigo, width: 1.5)),
+            borderRadius: BorderRadius.circular(9),
+            borderSide: const BorderSide(color: _C.indigo, width: 1.5),
+          ),
         ),
       ),
     );
@@ -1591,8 +1945,14 @@ class _CompactSearchField extends StatelessWidget {
 //  SMALL UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
 class _MiniStatChip extends StatelessWidget {
-  final IconData icon; final String label; final Color color;
-  const _MiniStatChip({required this.icon, required this.label, required this.color});
+  final IconData icon;
+  final String label;
+  final Color color;
+  const _MiniStatChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1603,18 +1963,27 @@ class _MiniStatChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(7),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, color: color, size: 12),
-        const SizedBox(width: 4),
-        Text(label, style: _C.p(10, color: color)),
-      ]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 12),
+          const SizedBox(width: 4),
+          Text(label, style: _C.p(10, color: color)),
+        ],
+      ),
     );
   }
 }
 
 class _FilterToggleBtn extends StatelessWidget {
-  final bool active; final VoidCallback onTap; final bool compact;
-  const _FilterToggleBtn({required this.active, required this.onTap, this.compact = false});
+  final bool active;
+  final VoidCallback onTap;
+  final bool compact;
+  const _FilterToggleBtn({
+    required this.active,
+    required this.onTap,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1624,8 +1993,9 @@ class _FilterToggleBtn extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: EdgeInsets.symmetric(
-            horizontal: compact ? 8 : 10,
-            vertical: compact ? 6 : 7),
+          horizontal: compact ? 8 : 10,
+          vertical: compact ? 6 : 7,
+        ),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
@@ -1633,16 +2003,28 @@ class _FilterToggleBtn extends StatelessWidget {
         ),
         child: compact
             ? Icon(
-            active ? Icons.filter_list_rounded : Icons.filter_list_off_rounded,
-            size: 16, color: color)
-            : Row(children: [
-          Icon(
-              active ? Icons.filter_list_rounded : Icons.filter_list_off_rounded,
-              size: 14, color: color),
-          const SizedBox(width: 5),
-          Text(active ? 'Hide' : 'Filters',
-              style: _C.p(11, color: color)),
-        ]),
+                active
+                    ? Icons.filter_list_rounded
+                    : Icons.filter_list_off_rounded,
+                size: 16,
+                color: color,
+              )
+            : Row(
+                children: [
+                  Icon(
+                    active
+                        ? Icons.filter_list_rounded
+                        : Icons.filter_list_off_rounded,
+                    size: 14,
+                    color: color,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    active ? 'Hide' : 'Filters',
+                    style: _C.p(11, color: color),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -1653,8 +2035,10 @@ class _FilterDropdown extends StatelessWidget {
   final List<String> items;
   final ValueChanged<String?> onChanged;
   const _FilterDropdown({
-    required this.label, required this.value,
-    required this.items, required this.onChanged,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
   });
 
   @override
@@ -1676,11 +2060,16 @@ class _FilterDropdown extends StatelessWidget {
                 ? label
                 : item[0].toUpperCase() + item.substring(1);
             return DropdownMenuItem(
-                value: item,
-                child: Text(d, style: _C.p(11, color: _C.t1)));
+              value: item,
+              child: Text(d, style: _C.p(11, color: _C.t1)),
+            );
           }).toList(),
           onChanged: onChanged,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: _C.t2),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 16,
+            color: _C.t2,
+          ),
         ),
       ),
     );
@@ -1688,7 +2077,8 @@ class _FilterDropdown extends StatelessWidget {
 }
 
 class _DateRangeBtn extends StatelessWidget {
-  final DateTimeRange? range; final VoidCallback onTap;
+  final DateTimeRange? range;
+  final VoidCallback onTap;
   const _DateRangeBtn({required this.range, required this.onTap});
 
   @override
@@ -1704,26 +2094,33 @@ class _DateRangeBtn extends StatelessWidget {
           color: _C.canvas,
           borderRadius: BorderRadius.circular(9),
           border: Border.all(
-              color: active ? _C.indigo.withValues(alpha: 0.4) : _C.border),
-        ),
-        child: Row(children: [
-          Icon(Icons.calendar_today_rounded,
-              size: 13, color: active ? _C.indigo : _C.t3),
-          const SizedBox(width: 6),
-          Text(
-            active
-                ? '${DateFormat.MMMd().format(range!.start)} – ${DateFormat.MMMd().format(range!.end)}'
-                : 'Date Range',
-            style: _C.p(11, color: active ? _C.indigo : _C.t2),
+            color: active ? _C.indigo.withValues(alpha: 0.4) : _C.border,
           ),
-        ]),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_today_rounded,
+              size: 13,
+              color: active ? _C.indigo : _C.t3,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              active
+                  ? '${DateFormat.MMMd().format(range!.start)} – ${DateFormat.MMMd().format(range!.end)}'
+                  : 'Date Range',
+              style: _C.p(11, color: active ? _C.indigo : _C.t2),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _SortDropdown extends StatelessWidget {
-  final String value; final ValueChanged<String?> onChanged;
+  final String value;
+  final ValueChanged<String?> onChanged;
   const _SortDropdown({required this.value, required this.onChanged});
 
   @override
@@ -1732,19 +2129,20 @@ class _SortDropdown extends StatelessWidget {
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-          color: _C.canvas,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: _C.border)),
+        color: _C.canvas,
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: _C.border),
+      ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isDense: true,
           items: const [
-            DropdownMenuItem(value: 'Latest',       child: Text('Latest')),
-            DropdownMenuItem(value: 'Oldest',       child: Text('Oldest')),
-            DropdownMenuItem(value: 'Title',        child: Text('Title')),
-            DropdownMenuItem(value: 'Unit / Base',  child: Text('Unit / Base')),
-            DropdownMenuItem(value: 'Status',       child: Text('Status')),
+            DropdownMenuItem(value: 'Latest', child: Text('Latest')),
+            DropdownMenuItem(value: 'Oldest', child: Text('Oldest')),
+            DropdownMenuItem(value: 'Title', child: Text('Title')),
+            DropdownMenuItem(value: 'Unit / Base', child: Text('Unit / Base')),
+            DropdownMenuItem(value: 'Status', child: Text('Status')),
           ],
           onChanged: onChanged,
           icon: const Icon(Icons.sort_rounded, size: 15, color: _C.t2),
@@ -1755,10 +2153,16 @@ class _SortDropdown extends StatelessWidget {
 }
 
 class _OutlineBtn extends StatelessWidget {
-  final String label; final IconData icon; final Color color;
+  final String label;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
-  const _OutlineBtn({required this.label, required this.icon,
-    required this.color, required this.onTap});
+  const _OutlineBtn({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1772,18 +2176,22 @@ class _OutlineBtn extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 5),
-          Text(label, style: _C.p(11, color: color)),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 14),
+            const SizedBox(width: 5),
+            Text(label, style: _C.p(11, color: color)),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _Card extends StatelessWidget {
-  final Widget child; final double? height;
+  final Widget child;
+  final double? height;
   const _Card({required this.child, this.height});
 
   @override
@@ -1796,7 +2204,11 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _C.border),
         boxShadow: const [
-          BoxShadow(color: Color(0x05000000), blurRadius: 8, offset: Offset(0, 3))
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
         ],
       ),
       child: child,
@@ -1805,49 +2217,65 @@ class _Card extends StatelessWidget {
 }
 
 class _CardHead extends StatelessWidget {
-  final IconData icon; final String title, sub;
+  final IconData icon;
+  final String title, sub;
   const _CardHead({required this.icon, required this.title, required this.sub});
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Icon(icon, color: _C.indigo, size: 14),
-      const SizedBox(width: 7),
-      Flexible(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: _C.p(12), overflow: TextOverflow.ellipsis),
-          Text(sub, style: _C.p(9, fw: FontWeight.w500, color: _C.t3)),
-        ]),
-      ),
-    ]);
+    return Row(
+      children: [
+        Icon(icon, color: _C.indigo, size: 14),
+        const SizedBox(width: 7),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: _C.p(12), overflow: TextOverflow.ellipsis),
+              Text(
+                sub,
+                style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
 class _SectionHead extends StatelessWidget {
-  final IconData icon; final String title;
+  final IconData icon;
+  final String title;
   const _SectionHead({required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Icon(icon, color: _C.indigo, size: 14),
-      const SizedBox(width: 7),
-      Text(title, style: _C.p(13)),
-      const SizedBox(width: 10),
-      Expanded(child: Container(height: 1, color: _C.border)),
-    ]);
+    return Row(
+      children: [
+        Icon(icon, color: _C.indigo, size: 14),
+        const SizedBox(width: 7),
+        Text(title, style: _C.p(13)),
+        const SizedBox(width: 10),
+        Expanded(child: Container(height: 1, color: _C.border)),
+      ],
+    );
   }
 }
 
 class _Chip extends StatelessWidget {
-  final String label; final Color color; final bool tiny;
+  final String label;
+  final Color color;
+  final bool tiny;
   const _Chip({required this.label, required this.color, this.tiny = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: tiny ? 6 : 9, vertical: tiny ? 2 : 3),
+        horizontal: tiny ? 6 : 9,
+        vertical: tiny ? 2 : 3,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
@@ -1859,22 +2287,31 @@ class _Chip extends StatelessWidget {
 }
 
 class _Empty extends StatelessWidget {
-  final IconData icon; final String label;
+  final IconData icon;
+  final String label;
   const _Empty({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, color: _C.border, size: 30),
-        const SizedBox(height: 7),
-        Text(label, style: _C.p(11, fw: FontWeight.w500, color: _C.t3)),
-      ]),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: _C.border, size: 30),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            style: _C.p(11, fw: FontWeight.w500, color: _C.t3),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class ChartData {
-  final String status; final int count; final Color color;
+  final String status;
+  final int count;
+  final Color color;
   ChartData(this.status, this.count, this.color);
 }

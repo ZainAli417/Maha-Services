@@ -20,32 +20,32 @@ import 'package:intl/intl.dart';
 
 class AdminProvider extends ChangeNotifier {
   // ── Form controllers ──────────────────────────────────────────────────────
-  final _formKey            = GlobalKey<FormState>();
-  final _nameController     = TextEditingController();
-  final _emailController    = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _roleController     = TextEditingController();
+  final _roleController = TextEditingController();
   final _userLevelController = TextEditingController();
 
   String? _editingUserId;
-  bool    _isLoading = false;
-  String  _message   = '';
+  bool _isLoading = false;
+  String _message = '';
 
-  GlobalKey<FormState> get formKey              => _formKey;
-  TextEditingController get nameController      => _nameController;
-  TextEditingController get emailController     => _emailController;
-  TextEditingController get passwordController  => _passwordController;
-  TextEditingController get roleController      => _roleController;
+  GlobalKey<FormState> get formKey => _formKey;
+  TextEditingController get nameController => _nameController;
+  TextEditingController get emailController => _emailController;
+  TextEditingController get passwordController => _passwordController;
+  TextEditingController get roleController => _roleController;
   TextEditingController get userLevelController => _userLevelController;
-  String? get editingUserId  => _editingUserId;
-  bool    get isLoading      => _isLoading;
-  String  get message        => _message;
+  String? get editingUserId => _editingUserId;
+  bool get isLoading => _isLoading;
+  String get message => _message;
 
   // ── User management ───────────────────────────────────────────────────────
   Future<bool> addOrEditUser() async {
     if (!(_formKey.currentState?.validate() ?? false)) return false;
     _isLoading = true;
-    _message   = '';
+    _message = '';
     _safeNotify();
     try {
       if (_editingUserId == null) {
@@ -86,7 +86,9 @@ class AdminProvider extends ChangeNotifier {
         _candidateCache.remove(_editingUserId);
         _recruiterCache.remove(_editingUserId);
       }
-      _message = _editingUserId == null ? 'User added successfully' : 'User updated successfully';
+      _message = _editingUserId == null
+          ? 'User added successfully'
+          : 'User updated successfully';
       clearForm();
       return true;
     } catch (e) {
@@ -102,7 +104,9 @@ class AdminProvider extends ChangeNotifier {
   Future<void> suspendUser(String docId, String currentStatus) async {
     final newStatus = currentStatus == 'active' ? 'suspended' : 'active';
     try {
-      await _firestore.collection('users').doc(docId).update({'account_status': newStatus});
+      await _firestore.collection('users').doc(docId).update({
+        'account_status': newStatus,
+      });
     } catch (e) {
       debugPrint('❌ suspendUser error: $e');
     }
@@ -118,10 +122,14 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  void editUser(Map<String, dynamic> userData, String docId, {String? resolvedName}) {
-    _nameController.text      = resolvedName ?? userData['name'] ?? '';
-    _emailController.text     = userData['email'] ?? '';
-    _roleController.text      = userData['role'] ?? '';
+  void editUser(
+    Map<String, dynamic> userData,
+    String docId, {
+    String? resolvedName,
+  }) {
+    _nameController.text = resolvedName ?? userData['name'] ?? '';
+    _emailController.text = userData['email'] ?? '';
+    _roleController.text = userData['role'] ?? '';
     _userLevelController.text = userData['user_lvl'] ?? '';
     _passwordController.clear();
     _editingUserId = docId;
@@ -145,15 +153,15 @@ class AdminProvider extends ChangeNotifier {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  bool loading   = false;
+  bool loading = false;
   bool _disposed = false;
 
   List<Map<String, dynamic>> requests = [];
 
-  final Map<String, _CacheEntry> _recruiterCache      = {};
-  final Map<String, _CacheEntry> _candidateCache      = {};
+  final Map<String, _CacheEntry> _recruiterCache = {};
+  final Map<String, _CacheEntry> _candidateCache = {};
   final Map<String, _CacheEntry> _requestDetailsCache = {};
-  final Map<String, String>      _emailToUidCache     = {};
+  final Map<String, String> _emailToUidCache = {};
 
   static const Duration _cacheTTL = Duration(minutes: 10);
 
@@ -175,7 +183,8 @@ class AdminProvider extends ChangeNotifier {
     _safeNotify();
 
     final cached = _requestDetailsCache[requestId];
-    final isFresh = cached != null &&
+    final isFresh =
+        cached != null &&
         DateTime.now().difference(cached.timestamp) < _cacheTTL;
     if (!isFresh) {
       await fetchRequestDetails(requestId: requestId);
@@ -231,11 +240,20 @@ class AdminProvider extends ChangeNotifier {
   // ── Exhaustive candidate field scanner ───────────────────────────────────
   List<dynamic> _extractCandidateEntries(Map<String, dynamic> data) {
     const candidateFields = [
-      'candidates', 'candidate_ids', 'matched_candidates',
-      'matched_seekers', 'seekers', 'seeker_ids',
-      'job_seekers', 'jobSeekers', 'assignedCandidates',
-      'assigned_candidates', 'candidate_list', 'candidateList',
-      'users', 'applicants',
+      'candidates',
+      'candidate_ids',
+      'matched_candidates',
+      'matched_seekers',
+      'seekers',
+      'seeker_ids',
+      'job_seekers',
+      'jobSeekers',
+      'assignedCandidates',
+      'assigned_candidates',
+      'candidate_list',
+      'candidateList',
+      'users',
+      'applicants',
     ];
     final merged = <dynamic>[];
     for (final field in candidateFields) {
@@ -257,10 +275,20 @@ class AdminProvider extends ChangeNotifier {
   // ── Exhaustive UID extractor — never returns empty ────────────────────────
   String _extractCandidateUid(Map<String, dynamic> n, int fallbackIndex) {
     const uidKeys = [
-      'uid', 'user_id', 'userId', 'id', 'jobSeekerId',
-      'job_seeker_id', 'seekerUid', 'seeker_uid',
-      'candidate_uid', 'candidateUid', 'user_uid', 'userUid',
-      'docId', 'doc_id',
+      'uid',
+      'user_id',
+      'userId',
+      'id',
+      'jobSeekerId',
+      'job_seeker_id',
+      'seekerUid',
+      'seeker_uid',
+      'candidate_uid',
+      'candidateUid',
+      'user_uid',
+      'userUid',
+      'docId',
+      'doc_id',
     ];
     for (final key in uidKeys) {
       final v = n[key]?.toString().trim() ?? '';
@@ -269,8 +297,10 @@ class AdminProvider extends ChangeNotifier {
     final email = n['email']?.toString().trim() ?? '';
     if (email.isNotEmpty && email.contains('@')) return email;
     final generated = '__candidate_$fallbackIndex';
-    debugPrint('⚠️ No uid/email for candidate $fallbackIndex, '
-        'using "$generated". Keys: ${n.keys.toList()}');
+    debugPrint(
+      '⚠️ No uid/email for candidate $fallbackIndex, '
+      'using "$generated". Keys: ${n.keys.toList()}',
+    );
     return generated;
   }
 
@@ -299,14 +329,21 @@ class AdminProvider extends ChangeNotifier {
       }
 
       debugPrint('🔎 Found ${snap.docs.length} request docs');
-      final tmp         = <Map<String, dynamic>>[];
+      final tmp = <Map<String, dynamic>>[];
       final recruiterIds = <String>{};
 
       for (final d in snap.docs) {
-        final data          = _normalizeMap(d.data());
-        final recruiterId   = (data['recruiter_id'] ?? data['recruiter'] ?? data['recruiter_uid'] ?? '').toString();
-        final recruiterEmail = (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString();
-        final total         = data['total_candidates'] != null
+        final data = _normalizeMap(d.data());
+        final recruiterId =
+            (data['recruiter_id'] ??
+                    data['recruiter'] ??
+                    data['recruiter_uid'] ??
+                    '')
+                .toString();
+        final recruiterEmail =
+            (data['recruiter_email'] ?? data['recruiterEmail'] ?? '')
+                .toString();
+        final total = data['total_candidates'] != null
             ? int.tryParse(data['total_candidates'].toString()) ?? 0
             : _extractCandidateEntries(data).length;
 
@@ -325,7 +362,9 @@ class AdminProvider extends ChangeNotifier {
 
       requests = tmp;
       debugPrint('✅ Loaded ${requests.length} request(s)');
-      if (recruiterIds.isNotEmpty) _batchPrefetchRecruiters(recruiterIds.toList());
+      if (recruiterIds.isNotEmpty) {
+        _batchPrefetchRecruiters(recruiterIds.toList());
+      }
     } catch (e, st) {
       debugPrint('❌ fetchAllRequests error: $e\n$st');
       requests = [];
@@ -368,28 +407,36 @@ class AdminProvider extends ChangeNotifier {
     try {
       DocumentSnapshot snap;
       try {
-        snap = await _firestore.collection('recruiter_requests').doc(requestId)
+        snap = await _firestore
+            .collection('recruiter_requests')
+            .doc(requestId)
             .get(const GetOptions(source: Source.cache));
       } catch (_) {
-        snap = await _firestore.collection('recruiter_requests').doc(requestId)
+        snap = await _firestore
+            .collection('recruiter_requests')
+            .doc(requestId)
             .get(const GetOptions(source: Source.server));
       }
 
-      if (_disposed) { completer.complete(null); return null; }
+      if (_disposed) {
+        completer.complete(null);
+        return null;
+      }
       if (!snap.exists) {
         debugPrint('⚠️ Request doc $requestId does not exist');
         completer.complete(null);
         return null;
       }
 
-      final data        = _normalizeMap(snap.data());
+      final data = _normalizeMap(snap.data());
       debugPrint('📄 Request doc keys: ${data.keys.toList()}');
-      final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
-      final rawEntries  = _extractCandidateEntries(data);
+      final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '')
+          .toString();
+      final rawEntries = _extractCandidateEntries(data);
       debugPrint('📋 Raw candidate entries: ${rawEntries.length}');
 
       final uniqueCandidates = <String, String>{};
-      final candidateHints   = <String, Map<String, dynamic>>{};
+      final candidateHints = <String, Map<String, dynamic>>{};
 
       for (int i = 0; i < rawEntries.length; i++) {
         final entry = rawEntries[i];
@@ -397,7 +444,7 @@ class AdminProvider extends ChangeNotifier {
         Map<String, dynamic> hint = {};
         try {
           if (entry is Map) {
-            hint   = _normalizeMap(entry);
+            hint = _normalizeMap(entry);
             rawUid = _extractCandidateUid(hint, i);
           } else if (entry is String) {
             rawUid = entry.trim();
@@ -417,14 +464,17 @@ class AdminProvider extends ChangeNotifier {
         }
       }
 
-      debugPrint('👥 Unique candidate UIDs: ${uniqueCandidates.values.toList()}');
+      debugPrint(
+        '👥 Unique candidate UIDs: ${uniqueCandidates.values.toList()}',
+      );
 
       // ── FIX: If the raw entries are rich Map objects (already contain full
       // profile data from the recruiter_requests/candidates[] array), use them
       // directly instead of fetching thin records from Job_Seeker / users.
       // A "rich" entry is one that has at least 'name' OR 'skills' OR
       // 'professionalExperience' — i.e. it's more than just a UID reference.
-      bool allEntriesAreRichObjects = rawEntries.isNotEmpty &&
+      bool allEntriesAreRichObjects =
+          rawEntries.isNotEmpty &&
           rawEntries.every((e) {
             if (e is! Map) return false;
             final m = _normalizeMap(e);
@@ -437,12 +487,14 @@ class AdminProvider extends ChangeNotifier {
       List<Map<String, dynamic>> candidateDetails;
 
       if (allEntriesAreRichObjects) {
-        debugPrint('✅ candidates[] contains full profile objects — using directly');
+        debugPrint(
+          '✅ candidates[] contains full profile objects — using directly',
+        );
         // Use the embedded data as-is; normalise each entry
         final seen = <String>{};
         candidateDetails = [];
         for (final e in rawEntries) {
-          final m   = _normalizeMap(e);
+          final m = _normalizeMap(e);
           final uid = _extractCandidateUid(m, candidateDetails.length);
           if (seen.contains(uid.toLowerCase())) continue;
           seen.add(uid.toLowerCase());
@@ -454,19 +506,27 @@ class AdminProvider extends ChangeNotifier {
         }
       } else {
         candidateDetails = await _batchFetchCandidates(
-            uniqueCandidates.values.toList(), hints: candidateHints);
-        if (_disposed) { completer.complete(null); return null; }
+          uniqueCandidates.values.toList(),
+          hints: candidateHints,
+        );
+        if (_disposed) {
+          completer.complete(null);
+          return null;
+        }
       }
 
       debugPrint('✅ Candidates resolved: ${candidateDetails.length}');
 
       final recruiterInfo = await _fetchRecruiterInfo(recruiterId);
-      if (_disposed) { completer.complete(null); return null; }
+      if (_disposed) {
+        completer.complete(null);
+        return null;
+      }
 
       final result = <String, dynamic>{
         'request_doc': {'id': snap.id, 'data': data},
-        'recruiter':   {'id': recruiterId, 'data': recruiterInfo ?? {}},
-        'candidates':  candidateDetails,
+        'recruiter': {'id': recruiterId, 'data': recruiterInfo ?? {}},
+        'candidates': candidateDetails,
       };
 
       _requestDetailsCache[requestId] = _CacheEntry(result, DateTime.now());
@@ -494,7 +554,10 @@ class AdminProvider extends ChangeNotifier {
   // =========================================================================
 
   void optimisticCandidateStatusUpdate(
-      String requestId, String candidateUid, String status) {
+    String requestId,
+    String candidateUid,
+    String status,
+  ) {
     if (_disposed) return;
     final cached = _requestDetailsCache[requestId];
     if (cached == null) return;
@@ -502,20 +565,24 @@ class AdminProvider extends ChangeNotifier {
     try {
       // Deep-copy the nested maps we need to mutate
       final details = Map<String, dynamic>.from(cached.data);
-      final reqDoc  = Map<String, dynamic>.from(
-          (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+      final reqDoc = Map<String, dynamic>.from(
+        (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {},
+      );
       final reqData = Map<String, dynamic>.from(
-          (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
+        (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {},
+      );
       final statuses = Map<String, dynamic>.from(
-          (reqData['candidate_statuses'] as Map?)?.cast<String, dynamic>() ?? {});
+        (reqData['candidate_statuses'] as Map?)?.cast<String, dynamic>() ?? {},
+      );
 
-      final normalized =
-      status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+      final normalized = status.toLowerCase() == 'shortlisted'
+          ? 'shortlist'
+          : status.toLowerCase();
       statuses[candidateUid.toLowerCase()] = normalized;
 
       reqData['candidate_statuses'] = statuses;
-      reqDoc['data']                = reqData;
-      details['request_doc']        = reqDoc;
+      reqDoc['data'] = reqData;
+      details['request_doc'] = reqDoc;
 
       _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
       _safeNotify();
@@ -529,14 +596,18 @@ class AdminProvider extends ChangeNotifier {
   // BATCH FETCH CANDIDATES
   // =========================================================================
   Future<List<Map<String, dynamic>>> _batchFetchCandidates(
-      List<String> candidateIds, {
-        Map<String, Map<String, dynamic>>? hints,
-        int batchSize = 10,
-      }) async {
+    List<String> candidateIds, {
+    Map<String, Map<String, dynamic>>? hints,
+    int batchSize = 10,
+  }) async {
     if (candidateIds.isEmpty) return [];
 
-    final realIds     = candidateIds.where((id) => !id.startsWith('__candidate_')).toList();
-    final fallbackIds = candidateIds.where((id) => id.startsWith('__candidate_')).toList();
+    final realIds = candidateIds
+        .where((id) => !id.startsWith('__candidate_'))
+        .toList();
+    final fallbackIds = candidateIds
+        .where((id) => id.startsWith('__candidate_'))
+        .toList();
 
     final fallbackCards = fallbackIds.map((id) {
       final hint = _normalizeMap(hints?[id]);
@@ -545,18 +616,19 @@ class AdminProvider extends ChangeNotifier {
 
     if (realIds.isEmpty) return fallbackCards;
 
-    final uncachedIds   = <String>[];
+    final uncachedIds = <String>[];
     final cachedResults = <Map<String, dynamic>>[];
 
     for (final id in realIds) {
       if (_candidateCache.containsKey(id)) {
         final cached = _candidateCache[id]!;
         if (DateTime.now().difference(cached.timestamp) < _cacheTTL) {
-
           // --- STRICT CACHE VALIDATION ---
           // Prevent shallow maps or fallbacks from blocking a real fetch
           final data = cached.data;
-          final pp = _normalizeMap(data['personalProfile'] ?? data['personal_profile'] ?? {});
+          final pp = _normalizeMap(
+            data['personalProfile'] ?? data['personal_profile'] ?? {},
+          );
           final name = pp['name']?.toString() ?? data['name']?.toString() ?? '';
           final isFallback = name.toLowerCase().contains('unknown');
 
@@ -564,7 +636,9 @@ class AdminProvider extends ChangeNotifier {
             cachedResults.add(data);
             continue; // Data is fully valid, safe to skip fetch
           } else {
-            debugPrint('⚠️ Cached candidate $id is incomplete/shallow. Forcing re-fetch.');
+            debugPrint(
+              '⚠️ Cached candidate $id is incomplete/shallow. Forcing re-fetch.',
+            );
             _candidateCache.remove(id); // Clear the bad cache entry
           }
         } else {
@@ -579,9 +653,10 @@ class AdminProvider extends ChangeNotifier {
     debugPrint('📥 Fetching ${uncachedIds.length} candidates from Firestore');
     final fetchedResults = <Map<String, dynamic>>[];
 
-    Future<List<List<T>>> batchSplit<T>(List<T> items) async =>
-        [for (var i = 0; i < items.length; i += batchSize)
-          items.sublist(i, (i + batchSize).clamp(0, items.length))];
+    Future<List<List<T>>> batchSplit<T>(List<T> items) async => [
+      for (var i = 0; i < items.length; i += batchSize)
+        items.sublist(i, (i + batchSize).clamp(0, items.length)),
+    ];
 
     try {
       // Step A: Job_Seeker by docId
@@ -663,13 +738,18 @@ class AdminProvider extends ChangeNotifier {
                 .get();
             if (snap.docs.isNotEmpty) {
               final parsed = _parseJobSeekerDocs(snap.docs, hints);
-              if (parsed.isNotEmpty) { fetchedResults.addAll(parsed); continue; }
+              if (parsed.isNotEmpty) {
+                fetchedResults.addAll(parsed);
+                continue;
+              }
             }
           } catch (e) {
             debugPrint('⚠️ email lookup error: $e');
           }
         }
-        debugPrint('⚠️ "$id" not found in any collection — building fallback card');
+        debugPrint(
+          '⚠️ "$id" not found in any collection — building fallback card',
+        );
         final card = _buildFallbackCard(id, _normalizeMap(hints?[id]));
         fetchedResults.add(card);
         _candidateCache[id] = _CacheEntry(card, DateTime.now());
@@ -685,20 +765,28 @@ class AdminProvider extends ChangeNotifier {
   // ── Parse helpers ─────────────────────────────────────────────────────────
 
   List<Map<String, dynamic>> _parseJobSeekerDocs(
-      List<QueryDocumentSnapshot> docs,
-      Map<String, Map<String, dynamic>>? hints) {
+    List<QueryDocumentSnapshot> docs,
+    Map<String, Map<String, dynamic>>? hints,
+  ) {
     final results = <Map<String, dynamic>>[];
     for (final doc in docs) {
       final jsData = _normalizeMap(doc.data());
       final userData = _normalizeMap(jsData['user_data'] ?? {});
       final pp = _normalizeMap(
-        jsData['personalProfile'] ?? jsData['personal_profile'] ??
-            userData['personalProfile'] ?? userData['personal_profile'] ?? {},
+        jsData['personalProfile'] ??
+            jsData['personal_profile'] ??
+            userData['personalProfile'] ??
+            userData['personal_profile'] ??
+            {},
       );
       final prof = _normalizeMap(
-          jsData['professionalProfile'] ?? jsData['professional_profile'] ?? {});
-      final storedUid = jsData['uid']?.toString() ??
-          jsData['user_id']?.toString() ?? userData['uid']?.toString() ?? doc.id;
+        jsData['professionalProfile'] ?? jsData['professional_profile'] ?? {},
+      );
+      final storedUid =
+          jsData['uid']?.toString() ??
+          jsData['user_id']?.toString() ??
+          userData['uid']?.toString() ??
+          doc.id;
 
       String resolveName() {
         for (final src in [pp, jsData, userData, prof]) {
@@ -713,24 +801,39 @@ class AdminProvider extends ChangeNotifier {
         return doc.id;
       }
 
-      final hint   = _normalizeMap(hints?[doc.id] ?? hints?[storedUid] ?? {});
+      final hint = _normalizeMap(hints?[doc.id] ?? hints?[storedUid] ?? {});
       final result = {
-        'uid':      storedUid,
-        'doc_id':   doc.id,
-        'name':     resolveName(),
-        'email':    pp['email']?.toString() ?? pp['emailAddress']?.toString() ??
-            jsData['email']?.toString() ?? userData['email']?.toString() ?? '',
-        'phone':    pp['contactNumber']?.toString() ?? pp['phone']?.toString() ??
-            pp['phoneNumber']?.toString() ?? jsData['phone']?.toString() ??
-            userData['phone']?.toString() ?? '',
-        'job_title': prof['job_title']?.toString() ?? prof['jobTitle']?.toString() ??
-            jsData['job_title']?.toString() ?? jsData['jobTitle']?.toString() ??
-            hint['job_title']?.toString() ?? '',
-        'company':   prof['company']?.toString() ?? jsData['company']?.toString() ??
-            hint['company']?.toString() ?? '',
+        'uid': storedUid,
+        'doc_id': doc.id,
+        'name': resolveName(),
+        'email':
+            pp['email']?.toString() ??
+            pp['emailAddress']?.toString() ??
+            jsData['email']?.toString() ??
+            userData['email']?.toString() ??
+            '',
+        'phone':
+            pp['contactNumber']?.toString() ??
+            pp['phone']?.toString() ??
+            pp['phoneNumber']?.toString() ??
+            jsData['phone']?.toString() ??
+            userData['phone']?.toString() ??
+            '',
+        'job_title':
+            prof['job_title']?.toString() ??
+            prof['jobTitle']?.toString() ??
+            jsData['job_title']?.toString() ??
+            jsData['jobTitle']?.toString() ??
+            hint['job_title']?.toString() ??
+            '',
+        'company':
+            prof['company']?.toString() ??
+            jsData['company']?.toString() ??
+            hint['company']?.toString() ??
+            '',
         'user_data': {...hint, ...jsData},
       };
-      _candidateCache[doc.id]    = _CacheEntry(result, DateTime.now());
+      _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
       if (storedUid != doc.id) {
         _candidateCache[storedUid] = _CacheEntry(result, DateTime.now());
       }
@@ -740,21 +843,31 @@ class AdminProvider extends ChangeNotifier {
   }
 
   List<Map<String, dynamic>> _parseUsersDocs(
-      List<QueryDocumentSnapshot> docs,
-      Map<String, Map<String, dynamic>>? hints) {
+    List<QueryDocumentSnapshot> docs,
+    Map<String, Map<String, dynamic>>? hints,
+  ) {
     final results = <Map<String, dynamic>>[];
     for (final doc in docs) {
       final data = _normalizeMap(doc.data());
       final hint = _normalizeMap(hints?[doc.id]);
       final result = {
-        'uid':      doc.id,
-        'name':     data['name']?.toString() ?? data['displayName']?.toString() ?? doc.id,
-        'email':    data['email']?.toString() ?? '',
-        'phone':    data['phone']?.toString() ?? '',
-        'job_title': data['job_title']?.toString() ?? data['jobTitle']?.toString() ??
-            hint['job_title']?.toString() ?? '',
-        'company':   data['company']?.toString() ?? data['org']?.toString() ??
-            hint['company']?.toString() ?? '',
+        'uid': doc.id,
+        'name':
+            data['name']?.toString() ??
+            data['displayName']?.toString() ??
+            doc.id,
+        'email': data['email']?.toString() ?? '',
+        'phone': data['phone']?.toString() ?? '',
+        'job_title':
+            data['job_title']?.toString() ??
+            data['jobTitle']?.toString() ??
+            hint['job_title']?.toString() ??
+            '',
+        'company':
+            data['company']?.toString() ??
+            data['org']?.toString() ??
+            hint['company']?.toString() ??
+            '',
         'user_data': {...hint, ...data},
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
@@ -763,11 +876,20 @@ class AdminProvider extends ChangeNotifier {
     return results;
   }
 
-  Map<String, dynamic> _buildFallbackCard(String uid, Map<String, dynamic> hint) {
-    final pp   = _normalizeMap(hint['personalProfile'] ?? hint['personal_profile'] ?? {});
-    final prof = _normalizeMap(hint['professionalProfile'] ?? hint['professional_profile'] ?? {});
-    final ud   = _normalizeMap(hint['user_data'] ?? {});
-    final udPp = _normalizeMap(ud['personalProfile'] ?? ud['personal_profile'] ?? {});
+  Map<String, dynamic> _buildFallbackCard(
+    String uid,
+    Map<String, dynamic> hint,
+  ) {
+    final pp = _normalizeMap(
+      hint['personalProfile'] ?? hint['personal_profile'] ?? {},
+    );
+    final prof = _normalizeMap(
+      hint['professionalProfile'] ?? hint['professional_profile'] ?? {},
+    );
+    final ud = _normalizeMap(hint['user_data'] ?? {});
+    final udPp = _normalizeMap(
+      ud['personalProfile'] ?? ud['personal_profile'] ?? {},
+    );
 
     String resolveName() {
       for (final src in [pp, udPp, hint, ud, prof]) {
@@ -779,21 +901,39 @@ class AdminProvider extends ChangeNotifier {
         final ln = src['lastName']?.toString().trim() ?? '';
         if (fn.isNotEmpty) return '$fn $ln'.trim();
       }
-      final email = hint['email']?.toString().trim() ?? pp['email']?.toString().trim() ?? '';
+      final email =
+          hint['email']?.toString().trim() ??
+          pp['email']?.toString().trim() ??
+          '';
       if (email.contains('@')) return email.split('@').first;
       return uid.startsWith('__') ? 'Unknown Candidate' : uid;
     }
 
     return {
-      'uid':      uid,
-      'name':     resolveName(),
-      'email':    hint['email']?.toString() ?? pp['email']?.toString() ?? ud['email']?.toString() ?? '',
-      'phone':    hint['phone']?.toString() ?? hint['contactNumber']?.toString() ??
-          pp['phone']?.toString() ?? pp['contactNumber']?.toString() ?? '',
-      'job_title': prof['job_title']?.toString() ?? prof['jobTitle']?.toString() ??
-          hint['job_title']?.toString() ?? hint['jobTitle']?.toString() ?? '',
-      'company':   prof['company']?.toString() ?? hint['company']?.toString() ??
-          hint['org']?.toString() ?? '',
+      'uid': uid,
+      'name': resolveName(),
+      'email':
+          hint['email']?.toString() ??
+          pp['email']?.toString() ??
+          ud['email']?.toString() ??
+          '',
+      'phone':
+          hint['phone']?.toString() ??
+          hint['contactNumber']?.toString() ??
+          pp['phone']?.toString() ??
+          pp['contactNumber']?.toString() ??
+          '',
+      'job_title':
+          prof['job_title']?.toString() ??
+          prof['jobTitle']?.toString() ??
+          hint['job_title']?.toString() ??
+          hint['jobTitle']?.toString() ??
+          '',
+      'company':
+          prof['company']?.toString() ??
+          hint['company']?.toString() ??
+          hint['org']?.toString() ??
+          '',
       'user_data': hint,
     };
   }
@@ -806,24 +946,34 @@ class AdminProvider extends ChangeNotifier {
     if (recruiterId.isEmpty) return null;
     if (_recruiterCache.containsKey(recruiterId)) {
       final cached = _recruiterCache[recruiterId]!;
-      if (DateTime.now().difference(cached.timestamp) < _cacheTTL) return cached.data;
+      if (DateTime.now().difference(cached.timestamp) < _cacheTTL) {
+        return cached.data;
+      }
       _recruiterCache.remove(recruiterId);
     }
     try {
       DocumentSnapshot snap;
       try {
-        snap = await _firestore.collection('recruiter').doc(recruiterId)
+        snap = await _firestore
+            .collection('recruiter')
+            .doc(recruiterId)
             .get(const GetOptions(source: Source.cache));
       } catch (_) {
-        snap = await _firestore.collection('recruiter').doc(recruiterId)
+        snap = await _firestore
+            .collection('recruiter')
+            .doc(recruiterId)
             .get(const GetOptions(source: Source.server));
       }
       if (!snap.exists) return null;
-      final data     = _normalizeMap(snap.data());
-      final userData = data.containsKey('user_data') && data['user_data'] != null
+      final data = _normalizeMap(snap.data());
+      final userData =
+          data.containsKey('user_data') && data['user_data'] != null
           ? _normalizeMap(data['user_data'])
-          : {'name': data['name'] ?? data['displayName'] ?? '',
-        'email': data['email'] ?? '', 'company': data['company'] ?? data['org'] ?? ''};
+          : {
+              'name': data['name'] ?? data['displayName'] ?? '',
+              'email': data['email'] ?? '',
+              'company': data['company'] ?? data['org'] ?? '',
+            };
       _recruiterCache[recruiterId] = _CacheEntry(userData, DateTime.now());
       return userData;
     } catch (e) {
@@ -838,28 +988,35 @@ class AdminProvider extends ChangeNotifier {
 
   Future<void> _batchPrefetchRecruiters(List<String> recruiterIds) async {
     const batchSize = 10;
-    final batches = [for (var i = 0; i < recruiterIds.length; i += batchSize)
-      recruiterIds.sublist(i, (i + batchSize).clamp(0, recruiterIds.length))];
+    final batches = [
+      for (var i = 0; i < recruiterIds.length; i += batchSize)
+        recruiterIds.sublist(i, (i + batchSize).clamp(0, recruiterIds.length)),
+    ];
     try {
-      await Future.wait(batches.map((batch) async {
-        QuerySnapshot snap;
-        try {
-          snap = await _firestore.collection('recruiter')
-              .where(FieldPath.documentId, whereIn: batch)
-              .get(const GetOptions(source: Source.cache));
-        } catch (_) {
-          snap = await _firestore.collection('recruiter')
-              .where(FieldPath.documentId, whereIn: batch)
-              .get(const GetOptions(source: Source.server));
-        }
-        for (final doc in snap.docs) {
-          final data     = _normalizeMap(doc.data());
-          final userData = data.containsKey('user_data') && data['user_data'] != null
-              ? _normalizeMap(data['user_data'])
-              : {'name': data['name'] ?? '', 'email': data['email'] ?? ''};
-          _recruiterCache[doc.id] = _CacheEntry(userData, DateTime.now());
-        }
-      }));
+      await Future.wait(
+        batches.map((batch) async {
+          QuerySnapshot snap;
+          try {
+            snap = await _firestore
+                .collection('recruiter')
+                .where(FieldPath.documentId, whereIn: batch)
+                .get(const GetOptions(source: Source.cache));
+          } catch (_) {
+            snap = await _firestore
+                .collection('recruiter')
+                .where(FieldPath.documentId, whereIn: batch)
+                .get(const GetOptions(source: Source.server));
+          }
+          for (final doc in snap.docs) {
+            final data = _normalizeMap(doc.data());
+            final userData =
+                data.containsKey('user_data') && data['user_data'] != null
+                ? _normalizeMap(data['user_data'])
+                : {'name': data['name'] ?? '', 'email': data['email'] ?? ''};
+            _recruiterCache[doc.id] = _CacheEntry(userData, DateTime.now());
+          }
+        }),
+      );
       _safeNotify();
     } catch (e) {
       debugPrint('⚠️ Batch prefetch error: $e');
@@ -876,74 +1033,85 @@ class AdminProvider extends ChangeNotifier {
         .collection('recruiter_requests')
         .orderBy('created_at', descending: true)
         .snapshots()
-        .listen(
-          (snap) {
-        bool hasChanges = false;
-        for (final change in snap.docChanges) {
-          // Skip if we have pending local writes to avoid flickering
-          if (change.doc.metadata.hasPendingWrites) continue;
+        .listen((snap) {
+          bool hasChanges = false;
+          for (final change in snap.docChanges) {
+            // Skip if we have pending local writes to avoid flickering
+            if (change.doc.metadata.hasPendingWrites) continue;
 
-          final data        = _normalizeMap(change.doc.data());
-          final recruiterId = (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
-          final total       = data['total_candidates'] != null
-              ? int.tryParse(data['total_candidates'].toString()) ?? 0
-              : _extractCandidateEntries(data).length;
+            final data = _normalizeMap(change.doc.data());
+            final recruiterId =
+                (data['recruiter_id'] ?? data['recruiter'] ?? '').toString();
+            final total = data['total_candidates'] != null
+                ? int.tryParse(data['total_candidates'].toString()) ?? 0
+                : _extractCandidateEntries(data).length;
 
-          final entry = {
-            'id': change.doc.id, 'recruiter_id': recruiterId,
-            'recruiter_email': (data['recruiter_email'] ?? data['recruiterEmail'] ?? '').toString(),
-            'total_candidates': total,
-            'status': (data['status'] ?? 'pending').toString(),
-            'created_at': data['created_at'],
-            'notes': data['notes'] ?? '', 'raw': data,
-          };
+            final entry = {
+              'id': change.doc.id,
+              'recruiter_id': recruiterId,
+              'recruiter_email':
+                  (data['recruiter_email'] ?? data['recruiterEmail'] ?? '')
+                      .toString(),
+              'total_candidates': total,
+              'status': (data['status'] ?? 'pending').toString(),
+              'created_at': data['created_at'],
+              'notes': data['notes'] ?? '',
+              'raw': data,
+            };
 
-          if (change.type == DocumentChangeType.added) {
-            if (!requests.any((r) => r['id'] == change.doc.id)) {
-              requests.insert(0, entry);
-              hasChanges = true;
-            }
-          } else if (change.type == DocumentChangeType.modified) {
-            final idx = requests.indexWhere((r) => r['id'] == change.doc.id);
-            if (idx != -1) {
-              requests[idx] = entry;
-              hasChanges = true;
-
-              // ── FIX: If the selected request modified on server, patch the cache
-              // instead of just leaving it stale or evicting.
-              if (_selectedRequestId == change.doc.id) {
-                final cached = _requestDetailsCache[change.doc.id];
-                if (cached != null) {
-                  try {
-                    final details = Map<String, dynamic>.from(cached.data);
-                    final reqDoc  = Map<String, dynamic>.from(
-                        (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
-                    // Update only the document data from the heartbeat
-                    reqDoc['data'] = data;
-                    details['request_doc'] = reqDoc;
-                    _requestDetailsCache[change.doc.id] = _CacheEntry(details, DateTime.now());
-                    debugPrint('⚡ Realtime patch for selected request: ${change.doc.id}');
-                  } catch (e) {
-                    debugPrint('⚠️ Failed to patch selected request cache: $e');
-                    _requestDetailsCache.remove(change.doc.id);
-                  }
-                }
-              } else {
-                // Not selected? Safe to evict so it re-fetches next time.
-                _requestDetailsCache.remove(change.doc.id);
+            if (change.type == DocumentChangeType.added) {
+              if (!requests.any((r) => r['id'] == change.doc.id)) {
+                requests.insert(0, entry);
+                hasChanges = true;
               }
+            } else if (change.type == DocumentChangeType.modified) {
+              final idx = requests.indexWhere((r) => r['id'] == change.doc.id);
+              if (idx != -1) {
+                requests[idx] = entry;
+                hasChanges = true;
+
+                // ── FIX: If the selected request modified on server, patch the cache
+                // instead of just leaving it stale or evicting.
+                if (_selectedRequestId == change.doc.id) {
+                  final cached = _requestDetailsCache[change.doc.id];
+                  if (cached != null) {
+                    try {
+                      final details = Map<String, dynamic>.from(cached.data);
+                      final reqDoc = Map<String, dynamic>.from(
+                        (details['request_doc'] as Map?)
+                                ?.cast<String, dynamic>() ??
+                            {},
+                      );
+                      // Update only the document data from the heartbeat
+                      reqDoc['data'] = data;
+                      details['request_doc'] = reqDoc;
+                      _requestDetailsCache[change.doc.id] = _CacheEntry(
+                        details,
+                        DateTime.now(),
+                      );
+                      debugPrint(
+                        '⚡ Realtime patch for selected request: ${change.doc.id}',
+                      );
+                    } catch (e) {
+                      debugPrint(
+                        '⚠️ Failed to patch selected request cache: $e',
+                      );
+                      _requestDetailsCache.remove(change.doc.id);
+                    }
+                  }
+                } else {
+                  // Not selected? Safe to evict so it re-fetches next time.
+                  _requestDetailsCache.remove(change.doc.id);
+                }
+              }
+            } else if (change.type == DocumentChangeType.removed) {
+              requests.removeWhere((r) => r['id'] == change.doc.id);
+              _requestDetailsCache.remove(change.doc.id);
+              hasChanges = true;
             }
           }
- else if (change.type == DocumentChangeType.removed) {
-            requests.removeWhere((r) => r['id'] == change.doc.id);
-            _requestDetailsCache.remove(change.doc.id);
-            hasChanges = true;
-          }
-        }
-        if (hasChanges) _safeNotify();
-      },
-      onError: (e) => debugPrint('❌ Realtime listener error: $e'),
-    );
+          if (hasChanges) _safeNotify();
+        }, onError: (e) => debugPrint('❌ Realtime listener error: $e'));
   }
 
   // =========================================================================
@@ -969,16 +1137,20 @@ class AdminProvider extends ChangeNotifier {
     if (cached != null) {
       try {
         final details = Map<String, dynamic>.from(cached.data);
-        final reqDoc  = Map<String, dynamic>.from(
-            (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {});
+        final reqDoc = Map<String, dynamic>.from(
+          (details['request_doc'] as Map?)?.cast<String, dynamic>() ?? {},
+        );
         final reqData = Map<String, dynamic>.from(
-            (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {});
-        reqData['status']          = newStatus;
+          (reqDoc['data'] as Map?)?.cast<String, dynamic>() ?? {},
+        );
+        reqData['status'] = newStatus;
         reqData['last_updated_at'] = DateTime.now().toIso8601String();
-        reqDoc['data']             = reqData;
-        details['request_doc']     = reqDoc;
+        reqDoc['data'] = reqData;
+        details['request_doc'] = reqDoc;
         _requestDetailsCache[requestId] = _CacheEntry(details, DateTime.now());
-        debugPrint('⚡ Optimistic request-status patch (pre-write): $requestId → $newStatus');
+        debugPrint(
+          '⚡ Optimistic request-status patch (pre-write): $requestId → $newStatus',
+        );
       } catch (e) {
         debugPrint('⚠️ Failed to patch request-status cache: $e');
       }
@@ -995,8 +1167,10 @@ class AdminProvider extends ChangeNotifier {
         'last_updated_by': performedBy ?? 'admin',
       });
       batch.set(ref.collection('audit').doc(), {
-        'action': 'update_status', 'status': newStatus,
-        'note': note ?? '', 'performed_by': performedBy ?? 'admin',
+        'action': 'update_status',
+        'status': newStatus,
+        'note': note ?? '',
+        'performed_by': performedBy ?? 'admin',
         'created_at': now,
       });
       await batch.commit();
@@ -1026,8 +1200,9 @@ class AdminProvider extends ChangeNotifier {
     String? performedBy,
   }) async {
     if (_disposed) return false;
-    final normalized =
-    status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+    final normalized = status.toLowerCase() == 'shortlisted'
+        ? 'shortlist'
+        : status.toLowerCase();
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
@@ -1036,7 +1211,7 @@ class AdminProvider extends ChangeNotifier {
       final snap = await ref.get();
       if (_disposed || !snap.exists) return false;
 
-      final data       = snap.data() as Map<String, dynamic>;
+      final data = snap.data() as Map<String, dynamic>;
       final candidates = List<dynamic>.from(data['candidates'] ?? []);
       for (int i = 0; i < candidates.length; i++) {
         final c = _normalizeMap(candidates[i]);
@@ -1139,7 +1314,8 @@ class AdminProvider extends ChangeNotifier {
     }
     return timestamp.toString().isNotEmpty ? timestamp.toString() : fallback;
   }
-Future<String> fetchUnifiedName(String uid) async {
+
+  Future<String> fetchUnifiedName(String uid) async {
     if (_candidateCache.containsKey(uid)) {
       return _candidateCache[uid]!.data['name'] ?? 'Unknown Job Seeker';
     }
@@ -1165,15 +1341,20 @@ Future<String> fetchUnifiedName(String uid) async {
       final jsDoc = await _firestore.collection('Job_Seeker').doc(uid).get();
       if (jsDoc.exists) {
         final data = _normalizeMap(jsDoc.data());
-        final ud   = _normalizeMap(data['user_data'] ?? {});
-        final pp   = _normalizeMap(
-          data['personalProfile'] ?? data['personal_profile'] ??
-          ud['personalProfile'] ?? ud['personal_profile'] ?? {},
+        final ud = _normalizeMap(data['user_data'] ?? {});
+        final pp = _normalizeMap(
+          data['personalProfile'] ??
+              data['personal_profile'] ??
+              ud['personalProfile'] ??
+              ud['personal_profile'] ??
+              {},
         );
-        final name = pp['name']?.toString().trim() ??
+        final name =
+            pp['name']?.toString().trim() ??
             pp['fullName']?.toString().trim() ??
             ud['name']?.toString().trim() ??
-            data['name']?.toString().trim() ?? '';
+            data['name']?.toString().trim() ??
+            '';
         if (name.isNotEmpty && name.toLowerCase() != 'null') {
           data['uid'] ??= uid;
           data['name'] = name;
@@ -1186,12 +1367,18 @@ Future<String> fetchUnifiedName(String uid) async {
       final recDoc = await _firestore.collection('recruiter').doc(uid).get();
       if (recDoc.exists) {
         final data = _normalizeMap(recDoc.data());
-        final ud   = _normalizeMap(data['user_data'] ?? {});
-        final name = ud['name']?.toString().trim() ??
+        final ud = _normalizeMap(data['user_data'] ?? {});
+        final name =
+            ud['name']?.toString().trim() ??
             data['name']?.toString().trim() ??
-            data['displayName']?.toString().trim() ?? '';
+            data['displayName']?.toString().trim() ??
+            '';
         if (name.isNotEmpty && name.toLowerCase() != 'null') {
-          final entry = {'uid': uid, 'name': name, 'email': ud['email'] ?? data['email'] ?? ''};
+          final entry = {
+            'uid': uid,
+            'name': name,
+            'email': ud['email'] ?? data['email'] ?? '',
+          };
           _recruiterCache[uid] = _CacheEntry(entry, DateTime.now());
           return name;
         }

@@ -19,9 +19,12 @@ class job_listing_provider extends ChangeNotifier {
   // CORE STATE VARIABLES
   // =============================================================================
   final _formData = _JobFormData();
+  final _allOwnedJobList = <Map<String, dynamic>>[];
   final _jobList = <Map<String, dynamic>>[];
+  final _archivedJobList = <Map<String, dynamic>>[];
   final _filteredJobList = <Map<String, dynamic>>[];
   StreamSubscription? _jobsSubscription;
+  StreamSubscription<User?>? _authSubscription;
 
   bool _isPosting = false;
   bool _isInitialized = false;
@@ -62,19 +65,60 @@ class job_listing_provider extends ChangeNotifier {
   // =============================================================================
   // FILTER OPTIONS (CONSTANTS)
   // =============================================================================
-  final List<String> locationOptions = ['Karachi', 'Lahore', 'Islamabad', 'Peshawar', 'Quetta'];
-  final List<String> skillOptions = [
-    'Aircraft Maintenance', 'Avionics Systems', 'Flight Operations', 'Radar Systems',
-    'Navigation Systems', 'Aircraft Engines', 'Hydraulic Systems', 'Electrical Systems',
-    'Flight Planning', 'Air Traffic Control', 'Weather Analysis', 'Mission Planning',
-    'Safety Protocols', 'Emergency Procedures', 'Quality Assurance', 'Technical Documentation',
-    'Pilot Training', 'Crew Resource Management', 'Aircraft Inspection', 'Ground Support'
+  final List<String> locationOptions = [
+    'Karachi',
+    'Lahore',
+    'Islamabad',
+    'Peshawar',
+    'Quetta',
   ];
-  final List<String> industryOptions = ['Aviation', 'Defense', 'Engineering', 'Logistics'];
-  final List<String> benefitOptions = ['Health Insurance', 'Retirement Plan', 'Flexible Hours'];
-  final List<String> jobTypeOptions = ['Full Time', 'Part Time', 'Contract', 'Internship'];
+  final List<String> skillOptions = [
+    'Aircraft Maintenance',
+    'Avionics Systems',
+    'Flight Operations',
+    'Radar Systems',
+    'Navigation Systems',
+    'Aircraft Engines',
+    'Hydraulic Systems',
+    'Electrical Systems',
+    'Flight Planning',
+    'Air Traffic Control',
+    'Weather Analysis',
+    'Mission Planning',
+    'Safety Protocols',
+    'Emergency Procedures',
+    'Quality Assurance',
+    'Technical Documentation',
+    'Pilot Training',
+    'Crew Resource Management',
+    'Aircraft Inspection',
+    'Ground Support',
+  ];
+  final List<String> industryOptions = [
+    'Aviation',
+    'Defense',
+    'Engineering',
+    'Logistics',
+  ];
+  final List<String> benefitOptions = [
+    'Health Insurance',
+    'Retirement Plan',
+    'Flexible Hours',
+  ];
+  final List<String> jobTypeOptions = [
+    'Full Time',
+    'Part Time',
+    'Contract',
+    'Internship',
+  ];
   final List<String> workModeOptions = ['On-site', 'Remote', 'Hybrid'];
-  final List<String> educationOptions = ['Matric', 'Intermediate', 'Bachelors', 'Masters', 'PhD'];
+  final List<String> educationOptions = [
+    'Matric',
+    'Intermediate',
+    'Bachelors',
+    'Masters',
+    'PhD',
+  ];
 
   // =============================================================================
   // CONSTRUCTOR & INITIALIZATION
@@ -85,47 +129,86 @@ class job_listing_provider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _jobsSubscription?.cancel();
     super.dispose();
   }
 
   Future<void> _initializeProvider() async {
+    _authSubscription = _auth.authStateChanges().listen((user) async {
+      _cachedUserId = user?.uid;
+      _isRecruiterCached = null;
+      _allOwnedJobList.clear();
+      _jobList.clear();
+      _archivedJobList.clear();
+      _filteredJobList.clear();
+
+      if (user == null) {
+        await _jobsSubscription?.cancel();
+        _jobsSubscription = null;
+        _isInitialized = true;
+        notifyListeners();
+        return;
+      }
+
+      await _initRealtimeListener();
+    });
+
     final user = _auth.currentUser;
-    _cachedUserId = user?.uid;
-    if (user != null) await _initRealtimeListener();
+    if (user != null) {
+      _cachedUserId = user.uid;
+      await _initRealtimeListener();
+    }
     _isInitialized = true;
     notifyListeners();
   }
+
   Future<void> _initRealtimeListener() async {
     if (_cachedUserId == null) return;
     await _jobsSubscription?.cancel();
     _jobsSubscription = _firestore
-        .collection('recruiter')
-        .doc(_cachedUserId)
-        .collection('Posted_jobs')
-        .where('status', isNotEqualTo: 'archive')  // ← ADDED: Filter out archived jobs
+        .collection('Posted_jobs_public')
+        .where('recruiterUid', isEqualTo: _cachedUserId)
         .orderBy('timestamp', descending: true)
-        .snapshots()
+        .snapshots(includeMetadataChanges: true)
         .listen(_updateJobList);
   }
 
-
-
   void _updateJobList(QuerySnapshot snapshot) {
+    final jobs = snapshot.docs.map((doc) {
+      final data = Map<String, dynamic>.from(
+        doc.data() as Map<String, dynamic>,
+      );
+      data['id'] = doc.id;
+      data['status'] = _normalizeJobStatus(data['status']);
+      return data;
+    }).toList();
+
+    _allOwnedJobList
+      ..clear()
+      ..addAll(jobs);
+
     _jobList
       ..clear()
-      ..addAll(snapshot.docs.map((doc) => {
-        ...doc.data() as Map<String, dynamic>,
-        'id': doc.id,
-      }));
+      ..addAll(jobs.where((job) => job['status'] != 'archived'));
+
+    _archivedJobList
+      ..clear()
+      ..addAll(jobs.where((job) => job['status'] == 'archived'));
+
     _applySearchAndFilters();
   }
 
   // =============================================================================
   // PUBLIC GETTERS - CORE STATE
   // =============================================================================
-  List<Map<String, dynamic>> get jobList => _jobList;
-  List<Map<String, dynamic>> get filteredJobList => _filteredJobList;
+  List<Map<String, dynamic>> get allOwnedJobList =>
+      List.unmodifiable(_allOwnedJobList);
+  List<Map<String, dynamic>> get jobList => List.unmodifiable(_jobList);
+  List<Map<String, dynamic>> get archivedJobList =>
+      List.unmodifiable(_archivedJobList);
+  List<Map<String, dynamic>> get filteredJobList =>
+      List.unmodifiable(_filteredJobList);
   bool get isPosting => _isPosting;
   bool get isInitialized => _isInitialized;
   String get searchQuery => _searchQuery;
@@ -180,22 +263,38 @@ class job_listing_provider extends ChangeNotifier {
   // =============================================================================
   // FORM DATA UPDATE METHODS
   // =============================================================================
-  void updateTempTitle(String v) => _updateAndNotify(() => _formData.title = v.trim());
-  void updateTempDepartment(String v) => _updateAndNotify(() => _formData.department = v.trim());
-  void updateTempDescription(String v) => _updateAndNotify(() => _formData.description = v.trim());
-  void updateTempPay(String v) => _updateAndNotify(() => _formData.pay = v.trim());
-  void updateTempExperience(String v) => _updateAndNotify(() => _formData.experience = v.trim());
-  void updateTempNature(String v) => _updateAndNotify(() => _formData.nature = v);
-  void updateTempCompany(String v) => _updateAndNotify(() => _formData.company = v.trim());
-  void updateTempLocation(String v) => _updateAndNotify(() => _formData.location = v.trim());
-  void updateTempResponsibilities(String v) => _updateAndNotify(() => _formData.responsibilities = v.trim());
-  void updateTempQualifications(String v) => _updateAndNotify(() => _formData.qualifications = v.trim());
-  void updateTempDeadline(String v) => _updateAndNotify(() => _formData.deadline = v.trim());
-  void updateTempContactEmail(String v) => _updateAndNotify(() => _formData.contactEmail = v.trim());
-  void updateTempInstructions(String v) => _updateAndNotify(() => _formData.instructions = v.trim());
-  void updateTempSalaryType(String v) => _updateAndNotify(() => _formData.salaryType = v);
-  void updateTempSalary(String v) => _updateAndNotify(() => _formData.salary = v.trim());
-  void updateTempPayDetails(String v) => _updateAndNotify(() => _formData.payDetails = v.trim());
+  void updateTempTitle(String v) =>
+      _updateAndNotify(() => _formData.title = v.trim());
+  void updateTempDepartment(String v) =>
+      _updateAndNotify(() => _formData.department = v.trim());
+  void updateTempDescription(String v) =>
+      _updateAndNotify(() => _formData.description = v.trim());
+  void updateTempPay(String v) =>
+      _updateAndNotify(() => _formData.pay = v.trim());
+  void updateTempExperience(String v) =>
+      _updateAndNotify(() => _formData.experience = v.trim());
+  void updateTempNature(String v) =>
+      _updateAndNotify(() => _formData.nature = v);
+  void updateTempCompany(String v) =>
+      _updateAndNotify(() => _formData.company = v.trim());
+  void updateTempLocation(String v) =>
+      _updateAndNotify(() => _formData.location = v.trim());
+  void updateTempResponsibilities(String v) =>
+      _updateAndNotify(() => _formData.responsibilities = v.trim());
+  void updateTempQualifications(String v) =>
+      _updateAndNotify(() => _formData.qualifications = v.trim());
+  void updateTempDeadline(String v) =>
+      _updateAndNotify(() => _formData.deadline = v.trim());
+  void updateTempContactEmail(String v) =>
+      _updateAndNotify(() => _formData.contactEmail = v.trim());
+  void updateTempInstructions(String v) =>
+      _updateAndNotify(() => _formData.instructions = v.trim());
+  void updateTempSalaryType(String v) =>
+      _updateAndNotify(() => _formData.salaryType = v);
+  void updateTempSalary(String v) =>
+      _updateAndNotify(() => _formData.salary = v.trim());
+  void updateTempPayDetails(String v) =>
+      _updateAndNotify(() => _formData.payDetails = v.trim());
 
   void updateTempLogo(Uint8List bytes, String name) => _updateAndNotify(() {
     _formData.logoBytes = bytes;
@@ -204,8 +303,10 @@ class job_listing_provider extends ChangeNotifier {
 
   // Form data toggle methods
   void toggleSkill(String skill) => _toggleFormItem(_formData.skills, skill);
-  void toggleBenefit(String benefit) => _toggleFormItem(_formData.benefits, benefit);
-  void toggleWorkMode(String workMode) => _toggleFormItem(_formData.workModes, workMode);
+  void toggleBenefit(String benefit) =>
+      _toggleFormItem(_formData.benefits, benefit);
+  void toggleWorkMode(String workMode) =>
+      _toggleFormItem(_formData.workModes, workMode);
 
   void clearTempFields() {
     _formData.clear();
@@ -220,30 +321,48 @@ class job_listing_provider extends ChangeNotifier {
   // =============================================================================
   // FILTER UPDATE METHODS
   // =============================================================================
-  void setSalaryRange(RangeValues values) => _updateFilterAndApply(() => _salaryRange = values);
-  void setExperienceRange(RangeValues values) => _updateFilterAndApply(() => _experienceRange = values);
-  void setJobType(String? value) => _updateFilterAndApply(() => selectedJobType = value);
-  void setWorkMode(String? value) => _updateFilterAndApply(() => selectedWorkMode = value);
-  void setEducation(String? value) => _updateFilterAndApply(() => selectedEducation = value);
-  void setLocation(String? value) => _updateFilterAndApply(() => selectedLocation = value);
-  void setRemoteOnly(bool value) => _updateFilterAndApply(() => isRemoteOnly = value);
-  void setUrgentOnly(bool value) => _updateFilterAndApply(() => isUrgentOnly = value);
-  void setHealthInsurance(bool value) => _updateFilterAndApply(() => hasHealthInsurance = value);
-  void setRetirementPlan(bool value) => _updateFilterAndApply(() => hasRetirementPlan = value);
-  void setFlexibleHours(bool value) => _updateFilterAndApply(() => hasFlexibleHours = value);
-  void setPostedAfter(DateTime? date) => _updateFilterAndApply(() => postedAfter = date);
+  void setSalaryRange(RangeValues values) =>
+      _updateFilterAndApply(() => _salaryRange = values);
+  void setExperienceRange(RangeValues values) =>
+      _updateFilterAndApply(() => _experienceRange = values);
+  void setJobType(String? value) =>
+      _updateFilterAndApply(() => selectedJobType = value);
+  void setWorkMode(String? value) =>
+      _updateFilterAndApply(() => selectedWorkMode = value);
+  void setEducation(String? value) =>
+      _updateFilterAndApply(() => selectedEducation = value);
+  void setLocation(String? value) =>
+      _updateFilterAndApply(() => selectedLocation = value);
+  void setRemoteOnly(bool value) =>
+      _updateFilterAndApply(() => isRemoteOnly = value);
+  void setUrgentOnly(bool value) =>
+      _updateFilterAndApply(() => isUrgentOnly = value);
+  void setHealthInsurance(bool value) =>
+      _updateFilterAndApply(() => hasHealthInsurance = value);
+  void setRetirementPlan(bool value) =>
+      _updateFilterAndApply(() => hasRetirementPlan = value);
+  void setFlexibleHours(bool value) =>
+      _updateFilterAndApply(() => hasFlexibleHours = value);
+  void setPostedAfter(DateTime? date) =>
+      _updateFilterAndApply(() => postedAfter = date);
 
   // Filter toggle methods
-  void toggleFilterSkill(String skill) => _toggleFilterItem(selectedSkills, skill);
-  void toggleFilterIndustry(String industry) => _toggleFilterItem(selectedIndustries, industry);
-  void toggleFilterBenefit(String benefit) => _toggleFilterItem(selectedBenefits, benefit);
+  void toggleFilterSkill(String skill) =>
+      _toggleFilterItem(selectedSkills, skill);
+  void toggleFilterIndustry(String industry) =>
+      _toggleFilterItem(selectedIndustries, industry);
+  void toggleFilterBenefit(String benefit) =>
+      _toggleFilterItem(selectedBenefits, benefit);
 
   // =============================================================================
   // SEARCH & FILTERING METHODS
   // =============================================================================
   void searchJobs(String query) {
     _searchQuery = query.trim().toLowerCase();
-    _searchKeywords = _searchQuery.split(' ').where((w) => w.isNotEmpty).toList();
+    _searchKeywords = _searchQuery
+        .split(' ')
+        .where((w) => w.isNotEmpty)
+        .toList();
     _applySearchAndFilters();
   }
 
@@ -316,7 +435,7 @@ class job_listing_provider extends ChangeNotifier {
     if (_cachedUserId == null) return 'Not authenticated.';
 
     try {
-      await _archiveJobInBothCollections(jobId);
+      await _setJobStatusInBothCollections(jobId, 'archived');
       return null;
     } catch (e) {
       debugPrint('Error archiving job: $e');
@@ -324,39 +443,51 @@ class job_listing_provider extends ChangeNotifier {
     }
   }
 
-  Future<void> _archiveJobInBothCollections(String jobId) async {
+  Future<String?> restoreJob(String jobId) async {
+    if (_cachedUserId == null) return 'Not authenticated.';
+
+    try {
+      await _setJobStatusInBothCollections(jobId, 'active');
+      return null;
+    } catch (e) {
+      debugPrint('Error restoring job: $e');
+      return 'Failed to restore job: $e';
+    }
+  }
+
+  Future<void> _setJobStatusInBothCollections(
+    String jobId,
+    String status,
+  ) async {
     final batch = _firestore.batch();
 
-    // Reference to the recruiter's private job list
     final recruiterJobRef = _firestore
         .collection('recruiter')
         .doc(_cachedUserId)
         .collection('Posted_jobs')
         .doc(jobId);
 
-    // Reference to the public job list
-    final publicJobRef = _firestore
-        .collection('Posted_jobs_public')
-        .doc(jobId);
+    final publicJobRef = _firestore.collection('Posted_jobs_public').doc(jobId);
 
-    // Update status to 'archive' in both places atomically
     batch.update(recruiterJobRef, {
-      'status': 'archive',
-      'updatedAt': FieldValue.serverTimestamp(), // Good practice to track when it was archived
+      'status': status,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
 
     batch.update(publicJobRef, {
-      'status': 'archive',
+      'status': status,
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
     await batch.commit();
   }
+
   Future<String?> toggleJobStatus(String jobId, String currentStatus) async {
     if (_cachedUserId == null) return 'Not authenticated';
     try {
+      final normalized = _normalizeJobStatus(currentStatus);
       final updates = {
-        'status': currentStatus == 'active' ? 'paused' : 'active',
+        'status': normalized == 'active' ? 'paused' : 'active',
         'updatedAt': FieldValue.serverTimestamp(),
       };
       await _updateJobInBothCollections(jobId, updates, merge: true);
@@ -370,7 +501,8 @@ class job_listing_provider extends ChangeNotifier {
   Map<String, int> getJobStatistics() {
     var activeJobs = 0, pausedJobs = 0, totalApplications = 0, totalViews = 0;
     for (final job in _jobList) {
-      if (job['status'] == 'paused') {
+      final status = _normalizeJobStatus(job['status']);
+      if (status == 'paused') {
         pausedJobs++;
       } else {
         activeJobs++;
@@ -382,6 +514,7 @@ class job_listing_provider extends ChangeNotifier {
       'activeJobs': activeJobs,
       'pausedJobs': pausedJobs,
       'totalJobs': _jobList.length,
+      'archivedJobs': _archivedJobList.length,
       'totalApplications': totalApplications,
       'totalViews': totalViews,
     };
@@ -453,27 +586,57 @@ class job_listing_provider extends ChangeNotifier {
     return _searchKeywords.every(fields.contains);
   }
 
-  List<Map<String, dynamic>> _applyAdvancedFilters(List<Map<String, dynamic>> jobs) {
+  String _normalizeJobStatus(dynamic raw) {
+    final status = raw?.toString().trim().toLowerCase();
+    if (status == 'archive' || status == 'archived') return 'archived';
+    if (status == 'paused') return 'paused';
+    return 'active';
+  }
+
+  List<Map<String, dynamic>> _applyAdvancedFilters(
+    List<Map<String, dynamic>> jobs,
+  ) {
     return jobs.where((job) {
-      if (isRemoteOnly && !(job['workModes']?.contains('Remote') ?? false)) return false;
-      if (isUrgentOnly && !(job['tags']?.contains('Urgent') ?? false)) return false;
-      if (hasHealthInsurance && !(job['benefits']?.contains('Health Insurance') ?? false)) return false;
-      if (hasRetirementPlan && !(job['benefits']?.contains('Retirement Plan') ?? false)) return false;
-      if (hasFlexibleHours && !(job['benefits']?.contains('Flexible Hours') ?? false)) return false;
-      if (postedAfter != null && _parseJobDate(job)?.isBefore(postedAfter!) == true) return false;
+      if (isRemoteOnly && !(job['workModes']?.contains('Remote') ?? false)) {
+        return false;
+      }
+      if (isUrgentOnly && !(job['tags']?.contains('Urgent') ?? false)) {
+        return false;
+      }
+      if (hasHealthInsurance &&
+          !(job['benefits']?.contains('Health Insurance') ?? false)) {
+        return false;
+      }
+      if (hasRetirementPlan &&
+          !(job['benefits']?.contains('Retirement Plan') ?? false)) {
+        return false;
+      }
+      if (hasFlexibleHours &&
+          !(job['benefits']?.contains('Flexible Hours') ?? false)) {
+        return false;
+      }
+      if (postedAfter != null &&
+          _parseJobDate(job)?.isBefore(postedAfter!) == true) {
+        return false;
+      }
 
       if (selectedSkills.isNotEmpty &&
-          !(job['skills'] as List?)!.any((s) => selectedSkills.contains(s)) == true) {
+          !(job['skills'] as List?)!.any((s) => selectedSkills.contains(s)) ==
+              true) {
         return false;
       }
 
       if (selectedIndustries.isNotEmpty &&
-          !(job['industry'] != null && selectedIndustries.contains(job['industry']))) {
+          !(job['industry'] != null &&
+              selectedIndustries.contains(job['industry']))) {
         return false;
       }
 
       if (selectedBenefits.isNotEmpty &&
-          !(job['benefits'] as List?)!.any((b) => selectedBenefits.contains(b)) == true) {
+          !(job['benefits'] as List?)!.any(
+                (b) => selectedBenefits.contains(b),
+              ) ==
+              true) {
         return false;
       }
 
@@ -516,7 +679,9 @@ class job_listing_provider extends ChangeNotifier {
           .get();
 
       if (!userDoc.exists) {
-        debugPrint('[job_provider] _validateRecruiterRole: no user doc found for uid=$_cachedUserId');
+        debugPrint(
+          '[job_provider] _validateRecruiterRole: no user doc found for uid=$_cachedUserId',
+        );
         _isRecruiterCached = false;
         return false;
       }
@@ -524,11 +689,13 @@ class job_listing_provider extends ChangeNotifier {
       final data = userDoc.data() as Map<String, dynamic>;
       debugPrint('[job_provider] _validateRecruiterRole: user doc data: $data');
 
-      final roleValue = (data['role'] ?? '').toString().toLowerCase();
-      final isRecruiter = roleValue == 'recruiter';
+      final roleValue = (data['role'] ?? '').toString().trim().toLowerCase();
+      final isRecruiter = roleValue == 'recruiter' || roleValue == 'employer';
       _isRecruiterCached = isRecruiter;
 
-      debugPrint('[job_provider] _validateRecruiterRole: role="$roleValue", isRecruiter=$isRecruiter');
+      debugPrint(
+        '[job_provider] _validateRecruiterRole: role="$roleValue", isRecruiter=$isRecruiter',
+      );
       return isRecruiter;
     } catch (e, st) {
       debugPrint('[job_provider] _validateRecruiterRole error: $e\n$st');
@@ -566,7 +733,11 @@ class job_listing_provider extends ChangeNotifier {
     return null;
   }
 
-  Map<String, dynamic> _buildJobData(String jobId, String userId, String? logoUrl) {
+  Map<String, dynamic> _buildJobData(
+    String jobId,
+    String userId,
+    String? logoUrl,
+  ) {
     final now = DateTime.now();
     return {
       'id': jobId,
@@ -598,10 +769,17 @@ class job_listing_provider extends ChangeNotifier {
   }
 
   Future<String?> _uploadLogoIfNeeded(String userId, String jobId) async {
-    if (_formData.logoBytes == null || _formData.logoFilename == null) return null;
+    if (_formData.logoBytes == null || _formData.logoFilename == null) {
+      return null;
+    }
     try {
-      final ref = _storage.ref('recruiter_logos/$userId/${jobId}_${_formData.logoFilename}');
-      final task = await ref.putData(_formData.logoBytes!, SettableMetadata(contentType: 'image/png'));
+      final ref = _storage.ref(
+        'recruiter_logos/$userId/${jobId}_${_formData.logoFilename}',
+      );
+      final task = await ref.putData(
+        _formData.logoBytes!,
+        SettableMetadata(contentType: 'image/png'),
+      );
       return await task.ref.getDownloadURL();
     } catch (e) {
       debugPrint('Logo upload error: $e');
@@ -613,19 +791,37 @@ class job_listing_provider extends ChangeNotifier {
     final batch = _firestore.batch();
     final recruiterJobData = Map<String, dynamic>.from(jobData);
     final publicJobData = Map<String, dynamic>.from(jobData);
-    
+
     // Add counters only to the public document
     publicJobData['applicationCount'] = 0;
     publicJobData['viewCount'] = 0;
 
-    batch.set(_firestore.collection('recruiter').doc(_cachedUserId).collection('Posted_jobs').doc(jobId), recruiterJobData);
-    batch.set(_firestore.collection('Posted_jobs_public').doc(jobId), publicJobData);
+    batch.set(
+      _firestore
+          .collection('recruiter')
+          .doc(_cachedUserId)
+          .collection('Posted_jobs')
+          .doc(jobId),
+      recruiterJobData,
+    );
+    batch.set(
+      _firestore.collection('Posted_jobs_public').doc(jobId),
+      publicJobData,
+    );
     await batch.commit();
   }
 
-  Future<void> _updateJobInBothCollections(String jobId, Map<String, dynamic> updates, {bool merge = false}) async {
+  Future<void> _updateJobInBothCollections(
+    String jobId,
+    Map<String, dynamic> updates, {
+    bool merge = false,
+  }) async {
     final batch = _firestore.batch();
-    final recruiterRef = _firestore.collection('recruiter').doc(_cachedUserId).collection('Posted_jobs').doc(jobId);
+    final recruiterRef = _firestore
+        .collection('recruiter')
+        .doc(_cachedUserId)
+        .collection('Posted_jobs')
+        .doc(jobId);
     final publicRef = _firestore.collection('Posted_jobs_public').doc(jobId);
 
     if (merge) {
@@ -637,7 +833,6 @@ class job_listing_provider extends ChangeNotifier {
     }
     await batch.commit();
   }
-
 }
 
 // =============================================================================
@@ -645,11 +840,11 @@ class job_listing_provider extends ChangeNotifier {
 // =============================================================================
 class _JobFormData {
   String title = '';
-  String department = '';
+  String department = 'Flight Operations';
   String description = '';
   String pay = '';
-  String experience = '';
-  String nature = 'Full Time';
+  String experience = 'None Required';
+  String nature = 'Enlisted Personnel';
   String company = '';
   String location = '';
   String responsibilities = '';
@@ -662,7 +857,7 @@ class _JobFormData {
   final benefits = <String>[];
   final workModes = <String>[];
 
-  String? salaryType;
+  String? salaryType = 'Base Pay + Allowances';
   String? salary;
   String? payDetails;
   Uint8List? logoBytes;
@@ -670,13 +865,16 @@ class _JobFormData {
 
   void clear() {
     title = department = description = pay = experience = '';
-    nature = 'Full Time';
+    department = 'Flight Operations';
+    experience = 'None Required';
+    nature = 'Enlisted Personnel';
     company = location = responsibilities = qualifications = '';
     deadline = contactEmail = instructions = '';
     skills.clear();
     benefits.clear();
     workModes.clear();
-    salaryType = salary = payDetails = null;
+    salaryType = 'Base Pay + Allowances';
+    salary = payDetails = null;
     logoBytes = null;
     logoFilename = null;
   }
@@ -696,9 +894,15 @@ class _JobFormData {
     contactEmail = job['contactEmail'] ?? '';
     instructions = job['instructions'] ?? '';
 
-    skills..clear()..addAll(List<String>.from(job['skills'] ?? []));
-    benefits..clear()..addAll(List<String>.from(job['benefits'] ?? []));
-    workModes..clear()..addAll(List<String>.from(job['workModes'] ?? []));
+    skills
+      ..clear()
+      ..addAll(List<String>.from(job['skills'] ?? []));
+    benefits
+      ..clear()
+      ..addAll(List<String>.from(job['benefits'] ?? []));
+    workModes
+      ..clear()
+      ..addAll(List<String>.from(job['workModes'] ?? []));
 
     salaryType = job['salaryType']?.toString();
     salary = job['salary']?.toString();

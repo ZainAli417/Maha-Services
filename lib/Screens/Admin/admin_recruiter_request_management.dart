@@ -72,10 +72,12 @@ class Admin_Recruiter_Request_screen extends StatefulWidget {
   const Admin_Recruiter_Request_screen({super.key});
 
   @override
-  State<Admin_Recruiter_Request_screen> createState() => _Admin_Recruiter_Request_screenState();
+  State<Admin_Recruiter_Request_screen> createState() =>
+      _Admin_Recruiter_Request_screenState();
 }
 
-class _Admin_Recruiter_Request_screenState extends State<Admin_Recruiter_Request_screen> {
+class _Admin_Recruiter_Request_screenState
+    extends State<Admin_Recruiter_Request_screen> {
   @override
   void initState() {
     super.initState();
@@ -232,7 +234,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
               children: [
                 Text(
                   'REQUESTS',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: _C.txt3,
@@ -299,7 +301,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
       return Center(
         child: Text(
           'No details loaded',
-          style: GoogleFonts.inter(color: _C.txt3),
+          style: GoogleFonts.plusJakartaSans(color: _C.txt3),
         ),
       );
     }
@@ -394,7 +396,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   children: [
                     Text(
                       'Request #$reqId',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: _C.txt1,
@@ -412,7 +414,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                         const SizedBox(width: 5),
                         Text(
                           dateStr,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             color: _C.txt3,
                           ),
@@ -433,7 +435,11 @@ class _DashboardBodyState extends State<_DashboardBody> {
                     );
                     if (!mounted) return; // Check if still in tree
                     if (sm != null) {
-                      _showInstantToast(sm, ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed', ok);
+                      _showInstantToast(
+                        sm,
+                        ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed',
+                        ok,
+                      );
                     }
                   },
                 ),
@@ -453,7 +459,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
               children: [
                 Text(
                   'CANDIDATES',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: _C.txt3,
@@ -505,12 +511,14 @@ class _DashboardBodyState extends State<_DashboardBody> {
           SnackBar(
             content: Text(
               msg,
-              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
             backgroundColor: ok ? _C.success : _C.danger,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
     } catch (e) {
@@ -548,7 +556,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 child: Center(
                   child: Text(
                     'Failed to load',
-                    style: GoogleFonts.inter(color: _C.txt3),
+                    style: GoogleFonts.plusJakartaSans(color: _C.txt3),
                   ),
                 ),
               );
@@ -689,7 +697,7 @@ class _LiveBadge extends StatelessWidget {
         const SizedBox(width: 5),
         Text(
           'LIVE',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: _C.success,
@@ -712,7 +720,7 @@ class _CountBadge extends StatelessWidget {
     ),
     child: Text(
       '$count',
-      style: GoogleFonts.inter(
+      style: GoogleFonts.plusJakartaSans(
         fontSize: 11,
         fontWeight: FontWeight.w700,
         color: _C.primary,
@@ -747,7 +755,7 @@ class _EmptyList extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'No Requests',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w600,
               color: _C.txt2,
             ),
@@ -755,7 +763,7 @@ class _EmptyList extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'New items appear here automatically',
-            style: GoogleFonts.inter(fontSize: 12, color: _C.txt3),
+            style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _C.txt3),
           ),
         ],
       ),
@@ -788,7 +796,7 @@ class _Placeholder extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             'Select a request',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: _C.txt2,
@@ -797,7 +805,7 @@ class _Placeholder extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'View details and manage candidates',
-            style: GoogleFonts.inter(fontSize: 13, color: _C.txt3),
+            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _C.txt3),
           ),
         ],
       ),
@@ -836,9 +844,9 @@ class _EmptyCandidates extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'No candidates attached',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               color: _C.txt3,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -978,7 +986,7 @@ class _RequestTile extends StatelessWidget {
                 children: [
                   Text(
                     'REQ #$id',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: selected ? _C.primary : _C.txt1,
@@ -987,7 +995,10 @@ class _RequestTile extends StatelessWidget {
                   const Spacer(),
                   Text(
                     date,
-                    style: GoogleFonts.inter(fontSize: 10, color: _C.txt3),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      color: _C.txt3,
+                    ),
                   ),
                 ],
               ),
@@ -996,10 +1007,10 @@ class _RequestTile extends StatelessWidget {
                 email,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   color: _C.txt2,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 10),
@@ -1016,7 +1027,7 @@ class _RequestTile extends StatelessWidget {
                     ),
                     child: Text(
                       status.toUpperCase(),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: c,
@@ -1032,7 +1043,7 @@ class _RequestTile extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     '$total',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: selected ? _C.primary : _C.txt2,
@@ -1080,7 +1091,7 @@ class _RecruiterCard extends StatelessWidget {
       children: [
         Text(
           'RECRUITER',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 10,
             fontWeight: FontWeight.w700,
             color: _C.txt3,
@@ -1099,7 +1110,7 @@ class _RecruiterCard extends StatelessWidget {
                 children: [
                   SelectableText(
                     name,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: _C.txt1,
@@ -1108,10 +1119,10 @@ class _RecruiterCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   SelectableText(
                     email,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       color: _C.primary,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (company.isNotEmpty) ...[
@@ -1127,7 +1138,7 @@ class _RecruiterCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             company,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               color: _C.txt2,
                             ),
@@ -1153,7 +1164,7 @@ class _RecruiterCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   notes,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     color: _C.txt2,
                     height: 1.6,
@@ -1203,7 +1214,7 @@ class _Avatar extends StatelessWidget {
           ? Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   color: Colors.white,
                   fontSize: size * .38,
                   fontWeight: FontWeight.w700,
@@ -1257,7 +1268,9 @@ class _StatusDropdown extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     s,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -1282,7 +1295,7 @@ class _StatusDropdown extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               current.toUpperCase(),
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: col,
@@ -1301,13 +1314,12 @@ class _StatusDropdown extends StatelessWidget {
 //  CANDIDATE CARD  (grid tile)
 // ─────────────────────────────────────────────────────────────────────────────
 
-
 // ─── Design tokens ────────────────────────────────────────────────────────────
 abstract final class _T {
   // Surface / background
-  static const bg      = Color(0xFFF5F6FA);
+  static const bg = Color(0xFFF5F6FA);
   static const surface = Color(0xFFFFFFFF);
-  static const border  = Color(0xFFE8EAF0);
+  static const border = Color(0xFFE8EAF0);
   static const divider = Color(0xFFF0F1F5);
 
   // Text hierarchy
@@ -1319,12 +1331,12 @@ abstract final class _T {
   static const primary = Color(0xFF4F6FFF);
   static const success = Color(0xFF22C55E);
   static const warning = Color(0xFFF59E0B);
-  static const danger  = Color(0xFFEF4444);
+  static const danger = Color(0xFFEF4444);
 
   // Accent palette (stage colours)
-  static const blue    = Color(0xFF3B82F6);
-  static const violet  = Color(0xFF8B5CF6);
-  static const pink    = Color(0xFFEC4899);
+  static const blue = Color(0xFF3B82F6);
+  static const violet = Color(0xFF8B5CF6);
+  static const pink = Color(0xFFEC4899);
   static const emerald = Color(0xFF10B981);
 
   // Typography helpers
@@ -1333,14 +1345,13 @@ abstract final class _T {
     FontWeight weight = FontWeight.w500,
     Color color = txt2,
     double spacing = 0,
-  }) =>
-      GoogleFonts.dmSans(
-        fontSize: size,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: spacing,
-        height: 1.2,
-      );
+  }) => GoogleFonts.plusJakartaSans(
+    fontSize: size,
+    fontWeight: weight,
+    color: color,
+    letterSpacing: spacing,
+    height: 1.2,
+  );
 }
 
 // ─── Pipeline stage definitions ───────────────────────────────────────────────
@@ -1354,15 +1365,15 @@ const _kStages = [
 ];
 
 const _kStageColors = <String, Color>{
-  'shortlist' : _T.primary,
+  'shortlist': _T.primary,
   'shortlisted': _T.primary,
-  'screening' : _T.blue,
-  'interview' : _T.violet,
-  'technical' : _T.pink,
-  'offer'     : _T.emerald,
-  'handover'  : _T.success,
-  'hired'     : _T.success,
-  'rejected'  : _T.danger,
+  'screening': _T.blue,
+  'interview': _T.violet,
+  'technical': _T.pink,
+  'offer': _T.emerald,
+  'handover': _T.success,
+  'hired': _T.success,
+  'rejected': _T.danger,
 };
 
 Color _stageColor(String status) =>
@@ -1375,7 +1386,9 @@ Color _scoreColor(int v) {
 }
 
 int _stageIndex(String status) {
-  final key = status.toLowerCase() == 'shortlisted' ? 'shortlist' : status.toLowerCase();
+  final key = status.toLowerCase() == 'shortlisted'
+      ? 'shortlist'
+      : status.toLowerCase();
   return _kStages.map((s) => s.toLowerCase()).toList().indexOf(key);
 }
 
@@ -1433,7 +1446,8 @@ class CandidateCard extends StatelessWidget {
             splashColor: col.withValues(alpha: 0.06),
             highlightColor: col.withValues(alpha: 0.03),
             child: Column(
-              mainAxisSize: MainAxisSize.max, // Changed from min to allow Expanded
+              mainAxisSize:
+                  MainAxisSize.max, // Changed from min to allow Expanded
               children: [
                 _CardHeader(status: status, score: score, color: col),
                 Expanded(
@@ -1495,7 +1509,10 @@ class _CardHeader extends StatelessWidget {
                 Container(
                   width: 5,
                   height: 5,
-                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 5),
                 Text(
@@ -1570,14 +1587,15 @@ class _CardBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar
-          second_Avatar(name: name, color:  stageColor),
+          second_Avatar(name: name, color: stageColor),
           const SizedBox(width: 10),
 
           // Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center, // Vertically center in expanded area
+              mainAxisAlignment: MainAxisAlignment
+                  .center, // Vertically center in expanded area
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
@@ -1755,14 +1773,18 @@ class _ActionButton extends StatelessWidget {
       itemBuilder: (_) => stages
           .map(
             (s) => PopupMenuItem(
-          value: s.toLowerCase(),
-          height: 36,
-          child: Text(
-            s,
-            style: _T.label(size: 13, weight: FontWeight.w500, color: _T.txt1),
-          ),
-        ),
-      )
+              value: s.toLowerCase(),
+              height: 36,
+              child: Text(
+                s,
+                style: _T.label(
+                  size: 13,
+                  weight: FontWeight.w500,
+                  color: _T.txt1,
+                ),
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -1830,7 +1852,6 @@ class _PipelineBar extends StatelessWidget {
     );
   }
 }
-
 
 class _CVSheet extends StatelessWidget {
   final Map<String, dynamic> cand;
@@ -1971,18 +1992,21 @@ class _CVSheet extends StatelessWidget {
                               children: [
                                 SelectableText(
                                   name.toUpperCase(),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: Colors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: .4,
                                   ),
                                 ),
-                                if (jobTitle.isNotEmpty || currentRole.isNotEmpty) ...[
+                                if (jobTitle.isNotEmpty ||
+                                    currentRole.isNotEmpty) ...[
                                   const SizedBox(height: 4),
                                   Text(
-                                    jobTitle.isNotEmpty ? jobTitle : currentRole,
-                                    style: GoogleFonts.inter(
+                                    jobTitle.isNotEmpty
+                                        ? jobTitle
+                                        : currentRole,
+                                    style: GoogleFonts.plusJakartaSans(
                                       color: const Color(0xFF818CF8),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -2002,7 +2026,7 @@ class _CVSheet extends StatelessWidget {
                                       const SizedBox(width: 5),
                                       Text(
                                         company,
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.plusJakartaSans(
                                           color: Colors.white60,
                                           fontSize: 12,
                                         ),
@@ -2015,8 +2039,13 @@ class _CVSheet extends StatelessWidget {
                                   spacing: 16,
                                   runSpacing: 6,
                                   children: [
-                                    if (email.isNotEmpty) _HdrItem(Icons.email_outlined, email),
-                                    if (phone.isNotEmpty) _HdrItem(Icons.phone_android_outlined, phone),
+                                    if (email.isNotEmpty)
+                                      _HdrItem(Icons.email_outlined, email),
+                                    if (phone.isNotEmpty)
+                                      _HdrItem(
+                                        Icons.phone_android_outlined,
+                                        phone,
+                                      ),
                                   ],
                                 ),
                               ],
@@ -2114,11 +2143,15 @@ class _CVSheet extends StatelessWidget {
                               const SizedBox(height: 22),
                               Row(
                                 children: [
-                                  Icon(Icons.analytics_outlined, color: const Color(0xFF0EA5E9), size: 17),
+                                  Icon(
+                                    Icons.analytics_outlined,
+                                    color: const Color(0xFF0EA5E9),
+                                    size: 17,
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
                                     'MATCH SCORE',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
                                       color: _C.txt1,
@@ -2126,7 +2159,9 @@ class _CVSheet extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 14),
-                                  const Expanded(child: Divider(height: 1, color: _C.border)),
+                                  const Expanded(
+                                    child: Divider(height: 1, color: _C.border),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 14),
@@ -2236,7 +2271,7 @@ class _CVSheet extends StatelessWidget {
                                         if (university.isNotEmpty)
                                           Text(
                                             university,
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.plusJakartaSans(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 13,
                                               color: _C.txt1,
@@ -2245,7 +2280,7 @@ class _CVSheet extends StatelessWidget {
                                         if (education.isNotEmpty)
                                           Text(
                                             education,
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.plusJakartaSans(
                                               fontSize: 12,
                                               color: _C.warning,
                                               fontWeight: FontWeight.w600,
@@ -2254,7 +2289,7 @@ class _CVSheet extends StatelessWidget {
                                         if (eduDur.isNotEmpty)
                                           Text(
                                             eduDur,
-                                            style: GoogleFonts.inter(
+                                            style: GoogleFonts.plusJakartaSans(
                                               fontSize: 11,
                                               color: _C.txt3,
                                             ),
@@ -2427,7 +2462,7 @@ class _HdrItem extends StatelessWidget {
       Flexible(
         child: SelectableText(
           text,
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+          style: GoogleFonts.plusJakartaSans(color: Colors.white, fontSize: 12),
         ),
       ),
     ],
@@ -2452,7 +2487,7 @@ class _Sec extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               fontWeight: FontWeight.w800,
               color: _C.txt1,
@@ -2512,7 +2547,7 @@ class _InfoTile extends StatelessWidget {
     children: [
       Text(
         label.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 9,
           fontWeight: FontWeight.w700,
           color: _C.txt3,
@@ -2522,10 +2557,10 @@ class _InfoTile extends StatelessWidget {
       const SizedBox(height: 3),
       Text(
         value,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 13,
           color: _C.txt2,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
         ),
       ),
     ],
@@ -2543,7 +2578,7 @@ class _CVRow extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: GoogleFonts.inter(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 9,
             fontWeight: FontWeight.w700,
             color: _C.txt3,
@@ -2553,7 +2588,11 @@ class _CVRow extends StatelessWidget {
         const SizedBox(height: 4),
         SelectableText(
           value,
-          style: GoogleFonts.inter(fontSize: 13, color: _C.txt2, height: 1.55),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            color: _C.txt2,
+            height: 1.55,
+          ),
         ),
       ],
     ),
@@ -2588,10 +2627,10 @@ class _TextChip extends StatelessWidget {
             text,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: color,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -2642,7 +2681,7 @@ class _LinkChip extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   color: color,
                   fontWeight: FontWeight.w600,
@@ -2662,7 +2701,6 @@ class _LinkChip extends StatelessWidget {
       ),
     ),
   );
-
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2714,7 +2752,7 @@ class _MatchScoreCard extends StatelessWidget {
                   children: [
                     Text(
                       '$overall',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
                         color: col,
@@ -2722,7 +2760,10 @@ class _MatchScoreCard extends StatelessWidget {
                     ),
                     Text(
                       '%',
-                      style: GoogleFonts.inter(fontSize: 9, color: col),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 9,
+                        color: col,
+                      ),
                     ),
                   ],
                 ),
@@ -2745,7 +2786,7 @@ class _MatchScoreCard extends StatelessWidget {
                       ),
                       child: Text(
                         recommendation,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: col,
@@ -2775,7 +2816,7 @@ class _MatchScoreCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'STRENGTHS',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 9,
               fontWeight: FontWeight.w800,
               color: _C.success,
@@ -2794,7 +2835,7 @@ class _MatchScoreCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'WEAKNESSES',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 9,
               fontWeight: FontWeight.w800,
               color: _C.danger,
@@ -2814,7 +2855,7 @@ class _MatchScoreCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'ANALYSIS',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 9,
               fontWeight: FontWeight.w800,
               color: _C.txt3,
@@ -2824,7 +2865,11 @@ class _MatchScoreCard extends StatelessWidget {
           const SizedBox(height: 5),
           SelectableText(
             analysis,
-            style: GoogleFonts.inter(fontSize: 12, color: _C.txt2, height: 1.5),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              color: _C.txt2,
+              height: 1.5,
+            ),
           ),
         ],
       ],
@@ -2842,13 +2887,16 @@ class _Sub extends StatelessWidget {
     children: [
       Text(
         '$value%',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w800,
           color: color,
         ),
       ),
-      Text(label, style: GoogleFonts.inter(fontSize: 9, color: _C.txt3)),
+      Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(fontSize: 9, color: _C.txt3),
+      ),
     ],
   );
 }
@@ -2869,7 +2917,11 @@ class _BulletRow extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.inter(fontSize: 12, color: _C.txt2, height: 1.4),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              color: _C.txt2,
+              height: 1.4,
+            ),
           ),
         ),
       ],
@@ -2915,7 +2967,7 @@ class _ExpCard extends StatelessWidget {
         children: [
           Text(
             role,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontWeight: FontWeight.w700,
               fontSize: 14,
               color: _C.txt1,
@@ -2924,19 +2976,22 @@ class _ExpCard extends StatelessWidget {
           if (org.isNotEmpty)
             Text(
               org,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 color: const Color(0xFF3B82F6),
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
             ),
           const SizedBox(height: 2),
-          Text(dur, style: GoogleFonts.inter(fontSize: 11, color: _C.txt3)),
+          Text(
+            dur,
+            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _C.txt3),
+          ),
           if (duties.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
               duties,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: _C.txt2,
                 height: 1.5,
@@ -2983,7 +3038,7 @@ class _EduCard extends StatelessWidget {
           if (inst.isNotEmpty)
             Text(
               inst,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
                 color: _C.txt1,
@@ -2991,7 +3046,7 @@ class _EduCard extends StatelessWidget {
             ),
           Text(
             deg,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: _C.warning,
               fontWeight: FontWeight.w600,
@@ -3003,17 +3058,23 @@ class _EduCard extends StatelessWidget {
                 if (dur.isNotEmpty)
                   Text(
                     dur,
-                    style: GoogleFonts.inter(fontSize: 11, color: _C.txt3),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: _C.txt3,
+                    ),
                   ),
                 if (dur.isNotEmpty && cgpa.isNotEmpty)
                   Text(
                     '  •  ',
-                    style: GoogleFonts.inter(fontSize: 11, color: _C.txt4),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: _C.txt4,
+                    ),
                   ),
                 if (cgpa.isNotEmpty)
                   Text(
                     cgpa,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       color: _C.txt3,
                       fontWeight: FontWeight.w600,
@@ -3056,7 +3117,7 @@ class _CertCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
                   color: _C.txt1,
@@ -3065,12 +3126,18 @@ class _CertCard extends StatelessWidget {
               if (subtitle.isNotEmpty)
                 Text(
                   subtitle,
-                  style: GoogleFonts.inter(fontSize: 11, color: _C.txt2),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    color: _C.txt2,
+                  ),
                 ),
               if (issueDate.isNotEmpty)
                 Text(
                   'Issued: $issueDate',
-                  style: GoogleFonts.inter(fontSize: 10, color: _C.txt3),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    color: _C.txt3,
+                  ),
                 ),
             ],
           ),

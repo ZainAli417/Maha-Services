@@ -21,9 +21,18 @@ class _HeroSectionState extends State<HeroSection>
 
   final List<Map<String, String>> _lottieData = const [
     {'title': 'Step 1: Candidates Apply for Jobs', 'path': 'images/1.json'},
-    {'title': 'Step 2: Recruiter Shortlist & Submit Request', 'path': 'images/2.json'},
-    {'title': 'Step 3: Admin Review Requested Candidates', 'path': 'images/3.json'},
-    {'title': 'Step 4: Admin Interview, Train & Handover Candidates', 'path': 'images/4.json'},
+    {
+      'title': 'Step 2: Recruiter Shortlist & Submit Request',
+      'path': 'images/2.json',
+    },
+    {
+      'title': 'Step 3: Admin Review Requested Candidates',
+      'path': 'images/3.json',
+    },
+    {
+      'title': 'Step 4: Admin Interview, Train & Handover Candidates',
+      'path': 'images/4.json',
+    },
   ];
 
   @override
@@ -64,21 +73,22 @@ class _HeroSectionState extends State<HeroSection>
     letterSpacing: 0.3,
   );
 
-  TextStyle _headlineStyle(bool isMobile, bool isTablet) => GoogleFonts.plusJakartaSans(
-    fontSize: isMobile ? 26 : (isTablet ? 38 : 64),
-    fontWeight: FontWeight.w700,
-  );
+  TextStyle _headlineStyle(bool isMobile, bool isTablet) =>
+      GoogleFonts.plusJakartaSans(
+        fontSize: isMobile ? 26 : (isTablet ? 38 : 64),
+        fontWeight: FontWeight.w700,
+      );
 
   TextStyle _descStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 12 : 14,
-    fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.w600,
     height: 1.7,
     letterSpacing: 0.3,
   );
 
   TextStyle _subDescStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
     fontSize: isMobile ? 11 : 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
   );
 
   TextStyle _featureStyle(bool isMobile) => GoogleFonts.plusJakartaSans(
@@ -104,25 +114,27 @@ class _HeroSectionState extends State<HeroSection>
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
         child: isMobile
             ? Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RepaintBoundary(child: _buildLeftContent()),
-            const SizedBox(height: 24),
-            RepaintBoundary(child: _buildRightPanel()),
-          ],
-        )
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RepaintBoundary(child: _buildLeftContent()),
+                  const SizedBox(height: 24),
+                  RepaintBoundary(child: _buildRightPanel()),
+                ],
+              )
             : Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-                flex: 6,
-                child: RepaintBoundary(child: _buildLeftContent())),
-            SizedBox(width: isTablet ? 16 : 20),
-            Expanded(
-                flex: 4,
-                child: RepaintBoundary(child: _buildRightPanel())),
-          ],
-        ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 6,
+                    child: RepaintBoundary(child: _buildLeftContent()),
+                  ),
+                  SizedBox(width: isTablet ? 16 : 20),
+                  Expanded(
+                    flex: 4,
+                    child: RepaintBoundary(child: _buildRightPanel()),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -138,8 +150,9 @@ class _HeroSectionState extends State<HeroSection>
     final s4 = isMobile ? 16.0 : 40.0;
 
     return Column(
-      crossAxisAlignment:
-      isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: isMobile
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         RepaintBoundary(child: _buildAnimatedBadge()),
         SizedBox(height: s1),
@@ -224,8 +237,7 @@ class _HeroSectionState extends State<HeroSection>
       builder: (context, value, child) => Transform.scale(
         scale: value,
         child: Container(
-          padding:
-          EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF686Be1), Color(0xFF682EE8)],
@@ -284,21 +296,20 @@ class _HeroSectionState extends State<HeroSection>
     final iconPad = isMobile ? 4.0 : 6.0;
     final iconSize = isMobile ? 12.0 : 16.0;
 
-    final slideAnimation = Tween<Offset>(
-      begin: const Offset(-0.5, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentAnimationController,
-      curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
-    ));
+    final slideAnimation =
+        Tween<Offset>(begin: const Offset(-0.5, 0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _contentAnimationController,
+            curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+          ),
+        );
 
     return SlideTransition(
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Container(
-          padding:
-          EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: widget.isDarkMode
@@ -320,8 +331,11 @@ class _HeroSectionState extends State<HeroSection>
                   color: const Color(0xFF6366F1).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.auto_awesome_rounded,
-                    color: const Color(0xFF6366F1), size: iconSize),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: const Color(0xFF6366F1),
+                  size: iconSize,
+                ),
               ),
               SizedBox(width: isMobile ? 8 : 12),
               Flexible(
@@ -365,8 +379,10 @@ class _HeroSectionState extends State<HeroSection>
             child: Text(
               'Discover the Right Talent at Right time',
               textAlign: isMobile ? TextAlign.center : TextAlign.start,
-              style: _headlineStyle(isMobile, isTablet)
-                  .copyWith(color: Colors.white),
+              style: _headlineStyle(
+                isMobile,
+                isTablet,
+              ).copyWith(color: Colors.white),
             ),
           ),
         ),
@@ -408,8 +424,11 @@ class _HeroSectionState extends State<HeroSection>
                 ? MainAxisAlignment.center
                 : MainAxisAlignment.start,
             children: [
-              Icon(Icons.verified_rounded,
-                  size: verifiedIconSize, color: const Color(0xFF10B981)),
+              Icon(
+                Icons.verified_rounded,
+                size: verifiedIconSize,
+                color: const Color(0xFF10B981),
+              ),
               SizedBox(width: isMobile ? 5 : 8),
               Flexible(
                 child: Text(
@@ -435,18 +454,30 @@ class _HeroSectionState extends State<HeroSection>
     final featureHPad = isMobile ? 8.0 : 16.0;
     final featureVPad = isMobile ? 6.0 : 10.0;
 
-    final slideAnimation = Tween<Offset>(
-      begin: const Offset(-0.2, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentAnimationController,
-      curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
-    ));
+    final slideAnimation =
+        Tween<Offset>(begin: const Offset(-0.2, 0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _contentAnimationController,
+            curve: const Interval(0.3, 0.7, curve: Curves.easeOut),
+          ),
+        );
 
     final features = [
-      {'icon': Icons.psychology_rounded, 'text': 'AI-Powered', 'color': const Color(0xFF8B5CF6)},
-      {'icon': Icons.speed_rounded, 'text': '3x Faster Hiring', 'color': const Color(0xFF10B981)},
-      {'icon': Icons.security, 'text': 'Enterprise Security', 'color': const Color(0xFFF59E0B)},
+      {
+        'icon': Icons.psychology_rounded,
+        'text': 'AI-Powered',
+        'color': const Color(0xFF8B5CF6),
+      },
+      {
+        'icon': Icons.speed_rounded,
+        'text': '3x Faster Hiring',
+        'color': const Color(0xFF10B981),
+      },
+      {
+        'icon': Icons.security,
+        'text': 'Enterprise Security',
+        'color': const Color(0xFFF59E0B),
+      },
     ];
 
     return SlideTransition(
@@ -461,7 +492,9 @@ class _HeroSectionState extends State<HeroSection>
             final color = feature['color'] as Color;
             return Container(
               padding: EdgeInsets.symmetric(
-                  horizontal: featureHPad, vertical: featureVPad),
+                horizontal: featureHPad,
+                vertical: featureVPad,
+              ),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: widget.isDarkMode ? 0.15 : 0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -470,8 +503,11 @@ class _HeroSectionState extends State<HeroSection>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(feature['icon'] as IconData,
-                      size: featureIconSize, color: color),
+                  Icon(
+                    feature['icon'] as IconData,
+                    size: featureIconSize,
+                    color: color,
+                  ),
                   SizedBox(width: isMobile ? 4 : 8),
                   Text(
                     feature['text'] as String,
@@ -494,21 +530,22 @@ class _HeroSectionState extends State<HeroSection>
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 600;
 
-    final slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _contentAnimationController,
-      curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
-    ));
+    final slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _contentAnimationController,
+            curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
+          ),
+        );
 
     return SlideTransition(
       position: slideAnimation,
       child: FadeTransition(
         opacity: _contentAnimationController,
         child: Row(
-          mainAxisAlignment:
-          isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+          mainAxisAlignment: isMobile
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
           children: [
             Expanded(
               child: _EnhancedButton(
@@ -578,9 +615,10 @@ class _EnhancedButtonState extends State<_EnhancedButton>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
   }
 
   @override
@@ -614,10 +652,11 @@ class _EnhancedButtonState extends State<_EnhancedButton>
             borderRadius: BorderRadius.circular(radius),
             boxShadow: [
               BoxShadow(
-                color: (widget.isPrimary
-                    ? const Color(0xFF6366F1)
-                    : const Color(0xFF10B981))
-                    .withValues(alpha: _isHovered ? 0.3 : 0.15),
+                color:
+                    (widget.isPrimary
+                            ? const Color(0xFF6366F1)
+                            : const Color(0xFF10B981))
+                        .withValues(alpha: _isHovered ? 0.3 : 0.15),
                 blurRadius: _isHovered ? 16 : 8,
                 offset: Offset(0, _isHovered ? 6 : 3),
               ),
@@ -629,19 +668,17 @@ class _EnhancedButtonState extends State<_EnhancedButton>
               backgroundColor: widget.isPrimary
                   ? const Color(0xFF6366F1)
                   : (widget.isDarkMode
-                  ? const Color(0xFF1E293B)
-                  : Colors.white),
+                        ? const Color(0xFF1E293B)
+                        : Colors.white),
               foregroundColor: widget.isPrimary
                   ? Colors.white
                   : const Color(0xFF10B981),
-              padding:
-              EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(radius),
                 side: widget.isPrimary
                     ? BorderSide.none
-                    : const BorderSide(
-                    color: Color(0xFF10B981), width: 2),
+                    : const BorderSide(color: Color(0xFF10B981), width: 2),
               ),
               elevation: 0,
             ),

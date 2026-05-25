@@ -73,9 +73,14 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
     final text = _ctrl.text;
     if (!sel.isValid) return;
 
-    final selectedText =
-        sel.isCollapsed ? placeholder : text.substring(sel.start, sel.end);
-    final newText = text.replaceRange(sel.start, sel.end, '$before$selectedText$after');
+    final selectedText = sel.isCollapsed
+        ? placeholder
+        : text.substring(sel.start, sel.end);
+    final newText = text.replaceRange(
+      sel.start,
+      sel.end,
+      '$before$selectedText$after',
+    );
     _ctrl.value = TextEditingValue(
       text: newText,
       selection: TextSelection(
@@ -106,7 +111,11 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
       _ctrl.value = TextEditingValue(
         text: before + removed,
         selection: TextSelection.collapsed(
-            offset: (sel.start - prefix.length).clamp(lineStart, before.length + removed.length)),
+          offset: (sel.start - prefix.length).clamp(
+            lineStart,
+            before.length + removed.length,
+          ),
+        ),
       );
     } else {
       _ctrl.value = TextEditingValue(
@@ -184,8 +193,8 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
         final borderColor = hasError
             ? Colors.redAccent
             : _hasFocus
-                ? _primary
-                : _border;
+            ? _primary
+            : _border;
         final borderWidth = _hasFocus ? 2.0 : 1.0;
 
         return Column(
@@ -210,9 +219,14 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                     borderRadius: BorderRadius.circular(6),
                     onTap: () => setState(() => _showPreview = !_showPreview),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: _showPreview ? _primary.withValues(alpha: 0.1) : Colors.transparent,
+                        color: _showPreview
+                            ? _primary.withValues(alpha: 0.1)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
                           color: _showPreview ? _primary : _border,
@@ -223,17 +237,23 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _showPreview ? Icons.edit_outlined : Icons.preview_outlined,
+                            _showPreview
+                                ? Icons.edit_outlined
+                                : Icons.preview_outlined,
                             size: 13,
-                            color: _showPreview ? _primary : Colors.grey.shade600,
+                            color: _showPreview
+                                ? _primary
+                                : Colors.grey.shade600,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _showPreview ? 'Edit' : 'Preview',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: _showPreview ? _primary : Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                              color: _showPreview
+                                  ? _primary
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ],
@@ -257,11 +277,9 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Toolbar ──
-                  if (!_showPreview)
-                    _buildToolbar(fontSize),
+                  if (!_showPreview) _buildToolbar(fontSize),
 
-                  if (!_showPreview)
-                    Divider(height: 1, color: _border),
+                  if (!_showPreview) Divider(height: 1, color: _border),
 
                   // ── Content: Editor or Preview ──
                   AnimatedSwitcher(
@@ -283,7 +301,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                   style: GoogleFonts.plusJakartaSans(
                     color: Colors.redAccent,
                     fontSize: widget.isMobile ? 10 : 12,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -377,9 +395,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: tools.map((t) => _buildToolButton(t)).toList(),
-        ),
+        child: Row(children: tools.map((t) => _buildToolButton(t)).toList()),
       ),
     );
   }
@@ -406,9 +422,15 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
                     tool.label ?? '',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: widget.isMobile ? 12 : 14,
-                      fontWeight: tool.isBold ? FontWeight.w800 : FontWeight.w600,
-                      fontStyle: tool.isItalic ? FontStyle.italic : FontStyle.normal,
-                      decoration: tool.isUnderline ? TextDecoration.underline : null,
+                      fontWeight: tool.isBold
+                          ? FontWeight.w800
+                          : FontWeight.w600,
+                      fontStyle: tool.isItalic
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                      decoration: tool.isUnderline
+                          ? TextDecoration.underline
+                          : null,
                       color: const Color(0xFF1E3A5F),
                     ),
                   ),
@@ -464,9 +486,7 @@ class _RichMarkdownEditorState extends State<RichMarkdownEditor> {
       padding: EdgeInsets.all(widget.isMobile ? 10 : 14),
       decoration: BoxDecoration(
         color: const Color(0xFFFAFBFC),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(radius),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(radius)),
       ),
       child: text.isEmpty
           ? Text(
@@ -512,66 +532,78 @@ class _MarkdownBody extends StatelessWidget {
       final h1 = RegExp(r'^# (.+)').firstMatch(line);
       if (h3 != null || h2 != null || h1 != null) {
         final match = h3 ?? h2 ?? h1!;
-        final level = h1 != null ? 1 : h2 != null ? 2 : 3;
+        final level = h1 != null
+            ? 1
+            : h2 != null
+            ? 2
+            : 3;
         final hSize = level == 1
             ? fontSize + 4
             : level == 2
-                ? fontSize + 2
-                : fontSize + 1;
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(top: 10, bottom: 4),
-          child: Text(
-            match.group(1)!,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: hSize,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+            ? fontSize + 2
+            : fontSize + 1;
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 4),
+            child: Text(
+              match.group(1)!,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: hSize,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
             ),
           ),
-        ));
+        );
         i++;
         continue;
       }
 
       // Blockquote
       if (line.startsWith('> ')) {
-        widgets.add(Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            border: const Border(left: BorderSide(color: Color(0xFF4A90A4), width: 3)),
-            color: const Color(0xFFF0F6FA),
-            borderRadius: BorderRadius.circular(4),
+        widgets.add(
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              border: const Border(
+                left: BorderSide(color: Color(0xFF4A90A4), width: 3),
+              ),
+              color: const Color(0xFFF0F6FA),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: _inlineText(line.substring(2), fontSize, italic: true),
           ),
-          child: _inlineText(line.substring(2), fontSize, italic: true),
-        ));
+        );
         i++;
         continue;
       }
 
       // Bullet list
       if (line.startsWith('- ') || line.startsWith('* ')) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: fontSize * 0.35),
-                child: Container(
-                  width: 5,
-                  height: 5,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF4A90A4),
-                    shape: BoxShape.circle,
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: fontSize * 0.35),
+                  child: Container(
+                    width: 5,
+                    height: 5,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF4A90A4),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(child: _inlineText(line.substring(2), fontSize)),
-            ],
+                Expanded(child: _inlineText(line.substring(2), fontSize)),
+              ],
+            ),
           ),
-        ));
+        );
         i++;
         continue;
       }
@@ -579,27 +611,29 @@ class _MarkdownBody extends StatelessWidget {
       // Numbered list
       final numMatch = RegExp(r'^(\d+)\. (.+)').firstMatch(line);
       if (numMatch != null) {
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 24,
-                child: Text(
-                  '${numMatch.group(1)}.',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4A90A4),
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 24,
+                  child: Text(
+                    '${numMatch.group(1)}.',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF4A90A4),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(child: _inlineText(numMatch.group(2)!, fontSize)),
-            ],
+                const SizedBox(width: 4),
+                Expanded(child: _inlineText(numMatch.group(2)!, fontSize)),
+              ],
+            ),
           ),
-        ));
+        );
         i++;
         continue;
       }
@@ -612,10 +646,12 @@ class _MarkdownBody extends StatelessWidget {
       }
 
       // Regular paragraph
-      widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: _inlineText(line, fontSize),
-      ));
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: _inlineText(line, fontSize),
+        ),
+      );
       i++;
     }
 
@@ -638,85 +674,100 @@ class _MarkdownBody extends StatelessWidget {
     );
   }
 
-  List<InlineSpan> _parseInlineSpans(String text, double fontSize,
-      {bool baseItalic = false}) {
+  List<InlineSpan> _parseInlineSpans(
+    String text,
+    double fontSize, {
+    bool baseItalic = false,
+  }) {
     final spans = <InlineSpan>[];
     // Pattern order matters
     final pattern = RegExp(
-      r'\*\*(.+?)\*\*'        // bold: **...**
-      r'|\*(.+?)\*'           // italic: *...*
-      r'|<u>(.+?)</u>'        // underline: <u>...</u>
-      r'|`(.+?)`',            // code: `...`
+      r'\*\*(.+?)\*\*' // bold: **...**
+      r'|\*(.+?)\*' // italic: *...*
+      r'|<u>(.+?)</u>' // underline: <u>...</u>
+      r'|`(.+?)`', // code: `...`
     );
 
     int last = 0;
     for (final match in pattern.allMatches(text)) {
       if (match.start > last) {
-        spans.add(TextSpan(
-          text: text.substring(last, match.start),
-          style: TextStyle(fontStyle: baseItalic ? FontStyle.italic : null),
-        ));
+        spans.add(
+          TextSpan(
+            text: text.substring(last, match.start),
+            style: TextStyle(fontStyle: baseItalic ? FontStyle.italic : null),
+          ),
+        );
       }
 
       if (match.group(1) != null) {
         // Bold
-        spans.add(TextSpan(
-          text: match.group(1),
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+        spans.add(
+          TextSpan(
+            text: match.group(1),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
           ),
-        ));
+        );
       } else if (match.group(2) != null) {
         // Italic
-        spans.add(TextSpan(
-          text: match.group(2),
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: fontSize,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFF334155),
+        spans.add(
+          TextSpan(
+            text: match.group(2),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: fontSize,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF334155),
+            ),
           ),
-        ));
+        );
       } else if (match.group(3) != null) {
         // Underline
-        spans.add(TextSpan(
-          text: match.group(3),
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: fontSize,
-            decoration: TextDecoration.underline,
-            decorationColor: const Color(0xFF1E3A5F),
+        spans.add(
+          TextSpan(
+            text: match.group(3),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: fontSize,
+              decoration: TextDecoration.underline,
+              decorationColor: const Color(0xFF1E3A5F),
+            ),
           ),
-        ));
+        );
       } else if (match.group(4) != null) {
         // Code
-        spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Text(
-              match.group(4)!,
-              style: GoogleFonts.sourceCodePro(
-                fontSize: fontSize - 1,
-                color: const Color(0xFF1E3A5F),
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Text(
+                match.group(4)!,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: fontSize - 1,
+                  color: const Color(0xFF1E3A5F),
+                ),
               ),
             ),
           ),
-        ));
+        );
       }
       last = match.end;
     }
 
     if (last < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(last),
-        style: TextStyle(fontStyle: baseItalic ? FontStyle.italic : null),
-      ));
+      spans.add(
+        TextSpan(
+          text: text.substring(last),
+          style: TextStyle(fontStyle: baseItalic ? FontStyle.italic : null),
+        ),
+      );
     }
 
     return spans;
@@ -743,7 +794,6 @@ class _ToolItem {
     this.isUnderline = false,
   });
 }
-
 
 // ─── Read-only Markdown Viewer ──────────────────────────────────────────────
 // Use this in detail dialogs to display markdown-formatted job text richly.

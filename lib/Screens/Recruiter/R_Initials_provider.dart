@@ -33,20 +33,25 @@ class R_TopNavProvider extends ChangeNotifier {
 
       if (data != null) {
         // If 'user_data' is a nested map on the recruiter doc
-        if (data['user_data'] is Map && (data['user_data'] as Map).containsKey('name')) {
+        if (data['user_data'] is Map &&
+            (data['user_data'] as Map).containsKey('name')) {
           final v = (data['user_data'] as Map)['name'];
           if (v is String && v.trim().isNotEmpty) fullName = v.trim();
         }
 
         // Also support the case where 'name' is stored directly on the recruiter doc
-        if (fullName == null && data['name'] is String && (data['name'] as String).trim().isNotEmpty) {
+        if (fullName == null &&
+            data['name'] is String &&
+            (data['name'] as String).trim().isNotEmpty) {
           fullName = (data['name'] as String).trim();
         }
       }
 
       if (fullName != null && fullName.isNotEmpty) {
         final letters = fullName.replaceAll(RegExp(r'\s+'), '');
-        _initials = letters.substring(0, letters.length >= 2 ? 2 : 1).toUpperCase();
+        _initials = letters
+            .substring(0, letters.length >= 2 ? 2 : 1)
+            .toUpperCase();
       } else {
         _initials = '';
       }

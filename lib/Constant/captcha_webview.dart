@@ -6,14 +6,15 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 void registerRecaptchaView(String siteKey) {
-  ui_web.platformViewRegistry.registerViewFactory('recaptcha-view', (int viewId) {
+  ui_web.platformViewRegistry.registerViewFactory('recaptcha-view', (
+    int viewId,
+  ) {
     final wrapper = web.HTMLDivElement()
       ..style.width = '304px'
       ..style.height = '78px'
       ..style.display = 'inline-block';
 
-    final captchaDiv = web.HTMLDivElement()
-      ..id = 'recaptcha-$viewId';
+    final captchaDiv = web.HTMLDivElement()..id = 'recaptcha-$viewId';
 
     wrapper.append(captchaDiv);
 
@@ -26,23 +27,29 @@ void registerRecaptchaView(String siteKey) {
         final opts = JSObject();
         opts.setProperty('sitekey'.toJS, siteKey.toJS);
 
-        opts.setProperty('callback'.toJS, ((JSString token) {
-          final event = web.CustomEvent(
-            'captcha-success',
-            web.CustomEventInit(detail: token.toDart.toJS),
-          );
-          web.window.dispatchEvent(event);
-        }).toJS);
-
-        opts.setProperty('expired-callback'.toJS, (() {
-          final event = web.CustomEvent('captcha-expired');
-          web.window.dispatchEvent(event);
-        }).toJS);
-
-        (grecaptcha as JSObject).callMethodVarArgs(
-          'render'.toJS,
-          [captchaDiv, opts],
+        opts.setProperty(
+          'callback'.toJS,
+          ((JSString token) {
+            final event = web.CustomEvent(
+              'captcha-success',
+              web.CustomEventInit(detail: token.toDart.toJS),
+            );
+            web.window.dispatchEvent(event);
+          }).toJS,
         );
+
+        opts.setProperty(
+          'expired-callback'.toJS,
+          (() {
+            final event = web.CustomEvent('captcha-expired');
+            web.window.dispatchEvent(event);
+          }).toJS,
+        );
+
+        (grecaptcha as JSObject).callMethodVarArgs('render'.toJS, [
+          captchaDiv,
+          opts,
+        ]);
       }
     }
 
@@ -62,7 +69,8 @@ void registerRecaptchaView(String siteKey) {
           renderCaptcha();
           timer.cancel(); // Stop checking once found
         } else if (timer.tick > 100) {
-          timer.cancel(); // Stop checking after ~10 seconds to prevent memory leaks
+          timer
+              .cancel(); // Stop checking after ~10 seconds to prevent memory leaks
           debugPrint('Error: reCAPTCHA script failed to load.');
         }
       });

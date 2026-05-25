@@ -22,7 +22,11 @@ class AdminAnalyticsProvider extends ChangeNotifier {
   final Map<String, int> _rawSkillFreqs = {};
   Map<String, int> skillFrequencies = {};
   Map<String, int> jobsByStatus = {'Open': 0, 'Closed': 0};
-  Map<String, int> requestsByStatus = {'Pending': 0, 'Approved': 0, 'Rejected': 0};
+  Map<String, int> requestsByStatus = {
+    'Pending': 0,
+    'Approved': 0,
+    'Rejected': 0,
+  };
   Map<String, int> topRecruiters = {};
   List<Map<String, dynamic>> recentRequests = [];
   List<Map<String, dynamic>> allJobs = [];
@@ -79,18 +83,27 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       // Users collection based counting
       final usersSnap = await _firestore.collection('users').get();
       int tempAdmin = 0, tempRec = 0, tempJs = 0;
-      
+
       for (var doc in usersSnap.docs) {
         final data = doc.data();
         // Handle case-insensitive field names and various role formats
-        final role = (data['role'] ?? data['Role'] ?? data['type'] ?? data['user_role'] ?? '').toString().trim().toLowerCase();
-        
+        final role =
+            (data['role'] ??
+                    data['Role'] ??
+                    data['type'] ??
+                    data['user_role'] ??
+                    '')
+                .toString()
+                .trim()
+                .toLowerCase();
+
         if (role.contains('admin')) {
           tempAdmin++;
         } else if (role.contains('recruiter')) {
           tempRec++;
-
-        } else if (role.contains('seeker') || role.contains('job') || role == 'Job Seeker') {
+        } else if (role.contains('seeker') ||
+            role.contains('job') ||
+            role == 'Job Seeker') {
           tempJs++;
         }
       }
@@ -100,12 +113,18 @@ class AdminAnalyticsProvider extends ChangeNotifier {
       totalJobSeekers = tempJs;
       totalUsers = tempAdmin + tempRec + tempJs;
 
-      final jobsQuery = await _firestore.collection('Posted_jobs_public').count().get();
+      final jobsQuery = await _firestore
+          .collection('Posted_jobs_public')
+          .count()
+          .get();
       totalJobs = jobsQuery.count ?? 0;
 
-      final reqQuery = await _firestore.collection('recruiter_requests').count().get();
+      final reqQuery = await _firestore
+          .collection('recruiter_requests')
+          .count()
+          .get();
       totalRequests = reqQuery.count ?? 0;
-      
+
       _safeNotify();
     } catch (e) {
       debugPrint('❌ _fetchAggregateKPIs error: $e');
@@ -120,32 +139,40 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         .limit(200)
         .snapshots()
         .listen((snap) {
-      if (_disposed) return;
-      _rawSkillFreqs.clear();
-      for (var doc in snap.docs) {
-        final data = doc.data();
-        final userData = data['user_data'] as Map<String, dynamic>? ?? {};
-        final personalProfile = userData['personalProfile'] as Map<String, dynamic>? ?? {};
-        final profProfile = userData['professionalProfile'] as Map<String, dynamic>? ?? {};
+          if (_disposed) return;
+          _rawSkillFreqs.clear();
+          for (var doc in snap.docs) {
+            final data = doc.data();
+            final userData = data['user_data'] as Map<String, dynamic>? ?? {};
+            final personalProfile =
+                userData['personalProfile'] as Map<String, dynamic>? ?? {};
+            final profProfile =
+                userData['professionalProfile'] as Map<String, dynamic>? ?? {};
 
-        List<dynamic> skills = [];
-        if (data['skills'] is List) {
-          skills = data['skills'];
-        } else if (personalProfile['skills'] is List) skills = personalProfile['skills'];
-        else if (profProfile['skills'] is List) skills = profProfile['skills'];
-        else if (userData['skills'] is List) skills = userData['skills'];
+            List<dynamic> skills = [];
+            if (data['skills'] is List) {
+              skills = data['skills'];
+            } else if (personalProfile['skills'] is List) {
+              skills = personalProfile['skills'];
+            } else if (profProfile['skills'] is List) {
+              skills = profProfile['skills'];
+            } else if (userData['skills'] is List) {
+              skills = userData['skills'];
+            }
 
-        for (var s in skills) {
-          final skillStr = s.toString().trim();
-          if (skillStr.isNotEmpty) {
-            final capSkill = skillStr[0].toUpperCase() + skillStr.substring(1).toLowerCase();
-            _rawSkillFreqs[capSkill] = (_rawSkillFreqs[capSkill] ?? 0) + 1;
+            for (var s in skills) {
+              final skillStr = s.toString().trim();
+              if (skillStr.isNotEmpty) {
+                final capSkill =
+                    skillStr[0].toUpperCase() +
+                    skillStr.substring(1).toLowerCase();
+                _rawSkillFreqs[capSkill] = (_rawSkillFreqs[capSkill] ?? 0) + 1;
+              }
+            }
           }
-        }
-      }
 
-      _updateSkillFrequencies();
-    });
+          _updateSkillFrequencies();
+        });
 
     // 2. JOBS BY STATUS & LIST
     _jobsSub?.cancel();
@@ -155,28 +182,28 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         .limit(100)
         .snapshots()
         .listen((snap) {
-      if (_disposed) return;
-      int open = 0, closed = 0;
-      List<Map<String, dynamic>> tempJobs = [];
-      for (var doc in snap.docs) {
-        final data = doc.data();
-        final status = (data['status'] ?? 'open').toString().toLowerCase();
-        if (status == 'closed') {
-          closed++;
-        } else {
-          open++;
-        }
+          if (_disposed) return;
+          int open = 0, closed = 0;
+          List<Map<String, dynamic>> tempJobs = [];
+          for (var doc in snap.docs) {
+            final data = doc.data();
+            final status = (data['status'] ?? 'open').toString().toLowerCase();
+            if (status == 'closed') {
+              closed++;
+            } else {
+              open++;
+            }
 
-        tempJobs.add({
-          'id': doc.id,
-          ...data,
-          'createdStr': _formatDate(data['timestamp'] ?? data['createdAt']),
+            tempJobs.add({
+              'id': doc.id,
+              ...data,
+              'createdStr': _formatDate(data['timestamp'] ?? data['createdAt']),
+            });
+          }
+          allJobs = tempJobs;
+          jobsByStatus = {'Open': open, 'Closed': closed};
+          _safeNotify();
         });
-      }
-      allJobs = tempJobs;
-      jobsByStatus = {'Open': open, 'Closed': closed};
-      _safeNotify();
-    });
 
     // 3. REQUESTS & RECENT REQUESTS LIST & TOP RECRUITERS
     _requestsSub?.cancel();
@@ -186,55 +213,76 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         .limit(200)
         .snapshots()
         .listen((snap) {
-      if (_disposed) return;
-      int pending = 0, approved = 0, rejected = 0;
-      int processed = 0;
-      
-      Map<String, int> recruiterReqCount = {};
-      List<Map<String, dynamic>> requestsList = [];
+          if (_disposed) return;
+          int pending = 0, approved = 0, rejected = 0;
+          int processed = 0;
 
-      int limitList = 0;
+          Map<String, int> recruiterReqCount = {};
+          List<Map<String, dynamic>> requestsList = [];
 
-      for (var doc in snap.docs) {
-        final data = doc.data();
-        final status = (data['status'] ?? 'pending').toString().toLowerCase();
-        String recruiterEmail = (data['recruiter_email'] ?? data['recruiterEmail'] ?? 'Unknown').toString();
-        if (recruiterEmail.isEmpty) recruiterEmail = 'Unknown';
-        
-        recruiterReqCount[recruiterEmail] = (recruiterReqCount[recruiterEmail] ?? 0) + 1;
+          int limitList = 0;
 
-        if (status == 'approved' || status == 'open' || status == 'active') {
-          approved++;
-        } else if (status == 'rejected' || status == 'closed') rejected++;
-        else pending++;
+          for (var doc in snap.docs) {
+            final data = doc.data();
+            final status = (data['status'] ?? 'pending')
+                .toString()
+                .toLowerCase();
+            String recruiterEmail =
+                (data['recruiter_email'] ?? data['recruiterEmail'] ?? 'Unknown')
+                    .toString();
+            if (recruiterEmail.isEmpty) recruiterEmail = 'Unknown';
 
-        final cands = data['candidates'] as List<dynamic>? ?? [];
-        for (var c in cands) {
-          if (c is Map && (c['status'] ?? '').toString().toLowerCase() == 'handover') {
-            processed++;
+            recruiterReqCount[recruiterEmail] =
+                (recruiterReqCount[recruiterEmail] ?? 0) + 1;
+
+            if (status == 'approved' ||
+                status == 'open' ||
+                status == 'active') {
+              approved++;
+            } else if (status == 'rejected' || status == 'closed') {
+              rejected++;
+            } else {
+              pending++;
+            }
+
+            final cands = data['candidates'] as List<dynamic>? ?? [];
+            for (var c in cands) {
+              if (c is Map &&
+                  (c['status'] ?? '').toString().toLowerCase() == 'handover') {
+                processed++;
+              }
+            }
+
+            if (limitList < 15) {
+              limitList++;
+              requestsList.add({
+                'id': doc.id,
+                'recruiterEmail': recruiterEmail,
+                'status': status,
+                'candidatesCount': cands.length,
+                'createdStr': _formatDate(data['created_at']),
+              });
+            }
           }
-        }
 
-        if (limitList < 15) {
-          limitList++;
-          requestsList.add({
-             'id': doc.id,
-             'recruiterEmail': recruiterEmail,
-             'status': status,
-             'candidatesCount': cands.length,
-             'createdStr': _formatDate(data['created_at']),
-          });
-        }
-      }
-      
-      final sortedRecruiters = recruiterReqCount.keys.toList()..sort((a, b) => recruiterReqCount[b]!.compareTo(recruiterReqCount[a]!));
-      topRecruiters = { for (var k in sortedRecruiters.take(5)) if (k != 'Unknown') k : recruiterReqCount[k]! };
+          final sortedRecruiters = recruiterReqCount.keys.toList()
+            ..sort(
+              (a, b) => recruiterReqCount[b]!.compareTo(recruiterReqCount[a]!),
+            );
+          topRecruiters = {
+            for (var k in sortedRecruiters.take(5))
+              if (k != 'Unknown') k: recruiterReqCount[k]!,
+          };
 
-      recentRequests = requestsList;
-      requestsByStatus = {'Pending': pending, 'Approved': approved, 'Rejected': rejected};
-      candidatesProcessed = processed; 
-      _safeNotify();
-    });
+          recentRequests = requestsList;
+          requestsByStatus = {
+            'Pending': pending,
+            'Approved': approved,
+            'Rejected': rejected,
+          };
+          candidatesProcessed = processed;
+          _safeNotify();
+        });
   }
 
   String _formatDate(dynamic date) {
@@ -268,9 +316,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
     final sortedKeys = filtered.keys.toList()
       ..sort((a, b) => filtered[b]!.compareTo(filtered[a]!));
-    skillFrequencies = {
-      for (var k in sortedKeys) k: filtered[k]!
-    };
+    skillFrequencies = {for (var k in sortedKeys) k: filtered[k]!};
     _safeNotify();
   }
 

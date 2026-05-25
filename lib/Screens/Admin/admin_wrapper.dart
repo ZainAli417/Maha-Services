@@ -10,7 +10,7 @@ class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  _AdminDashboardScreenState createState() => _AdminDashboardScreenState();
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
@@ -19,9 +19,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   // Map menu keys to their icon + subtitle for the engaging header
   static const _menuMeta = <String, Map<String, dynamic>>{
-    'Dashboard':          {'icon': Icons.dashboard_rounded,        'sub': 'Platform overview & analytics'},
-    'User Management':    {'icon': Icons.supervised_user_circle,   'sub': 'Manage accounts & permissions'},
-    'Recruiter Requests': {'icon': Icons.business_center_rounded,  'sub': 'Review & approve recruiters'},
+    'Dashboard': {
+      'icon': Icons.dashboard_rounded,
+      'sub': 'Platform overview & analytics',
+    },
+    'User Management': {
+      'icon': Icons.supervised_user_circle,
+      'sub': 'Manage accounts & permissions',
+    },
+    'Recruiter Requests': {
+      'icon': Icons.business_center_rounded,
+      'sub': 'Review & approve recruiters',
+    },
   };
 
   @override
@@ -56,7 +65,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 // Mobile top bar — engaging header with icon + subtitle
                 if (isMobile) _buildMobileTopBar(),
                 Expanded(
-                  child: Container(color: const Color(0xFFFAFAFA), child: _buildContent()),
+                  child: Container(
+                    color: const Color(0xFFFAFAFA),
+                    child: _buildContent(),
+                  ),
                 ),
               ],
             ),
@@ -69,13 +81,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildMobileTopBar() {
     final meta = _menuMeta[_selectedMenu];
     final icon = meta?['icon'] as IconData? ?? Icons.apps_rounded;
-    final sub  = meta?['sub'] as String? ?? '';
+    final sub = meta?['sub'] as String? ?? '';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Color(0xFFFAFAFA),
-      ),
+      decoration: BoxDecoration(color: Color(0xFFFAFAFA)),
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -104,17 +114,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_selectedMenu,
+                  Text(
+                    _selectedMenu,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15, fontWeight: FontWeight.w600,
-                      color: const Color(0xFF0F172A), height: 1.2,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0F172A),
+                      height: 1.2,
                     ),
                   ),
                   if (sub.isNotEmpty)
-                    Text(sub,
+                    Text(
+                      sub,
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11, fontWeight: FontWeight.w400,
-                        color: const Color(0xFF94A3B8), height: 1.3,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF94A3B8),
+                        height: 1.3,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

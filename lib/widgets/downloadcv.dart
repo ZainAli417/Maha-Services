@@ -20,7 +20,8 @@ String maskSensitiveInfo(String info, {bool isEmail = false}) {
     if (username.length <= 2) return info;
 
     // Mask username and domain
-    final maskedUsername = '${username.substring(0, 2)}${'*' * (username.length - 2)}';
+    final maskedUsername =
+        '${username.substring(0, 2)}${'*' * (username.length - 2)}';
     final maskedDomain = domain.length > 1
         ? '${domain[0].substring(0, 1)}${'*' * (domain[0].length - 1)}.${domain.sublist(1).join('.')}'
         : domain.join('.');
@@ -34,7 +35,11 @@ String maskSensitiveInfo(String info, {bool isEmail = false}) {
 }
 
 /// Generate and download/share a professional A4 CV for the given applicant.
-Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRecord? applicant}) async {
+Future<void> downloadCvForUser(
+  BuildContext context,
+  String userId, {
+  ApplicantRecord? applicant,
+}) async {
   final firestore = FirebaseFirestore.instance;
 
   try {
@@ -55,18 +60,23 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
     } else {
       // Get from applicant's profileSnapshot
       userData = Map<String, dynamic>.from(
-          applicant.profileSnapshot['user_Account_Data'] ?? {}
+        applicant.profileSnapshot['user_Account_Data'] ?? {},
       );
     }
 
     // Extract personalProfile data
-    final personalProfile = Map<String, dynamic>.from(userData['personalProfile'] ?? {});
+    final personalProfile = Map<String, dynamic>.from(
+      userData['personalProfile'] ?? {},
+    );
     final name = (personalProfile['name'] ?? 'Candidate').toString();
     final email = maskSensitiveInfo(
-        (personalProfile['email'] ?? personalProfile['secondary_email'] ?? '').toString(),
-        isEmail: true
+      (personalProfile['email'] ?? personalProfile['secondary_email'] ?? '')
+          .toString(),
+      isEmail: true,
     );
-    final phone = maskSensitiveInfo((personalProfile['contactNumber'] ?? '').toString());
+    final phone = maskSensitiveInfo(
+      (personalProfile['contactNumber'] ?? '').toString(),
+    );
     final nationality = (personalProfile['nationality'] ?? '').toString();
     final pictureUrl = (personalProfile['profilePicUrl'] ?? '').toString();
     final dob = (personalProfile['dob'] ?? '').toString();
@@ -75,12 +85,20 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
         ? (personalProfile['skills'] as List).map((e) => e.toString()).toList()
         : <String>[];
     final socialLinks = personalProfile['socialLinks'] is List
-        ? (personalProfile['socialLinks'] as List).map((e) => e.toString()).toList()
+        ? (personalProfile['socialLinks'] as List)
+              .map((e) => e.toString())
+              .toList()
         : <String>[];
 
     // Extract professionalProfile
-    final professionalProfile = Map<String, dynamic>.from(userData['professionalProfile'] ?? {});
-    final summary = (professionalProfile['summary'] ?? personalProfile['summary'] ?? objectives).toString();
+    final professionalProfile = Map<String, dynamic>.from(
+      userData['professionalProfile'] ?? {},
+    );
+    final summary =
+        (professionalProfile['summary'] ??
+                personalProfile['summary'] ??
+                objectives)
+            .toString();
 
     // Extract educationalProfile
     final educationList = userData['educationalProfile'] is List
@@ -151,7 +169,9 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
             pw.Container(
               padding: const pw.EdgeInsets.only(bottom: 20),
               decoration: const pw.BoxDecoration(
-                border: pw.Border(bottom: pw.BorderSide(color: PdfColors.blue800, width: 2)),
+                border: pw.Border(
+                  bottom: pw.BorderSide(color: PdfColors.blue800, width: 2),
+                ),
               ),
               child: pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -176,15 +196,41 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
                             if (email.isNotEmpty)
-                              _buildContactRow(ttfRegular, ttfBold, 'Email:', email),
+                              _buildContactRow(
+                                ttfRegular,
+                                ttfBold,
+                                'Email:',
+                                email,
+                              ),
                             if (phone.isNotEmpty)
-                              _buildContactRow(ttfRegular, ttfBold, 'Phone:', phone),
+                              _buildContactRow(
+                                ttfRegular,
+                                ttfBold,
+                                'Phone:',
+                                phone,
+                              ),
                             if (nationality.isNotEmpty)
-                              _buildContactRow(ttfRegular, ttfBold, 'Nationality:', nationality),
+                              _buildContactRow(
+                                ttfRegular,
+                                ttfBold,
+                                'Nationality:',
+                                nationality,
+                              ),
                             if (dob.isNotEmpty)
-                              _buildContactRow(ttfRegular, ttfBold, 'DOB:', dob),
+                              _buildContactRow(
+                                ttfRegular,
+                                ttfBold,
+                                'DOB:',
+                                dob,
+                              ),
                             if (socialLinks.isNotEmpty)
-                              _buildContactRow(ttfRegular, ttfBold, 'LinkedIn:', socialLinks.first, isLink: true),
+                              _buildContactRow(
+                                ttfRegular,
+                                ttfBold,
+                                'LinkedIn:',
+                                socialLinks.first,
+                                isLink: true,
+                              ),
                           ],
                         ),
                       ],
@@ -198,7 +244,10 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
                       height: 100,
                       decoration: pw.BoxDecoration(
                         borderRadius: pw.BorderRadius.circular(12),
-                        border: pw.Border.all(color: PdfColors.blue800, width: 3),
+                        border: pw.Border.all(
+                          color: PdfColors.blue800,
+                          width: 3,
+                        ),
                       ),
                       child: pw.ClipRRect(
                         horizontalRadius: 12,
@@ -245,7 +294,10 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
                 runSpacing: 8,
                 children: skillsList.map((skill) {
                   return pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: pw.BoxDecoration(
                       color: PdfColors.blue50,
                       borderRadius: pw.BorderRadius.circular(20),
@@ -270,13 +322,17 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
             pw.SizedBox(height: 8),
             if (experiences.isNotEmpty)
               ...experiences.map<pw.Widget>((exp) {
-                final text = exp is Map ? (exp['text'] ?? '').toString() : exp.toString();
+                final text = exp is Map
+                    ? (exp['text'] ?? '').toString()
+                    : exp.toString();
 
                 return pw.Container(
                   margin: const pw.EdgeInsets.only(bottom: 12),
                   padding: const pw.EdgeInsets.all(12),
                   decoration: pw.BoxDecoration(
-                    border: pw.Border(left: pw.BorderSide(color: PdfColors.blue800, width: 3)),
+                    border: pw.Border(
+                      left: pw.BorderSide(color: PdfColors.blue800, width: 3),
+                    ),
                     color: PdfColors.grey50,
                   ),
                   child: pw.Text(
@@ -307,7 +363,9 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
             pw.SizedBox(height: 8),
             if (educationList.isNotEmpty)
               ...educationList.map<pw.Widget>((edu) {
-                final item = edu is Map ? Map<String, dynamic>.from(edu) : <String, dynamic>{};
+                final item = edu is Map
+                    ? Map<String, dynamic>.from(edu)
+                    : <String, dynamic>{};
                 final institution = (item['institutionName'] ?? '').toString();
                 final duration = (item['duration'] ?? '').toString();
                 final major = (item['majorSubjects'] ?? '').toString();
@@ -435,7 +493,10 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
                         decoration: pw.BoxDecoration(
                           color: PdfColors.amber,
                           shape: pw.BoxShape.circle,
-                          border: pw.Border.all(color: PdfColors.orange, width: 1),
+                          border: pw.Border.all(
+                            color: PdfColors.orange,
+                            width: 1,
+                          ),
                         ),
                       ),
                       pw.Expanded(
@@ -465,7 +526,11 @@ Future<void> downloadCvForUser(BuildContext context, String userId, {ApplicantRe
                   ),
                   child: pw.Text(
                     pub,
-                    style: pw.TextStyle(font: ttfRegular, fontSize: 9, height: 1.4),
+                    style: pw.TextStyle(
+                      font: ttfRegular,
+                      fontSize: 9,
+                      height: 1.4,
+                    ),
                   ),
                 );
               }),
@@ -575,7 +640,9 @@ pw.Widget _buildSectionHeader(pw.Font font, String title) {
   return pw.Container(
     padding: const pw.EdgeInsets.only(bottom: 6),
     decoration: const pw.BoxDecoration(
-      border: pw.Border(bottom: pw.BorderSide(color: PdfColors.blue800, width: 1.5)),
+      border: pw.Border(
+        bottom: pw.BorderSide(color: PdfColors.blue800, width: 1.5),
+      ),
     ),
     child: pw.Text(
       title.toUpperCase(),
@@ -590,7 +657,13 @@ pw.Widget _buildSectionHeader(pw.Font font, String title) {
 }
 
 // Helper: Build contact row
-pw.Widget _buildContactRow(pw.Font fontRegular, pw.Font fontBold, String label, String text, {bool isLink = false}) {
+pw.Widget _buildContactRow(
+  pw.Font fontRegular,
+  pw.Font fontBold,
+  String label,
+  String text, {
+  bool isLink = false,
+}) {
   return pw.Padding(
     padding: const pw.EdgeInsets.only(bottom: 6),
     child: pw.Row(

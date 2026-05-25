@@ -33,13 +33,18 @@ class _T {
     fontWeight: fw,
     color: c ?? textSec,
   );
-  static TextStyle head({double fs = 14, Color? c}) => GoogleFonts.plusJakartaSans(
-    fontSize: fs,
-    fontWeight: FontWeight.w600,
-    color: c ?? textPri,
-  );
+  static TextStyle head({double fs = 14, Color? c}) =>
+      GoogleFonts.plusJakartaSans(
+        fontSize: fs,
+        fontWeight: FontWeight.w600,
+        color: c ?? textPri,
+      );
   static TextStyle body({double fs = 13, Color? c}) =>
-      GoogleFonts.plusJakartaSans(fontSize: fs, color: c ?? textPri, height: 1.5);
+      GoogleFonts.plusJakartaSans(
+        fontSize: fs,
+        color: c ?? textPri,
+        height: 1.5,
+      );
 }
 
 // ─── Layout InheritedWidget (computed once at root, no MediaQuery per child) ─
@@ -190,9 +195,7 @@ class _MobileTopBar extends StatelessWidget {
     child: Container(
       height: 54,
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: const BoxDecoration(
-        color: _T.bg,
-      ),
+      decoration: const BoxDecoration(color: _T.bg),
       child: Row(
         children: [
           IconButton(
@@ -636,9 +639,7 @@ class _FilterBar extends StatelessWidget {
         horizontal: isMobile ? 12 : 24,
         vertical: isMobile ? 10 : 14,
       ),
-      decoration: const BoxDecoration(
-        color: _T.bg,
-      ),
+      decoration: const BoxDecoration(color: _T.bg),
       child: isMobile
           ? Column(
               children: [
@@ -908,7 +909,9 @@ class _JobCardState extends State<_JobCard> {
           ),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: widget.isSelected ? _T.primary.withValues(alpha: 0.05) : _T.white,
+            color: widget.isSelected
+                ? _T.primary.withValues(alpha: 0.05)
+                : _T.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: widget.isSelected

@@ -47,7 +47,8 @@ class JS_TopNavProvider extends ChangeNotifier {
       final userData = data['user_data'] as Map<String, dynamic>;
 
       if (userData['personalProfile'] is Map) {
-        final personalProfile = userData['personalProfile'] as Map<String, dynamic>;
+        final personalProfile =
+            userData['personalProfile'] as Map<String, dynamic>;
         final name = personalProfile['name'];
         if (name is String && name.trim().isNotEmpty) {
           return name.trim();

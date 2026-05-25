@@ -13,13 +13,7 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Maha Services - Smart End-To-End Hiring Platform',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo, brightness: Brightness.light),
-      darkTheme: ThemeData(primarySwatch: Colors.indigo, brightness: Brightness.dark),
-      home: const LandingPage(),
-    );
+    return const LandingPage();
   }
 }
 
@@ -30,7 +24,8 @@ class LandingPage extends StatefulWidget {
   State<LandingPage> createState() => _LandingPageState();
 }
 
-class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin {
+class _LandingPageState extends State<LandingPage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late AnimationController _workflowController;
@@ -52,23 +47,36 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     super.initState();
     _initializeTextStyles();
 
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 30))
-      ..repeat();
-    _rotationController =
-    AnimationController(duration: const Duration(seconds: 30), vsync: this)..repeat();
-    _particleAnimationController =
-    AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
-    _contentAnimationController =
-    AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))
-      ..forward();
-    _workflowController =
-        AnimationController(duration: const Duration(milliseconds: 1500), vsync: this);
-    _workflowAnimation =
-        CurvedAnimation(parent: _workflowController, curve: Curves.easeInOut);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 30),
+    )..repeat();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 30),
+      vsync: this,
+    )..repeat();
+    _particleAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+    _contentAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..forward();
+    _workflowController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _workflowAnimation = CurvedAnimation(
+      parent: _workflowController,
+      curve: Curves.easeInOut,
+    );
     _workflowController.forward();
 
-    _fadeController =
-        AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
@@ -84,7 +92,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
   }
 
   void _initializeTextStyles() {
-    _logoTextStyle = GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600, fontSize: 14);
+    _logoTextStyle = GoogleFonts.plusJakartaSans(
+      fontWeight: FontWeight.w600,
+      fontSize: 14,
+    );
   }
 
   @override
@@ -107,9 +118,11 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
   }
 
   void _scrollToTop() {
-    _scrollController.animateTo(0,
-        duration: const Duration(milliseconds: 1000),
-        curve: Curves.easeInOutCubic);
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
@@ -193,20 +206,17 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
         child: isMobile
             ? Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildEnhancedLogo(),
-            _buildNavigation(),
-            _buildThemeToggle(),
-          ],
-        )
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildEnhancedLogo(),
+                  _buildNavigation(),
+                  _buildThemeToggle(),
+                ],
+              )
             : Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildEnhancedLogo(),
-            _buildNavigation(),
-          ],
-        ),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [_buildEnhancedLogo(), _buildNavigation()],
+              ),
       ),
     );
   }
@@ -220,7 +230,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     return Container(
       width: logoSize,
       height: logoSize,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+      ),
       child: ClipOval(
         child: Image.asset(
           'images/logo.png',
@@ -249,16 +262,21 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             onPressed: () => context.go('/login'),
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: btnHPad, vertical: btnVPad),
+                horizontal: btnHPad,
+                vertical: btnVPad,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
-                border:
-                Border.all(color: const Color(0xFF6366F1), width: 1.5),
+                border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
               ),
-              child: Text('Login',
-                  style: _logoTextStyle.copyWith(
-                      color: const Color(0xFF6366F1), fontSize: btnFont)),
+              child: Text(
+                'Login',
+                style: _logoTextStyle.copyWith(
+                  color: const Color(0xFF6366F1),
+                  fontSize: btnFont,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 6),
@@ -266,33 +284,43 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             onPressed: () => context.go('/register'),
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: btnHPad, vertical: btnVPad),
+                horizontal: btnHPad,
+                vertical: btnVPad,
+              ),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Get Started',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: btnFont,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
+                  Text(
+                    'Get Started',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: btnFont,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(width: 3),
-                  const Icon(Icons.arrow_forward_rounded,
-                      size: iconSz, color: Colors.white),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: iconSz,
+                    color: Colors.white,
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 6),
           _buildNavItem(
-              title: 'Pricing',
-              icon: Icons.payments_outlined,
-              route: '/pricing',
-              isActive: false),
+            title: 'Pricing',
+            icon: Icons.payments_outlined,
+            route: '/pricing',
+            isActive: false,
+          ),
         ],
       );
     }
@@ -306,25 +334,31 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     return Row(
       children: [
         _buildNavItem(
-            title: 'View Pricing',
-            icon: Icons.payments_outlined,
-            route: '/pricing',
-            isActive: false),
+          title: 'View Pricing',
+          icon: Icons.payments_outlined,
+          route: '/pricing',
+          isActive: false,
+        ),
         SizedBox(width: isTablet ? 20 : 40),
         _AnimatedButton(
           onPressed: () => context.go('/login'),
           child: Container(
             padding: EdgeInsets.symmetric(
-                horizontal: navBtnHPad, vertical: navBtnVPad),
+              horizontal: navBtnHPad,
+              vertical: navBtnVPad,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: const Color(0xFF6366F1), width: 2),
             ),
-            child: Text('Login',
-                style: _logoTextStyle.copyWith(
-                    color: const Color(0xFF6366F1),
-                    fontSize: navBtnFont)),
+            child: Text(
+              'Login',
+              style: _logoTextStyle.copyWith(
+                color: const Color(0xFF6366F1),
+                fontSize: navBtnFont,
+              ),
+            ),
           ),
         ),
         SizedBox(width: isTablet ? 8 : 16),
@@ -332,23 +366,32 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           onPressed: () => context.go('/register'),
           child: Container(
             padding: EdgeInsets.symmetric(
-                horizontal: navBtnHPad, vertical: navBtnVPad),
+              horizontal: navBtnHPad,
+              vertical: navBtnVPad,
+            ),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Get Started',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: navBtnFont,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
+                Text(
+                  'Get Started',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: navBtnFont,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 SizedBox(width: isTablet ? 4 : 8),
-                Icon(Icons.arrow_forward_rounded,
-                    size: navIconSz, color: Colors.white),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: navIconSz,
+                  color: Colors.white,
+                ),
               ],
             ),
           ),
@@ -358,23 +401,32 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
           onPressed: () => context.go('/admin'),
           child: Container(
             padding: EdgeInsets.symmetric(
-                horizontal: navBtnHPad, vertical: navBtnVPad),
+              horizontal: navBtnHPad,
+              vertical: navBtnVPad,
+            ),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Admin Panel',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: navBtnFont,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
+                Text(
+                  'Admin Panel',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: navBtnFont,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 SizedBox(width: isTablet ? 4 : 8),
-                Icon(Icons.arrow_forward_rounded,
-                    size: navIconSz, color: Colors.white),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: navIconSz,
+                  color: Colors.white,
+                ),
               ],
             ),
           ),
@@ -395,57 +447,50 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     final isMobile = w < 600;
     final isTablet = w >= 600 && w < 1024;
     final primaryColor = const Color(0xFF6366F1);
-    final inactiveColor =
-    isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final inactiveColor = isDarkMode
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
 
-    return StatefulBuilder(builder: (context, setItemState) {
-      bool isHovered = false;
-      return MouseRegion(
-        onEnter: (_) => setItemState(() => isHovered = true),
-        onExit: (_) => setItemState(() => isHovered = false),
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: () => context.go(route),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 8 : (isTablet ? 10 : 14),
-              vertical: isMobile ? 6 : 8,
-            ),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? primaryColor.withValues(alpha: 0.08)
-                  : (isHovered
-                  ? primaryColor.withValues(alpha: 0.04)
-                  : Colors.transparent),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon,
-                    size: isMobile ? 13 : (isTablet ? 16.0 : 20.0),
-                    color: isActive || isHovered ? primaryColor : inactiveColor),
-                SizedBox(width: isMobile ? 4 : (isTablet ? 6 : 10)),
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: isMobile ? 11 : (isTablet ? 13.0 : 14.5),
-                    fontWeight:
-                    isActive ? FontWeight.w600 : FontWeight.w500,
-                    color: isActive || isHovered
-                        ? (isDarkMode
-                        ? Colors.white
-                        : const Color(0xFF1E293B))
-                        : inactiveColor,
-                  ),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => context.go(route),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 8 : (isTablet ? 10 : 14),
+            vertical: isMobile ? 6 : 8,
+          ),
+          decoration: BoxDecoration(
+            color: isActive
+                ? primaryColor.withValues(alpha: 0.08)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: isMobile ? 13 : (isTablet ? 16.0 : 20.0),
+                color: isActive ? primaryColor : inactiveColor,
+              ),
+              SizedBox(width: isMobile ? 4 : (isTablet ? 6 : 10)),
+              Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 11 : (isTablet ? 13.0 : 14.5),
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  color: isActive || isDarkMode
+                      ? (isDarkMode ? Colors.white : const Color(0xFF1E293B))
+                      : inactiveColor,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 
   Widget _buildThemeToggle() {
@@ -499,10 +544,26 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         color: const Color(0xFF6366F1),
         icon: Icons.person_rounded,
         items: [
-          FeatureItem('Profile Builder', 'Create comprehensive professional profiles', Icons.account_circle_rounded),
-          FeatureItem('CV Generator', 'AI-powered resume creation tools', Icons.description_rounded),
-          FeatureItem('Skill Showcase', 'Highlight expertise and certifications', Icons.workspace_premium_rounded),
-          FeatureItem('Public Portfolio', 'Share your journey with recruiters', Icons.public_rounded),
+          FeatureItem(
+            'Profile Builder',
+            'Create comprehensive professional profiles',
+            Icons.account_circle_rounded,
+          ),
+          FeatureItem(
+            'CV Generator',
+            'AI-powered resume creation tools',
+            Icons.description_rounded,
+          ),
+          FeatureItem(
+            'Skill Showcase',
+            'Highlight expertise and certifications',
+            Icons.workspace_premium_rounded,
+          ),
+          FeatureItem(
+            'Public Portfolio',
+            'Share your journey with recruiters',
+            Icons.public_rounded,
+          ),
         ],
       ),
       FeaturePortal(
@@ -512,10 +573,26 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         color: const Color(0xFF10B981),
         icon: Icons.business_rounded,
         items: [
-          FeatureItem('Candidate Search', 'Browse qualified talent pool', Icons.search_rounded),
-          FeatureItem('Bulk Selection', 'Select multiple candidates at once', Icons.checklist_rounded),
-          FeatureItem('Request Management', 'Submit hiring requests to admin', Icons.send_rounded),
-          FeatureItem('Request Tracker', 'Realtime Recruitment Request Tracking', Icons.auto_graph),
+          FeatureItem(
+            'Candidate Search',
+            'Browse qualified talent pool',
+            Icons.search_rounded,
+          ),
+          FeatureItem(
+            'Bulk Selection',
+            'Select multiple candidates at once',
+            Icons.checklist_rounded,
+          ),
+          FeatureItem(
+            'Request Management',
+            'Submit hiring requests to admin',
+            Icons.send_rounded,
+          ),
+          FeatureItem(
+            'Request Tracker',
+            'Realtime Recruitment Request Tracking',
+            Icons.auto_graph,
+          ),
         ],
       ),
       FeaturePortal(
@@ -525,10 +602,26 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         color: const Color(0xFFF59E0B),
         icon: Icons.admin_panel_settings_rounded,
         items: [
-          FeatureItem('Request Review', 'Evaluate recruiter requests', Icons.rate_review_rounded),
-          FeatureItem('Interview Scheduling', 'Organize and conduct interviews', Icons.event_rounded),
-          FeatureItem('Candidate Training', 'Skill development and preparation', Icons.school_rounded),
-          FeatureItem('Final Selection', 'Complete hiring and onboarding', Icons.how_to_reg_rounded),
+          FeatureItem(
+            'Request Review',
+            'Evaluate recruiter requests',
+            Icons.rate_review_rounded,
+          ),
+          FeatureItem(
+            'Interview Scheduling',
+            'Organize and conduct interviews',
+            Icons.event_rounded,
+          ),
+          FeatureItem(
+            'Candidate Training',
+            'Skill development and preparation',
+            Icons.school_rounded,
+          ),
+          FeatureItem(
+            'Final Selection',
+            'Complete hiring and onboarding',
+            Icons.how_to_reg_rounded,
+          ),
         ],
       ),
     ];
@@ -547,41 +640,46 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             SizedBox(height: isMobile ? 20 : 40),
             isMobile
                 ? Column(
-              children: [
-                for (int i = 0; i < features.length; i++) ...[
-                  RepaintBoundary(child: _buildFeatureCard(features[i])),
-                  if (i < features.length - 1)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Icon(Icons.arrow_downward,
-                          color: isDarkMode
-                              ? const Color(0xFF475569)
-                              : const Color(0xFFD1D5DB),
-                          size: 24),
-                    ),
-                ],
-              ],
-            )
+                    children: [
+                      for (int i = 0; i < features.length; i++) ...[
+                        RepaintBoundary(child: _buildFeatureCard(features[i])),
+                        if (i < features.length - 1)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Icon(
+                              Icons.arrow_downward,
+                              color: isDarkMode
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFD1D5DB),
+                              size: 24,
+                            ),
+                          ),
+                      ],
+                    ],
+                  )
                 : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (int i = 0; i < features.length; i++) ...[
-                  Expanded(
-                    child: RepaintBoundary(
-                        child: _buildFeatureCard(features[i])),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (int i = 0; i < features.length; i++) ...[
+                        Expanded(
+                          child: RepaintBoundary(
+                            child: _buildFeatureCard(features[i]),
+                          ),
+                        ),
+                        if (i < features.length - 1)
+                          Padding(
+                            padding: EdgeInsets.only(top: isTablet ? 60 : 100),
+                            child: Icon(
+                              Icons.arrow_forward,
+                              color: isDarkMode
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFD1D5DB),
+                              size: isTablet ? 28 : 40,
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
-                  if (i < features.length - 1)
-                    Padding(
-                      padding: EdgeInsets.only(top: isTablet ? 60 : 100),
-                      child: Icon(Icons.arrow_forward,
-                          color: isDarkMode
-                              ? const Color(0xFF475569)
-                              : const Color(0xFFD1D5DB),
-                          size: isTablet ? 28 : 40),
-                    ),
-                ],
-              ],
-            ),
             SizedBox(height: isMobile ? 20 : 40),
           ],
         ),
@@ -611,7 +709,10 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 24),
-        border: Border.all(color: portal.color.withValues(alpha: 0.2), width: 2),
+        border: Border.all(
+          color: portal.color.withValues(alpha: 0.2),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: portal.color.withValues(alpha: 0.08),
@@ -628,58 +729,72 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
             children: [
               Container(
                 padding: EdgeInsets.symmetric(
-                    horizontal: numberHPad, vertical: numberVPad),
+                  horizontal: numberHPad,
+                  vertical: numberVPad,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [portal.color, portal.color.withValues(alpha: 0.7)]),
+                    colors: [portal.color, portal.color.withValues(alpha: 0.7)],
+                  ),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(portal.number,
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: numberFontSize,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white)),
+                child: Text(
+                  portal.number,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: numberFontSize,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               Container(
                 padding: EdgeInsets.all(iconContainerPad),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    portal.color.withValues(alpha: 0.1),
-                    portal.color.withValues(alpha: 0.05),
-                  ]),
-                  borderRadius:
-                  BorderRadius.circular(isMobile ? 10 : 16),
+                  gradient: LinearGradient(
+                    colors: [
+                      portal.color.withValues(alpha: 0.1),
+                      portal.color.withValues(alpha: 0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(isMobile ? 10 : 16),
                 ),
-                child: Icon(portal.icon,
-                    color: portal.color, size: portalIconSize),
+                child: Icon(
+                  portal.icon,
+                  color: portal.color,
+                  size: portalIconSize,
+                ),
               ),
             ],
           ),
           SizedBox(height: isMobile ? 14 : 24),
-          Text(portal.title,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: titleFontSize,
-                  fontWeight: FontWeight.w600,
-                  color: isDarkMode
-                      ? Colors.white
-                      : const Color(0xFF1F2937))),
+          Text(
+            portal.title,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: titleFontSize,
+              fontWeight: FontWeight.w600,
+              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+            ),
+          ),
           SizedBox(height: isMobile ? 3 : 8),
-          Text(portal.subtitle,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: subtitleFontSize,
-                  color: isDarkMode
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w500,
-                  height: 1.5)),
+          Text(
+            portal.subtitle,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: subtitleFontSize,
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7280),
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+            ),
+          ),
           SizedBox(height: isMobile ? 14 : 28),
           ...portal.items.asMap().entries.map((entry) {
             final i = entry.key;
             final item = entry.value;
             return Padding(
               padding: EdgeInsets.only(
-                  bottom:
-                  i < portal.items.length - 1 ? (isMobile ? 10 : 16) : 0),
+                bottom: i < portal.items.length - 1 ? (isMobile ? 10 : 16) : 0,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -687,34 +802,43 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
                     padding: EdgeInsets.all(itemIconPad),
                     decoration: BoxDecoration(
                       color: portal.color.withValues(alpha: 0.1),
-                      borderRadius:
-                      BorderRadius.circular(isMobile ? 8 : 12),
+                      borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
                       border: Border.all(
-                          color: portal.color.withValues(alpha: 0.2)),
+                        color: portal.color.withValues(alpha: 0.2),
+                      ),
                     ),
-                    child: Icon(item.icon,
-                        color: portal.color, size: itemIconSize),
+                    child: Icon(
+                      item.icon,
+                      color: portal.color,
+                      size: itemIconSize,
+                    ),
                   ),
                   SizedBox(width: isMobile ? 10 : 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.title,
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: itemTitleFontSize,
-                                fontWeight: FontWeight.w600,
-                                color: isDarkMode
-                                    ? Colors.white
-                                    : const Color(0xFF1F2937))),
+                        Text(
+                          item.title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: itemTitleFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? Colors.white
+                                : const Color(0xFF1F2937),
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text(item.description,
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: itemDescFontSize,
-                                color: isDarkMode
-                                    ? const Color(0xFF64748B)
-                                    : const Color(0xFF9CA3AF),
-                                height: 1.4)),
+                        Text(
+                          item.description,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: itemDescFontSize,
+                            color: isDarkMode
+                                ? const Color(0xFF64748B)
+                                : const Color(0xFF9CA3AF),
+                            height: 1.4,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -756,11 +880,9 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
               child: isMobile
                   ? _buildFooterBrand()
                   : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 2, child: _buildFooterBrand()),
-                ],
-              ),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [Expanded(flex: 2, child: _buildFooterBrand())],
+                    ),
             ),
             _buildFooterBottom(),
           ],
@@ -780,21 +902,25 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('MAHA SERVICES',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: titleFontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.white)),
+        Text(
+          'MAHA SERVICES',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
         SizedBox(height: isMobile ? 8 : 16),
         Text(
           'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
           style: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF9CA3AF),
-              fontSize: descFontSize,
-              height: 1.8),
+            color: const Color(0xFF9CA3AF),
+            fontSize: descFontSize,
+            height: 1.8,
+          ),
         ),
         SizedBox(height: isMobile ? 14 : 24),
-       /*
+        /*
     Row(
           children: [
             _buildSocialIcon(Icons.facebook, const Color(0xFF1877F2), iconPad, iconSize),
@@ -840,57 +966,75 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       ),
       child: isMobile
           ? Column(
-        children: [
-          Text('© 2026 Maha Services. All rights reserved.',
-              style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF6B7280),
-                  fontSize: copyrightFont)),
-          const SizedBox(height: 10),
-          _buildAIBadge(aiFont, aiIconSize),
-        ],
-      )
+              children: [
+                Text(
+                  '© 2026 Maha Services. All rights reserved.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFont,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildAIBadge(aiFont, aiIconSize),
+              ],
+            )
           : Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('© 2026 Maha Services. All rights reserved.',
-              style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF6B7280),
-                  fontSize: copyrightFont)),
-          _buildAIBadge(aiFont, aiIconSize),
-        ],
-      ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '© 2026 Maha Services. All rights reserved.',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF6B7280),
+                    fontSize: copyrightFont,
+                  ),
+                ),
+                _buildAIBadge(aiFont, aiIconSize),
+              ],
+            ),
     );
   }
 
   Widget _buildAIBadge(double fontSize, double iconSize) {
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: iconSize < 14 ? 10 : 12,
-          vertical: iconSize < 14 ? 5 : 6),
+        horizontal: iconSize < 14 ? 10 : 12,
+        vertical: iconSize < 14 ? 5 : 6,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border:
-        Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.psychology_rounded,
-              color: const Color(0xFF6366F1), size: iconSize),
+          Icon(
+            Icons.psychology_rounded,
+            color: const Color(0xFF6366F1),
+            size: iconSize,
+          ),
           const SizedBox(width: 4),
-          Text('Developed By mahaservices.org',
-              style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF6366F1),
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w600)),
+          Text(
+            'Developed By mahaservices.org',
+            style: GoogleFonts.plusJakartaSans(
+              color: const Color(0xFF6366F1),
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSectionHeader(
-      String badge, String title, String subtitle, IconData icon) {
+    String badge,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 600;
     final isTablet = w >= 600 && w < 1024;
@@ -907,52 +1051,62 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         children: [
           Container(
             padding: EdgeInsets.symmetric(
-                horizontal: badgeHPad, vertical: badgeVPad),
+              horizontal: badgeHPad,
+              vertical: badgeVPad,
+            ),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [
-                const Color(0xFF6366F1).withValues(alpha: 0.2),
-                const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-              ]),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                ],
+              ),
               borderRadius: BorderRadius.circular(50),
               border: Border.all(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                  width: 1.5),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                width: 1.5,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon,
-                    color: const Color(0xFF7233FB),
-                    size: badgeIconSize),
+                Icon(icon, color: const Color(0xFF7233FB), size: badgeIconSize),
                 SizedBox(width: isMobile ? 6 : 10),
-                Text(badge,
-                    style: GoogleFonts.plusJakartaSans(
-                        color: const Color(0xFF7233FB),
-                        fontSize: badgeFont,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5)),
+                Text(
+                  badge,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF7233FB),
+                    fontSize: badgeFont,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
             ),
           ),
           SizedBox(height: isMobile ? 12 : 24),
-          Text(title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: titleFont,
-                  fontWeight: FontWeight.w900,
-                  color: isDarkMode
-                      ? Colors.white
-                      : const Color(0xFF081D69),
-                  letterSpacing: -1)),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: titleFont,
+              fontWeight: FontWeight.w900,
+              color: isDarkMode ? Colors.white : const Color(0xFF081D69),
+              letterSpacing: -1,
+            ),
+          ),
           SizedBox(height: isMobile ? 8 : 16),
-          Text(subtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: subtitleFont,
-                  color: isDarkMode
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF6B7280),
-                  fontWeight: FontWeight.w400)),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: subtitleFont,
+              color: isDarkMode
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF6B7280),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -975,59 +1129,101 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
         children: [
           Container(
             padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 12 : 20,
-                vertical: isMobile ? 5 : 8),
+              horizontal: isMobile ? 12 : 20,
+              vertical: isMobile ? 5 : 8,
+            ),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(50),
               border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
-            child: Text('⚡ PROVEN SUCCESS',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: provenFont,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 1.5)),
+            child: Text(
+              '⚡ PROVEN SUCCESS',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: provenFont,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                letterSpacing: 1.5,
+              ),
+            ),
           ),
           SizedBox(height: isMobile ? 12 : 20),
-          Text('Trusted by Industry Leaders',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: titleFont,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white)),
+          Text(
+            'Trusted by Industry Leaders',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: titleFont,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
           SizedBox(height: isMobile ? 8 : 12),
-          Text('Real numbers, real impact - see how we transform hiring',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: subtitleFont,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w500)),
+          Text(
+            'Real numbers, real impact - see how we transform hiring',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: subtitleFont,
+              color: Colors.white.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           SizedBox(height: isMobile ? 20 : 70),
           isMobile
               ? Wrap(
-            spacing: statSpacing,
-            runSpacing: statSpacing,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-            ],
-          )
+                  spacing: statSpacing,
+                  runSpacing: statSpacing,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    _buildSuccessMetric(
+                      '15K+',
+                      'Successfully Hired',
+                      Icons.people_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '98%',
+                      'Success Rate',
+                      Icons.trending_up_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '24h',
+                      'Avg. Response',
+                      Icons.schedule_rounded,
+                    ),
+                    _buildSuccessMetric(
+                      '500+',
+                      'Active Recruiters',
+                      Icons.business_rounded,
+                    ),
+                  ],
+                )
               : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSuccessMetric('15K+', 'Successfully Hired', Icons.people_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('98%', 'Success Rate', Icons.trending_up_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('24h', 'Avg. Response', Icons.schedule_rounded),
-              SizedBox(width: statSpacing),
-              _buildSuccessMetric('500+', 'Active Recruiters', Icons.business_rounded),
-            ],
-          ),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSuccessMetric(
+                      '15K+',
+                      'Successfully Hired',
+                      Icons.people_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '98%',
+                      'Success Rate',
+                      Icons.trending_up_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '24h',
+                      'Avg. Response',
+                      Icons.schedule_rounded,
+                    ),
+                    SizedBox(width: statSpacing),
+                    _buildSuccessMetric(
+                      '500+',
+                      'Active Recruiters',
+                      Icons.business_rounded,
+                    ),
+                  ],
+                ),
         ],
       ),
     );
@@ -1052,21 +1248,31 @@ class _LandingPageState extends State<LandingPage> with TickerProviderStateMixin
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: iconSize),
+          Icon(
+            icon,
+            color: Colors.white.withValues(alpha: 0.6),
+            size: iconSize,
+          ),
           SizedBox(width: isMobile ? 8 : 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: valueFont,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white)),
-              Text(label,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: labelFont,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w500)),
+              Text(
+                value,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: valueFont,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: labelFont,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ],
@@ -1165,9 +1371,11 @@ class _OptimizedGridPainter extends CustomPainter {
     const beamUpdateInterval = 2;
 
     int vi = 0;
-    for (double x = -gridSize + (offset % gridSize);
-    x < size.width + gridSize;
-    x += gridSize) {
+    for (
+      double x = -gridSize + (offset % gridSize);
+      x < size.width + gridSize;
+      x += gridSize
+    ) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), _baseGridPaint);
       if (vi % beamUpdateInterval == 0) {
         final bp = (animationValue * 2 + vi * 0.3) % 1.0;
@@ -1195,9 +1403,11 @@ class _OptimizedGridPainter extends CustomPainter {
     }
 
     int hi = 0;
-    for (double y = -gridSize + (offset % gridSize);
-    y < size.height + gridSize;
-    y += gridSize) {
+    for (
+      double y = -gridSize + (offset % gridSize);
+      y < size.height + gridSize;
+      y += gridSize
+    ) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), _baseGridPaint);
       if (hi % beamUpdateInterval == 0) {
         final bp = (animationValue * 1.5 + hi * 0.25) % 1.0;
@@ -1226,13 +1436,17 @@ class _OptimizedGridPainter extends CustomPainter {
 
     if (animationValue % 0.1 < 0.05) {
       vi = 0;
-      for (double x = -gridSize + (offset % gridSize);
-      x < size.width + gridSize;
-      x += gridSize * 2) {
+      for (
+        double x = -gridSize + (offset % gridSize);
+        x < size.width + gridSize;
+        x += gridSize * 2
+      ) {
         hi = 0;
-        for (double y = -gridSize + (offset % gridSize);
-        y < size.height + gridSize;
-        y += gridSize * 2) {
+        for (
+          double y = -gridSize + (offset % gridSize);
+          y < size.height + gridSize;
+          y += gridSize * 2
+        ) {
           final bpv = (animationValue * 2 + vi * 0.3) % 1.0;
           final bph = (animationValue * 1.5 + hi * 0.25) % 1.0;
           if ((bpv * size.height - y).abs() < 50 &&

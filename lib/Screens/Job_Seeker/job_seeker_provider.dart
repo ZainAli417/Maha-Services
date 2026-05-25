@@ -1,20 +1,21 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 
 class JobSeekerProvider extends ChangeNotifier {
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final List<Map<String, dynamic>> _activeJobs = [];
   final List<Map<String, dynamic>> _allJobs = [];
   final List<Map<String, dynamic>> _filteredJobs = [];
 
-  // OPTIMIZATION: Memoization cache to prevent re-processing unchanged jobs
-  final Map<String, Map<String, dynamic>> _jobProcessingCache = {};
-
-  Stream<List<Map<String, dynamic>>> get activeJobsStream => _activeJobsController.stream;
-  Stream<List<Map<String, dynamic>>> get allJobsStream => _allJobsController.stream;
+  Stream<List<Map<String, dynamic>>> get activeJobsStream =>
+      _activeJobsController.stream;
+  Stream<List<Map<String, dynamic>>> get allJobsStream =>
+      _allJobsController.stream;
 
   bool _isLoadingActiveJobs = true;
   bool _isLoadingAllJobs = true;
@@ -25,9 +26,12 @@ class JobSeekerProvider extends ChangeNotifier {
 
   StreamSubscription<QuerySnapshot>? _activeJobsSubscription;
   StreamSubscription<QuerySnapshot>? _allJobsSubscription;
+  StreamSubscription<User?>? _authSubscription;
 
-  final BehaviorSubject<List<Map<String, dynamic>>> _activeJobsController = BehaviorSubject();
-  final BehaviorSubject<List<Map<String, dynamic>>> _allJobsController = BehaviorSubject();
+  final BehaviorSubject<List<Map<String, dynamic>>> _activeJobsController =
+      BehaviorSubject();
+  final BehaviorSubject<List<Map<String, dynamic>>> _allJobsController =
+      BehaviorSubject();
 
   Timer? _activeDebounce;
   Timer? _allDebounce;
@@ -37,11 +41,35 @@ class JobSeekerProvider extends ChangeNotifier {
   bool _isApplyingFilters = false;
 
   JobSeekerProvider() {
-    _initializeRealtimeListeners();
+    _authSubscription = _auth.authStateChanges().listen((user) {
+      if (user == null) {
+        _activeJobsSubscription?.cancel();
+        _allJobsSubscription?.cancel();
+        _activeJobs.clear();
+        _allJobs.clear();
+        _filteredJobs.clear();
+        _isLoadingActiveJobs = false;
+        _isLoadingAllJobs = false;
+        notifyListeners();
+        return;
+      }
+      _isLoadingActiveJobs = true;
+      _isLoadingAllJobs = true;
+      notifyListeners();
+      _initializeRealtimeListeners();
+    });
+
+    if (_auth.currentUser != null) {
+      _initializeRealtimeListeners();
+    } else {
+      _isLoadingActiveJobs = false;
+      _isLoadingAllJobs = false;
+    }
   }
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _activeJobsSubscription?.cancel();
     _allJobsSubscription?.cancel();
     _activeDebounce?.cancel();
@@ -55,7 +83,8 @@ class JobSeekerProvider extends ChangeNotifier {
   // Getters
   List<Map<String, dynamic>> get activeJobs => List.unmodifiable(_activeJobs);
   List<Map<String, dynamic>> get allJobs => List.unmodifiable(_allJobs);
-  List<Map<String, dynamic>> get filteredJobs => List.unmodifiable(_filteredJobs);
+  List<Map<String, dynamic>> get filteredJobs =>
+      List.unmodifiable(_filteredJobs);
   bool get isLoadingActiveJobs => _isLoadingActiveJobs;
   bool get isLoadingAllJobs => _isLoadingAllJobs;
   bool get isLoading => _isLoadingActiveJobs || _isLoadingAllJobs;
@@ -74,32 +103,41 @@ class JobSeekerProvider extends ChangeNotifier {
         .collection('Posted_jobs_public')
         .where('status', isEqualTo: 'active')
         .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen(_handleActiveJobsUpdate, onError: (error) {
-      debugPrint('Error in active jobs listener: $error');
-      _isLoadingActiveJobs = false;
-      notifyListeners();
-    });
+        .snapshots(includeMetadataChanges: true)
+        .listen(
+          _handleActiveJobsUpdate,
+          onError: (error) {
+            debugPrint('Error in active jobs listener: $error');
+            _isLoadingActiveJobs = false;
+            notifyListeners();
+          },
+        );
   }
 
   void _setupAllJobsListener() {
     _allJobsSubscription?.cancel();
     _allJobsSubscription = _firestore
         .collection('Posted_jobs_public')
+        .where('status', isEqualTo: 'active')
         .orderBy('timestamp', descending: true)
-        .snapshots()
-        .listen(_handleAllJobsUpdate, onError: (error) {
-      debugPrint('Error in all jobs listener: $error');
-      _isLoadingAllJobs = false;
-      notifyListeners();
-    });
+        .snapshots(includeMetadataChanges: true)
+        .listen(
+          _handleAllJobsUpdate,
+          onError: (error) {
+            debugPrint('Error in all jobs listener: $error');
+            _isLoadingAllJobs = false;
+            notifyListeners();
+          },
+        );
   }
 
   void _handleActiveJobsUpdate(QuerySnapshot snapshot) {
     _activeDebounce?.cancel();
     _activeDebounce = Timer(const Duration(milliseconds: 200), () {
       final processed = _processJobSnapshot(snapshot);
-      _activeJobs..clear()..addAll(processed);
+      _activeJobs
+        ..clear()
+        ..addAll(processed);
       _isLoadingActiveJobs = false;
 
       if (!_activeJobsController.isClosed) _activeJobsController.add(processed);
@@ -112,7 +150,9 @@ class JobSeekerProvider extends ChangeNotifier {
     _allDebounce?.cancel();
     _allDebounce = Timer(const Duration(milliseconds: 300), () {
       final processed = _processJobSnapshot(snapshot);
-      _allJobs..clear()..addAll(processed);
+      _allJobs
+        ..clear()
+        ..addAll(processed);
       _isLoadingAllJobs = false;
 
       if (!_allJobsController.isClosed) _allJobsController.add(processed);
@@ -124,15 +164,8 @@ class JobSeekerProvider extends ChangeNotifier {
     return snapshot.docs.map((doc) {
       final String docId = doc.id;
       final rawData = doc.data() as Map<String, dynamic>;
-
-      // OPTIMIZATION: Check if job version is already in cache
       final timestamp = rawData['timestamp'];
       final applicationCount = rawData['applicationCount'] ?? 0;
-      final cacheKey = '${docId}_${timestamp}_$applicationCount';
-
-      if (_jobProcessingCache.containsKey(cacheKey)) {
-        return _jobProcessingCache[cacheKey]!;
-      }
 
       // Normalization Logic (Optimized structure)
       final Map<String, dynamic> data = {
@@ -150,8 +183,10 @@ class JobSeekerProvider extends ChangeNotifier {
         'skills': List<String>.from(rawData['skills'] ?? []),
         'benefits': List<String>.from(rawData['benefits'] ?? []),
         'workModes': List<String>.from(rawData['workModes'] ?? []),
-        // FIX: Extract applicationCount from the document
-        'applicationCount': applicationCount is int ? applicationCount : (int.tryParse(applicationCount.toString()) ?? 0),
+        'applicationCount': applicationCount is int
+            ? applicationCount
+            : (int.tryParse(applicationCount.toString()) ?? 0),
+        'viewCount': _asInt(rawData['viewCount']),
         'timestamp': rawData['timestamp'],
       };
 
@@ -163,17 +198,17 @@ class JobSeekerProvider extends ChangeNotifier {
       }
 
       // OPTIMIZATION: Pre-calculate search string to avoid repetitive joining
-      data['_searchContent'] = '${data['title']} ${data['company']} ${data['location']} ${data['department']} ${data['skills'].join(' ')}'.toLowerCase();
+      data['_searchContent'] =
+          '${data['title']} ${data['company']} ${data['location']} ${data['department']} ${data['skills'].join(' ')}'
+              .toLowerCase();
 
-      // Clear old cache entries if it grows too large
-      if (_jobProcessingCache.length > 1000) {
-        _jobProcessingCache.clear();
-      }
-
-      // Store in cache and return
-      _jobProcessingCache[cacheKey] = data;
       return data;
     }).toList();
+  }
+
+  int _asInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   void searchJobs(String query) {
@@ -217,7 +252,10 @@ class JobSeekerProvider extends ChangeNotifier {
 
       // Filter by search (Using optimized pre-calculated content)
       if (_searchQuery.isNotEmpty) {
-        final searchTerms = _searchQuery.split(' ').where((t) => t.isNotEmpty).toList();
+        final searchTerms = _searchQuery
+            .split(' ')
+            .where((t) => t.isNotEmpty)
+            .toList();
         jobs = jobs.where((job) {
           final content = job['_searchContent'] as String;
           return searchTerms.every((term) => content.contains(term));
@@ -228,25 +266,33 @@ class JobSeekerProvider extends ChangeNotifier {
       if (_activeFilters.isNotEmpty) {
         jobs = jobs.where((job) {
           if (_activeFilters['location'] != null &&
-              !job['location'].toString().toLowerCase().contains(_activeFilters['location'].toString().toLowerCase())) {
+              !job['location'].toString().toLowerCase().contains(
+                _activeFilters['location'].toString().toLowerCase(),
+              )) {
             return false;
           }
 
-          if (_activeFilters['department'] != null && job['department'] != _activeFilters['department']) {
+          if (_activeFilters['department'] != null &&
+              job['department'] != _activeFilters['department']) {
             return false;
           }
 
-          if (_activeFilters['experience'] != null && job['experience'] != _activeFilters['experience']) {
+          if (_activeFilters['experience'] != null &&
+              job['experience'] != _activeFilters['experience']) {
             return false;
           }
 
           if (_activeFilters['minSalary'] != null) {
             final jobSalary = _extractSalaryNumber(job['salary'].toString());
-            if (jobSalary != null && jobSalary < _activeFilters['minSalary']) return false;
+            if (jobSalary != null && jobSalary < _activeFilters['minSalary']) {
+              return false;
+            }
           }
 
           if (_activeFilters['workMode'] != null &&
-              !(job['workModes'] as List).contains(_activeFilters['workMode'])) {
+              !(job['workModes'] as List).contains(
+                _activeFilters['workMode'],
+              )) {
             return false;
           }
 
@@ -254,12 +300,17 @@ class JobSeekerProvider extends ChangeNotifier {
               (_activeFilters['requiredSkills'] as List).isNotEmpty) {
             final jobSkills = job['skills'] as List<String>;
             final required = _activeFilters['requiredSkills'] as List<String>;
-            if (!required.any((skill) => jobSkills.contains(skill))) return false;
+            if (!required.any((skill) => jobSkills.contains(skill))) {
+              return false;
+            }
           }
 
           if (_activeFilters['postedAfter'] != null) {
             final jobDate = DateTime.tryParse(job['createdAt'].toString());
-            if (jobDate == null || jobDate.isBefore(_activeFilters['postedAfter'])) return false;
+            if (jobDate == null ||
+                jobDate.isBefore(_activeFilters['postedAfter'])) {
+              return false;
+            }
           }
 
           return true;
@@ -270,7 +321,9 @@ class JobSeekerProvider extends ChangeNotifier {
       final resultList = jobs.toList();
       _applySorting(resultList);
 
-      _filteredJobs..clear()..addAll(resultList);
+      _filteredJobs
+        ..clear()
+        ..addAll(resultList);
 
       // Only notify listeners once after all operations
       notifyListeners();
@@ -284,25 +337,49 @@ class JobSeekerProvider extends ChangeNotifier {
 
     switch (_sortBy) {
       case 'newest':
-        jobs.sort((a, b) => b['createdAt'].toString().compareTo(a['createdAt'].toString()));
+        jobs.sort(
+          (a, b) =>
+              b['createdAt'].toString().compareTo(a['createdAt'].toString()),
+        );
         break;
       case 'oldest':
-        jobs.sort((a, b) => a['createdAt'].toString().compareTo(b['createdAt'].toString()));
+        jobs.sort(
+          (a, b) =>
+              a['createdAt'].toString().compareTo(b['createdAt'].toString()),
+        );
         break;
       case 'salary_high':
-        jobs.sort((a, b) => (_extractSalaryNumber(b['salary']) ?? 0).compareTo(_extractSalaryNumber(a['salary']) ?? 0));
+        jobs.sort(
+          (a, b) => (_extractSalaryNumber(b['salary']) ?? 0).compareTo(
+            _extractSalaryNumber(a['salary']) ?? 0,
+          ),
+        );
         break;
       case 'salary_low':
-        jobs.sort((a, b) => (_extractSalaryNumber(a['salary']) ?? 0).compareTo(_extractSalaryNumber(b['salary']) ?? 0));
+        jobs.sort(
+          (a, b) => (_extractSalaryNumber(a['salary']) ?? 0).compareTo(
+            _extractSalaryNumber(b['salary']) ?? 0,
+          ),
+        );
         break;
       case 'company':
-        jobs.sort((a, b) => a['company'].toString().compareTo(b['company'].toString()));
+        jobs.sort(
+          (a, b) => a['company'].toString().compareTo(b['company'].toString()),
+        );
         break;
       case 'applicants_high':
-        jobs.sort((a, b) => (b['applicationCount'] as int).compareTo(a['applicationCount'] as int));
+        jobs.sort(
+          (a, b) => (b['applicationCount'] as int).compareTo(
+            a['applicationCount'] as int,
+          ),
+        );
         break;
       case 'applicants_low':
-        jobs.sort((a, b) => (a['applicationCount'] as int).compareTo(b['applicationCount'] as int));
+        jobs.sort(
+          (a, b) => (a['applicationCount'] as int).compareTo(
+            b['applicationCount'] as int,
+          ),
+        );
         break;
     }
   }
@@ -331,7 +408,6 @@ class JobSeekerProvider extends ChangeNotifier {
   Future<void> refreshJobs() async {
     _isLoadingActiveJobs = true;
     _isLoadingAllJobs = true;
-    _jobProcessingCache.clear();
     _salaryCache.clear();
     notifyListeners();
 
@@ -344,7 +420,10 @@ class JobSeekerProvider extends ChangeNotifier {
   // Get a specific job by ID with real-time applicationCount
   Future<Map<String, dynamic>?> getJobById(String jobId) async {
     try {
-      final doc = await _firestore.collection('Posted_jobs_public').doc(jobId).get();
+      final doc = await _firestore
+          .collection('Posted_jobs_public')
+          .doc(jobId)
+          .get();
       if (!doc.exists) return null;
 
       final rawData = doc.data() as Map<String, dynamic>;
@@ -368,7 +447,9 @@ class JobSeekerProvider extends ChangeNotifier {
       };
 
       if (rawData['timestamp'] is Timestamp) {
-        data['createdAt'] = (rawData['timestamp'] as Timestamp).toDate().toIso8601String();
+        data['createdAt'] = (rawData['timestamp'] as Timestamp)
+            .toDate()
+            .toIso8601String();
       }
 
       return data;
@@ -385,31 +466,31 @@ class JobSeekerProvider extends ChangeNotifier {
         .doc(jobId)
         .snapshots()
         .map((doc) {
-      if (!doc.exists) return null;
+          if (!doc.exists) return null;
 
-      final rawData = doc.data() as Map<String, dynamic>;
-      return {
-        'id': doc.id,
-        'title': rawData['title']?.toString() ?? 'Untitled Position',
-        'company': rawData['company']?.toString() ?? 'Unknown Company',
-        'location': rawData['location']?.toString() ?? 'Not specified',
-        'salary': rawData['salary']?.toString() ?? 'Not disclosed',
-        'experience': rawData['experience']?.toString() ?? 'Not specified',
-        'department': rawData['department']?.toString() ?? 'General',
-        'description': rawData['description']?.toString() ?? '',
-        'status': rawData['status']?.toString() ?? 'active',
-        'nature': rawData['nature']?.toString() ?? 'Full-time',
-        'logoUrl': rawData['logoUrl']?.toString(),
-        'skills': List<String>.from(rawData['skills'] ?? []),
-        'benefits': List<String>.from(rawData['benefits'] ?? []),
-        'workModes': List<String>.from(rawData['workModes'] ?? []),
-        'applicationCount': rawData['applicationCount'] ?? 0,
-        'timestamp': rawData['timestamp'],
-        'createdAt': rawData['timestamp'] is Timestamp
-            ? (rawData['timestamp'] as Timestamp).toDate().toIso8601String()
-            : DateTime.now().toIso8601String(),
-      };
-    });
+          final rawData = doc.data() as Map<String, dynamic>;
+          return {
+            'id': doc.id,
+            'title': rawData['title']?.toString() ?? 'Untitled Position',
+            'company': rawData['company']?.toString() ?? 'Unknown Company',
+            'location': rawData['location']?.toString() ?? 'Not specified',
+            'salary': rawData['salary']?.toString() ?? 'Not disclosed',
+            'experience': rawData['experience']?.toString() ?? 'Not specified',
+            'department': rawData['department']?.toString() ?? 'General',
+            'description': rawData['description']?.toString() ?? '',
+            'status': rawData['status']?.toString() ?? 'active',
+            'nature': rawData['nature']?.toString() ?? 'Full-time',
+            'logoUrl': rawData['logoUrl']?.toString(),
+            'skills': List<String>.from(rawData['skills'] ?? []),
+            'benefits': List<String>.from(rawData['benefits'] ?? []),
+            'workModes': List<String>.from(rawData['workModes'] ?? []),
+            'applicationCount': rawData['applicationCount'] ?? 0,
+            'timestamp': rawData['timestamp'],
+            'createdAt': rawData['timestamp'] is Timestamp
+                ? (rawData['timestamp'] as Timestamp).toDate().toIso8601String()
+                : DateTime.now().toIso8601String(),
+          };
+        });
   }
 
   // Simplified logic for statistics
@@ -421,15 +502,23 @@ class JobSeekerProvider extends ChangeNotifier {
       'departments': _activeJobs.map((j) => j['department']).toSet().length,
       'locations': _activeJobs.map((j) => j['location']).toSet().length,
       'companies': _activeJobs.map((j) => j['company']).toSet().length,
-      'totalApplications': _activeJobs.fold<int>(0, (acc, job) => acc + (job['applicationCount'] as int)),
+      'totalApplications': _activeJobs.fold<int>(
+        0,
+        (acc, job) => acc + (job['applicationCount'] as int),
+      ),
     };
   }
 
   // Get jobs with high application counts
   List<Map<String, dynamic>> getTrendingJobs({int limit = 10}) {
     final sortedJobs = List<Map<String, dynamic>>.from(_activeJobs);
-    sortedJobs.sort((a, b) => (b['applicationCount'] as int).compareTo(a['applicationCount'] as int));
+    sortedJobs.sort(
+      (a, b) => (b['applicationCount'] as int).compareTo(
+        a['applicationCount'] as int,
+      ),
+    );
     return sortedJobs.take(limit).toList();
   }
 }
+
 // // }
