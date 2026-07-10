@@ -26,12 +26,33 @@ service cloud.firestore {
       return isAuth() && (
         exists(/databases/$(database)/documents/admin/$(request.auth.uid)) ||
         userRole() == 'admin' ||
-        userRole() == 'superadmin'
+        userRole() == 'superadmin' ||
+        userRole() == 'super admin' ||
+        userRole() == 'super_admin'
       );
     }
 
+    function isSuperAdmin() {
+      return isAuth() && (
+        userRole() == 'superadmin' ||
+        userRole() == 'super admin' ||
+        userRole() == 'super_admin' ||
+        (
+          exists(/databases/$(database)/documents/admin/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.get('level', '') == 'super'
+        )
+      );
+    }
+
+    // "Recruiter tier" — recruiter, employer, and recruitment agent share the
+    // same capabilities for now.
     function isRecruiter() {
-      return isAuth() && (userRole() == 'recruiter' || userRole() == 'employer');
+      return isAuth() && (
+        userRole() == 'recruiter' ||
+        userRole() == 'employer' ||
+        userRole() == 'recruitment agent' ||
+        userRole() == 'recruitment_agent'
+      );
     }
 
     function isJobSeeker() {
@@ -132,6 +153,22 @@ service cloud.firestore {
 
     match /{allPaths=**} {
       allow read, write: if isAdmin();
+    }
+
+    // Immutable admin action log. Admins read; the actor may only create
+    // entries attributed to themselves; entries can never be edited/removed.
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() &&
+        request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Admin-managed onboarding questionnaire config. Any authenticated user may
+    // read it (the onboarding engine loads it); only admins may write.
+    match /questionnaire_config/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
 
     match /users/{userId} {
