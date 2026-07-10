@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../Constant/CV_Generator.dart';
+import '../../../core/utils/profile_completeness.dart';
 import 'JS_Profile_Provider.dart';
 
 class JSProfileSidebar extends StatefulWidget {
@@ -13,62 +14,26 @@ class JSProfileSidebar extends StatefulWidget {
 
 class _JSProfileSidebarState extends State<JSProfileSidebar> {
   // ---------------- Configuration ----------------
-  // Section weights (must sum to 100)
-  static const int _wPersonal = 25;
-  static const int _wEducation = 15;
-  static const int _wProfessionalProfile = 15;
-  static const int _wExperience = 20;
-  static const int _wCertifications = 8;
-  static const int _wPublications = 5;
-  static const int _wAwards = 4;
-  static const int _wReferences = 4;
-  static const int _wDocuments = 4;
+  // Section weights delegate to the single source of truth.
+  static const int _wPersonal = ProfileCompleteness.wPersonal;
+  static const int _wEducation = ProfileCompleteness.wEducation;
+  static const int _wProfessionalProfile = ProfileCompleteness.wProfessionalProfile;
+  static const int _wExperience = ProfileCompleteness.wExperience;
+  static const int _wCertifications = ProfileCompleteness.wCertifications;
 
   bool _isExpanded = false;
 
-  // ---------------- Logic ----------------
-  int _scorePersonal() {
-    final provider = widget.provider;
-    var s = 0;
-    if (provider.name.trim().isNotEmpty) s += 8;
-    if (provider.email.trim().isNotEmpty) s += 6;
-    if (provider.contactNumber.trim().isNotEmpty) s += 5;
-    if (provider.profilePicUrl.trim().isNotEmpty) s += 3;
-    if (provider.skillsList.isNotEmpty) s += 2;
-    if (provider.personalSummary.trim().isNotEmpty) s += 1;
-    return s.clamp(0, _wPersonal);
-  }
+  // ---------------- Logic (delegates to ProfileCompleteness) ----------------
+  ProfileCompleteness get _score =>
+      ProfileCompleteness.fromProvider(widget.provider);
 
-  int _scoreEducation() =>
-      widget.provider.educationalProfile.isNotEmpty ? _wEducation : 0;
-  int _scoreProfessionalProfile() =>
-      widget.provider.professionalProfileSummary.trim().isNotEmpty
-      ? _wProfessionalProfile
-      : 0;
-  int _scoreExperience() =>
-      widget.provider.professionalExperience.isNotEmpty ? _wExperience : 0;
-  int _scoreCertifications() =>
-      widget.provider.certifications.isNotEmpty ? _wCertifications : 0;
-  int _scorePublications() =>
-      widget.provider.publications.isNotEmpty ? _wPublications : 0;
-  int _scoreAwards() => widget.provider.awards.isNotEmpty ? _wAwards : 0;
-  int _scoreReferences() =>
-      widget.provider.references.isNotEmpty ? _wReferences : 0;
-  int _scoreDocuments() =>
-      widget.provider.documents.isNotEmpty ? _wDocuments : 0;
+  int _scorePersonal() => _score.personal;
+  int _scoreEducation() => _score.education;
+  int _scoreProfessionalProfile() => _score.professionalProfile;
+  int _scoreExperience() => _score.experience;
+  int _scoreCertifications() => _score.certifications;
 
-  int computeTotalScore() {
-    return (_scorePersonal() +
-            _scoreEducation() +
-            _scoreProfessionalProfile() +
-            _scoreExperience() +
-            _scoreCertifications() +
-            _scorePublications() +
-            _scoreAwards() +
-            _scoreReferences() +
-            _scoreDocuments())
-        .clamp(0, 100);
-  }
+  int computeTotalScore() => _score.total;
 
   String _displayName() {
     final provider = widget.provider;

@@ -20,7 +20,6 @@ import 'Screens/Job_Seeker/saved_jobs_provider.dart';
 import 'Screens/Recruiter/AI Candidate Matching_Provider.dart';
 import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Recruiter_provider_Job_listing.dart';
-import 'Screens/Recruiter/login_provider_Recruiter.dart';
 import 'Screens/Recruiter/R_Initials_provider.dart';
 import 'SignUp /signup_provider.dart';
 import 'Screens/Job_Seeker/JS_Initials_provider.dart';
@@ -68,10 +67,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => RoleProvider()),
         ChangeNotifierProvider(create: (_) => LoginProvider()),
         ChangeNotifierProvider(create: (_) => ForgotPasswordProvider()),
-        ChangeNotifierProvider(create: (_) => LoginProvider_Recruiter()),
         ChangeNotifierProvider(create: (_) => JS_TopNavProvider()),
 
         ChangeNotifierProvider(create: (_) => ProfileProvider_NEW()),
@@ -119,18 +116,6 @@ class JobPortalApp extends StatelessWidget {
       routerConfig: router,
       theme: AppTheme.light,
     );
-  }
-}
-
-/// RoleProvider: holds the selected role (job seeker / recruiter)
-class RoleProvider extends ChangeNotifier {
-  /// Either "Job Seeker" or "Recruiter"
-  String? _selectedRole;
-  String? get selectedRole => _selectedRole;
-
-  void setRole(String role) {
-    _selectedRole = role;
-    notifyListeners();
   }
 }
 

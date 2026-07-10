@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../Screens/Job_Seeker/JS_Profile/JS_Profile_Provider.dart';
+import '../core/utils/profile_completeness.dart';
 
 class ProfileCompletenessCard extends StatelessWidget {
   const ProfileCompletenessCard({super.key, required this.totalScore});
 
   factory ProfileCompletenessCard.fromProvider(ProfileProvider_NEW provider) {
-    final int score = _ScoreCalculator.computeFromProvider(
-      provider,
-    ).clamp(0, 100);
+    final int score = ProfileCompleteness.fromProvider(provider).total;
     return ProfileCompletenessCard(totalScore: score);
   }
 
@@ -165,55 +164,3 @@ class ProfileCompletenessCard extends StatelessWidget {
   }
 }
 
-/// SCORE CALCULATOR (same logic as before)
-class _ScoreCalculator {
-  static int computeFromProvider(ProfileProvider_NEW provider) {
-    const int wPersonal = 25;
-    const int wEducation = 15;
-    const int wProfessionalProfile = 15;
-    const int wExperience = 20;
-    const int wCertifications = 8;
-    const int wPublications = 5;
-    const int wAwards = 4;
-    const int wReferences = 4;
-    const int wDocuments = 4;
-
-    int scorePersonal = 0;
-    if (provider.name.trim().isNotEmpty) scorePersonal += 8;
-    if (provider.email.trim().isNotEmpty) scorePersonal += 6;
-    if (provider.contactNumber.trim().isNotEmpty) scorePersonal += 5;
-    if (provider.profilePicUrl.trim().isNotEmpty) scorePersonal += 3;
-    if (provider.skillsList.isNotEmpty) scorePersonal += 2;
-    if (provider.personalSummary.trim().isNotEmpty) scorePersonal += 1;
-    scorePersonal = scorePersonal.clamp(0, wPersonal);
-
-    final int scoreEducation = provider.educationalProfile.isNotEmpty
-        ? wEducation
-        : 0;
-    final int scoreProfessional =
-        provider.professionalProfileSummary.trim().isNotEmpty
-        ? wProfessionalProfile
-        : 0;
-    final int scoreExperience = provider.professionalExperience.isNotEmpty
-        ? wExperience
-        : 0;
-    final int scoreCerts = provider.certifications.isNotEmpty
-        ? wCertifications
-        : 0;
-    final int scorePubs = provider.publications.isNotEmpty ? wPublications : 0;
-    final int scoreAwards = provider.awards.isNotEmpty ? wAwards : 0;
-    final int scoreRefs = provider.references.isNotEmpty ? wReferences : 0;
-    final int scoreDocs = provider.documents.isNotEmpty ? wDocuments : 0;
-
-    return (scorePersonal +
-            scoreEducation +
-            scoreProfessional +
-            scoreExperience +
-            scoreCerts +
-            scorePubs +
-            scoreAwards +
-            scoreRefs +
-            scoreDocs)
-        .clamp(0, 100);
-  }
-}

@@ -123,16 +123,6 @@ class AuthNotifier extends ChangeNotifier {
     _authSub = _auth.authStateChanges().listen(_handleAuthChange);
   }
 
-  Future<void> initialize() async {
-    final currentUser = _auth.currentUser;
-    if (currentUser != null) {
-      await _handleAuthChange(currentUser);
-    } else {
-      isInitialized = true;
-      notifyListeners();
-    }
-  }
-
   Future<void> _handleAuthChange(User? newUser) async {
     final version = ++_authVersion;
     _isFetching = true;
@@ -213,11 +203,6 @@ class AuthNotifier extends ChangeNotifier {
       _isFetching = false;
       debugPrint('✅ Auth State Updated: role=$role, isNew=$isNewUser');
     }
-    notifyListeners();
-  }
-
-  void markProfileComplete() {
-    isNewUser = false;
     notifyListeners();
   }
 

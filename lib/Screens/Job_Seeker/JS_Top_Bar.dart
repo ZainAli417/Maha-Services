@@ -22,7 +22,6 @@ class JobSeekerSidebar extends StatefulWidget {
 
 class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
   int? _hoveredIndex;
-  final int _notificationCount = 3;
 
   @override
   Widget build(BuildContext context) {
