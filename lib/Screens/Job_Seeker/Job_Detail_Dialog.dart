@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../Widgets/quill_editor.dart';
+import '../../core/widgets/quill_editor.dart';
 
 class JobDetailModal extends StatelessWidget {
   final String jobId;

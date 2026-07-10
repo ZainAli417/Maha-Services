@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'R_Top_Bar.dart';
 import 'Recruiter_provider_Job_listing.dart';
-import '../../Widgets/quill_editor.dart';
+import '../../core/widgets/quill_editor.dart';
 import '../../Constant/recruiter_AI.dart';
 
 // ─── Colors (mirrors Dashboard_Recruiter) ────────────────────────────────────

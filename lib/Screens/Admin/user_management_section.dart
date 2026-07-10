@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../widgets/custom_snackbars.dart';
+import '../../core/widgets/custom_snackbars.dart';
 import 'admin_recruiter_request_provider.dart';
 
 class UserManagementSection extends StatefulWidget {

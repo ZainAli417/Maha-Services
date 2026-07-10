@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../Screens/Recruiter/LIst_of_Applicants_provider.dart';
+import '../../Screens/Recruiter/LIst_of_Applicants_provider.dart';
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 class _T {

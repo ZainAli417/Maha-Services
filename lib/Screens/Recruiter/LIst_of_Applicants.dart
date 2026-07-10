@@ -5,11 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/view_js_profile.dart';
+import '../../core/widgets/view_js_profile.dart';
 import 'AI Candidate Matching.dart';
 import 'AI Candidate Matching_Provider.dart';
 import 'LIst_of_Applicants_provider.dart';
-import '../../widgets/custom_snackbars.dart';
+import '../../core/widgets/custom_snackbars.dart';
 
 // ─── Scroll behavior ──────────────────────────────────────────────────────────
 class SmoothScrollBehavior extends MaterialScrollBehavior {
