@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Your existing imports
+import 'core/rbac/user_role.dart';
 import 'Constant/Forget Password.dart';
 import 'Constant/cv_analysis.dart';
 import 'Constant/pricing.dart';
@@ -49,6 +50,7 @@ class RoleService {
 
       String? role;
       bool isNew = false;
+      String? rawRole; // exact users.role string, for precise UserRole parsing
 
       // 3. Resolve Role from specific collections
       if (jsDoc.exists) {
@@ -63,6 +65,7 @@ class RoleService {
       // 4. Resolve isNew and Backup Role from 'users' collection
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
+        rawRole = userData['role']?.toString();
         status = (userData['account_status'] ?? 'active')
             .toString()
             .toLowerCase()
@@ -82,14 +85,17 @@ class RoleService {
         // Backup role resolution if not found in specific collections
         role ??= _normalizeRole(userData['role']?.toString());
       }
+      // Fall back to the collection-derived runtime string when users.role
+      // is absent (both are parseable by UserRole.fromFirestore).
+      rawRole ??= role;
 
       debugPrint(
         '✅ RoleService: UID=$uid, Role=$role, isNew=$isNew, Status=$status',
       );
-      return {'role': role, 'isNew': isNew, 'status': status};
+      return {'role': role, 'rawRole': rawRole, 'isNew': isNew, 'status': status};
     } catch (e) {
       debugPrint('❌ RoleService Error: $e');
-      return {'role': null, 'isNew': false, 'status': 'error'};
+      return {'role': null, 'rawRole': null, 'isNew': false, 'status': 'error'};
     }
   }
 
@@ -112,8 +118,14 @@ class AuthNotifier extends ChangeNotifier {
 
   User? user;
   String? role;
+  String? _rawRole;
   bool isNewUser = false;
   bool isInitialized = false;
+
+  /// The precise role enum (distinguishes super-admin and recruitment-agent),
+  /// parsed from the raw stored role. Prefer this over the legacy [role]
+  /// string for RBAC/permission checks.
+  UserRole? get roleEnum => UserRole.fromFirestore(_rawRole);
   bool _isFetching = false;
   StreamSubscription<User?>? _authSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
@@ -132,6 +144,7 @@ class AuthNotifier extends ChangeNotifier {
     if (newUser == null) {
       user = null;
       role = null;
+      _rawRole = null;
       isNewUser = false;
       isInitialized = true;
       _isFetching = false;
@@ -161,6 +174,7 @@ class AuthNotifier extends ChangeNotifier {
                 'role': RoleService._normalizeRole(
                   userData['role']?.toString(),
                 ),
+                'rawRole': userData['role']?.toString(),
                 'isNew': _parseIsNew(userData['isNew']),
                 'status': (userData['account_status'] ?? 'active')
                     .toString()
@@ -191,6 +205,7 @@ class AuthNotifier extends ChangeNotifier {
       );
       user = null;
       role = null;
+      _rawRole = null;
       isNewUser = false;
       isInitialized = true;
       _isFetching = false;
@@ -198,6 +213,7 @@ class AuthNotifier extends ChangeNotifier {
     } else {
       user = newUser;
       role = data['role'];
+      _rawRole = data['rawRole'] as String? ?? data['role'] as String?;
       isNewUser = data['isNew'] == true;
       isInitialized = true;
       _isFetching = false;
