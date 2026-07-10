@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/loading_view.dart';
 import 'JS_Top_Bar.dart';
 import 'Job_seeker_Available_jobs.dart';
 import 'saved_jobs_provider.dart';
@@ -41,21 +43,22 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                   child: Consumer<SavedJobsProvider>(
                     builder: (context, provider, _) {
                       if (provider.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const LoadingView(message: 'Loading saved jobs…');
                       }
                       if (provider.error != null) {
-                        return _StateMessage(
+                        return EmptyState(
                           icon: Icons.error_outline_rounded,
                           title: 'Unable to load saved jobs',
-                          message: provider.error!,
+                          subtitle: provider.error!,
+                          iconColor: const Color(0xFFEF4444),
                         );
                       }
                       final ids = provider.savedJobIds.toList();
                       if (ids.isEmpty) {
-                        return const _StateMessage(
+                        return const EmptyState(
                           icon: Icons.bookmark_border_rounded,
                           title: 'No saved jobs yet',
-                          message:
+                          subtitle:
                               'Tap the bookmark button on a job to save it here.',
                         );
                       }
@@ -161,14 +164,14 @@ class _SavedJobsList extends StatelessWidget {
       future: _loadJobs(jobIds),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingView();
         }
         final jobs = snapshot.data!;
         if (jobs.isEmpty) {
-          return const _StateMessage(
+          return const EmptyState(
             icon: Icons.visibility_off_outlined,
             title: 'Saved jobs are no longer active',
-            message: 'Archived or paused jobs are hidden from job seekers.',
+            subtitle: 'Archived or paused jobs are hidden from job seekers.',
           );
         }
 
@@ -205,48 +208,3 @@ class _SavedJobsList extends StatelessWidget {
   }
 }
 
-class _StateMessage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String message;
-
-  const _StateMessage({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 58, color: const Color(0xFF94A3B8)),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
