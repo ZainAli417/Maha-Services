@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/rbac/user_role.dart';
+
 /// Optimized Admin Authentication Provider with improved state management,
 /// debouncing, caching, and performance enhancements
 class AdminAuthProvider extends ChangeNotifier {
@@ -188,8 +190,10 @@ class AdminAuthProvider extends ChangeNotifier {
 
       if (userDoc.exists) {
         final data = userDoc.data();
-        final String? role = data?['role']?.toString().toLowerCase();
-        final isAdmin = role == 'admin';
+        // Accept the whole admin tier (admin + super-admin), via central RBAC.
+        final isAdmin =
+            UserRole.fromFirestore(data?['role']?.toString())?.isAdminTier ==
+                true;
 
         _adminCache[uid] = isAdmin;
         _lastCacheTime = DateTime.now();

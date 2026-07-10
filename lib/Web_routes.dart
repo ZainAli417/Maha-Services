@@ -99,16 +99,12 @@ class RoleService {
     }
   }
 
-  static String? _normalizeRole(String? role) {
-    if (role == null) return null;
-    final r = role.toLowerCase().trim();
-    if (['recruiter', 'employer'].contains(r)) return 'recruiter';
-    if (['job seeker', 'jobseeker', 'candidate'].contains(r)) {
-      return 'Job Seeker';
-    }
-    if (['admin', 'superadmin'].contains(r)) return 'admin';
-    return null;
-  }
+  // Delegates to the centralized RBAC parser. Returns the legacy runtime
+  // string the router branches on ('recruiter' / 'Job Seeker' / 'admin'), or
+  // null for unknown input. Recruitment-agent aliases now collapse into the
+  // recruiter runtime string; super-admin into 'admin'.
+  static String? _normalizeRole(String? role) =>
+      UserRole.fromFirestore(role)?.legacyRuntimeString;
 }
 
 // ========== 2. AUTH STATE PROVIDER (Architecture from Code B) ==========

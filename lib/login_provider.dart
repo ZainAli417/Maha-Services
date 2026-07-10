@@ -46,6 +46,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'core/rbac/user_role.dart';
+
 class LoginProvider with ChangeNotifier {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -97,28 +99,14 @@ class LoginProvider with ChangeNotifier {
   }
 
   // ── Role helpers ───────────────────────────────────────────────────────────
-  String _normalizeRole(String role) {
-    final n = role.trim().toLowerCase();
-    if (['recruiter', 'employer'].contains(n)) return 'recruiter';
-    if ([
-      'job_seeker',
-      'jobseeker',
-      'job seeker',
-      'candidate',
-      'job_seeker',
-      'job seeker',
-    ].contains(n)) {
-      return 'Job Seeker';
-    }
-    return n;
-  }
+  // Delegates to the centralized RBAC parser; falls back to the lowercased
+  // input for values the enum doesn't recognize (preserves prior behavior).
+  String _normalizeRole(String role) =>
+      UserRole.fromFirestore(role)?.legacyRuntimeString ??
+      role.trim().toLowerCase();
 
-  String _getRoleDashboard(String role) {
-    final n = _normalizeRole(role);
-    if (n == 'recruiter') return '/recruiter-dashboard';
-    if (n == 'admin') return '/admin_dashboard';
-    return '/dashboard';
-  }
+  String _getRoleDashboard(String role) =>
+      UserRole.fromFirestore(role)?.homeRoute ?? '/dashboard';
 
   // ── LOGIN — FIXED ──────────────────────────────────────────────────────────
   /// Returns the target route on success, or null on failure.
