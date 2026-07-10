@@ -48,24 +48,16 @@ class RoleService {
       final adminDoc = results[2];
       final userDoc = results[3];
 
-      String? role;
       bool isNew = false;
       String? rawRole; // exact users.role string, for precise UserRole parsing
-
-      // 3. Resolve Role from specific collections
-      if (jsDoc.exists) {
-        role = 'Job Seeker';
-      } else if (recDoc.exists) {
-        role = 'recruiter';
-      } else if (adminDoc.exists) {
-        role = 'admin';
-      }
-
       String? status;
-      // 4. Resolve isNew and Backup Role from 'users' collection
+
+      // Role derived from the master users.role field (authoritative).
+      String? roleFromUsers;
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
         rawRole = userData['role']?.toString();
+        roleFromUsers = _normalizeRole(rawRole);
         status = (userData['account_status'] ?? 'active')
             .toString()
             .toLowerCase()
@@ -81,10 +73,33 @@ class RoleService {
           isNew =
               false; // Legacy users without the flag are treated as existing.
         }
-
-        // Backup role resolution if not found in specific collections
-        role ??= _normalizeRole(userData['role']?.toString());
       }
+
+      // Role implied by which per-role collection holds a doc (legacy fallback).
+      String? roleFromCollections;
+      if (jsDoc.exists) {
+        roleFromCollections = 'Job Seeker';
+      } else if (recDoc.exists) {
+        roleFromCollections = 'recruiter';
+      } else if (adminDoc.exists) {
+        roleFromCollections = 'admin';
+      }
+
+      // PRECEDENCE FLIP: users.role is now the source of truth; collection
+      // existence is only a fallback for docs that never got a users.role.
+      // (The live users/{uid} snapshot listener already applies users.role
+      // seconds after login, so this only removes a transient inconsistency.)
+      final role = roleFromUsers ?? roleFromCollections;
+
+      if (roleFromUsers != null &&
+          roleFromCollections != null &&
+          roleFromUsers != roleFromCollections) {
+        debugPrint(
+          '⚠️ RoleService divergence for $uid: users.role="$roleFromUsers" '
+          'vs collection="$roleFromCollections" — using users.role.',
+        );
+      }
+
       // Fall back to the collection-derived runtime string when users.role
       // is absent (both are parseable by UserRole.fromFirestore).
       rawRole ??= role;
