@@ -14,24 +14,42 @@ class _BP {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Palette
+//  Modern Professional Palette - Pure White Theme
 // ─────────────────────────────────────────────────────────────────────────────
 class _C {
-  static const bg = Color(0xFFFAFAFA);
+  // Backgrounds - Pure white
+  static const bg = Color(0xFFFFFFFF);
+  static const bgLight = Color(0xFFF8FAFC);
   static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE8EDF5);
-  static const divider = Color(0xFFF0F3F9);
+  static const border = Color(0xFFE2E8F0);
+  static const divider = Color(0xFFF8FAFC);
+
+  // Primary - Indigo
   static const primary = Color(0xFF6366F1);
-  static const primaryLt = Color(0xFFEEF2FF);
-  static const success = Color(0xFF059669);
-  static const successLt = Color(0xFFECFDF5);
-  static const warning = Color(0xFFD97706);
-  static const warningLt = Color(0xFFFFFBEB);
-  static const danger = Color(0xFFDC2626);
+  static const primaryLight = Color(0xFFF0F4FF);
+  static const primaryLt = Color(0xFFF0F4FF);
+
+  // Semantic colors
+  static const success = Color(0xFF10B981);
+  static const successLight = Color(0xFFF0FDF4);
+  static const successLt = Color(0xFFF0FDF4);
+  static const warning = Color(0xFFFB923C);
+  static const warningLight = Color(0xFFFEF3C7);
+  static const warningLt = Color(0xFFFEF3C7);
+  static const danger = Color(0xFFEF4444);
+  static const dangerLight = Color(0xFFFEE2E2);
+
+  // Text hierarchy
   static const txt1 = Color(0xFF0F172A);
-  static const txt2 = Color(0xFF475569);
+  static const txt2 = Color(0xFF64748B);
   static const txt3 = Color(0xFF94A3B8);
   static const txt4 = Color(0xFFCBD5E1);
+
+  // Accent colors
+  static const accent = Color(0xFF8B5CF6);
+  static const accentLight = Color(0xFFF5F3FF);
+  static const info = Color(0xFF0EA5E9);
+  static const infoLight = Color(0xFFF0F9FF);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,11 +126,14 @@ class _DashboardBodyState extends State<_DashboardBody> {
   bool _loadingDetails = false;
   final _listCtrl = ScrollController();
   final _detailCtrl = ScrollController();
+  final _searchCtrl = TextEditingController();
+  String _statusFilter = 'all';
 
   @override
   void dispose() {
     _listCtrl.dispose();
     _detailCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -134,6 +155,39 @@ class _DashboardBodyState extends State<_DashboardBody> {
           .toList();
     }
     return [];
+  }
+
+  Color _statusColor(String status) {
+    final s = status.toLowerCase().trim();
+    if (s == 'active' || s == 'approved') return _C.success;
+    if (s == 'pending') return _C.warning;
+    if (s == 'rejected' || s == 'closed') return _C.danger;
+    return _C.primary;
+  }
+
+  List<Map<String, dynamic>> _filteredRequests(AdminProvider prov) {
+    final q = _searchCtrl.text.trim().toLowerCase();
+    return prov.requests.map(_n).where((r) {
+      final status = _s(r['status'], 'unknown').toLowerCase().trim();
+      final haystack = [
+        r['id'],
+        r['recruiter_email'],
+        r['recruiter_id'],
+        r['recruiterEmail'],
+        r['status'],
+        r['total_candidates'],
+      ].map((e) => e?.toString().toLowerCase() ?? '').join(' ');
+      final matchesSearch = q.isEmpty || haystack.contains(q);
+      final matchesStatus = _statusFilter == 'all' || status == _statusFilter;
+      return matchesSearch && matchesStatus;
+    }).toList();
+  }
+
+  int _countByStatus(AdminProvider prov, String status) {
+    if (status == 'all') return prov.requests.length;
+    return prov.requests.map(_n).where((r) {
+      return _s(r['status'], 'unknown').toLowerCase().trim() == status;
+    }).length;
   }
 
   /// Extracts plain URL strings from any list.
@@ -199,21 +253,172 @@ class _DashboardBodyState extends State<_DashboardBody> {
       builder: (ctx, cs) {
         final w = cs.maxWidth;
         final isDesktop = w >= _BP.tablet;
-        if (isDesktop) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        final filtered = _filteredRequests(prov);
+
+        return ColoredBox(
+          color: _C.bgLight,
+          child: Column(
             children: [
-              SizedBox(
-                width: w < _BP.desktop ? 340 : 400,
-                child: _buildList(ctx, prov, isDesktop: true),
+              _buildHeader(ctx, prov, isDesktop: isDesktop),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isDesktop ? 20 : 12,
+                    0,
+                    isDesktop ? 20 : 12,
+                    isDesktop ? 20 : 12,
+                  ),
+                  child: isDesktop
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: w < _BP.desktop ? 360 : 430,
+                              child: _buildList(
+                                ctx,
+                                prov,
+                                requests: filtered,
+                                isDesktop: true,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(child: _buildDetail(ctx, prov)),
+                          ],
+                        )
+                      : _buildList(
+                          ctx,
+                          prov,
+                          requests: filtered,
+                          isDesktop: false,
+                        ),
+                ),
               ),
-              const VerticalDivider(width: 1, color: _C.border),
-              Expanded(child: _buildDetail(ctx, prov)),
             ],
-          );
-        }
-        return _buildList(ctx, prov, isDesktop: false);
+          ),
+        );
       },
+    );
+  }
+
+  Widget _buildHeader(
+    BuildContext ctx,
+    AdminProvider prov, {
+    required bool isDesktop,
+  }) {
+    final pending = _countByStatus(prov, 'pending');
+    final active = _countByStatus(prov, 'active');
+    final rejected = _countByStatus(prov, 'rejected');
+    final closed = _countByStatus(prov, 'closed');
+
+    final stats = [
+      _MetricCard(
+        label: 'Total Requests',
+        value: prov.requests.length.toString(),
+        icon: Icons.inbox_outlined,
+        color: _C.primary,
+      ),
+      _MetricCard(
+        label: 'Pending Review',
+        value: pending.toString(),
+        icon: Icons.hourglass_top_rounded,
+        color: _C.warning,
+      ),
+      _MetricCard(
+        label: 'Active',
+        value: active.toString(),
+        icon: Icons.verified_outlined,
+        color: _C.success,
+      ),
+      _MetricCard(
+        label: 'Rejected / Closed',
+        value: '${rejected + closed}',
+        icon: Icons.block_outlined,
+        color: _C.danger,
+      ),
+    ];
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        isDesktop ? 24 : 14,
+        isDesktop ? 22 : 14,
+        isDesktop ? 24 : 14,
+        14,
+      ),
+      color: _C.bgLight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: isDesktop ? 46 : 40,
+                height: isDesktop ? 46 : 40,
+                decoration: BoxDecoration(
+                  color: _C.primary.withValues(alpha: .1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.assignment_turned_in_outlined,
+                  color: _C.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recruiter Requests',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isDesktop ? 22 : 18,
+                        fontWeight: FontWeight.w800,
+                        color: _C.txt1,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Review recruiter submissions, inspect candidate batches, and move requests through the pipeline.',
+                      maxLines: isDesktop ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _C.txt2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDesktop) _LiveBadge(),
+            ],
+          ),
+          const SizedBox(height: 16),
+          isDesktop
+              ? Row(
+                  children: stats
+                      .map(
+                        (card) => Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: card,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                )
+              : SizedBox(
+                  height: 92,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: stats.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    itemBuilder: (_, i) =>
+                        SizedBox(width: 180, child: stats[i]),
+                  ),
+                ),
+        ],
+      ),
     );
   }
 
@@ -222,44 +427,85 @@ class _DashboardBodyState extends State<_DashboardBody> {
   Widget _buildList(
     BuildContext ctx,
     AdminProvider prov, {
+    List<Map<String, dynamic>>? requests,
     required bool isDesktop,
   }) {
-    return ColoredBox(
-      color: _C.bg,
+    final visible = requests ?? _filteredRequests(prov);
+    return Container(
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(isDesktop ? 18 : 14),
+        border: Border.all(color: _C.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
-            child: Row(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'REQUESTS',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: _C.txt3,
-                    letterSpacing: 1.5,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'Review Queue',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: _C.txt1,
+                      ),
+                    ),
+                    const Spacer(),
+                    _CountBadge(count: visible.length),
+                    if (!isDesktop) ...[const SizedBox(width: 8), _LiveBadge()],
+                  ],
                 ),
-                const Spacer(),
-                _LiveBadge(),
+                const SizedBox(height: 12),
+                _SearchField(
+                  controller: _searchCtrl,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 10),
+                _StatusFilterBar(
+                  selected: _statusFilter,
+                  countFor: (s) => _countByStatus(prov, s),
+                  onSelected: (s) => setState(() => _statusFilter = s),
+                  colorFor: _statusColor,
+                ),
+                if (prov.loading) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: const LinearProgressIndicator(
+                      minHeight: 3,
+                      color: _C.primary,
+                      backgroundColor: _C.primaryLight,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           const Divider(height: 1, color: _C.border),
           Expanded(
-            child: prov.requests.isEmpty
+            child: visible.isEmpty
                 ? _EmptyList(loading: prov.loading)
                 : Scrollbar(
                     controller: _listCtrl,
                     thumbVisibility: isDesktop,
                     child: ListView.separated(
                       controller: _listCtrl,
-                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 20),
-                      itemCount: prov.requests.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 6),
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 18),
+                      itemCount: visible.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (ctx, i) {
-                        final r = _n(prov.requests[i]);
+                        final r = visible[i];
                         final id = _s(r['id']);
                         final email = _s(r['recruiter_email']);
                         final total = r['total_candidates'] ?? 0;
@@ -292,8 +538,15 @@ class _DashboardBodyState extends State<_DashboardBody> {
 
   Widget _buildDetail(BuildContext ctx, AdminProvider prov) {
     if (_loadingDetails) {
-      return const Center(
-        child: CircularProgressIndicator(strokeWidth: 2, color: _C.primary),
+      return Container(
+        decoration: BoxDecoration(
+          color: _C.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _C.border),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2, color: _C.primary),
+        ),
       );
     }
     if (prov.selectedRequestId == null) return const _Placeholder();
@@ -305,14 +558,25 @@ class _DashboardBodyState extends State<_DashboardBody> {
         ),
       );
     }
-    return ColoredBox(
-      color: _C.bg,
+    return Container(
+      decoration: BoxDecoration(
+        color: _C.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _C.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Scrollbar(
         controller: _detailCtrl,
         thumbVisibility: true,
         child: SingleChildScrollView(
           controller: _detailCtrl,
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(24),
           child: _buildDetailContent(ctx, prov, prov.selectedRequestDetails!),
         ),
       ),
@@ -385,85 +649,126 @@ class _DashboardBodyState extends State<_DashboardBody> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Request #$reqId',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: _C.txt1,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _C.bgLight,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _C.border),
+              ),
+              child: Wrap(
+                spacing: 14,
+                runSpacing: 14,
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _statusColor(status).withValues(alpha: .1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.fact_check_outlined,
+                          color: _statusColor(status),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.schedule_rounded,
-                          size: 13,
-                          color: _C.txt3,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          dateStr,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: _C.txt3,
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Request #$reqId',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: _C.txt1,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                _StatusDropdown(
-                  current: status,
-                  onChanged: (ns) async {
-                    // Capture messenger before await to avoid deactivated context error
-                    final sm = ScaffoldMessenger.maybeOf(ctx);
-                    final ok = await prov.updateRequestStatus(
-                      requestId: reqId,
-                      newStatus: ns,
-                      performedBy: 'admin_dashboard',
-                    );
-                    if (!mounted) return; // Check if still in tree
-                    if (sm != null) {
-                      _showInstantToast(
-                        sm,
-                        ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed',
-                        ok,
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.schedule_rounded,
+                                size: 14,
+                                color: _C.txt3,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                dateStr,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _C.txt2,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Icon(
+                                Icons.people_outline,
+                                size: 14,
+                                color: _C.txt3,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                '${cands.length} candidates',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _C.txt2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  _StatusDropdown(
+                    current: status,
+                    onChanged: (ns) async {
+                      // Capture messenger before await to avoid deactivated context error
+                      final sm = ScaffoldMessenger.maybeOf(ctx);
+                      final ok = await prov.updateRequestStatus(
+                        requestId: reqId,
+                        newStatus: ns,
+                        performedBy: 'admin_dashboard',
                       );
-                    }
-                  },
-                ),
-              ],
+                      if (!mounted) return; // Check if still in tree
+                      if (sm != null) {
+                        _showInstantToast(
+                          sm,
+                          ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed',
+                          ok,
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             _RecruiterCard(
               name: rName,
               email: rEmail,
               company: rCompany,
               notes: notes,
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 22),
 
             Row(
               children: [
                 Text(
-                  'CANDIDATES',
+                  'Candidate Review',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: _C.txt3,
-                    letterSpacing: 1.5,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: _C.txt1,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -674,6 +979,192 @@ class _DashboardBodyState extends State<_DashboardBody> {
 //  SMALL SHARED COMPONENTS
 // ═════════════════════════════════════════════════════════════════════════════
 
+class _MetricCard extends StatelessWidget {
+  final String label, value;
+  final IconData icon;
+  final Color color;
+
+  const _MetricCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: _C.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: _C.border),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: .035),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: .1),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                value,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: _C.txt1,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _C.txt2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _SearchField({required this.controller, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: controller,
+    onChanged: onChanged,
+    style: GoogleFonts.plusJakartaSans(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      color: _C.txt1,
+    ),
+    decoration: InputDecoration(
+      hintText: 'Search by request, email, recruiter...',
+      hintStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: _C.txt3,
+      ),
+      prefixIcon: const Icon(Icons.search_rounded, size: 19, color: _C.txt3),
+      suffixIcon: controller.text.isEmpty
+          ? null
+          : IconButton(
+              icon: const Icon(Icons.close_rounded, size: 18),
+              onPressed: () {
+                controller.clear();
+                onChanged('');
+              },
+            ),
+      isDense: true,
+      filled: true,
+      fillColor: _C.bgLight,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _C.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _C.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _C.primary),
+      ),
+    ),
+  );
+}
+
+class _StatusFilterBar extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onSelected;
+  final int Function(String) countFor;
+  final Color Function(String) colorFor;
+
+  const _StatusFilterBar({
+    required this.selected,
+    required this.onSelected,
+    required this.countFor,
+    required this.colorFor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final statuses = ['all', 'pending', 'active', 'rejected', 'closed'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: statuses.map((status) {
+          final isSelected = status == selected;
+          final color = status == 'all' ? _C.primary : colorFor(status);
+          final label = status == 'all'
+              ? 'All'
+              : '${status[0].toUpperCase()}${status.substring(1)}';
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              selected: isSelected,
+              onSelected: (_) => onSelected(status),
+              label: Text('$label ${countFor(status)}'),
+              labelStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? color : _C.txt2,
+              ),
+              avatar: status == 'all'
+                  ? null
+                  : Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+              selectedColor: color.withValues(alpha: .12),
+              backgroundColor: _C.bgLight,
+              side: BorderSide(
+                color: isSelected ? color.withValues(alpha: .35) : _C.border,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(99),
+              ),
+              showCheckmark: false,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
 class _LiveBadge extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) => Container(
@@ -774,38 +1265,53 @@ class _EmptyList extends StatelessWidget {
 class _Placeholder extends StatelessWidget {
   const _Placeholder();
   @override
-  Widget build(BuildContext ctx) => ColoredBox(
-    color: _C.bg,
+  Widget build(BuildContext ctx) => Container(
+    decoration: BoxDecoration(
+      color: _C.surface,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: _C.border),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: .04),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
     child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: _C.surface,
+              color: _C.primaryLight,
               shape: BoxShape.circle,
-              border: Border.all(color: _C.border),
             ),
             child: const Icon(
               Icons.touch_app_outlined,
-              size: 28,
-              color: _C.txt4,
+              size: 30,
+              color: _C.primary,
             ),
           ),
           const SizedBox(height: 20),
           Text(
             'Select a request',
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 15,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: _C.txt1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Choose an item from the review queue to inspect recruiter details and manage candidates.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: _C.txt2,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'View details and manage candidates',
-            style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _C.txt3),
           ),
         ],
       ),
@@ -970,13 +1476,24 @@ class _RequestTile extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
-        color: selected ? _C.primaryLt : _C.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: selected ? _C.primary : _C.border),
+        color: selected ? _C.primaryLight : _C.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: selected ? _C.primary.withValues(alpha: .55) : _C.border,
+        ),
+        boxShadow: selected
+            ? [
+                BoxShadow(
+                  color: _C.primary.withValues(alpha: .10),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -984,46 +1501,62 @@ class _RequestTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    'REQ #$id',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: selected ? _C.primary : _C.txt1,
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: c.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(Icons.assignment_outlined, color: c, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'REQ #$id',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: selected ? _C.primary : _C.txt1,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          email,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: _C.txt2,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    date,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 10,
-                      color: _C.txt3,
-                    ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: selected ? _C.primary : _C.txt3,
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                email,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  color: _C.txt2,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
+                      horizontal: 8,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
                       color: c.withValues(alpha: .1),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(color: c.withValues(alpha: .18)),
                     ),
                     child: Text(
                       status.toUpperCase(),
@@ -1034,7 +1567,7 @@ class _RequestTile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 10),
                   Icon(
                     Icons.people_outline,
                     size: 13,
@@ -1047,6 +1580,15 @@ class _RequestTile extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: selected ? _C.primary : _C.txt2,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    date,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: _C.txt3,
                     ),
                   ),
                 ],
@@ -1314,27 +1856,28 @@ class _StatusDropdown extends StatelessWidget {
 //  CANDIDATE CARD  (grid tile)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
+// ─── Design tokens - Modern professional theme ─────────────────────────────────
 abstract final class _T {
-  // Surface / background
-  static const bg = Color(0xFFF5F6FA);
+  // Surface / background - Pure white
+  static const bg = Color(0xFFF8FAFC);
+  static const bgLight = Color(0xFFF8FAFC);
   static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE8EAF0);
-  static const divider = Color(0xFFF0F1F5);
+  static const border = Color(0xFFE2E8F0);
+  static const divider = Color(0xFFF8FAFC);
 
   // Text hierarchy
-  static const txt1 = Color(0xFF0F1117);
-  static const txt2 = Color(0xFF4B5265);
-  static const txt3 = Color(0xFF9DA3B4);
+  static const txt1 = Color(0xFF0F172A);
+  static const txt2 = Color(0xFF64748B);
+  static const txt3 = Color(0xFF94A3B8);
 
-  // Semantic
-  static const primary = Color(0xFF4F6FFF);
-  static const success = Color(0xFF22C55E);
-  static const warning = Color(0xFFF59E0B);
+  // Semantic colors
+  static const primary = Color(0xFF6366F1);
+  static const success = Color(0xFF10B981);
+  static const warning = Color(0xFFFB923C);
   static const danger = Color(0xFFEF4444);
 
-  // Accent palette (stage colours)
-  static const blue = Color(0xFF3B82F6);
+  // Accent palette (stage colours) - Modern vibrant
+  static const blue = Color(0xFF0EA5E9);
   static const violet = Color(0xFF8B5CF6);
   static const pink = Color(0xFFEC4899);
   static const emerald = Color(0xFF10B981);
