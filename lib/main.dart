@@ -25,6 +25,7 @@ import 'Screens/Recruiter/R_Initials_provider.dart';
 import 'SignUp /signup_provider.dart';
 import 'Screens/Job_Seeker/JS_Initials_provider.dart';
 import 'Web_routes.dart';
+import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'login_provider.dart';
 
@@ -116,34 +117,7 @@ class JobPortalApp extends StatelessWidget {
       ],
 
       routerConfig: router,
-      theme: ThemeData(
-        primaryColor: const Color(0xFF6366F1),
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: const Color(0xFF6366F1),
-          secondary: const Color(0xFF6366F1),
-        ),
-        fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
-        textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
-          bodyColor: const Color(0xFF0F172A),
-          displayColor: const Color(0xFF0F172A),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFFFAFAFA),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6366F1),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.light,
     );
   }
 }
