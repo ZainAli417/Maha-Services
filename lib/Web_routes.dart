@@ -24,6 +24,7 @@ import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
 import 'Screens/Recruiter/Request_Box.dart';
 import 'Screens/Recruiter/archived_jobs_screen.dart';
 import 'SignUp /profile_builder.dart';
+import 'Screens/Onboarding/onboarding_screen.dart';
 import 'SignUp /signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
 import 'Screens/Job_Seeker/js_settings_screen.dart';
@@ -258,6 +259,7 @@ class RouteConfig {
   };
   static const jobSeekerPaths = {
     '/dashboard',
+    '/onboarding',
     '/profile-builder',
     '/profile',
     '/ai-tools',
@@ -327,18 +329,21 @@ final GoRouter router = GoRouter(
     }
 
     // A. New User Logic (Job Seeker ONLY)
+    // New job seekers flow through onboarding → profile builder. Both routes
+    // are allowed; anything else redirects to onboarding first.
     if (role == 'Job Seeker' && authProvider.isNewUser) {
-      if (location != '/profile-builder') {
-        debugPrint('➡️ Redirecting new job seeker to profile builder');
-        return '/profile-builder';
+      const allowed = {'/onboarding', '/profile-builder'};
+      if (!allowed.contains(location)) {
+        debugPrint('➡️ Redirecting new job seeker to onboarding');
+        return '/onboarding';
       }
       return null;
     }
 
-    // B. Prevent New Users going to Dashboard
+    // B. Completed job seekers should not sit on onboarding / profile builder.
     if (role == 'Job Seeker' &&
         !authProvider.isNewUser &&
-        location == '/profile-builder') {
+        (location == '/profile-builder' || location == '/onboarding')) {
       debugPrint('➡️ Completed profile, going to dashboard');
       return '/dashboard';
     }
@@ -376,7 +381,13 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/register',
-      pageBuilder: (c, s) => _fadePage(const SignUp_Screen(), s),
+      pageBuilder: (c, s) {
+        // Role is chosen by navigation context via ?role=recruiter|candidate.
+        // Anything else (including a direct visit) defaults to Job Seeker.
+        final roleParam = s.uri.queryParameters['role']?.toLowerCase();
+        final initialRole = roleParam == 'recruiter' ? 'Recruiter' : 'Job Seeker';
+        return _fadePage(SignUp_Screen(initialRole: initialRole), s);
+      },
     ),
     GoRoute(
       path: '/recover-password',
@@ -401,6 +412,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/dashboard',
       pageBuilder: (c, s) => _fadePage(const job_seeker_dashboard(), s),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      pageBuilder: (c, s) => _fadePage(const OnboardingScreen(), s),
     ),
     GoRoute(
       path: '/profile-builder',

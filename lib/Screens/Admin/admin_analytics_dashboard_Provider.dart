@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/rbac/user_role.dart';
+
 class AdminAnalyticsProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -11,8 +13,10 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
   // KPIs
   int totalUsers = 0;
+  int activeUsers = 0;
   int totalJobSeekers = 0;
   int totalRecruiters = 0;
+  int totalRecruitmentAgents = 0;
   int totalAdmins = 0;
   int totalJobs = 0;
   int totalRequests = 0;
@@ -80,50 +84,47 @@ class AdminAnalyticsProvider extends ChangeNotifier {
 
   Future<void> _fetchAggregateKPIs() async {
     try {
-      // Users collection based counting
-      final usersSnap = await _firestore.collection('users').get();
-      int tempAdmin = 0, tempRec = 0, tempJs = 0;
+      final usersCol = _firestore.collection('users');
 
-      for (var doc in usersSnap.docs) {
-        final data = doc.data();
-        // Handle case-insensitive field names and various role formats
-        final role =
-            (data['role'] ??
-                    data['Role'] ??
-                    data['type'] ??
-                    data['user_role'] ??
-                    '')
-                .toString()
-                .trim()
-                .toLowerCase();
+      // Server-side aggregate counts — no document reads. Each role counts via
+      // its exact-case whereIn aliases (Firestore equality is case-sensitive).
+      Future<int> countRole(UserRole r) async =>
+          (await usersCol.where('role', whereIn: r.queryAliases).count().get())
+              .count ??
+          0;
 
-        if (role.contains('admin')) {
-          tempAdmin++;
-        } else if (role.contains('recruiter')) {
-          tempRec++;
-        } else if (role.contains('seeker') ||
-            role.contains('job') ||
-            role == 'Job Seeker') {
-          tempJs++;
-        }
-      }
+      final results = await Future.wait([
+        countRole(UserRole.jobSeeker), // 0
+        countRole(UserRole.recruiter), // 1
+        countRole(UserRole.recruitmentAgent), // 2
+        countRole(UserRole.admin), // 3
+        countRole(UserRole.superAdmin), // 4
+        usersCol.count().get().then((s) => s.count ?? 0), // 5 total
+        usersCol
+            .where('account_status', isEqualTo: 'active')
+            .count()
+            .get()
+            .then((s) => s.count ?? 0), // 6 active
+        _firestore
+            .collection('Posted_jobs_public')
+            .count()
+            .get()
+            .then((s) => s.count ?? 0), // 7 jobs
+        _firestore
+            .collection('recruiter_requests')
+            .count()
+            .get()
+            .then((s) => s.count ?? 0), // 8 requests
+      ]);
 
-      totalAdmins = tempAdmin;
-      totalRecruiters = tempRec;
-      totalJobSeekers = tempJs;
-      totalUsers = tempAdmin + tempRec + tempJs;
-
-      final jobsQuery = await _firestore
-          .collection('Posted_jobs_public')
-          .count()
-          .get();
-      totalJobs = jobsQuery.count ?? 0;
-
-      final reqQuery = await _firestore
-          .collection('recruiter_requests')
-          .count()
-          .get();
-      totalRequests = reqQuery.count ?? 0;
+      totalJobSeekers = results[0];
+      totalRecruiters = results[1];
+      totalRecruitmentAgents = results[2];
+      totalAdmins = results[3] + results[4]; // admin + super admin
+      totalUsers = results[5];
+      activeUsers = results[6];
+      totalJobs = results[7];
+      totalRequests = results[8];
 
       _safeNotify();
     } catch (e) {

@@ -651,9 +651,45 @@ class _KpiGrid extends StatelessWidget {
         Icons.groups_rounded,
         'Total Users',
         prov.totalUsers,
-        '${prov.totalJobSeekers} Job Seekers · ${prov.totalRecruiters} Recruiters · ${prov.totalAdmins} Admins',
+        '${prov.activeUsers} active',
         _C.indigo,
         _C.indigoLt,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.verified_user_rounded,
+        'Active Users',
+        prov.activeUsers,
+        'account_status = active',
+        _C.emerald,
+        _C.emeraldL,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.person_search_rounded,
+        'Job Seekers',
+        prov.totalJobSeekers,
+        'Candidates',
+        _C.violet,
+        _C.violetLt,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.business_center_rounded,
+        'Recruiters',
+        prov.totalRecruiters,
+        '${prov.totalRecruitmentAgents} agents',
+        _C.teal,
+        _C.tealLt,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.badge_rounded,
+        'Recruitment Agents',
+        prov.totalRecruitmentAgents,
+        'Recruiter-tier',
+        _C.teal,
+        _C.tealLt,
         onTap: () => onNavigate?.call('User Management'),
       ),
       _KD(
@@ -676,23 +712,23 @@ class _KpiGrid extends StatelessWidget {
       ),
     ];
 
-    // Desktop — existing single-row behaviour
+    // Desktop — responsive wrap so any number of KPI cards flows across rows.
     if (isMid) {
-      return Row(
-        children: items
-            .asMap()
-            .entries
-            .map(
-              (e) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: e.key < items.length - 1 ? 16 : 0,
-                  ),
-                  child: _KpiCardVertical(d: e.value),
-                ),
-              ),
-            )
-            .toList(),
+      return LayoutBuilder(
+        builder: (context, c) {
+          const spacing = 16.0;
+          final perRow = c.maxWidth >= 1180 ? 4 : 3;
+          final cardW =
+              (c.maxWidth - spacing * (perRow - 1)) / perRow;
+          return Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
+            children: [
+              for (final d in items)
+                SizedBox(width: cardW, child: _KpiCardVertical(d: d)),
+            ],
+          );
+        },
       );
     }
 

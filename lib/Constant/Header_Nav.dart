@@ -37,7 +37,7 @@ class _NavItem {
 const _navItems = [
   _NavItem('Home', '/'),
   _NavItem('Find Jobs', '/login'),
-  _NavItem('For Recruiters', '/register'),
+  _NavItem('For Recruiters', '/register?role=recruiter'),
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

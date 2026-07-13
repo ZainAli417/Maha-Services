@@ -91,9 +91,15 @@ service cloud.firestore {
       return /databases/$(database)/documents/Posted_jobs_public/$(jobId)/views/$(viewerUid);
     }
 
+    // Fields a user may never change on their own users/{uid} doc. Role,
+    // status, level, verification flags and soft-delete metadata are all
+    // admin-controlled (admins write via the privileged catch-all rule).
     function userImmutableFieldsUnchanged() {
       return !request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(['uid', 'role', 'account_status', 'user_lvl', 'admin', 'isAdmin']);
+        .hasAny([
+          'uid', 'role', 'account_status', 'user_lvl', 'admin', 'isAdmin',
+          'email_verified', 'documents_verified', 'deleted_at', 'deleted_by'
+        ]);
     }
 
     function validOwnedPublicJobCreate(jobId) {

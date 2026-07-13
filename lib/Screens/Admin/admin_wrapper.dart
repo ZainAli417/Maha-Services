@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Admin/sidebar.dart';
 import 'admin_analytics_dashboard.dart';
 import 'admin_recruiter_request_management.dart';
+import 'audit_logs_section.dart';
+import 'questionnaire_management_section.dart';
 import 'user_management_section.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -30,6 +32,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     'Recruiter Requests': {
       'icon': Icons.business_center_rounded,
       'sub': 'Review & approve recruiters',
+    },
+    'Audit Logs': {
+      'icon': Icons.receipt_long_rounded,
+      'sub': 'Immutable admin action trail',
+    },
+    'Questionnaires': {
+      'icon': Icons.quiz_rounded,
+      'sub': 'Manage onboarding questions & roles',
     },
   };
 
@@ -157,6 +167,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return const UserManagementSection();
       case 'Recruiter Requests':
         return const Admin_Recruiter_Request_screen();
+      case 'Audit Logs':
+        return const AuditLogsSection();
+      case 'Questionnaires':
+        return const QuestionnaireManagementSection();
       default:
         return const Center(child: Text('Select a menu item'));
     }

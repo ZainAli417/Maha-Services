@@ -2,8 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../Web_routes.dart' show AuthNotifier;
+import '../../core/rbac/rbac.dart';
+import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/custom_snackbars.dart';
 import 'admin_recruiter_request_provider.dart';
+import 'user_detail_panel.dart';
 
 class UserManagementSection extends StatefulWidget {
   const UserManagementSection({super.key});
@@ -21,6 +25,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
   String _selectedStatusFilter = 'all';
   int _currentPage = 1;
   static const int _itemsPerPage = 10;
+
+  // Cap on documents streamed from the `users` collection. Bounds Firestore
+  // reads (previously an unbounded full-collection listener). When the cap is
+  // hit, a visible notice tells the admin the list is truncated — never a
+  // silent drop. Client-side search/filter operate within this window.
+  static const int _fetchCap = 300;
+
+  // Bulk selection.
+  final Set<String> _selected = {};
+  bool _bulkBusy = false;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -253,7 +267,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       _buildFilterDropdown(
                         'Role',
                         _selectedRoleFilter,
-                        ['all', 'Job Seeker', 'Recruiter', 'Admin'],
+                        const [
+          'all',
+          'Job Seeker',
+          'Recruiter',
+          'Recruitment Agent',
+          'Admin',
+          'Super Admin',
+        ],
                         (value) => setState(() => _selectedRoleFilter = value!),
                         Icons.work_outline,
                       ),
@@ -261,7 +282,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       _buildFilterDropdown(
                         'Status',
                         _selectedStatusFilter,
-                        ['all', 'active', 'suspended'],
+                        const ['all', 'active', 'suspended', 'deleted'],
                         (value) =>
                             setState(() => _selectedStatusFilter = value!),
                         Icons.toggle_on_outlined,
@@ -280,7 +301,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 _buildFilterDropdown(
                   'Role',
                   _selectedRoleFilter,
-                  ['all', 'Job Seeker', 'Recruiter', 'Admin'],
+                  const [
+          'all',
+          'Job Seeker',
+          'Recruiter',
+          'Recruitment Agent',
+          'Admin',
+          'Super Admin',
+        ],
                   (value) => setState(() => _selectedRoleFilter = value!),
                   Icons.work_outline,
                 ),
@@ -288,7 +316,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 _buildFilterDropdown(
                   'Status',
                   _selectedStatusFilter,
-                  ['all', 'active', 'suspended'],
+                  const ['all', 'active', 'suspended', 'deleted'],
                   (value) => setState(() => _selectedStatusFilter = value!),
                   Icons.toggle_on_outlined,
                 ),
@@ -469,7 +497,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('users')
+                .limit(_fetchCap)
+                .snapshots(),
             builder: (context, snapshot) {
               if (!mounted) return const SizedBox.shrink();
 
@@ -480,6 +511,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 return _buildLoadingState();
               }
 
+              final capped = snapshot.data!.docs.length >= _fetchCap;
               var allUsers = _filterUsers(snapshot.data!.docs);
               int totalPages = (allUsers.length / _itemsPerPage).ceil();
               if (totalPages == 0) totalPages = 1;
@@ -559,6 +591,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  if (capped) _buildCappedNotice(),
+                  if (_selected.isNotEmpty)
+                    _buildBulkBar(context, provider, users),
                   _buildTableHeader(),
                   Expanded(
                     child: ListView.builder(
@@ -770,8 +805,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
           name.contains(_searchQuery.toLowerCase()) ||
           email.contains(_searchQuery.toLowerCase());
 
-      final matchesRole =
-          _selectedRoleFilter == 'all' || role == _selectedRoleFilter;
+      // Match by normalized role so legacy string variants filter correctly.
+      final matchesRole = _selectedRoleFilter == 'all' ||
+          UserRole.fromFirestore(role.toString()) ==
+              UserRole.fromFirestore(_selectedRoleFilter);
       final matchesStatus =
           _selectedStatusFilter == 'all' || status == _selectedStatusFilter;
 
@@ -794,6 +831,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
       child: Row(
         children: [
+          const SizedBox(width: 44),
           Expanded(
             flex: 3,
             child: _buildHeaderCell('USER', icon: Icons.person_outline),
@@ -887,6 +925,17 @@ class _UserManagementSectionState extends State<UserManagementSection>
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(
+                    width: 44,
+                    child: Checkbox(
+                      value: _selected.contains(docId),
+                      onChanged: (v) => setState(() {
+                        v == true
+                            ? _selected.add(docId)
+                            : _selected.remove(docId);
+                      }),
+                    ),
+                  ),
                   Expanded(flex: 3, child: _buildUserInfo(displayName, email)),
                   Expanded(flex: 2, child: _buildRoleBadge(role)),
                   Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
@@ -986,10 +1035,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
   Widget _buildRoleBadge(String role) {
     final roleConfig = _getRoleConfig(role);
+    final label = UserRole.fromFirestore(role)?.displayLabel ??
+        (role.trim().isEmpty ? 'Unknown' : role);
     return Align(
       alignment: Alignment.centerLeft,
       child: Tooltip(
-        message: 'Role: ${role.replaceAll('_', ' ').toUpperCase()}',
+        message: 'Role: ${label.toUpperCase()}',
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
@@ -1014,11 +1065,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               Icon(roleConfig['icon'], size: 13, color: roleConfig['color']),
               const SizedBox(width: 6),
               Text(
-                role
-                    .replaceAll('_', ' ')
-                    .split(' ')
-                    .map((word) => word[0].toUpperCase() + word.substring(1))
-                    .join(' '),
+                label,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -1131,6 +1178,157 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
+  // ── C6: capped notice + bulk-action bar ───────────────────────────────────
+
+  Widget _buildCappedNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      color: const Color(0xFFFFF7ED),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded,
+              size: 16, color: Color(0xFFB45309)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Showing the first $_fetchCap users. Use search or filters to '
+              'narrow the list.',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: const Color(0xFFB45309),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulkBar(
+    BuildContext context,
+    AdminProvider provider,
+    List<QueryDocumentSnapshot> pageDocs,
+  ) {
+    final pageIds = pageDocs.map((d) => d.id).toSet();
+    final allOnPageSelected =
+        pageIds.isNotEmpty && pageIds.every(_selected.contains);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: const Color(0xFFEEF2FF),
+      child: Row(
+        children: [
+          TextButton.icon(
+            onPressed: () => setState(() {
+              allOnPageSelected
+                  ? _selected.removeAll(pageIds)
+                  : _selected.addAll(pageIds);
+            }),
+            icon: Icon(
+              allOnPageSelected
+                  ? Icons.remove_done_rounded
+                  : Icons.done_all_rounded,
+              size: 16,
+            ),
+            label: Text(allOnPageSelected ? 'Unselect page' : 'Select page'),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${_selected.length} selected',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF4F46E5),
+            ),
+          ),
+          const Spacer(),
+          if (_bulkBusy)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else ...[
+            _bulkBtn('Activate', Icons.check_circle_rounded,
+                const Color(0xFF10B981), () => _runBulk(context, provider, 'activate')),
+            const SizedBox(width: 6),
+            _bulkBtn('Suspend', Icons.block_rounded, const Color(0xFFF59E0B),
+                () => _runBulk(context, provider, 'suspend')),
+            const SizedBox(width: 6),
+            _bulkBtn('Delete', Icons.delete_outline_rounded,
+                const Color(0xFFEF4444), () => _runBulk(context, provider, 'delete')),
+            const SizedBox(width: 6),
+            IconButton(
+              tooltip: 'Clear selection',
+              onPressed: () => setState(_selected.clear),
+              icon: const Icon(Icons.close_rounded, size: 18),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _bulkBtn(String label, IconData icon, Color color, VoidCallback onTap) {
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 16, color: color),
+      label: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runBulk(
+    BuildContext context,
+    AdminProvider provider,
+    String action,
+  ) async {
+    final ids = _selected.toList();
+    if (ids.isEmpty) return;
+    final label = switch (action) {
+      'delete' => 'Delete',
+      'suspend' => 'Suspend',
+      _ => 'Activate',
+    };
+    final ok = await ConfirmDialog.show(
+      context,
+      title: '$label ${ids.length} user${ids.length == 1 ? '' : 's'}?',
+      message: action == 'delete'
+          ? 'Soft-deletes the selected users. They can be restored later.'
+          : 'This will $action the selected users.',
+      confirmLabel: label,
+      danger: action != 'activate',
+    );
+    if (!ok || !context.mounted) return;
+
+    setState(() => _bulkBusy = true);
+    final int done;
+    switch (action) {
+      case 'delete':
+        done = await provider.bulkSoftDelete(ids);
+      case 'suspend':
+        done = await provider.bulkSetSuspended(ids, true);
+      default:
+        done = await provider.bulkSetSuspended(ids, false);
+    }
+    if (!mounted) return;
+    setState(() {
+      _selected.clear();
+      _bulkBusy = false;
+    });
+    if (context.mounted) {
+      CustomSnackbars.showSuccess(context, '$label complete ($done)');
+    }
+  }
+
   Widget _buildActions(
     BuildContext context,
     AdminProvider provider,
@@ -1140,9 +1338,17 @@ class _UserManagementSectionState extends State<UserManagementSection>
     String email,
     String? name,
   ) {
+    final isDeleted = status == 'deleted';
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _buildActionButton(
+          Icons.visibility_outlined,
+          'View Profile',
+          const Color(0xFF64748B),
+          () => UserDetailPanel.show(context, uid: docId, userData: data),
+        ),
+        const SizedBox(width: 6),
         _buildActionButton(
           Icons.edit_note_rounded,
           'Edit User',
@@ -1151,16 +1357,26 @@ class _UserManagementSectionState extends State<UserManagementSection>
         ),
         const SizedBox(width: 6),
         _buildActionButton(
-          status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
-          status == 'active' ? 'Suspend User' : 'Activate User',
-          status == 'active'
-              ? const Color(0xFFEF4444)
-              : const Color(0xFF10B981),
-          () async {
-            await provider.suspendUser(docId, status);
-            // Don't assume context is valid here - the provider should handle its own state
-          },
+          Icons.swap_horiz_rounded,
+          'Convert Role',
+          const Color(0xFF0EA5E9),
+          () => _showConvertRoleDialog(context, provider, docId, data, name),
         ),
+        if (!isDeleted) ...[
+          const SizedBox(width: 6),
+          _buildActionButton(
+            status == 'active'
+                ? Icons.block_rounded
+                : Icons.check_circle_rounded,
+            status == 'active' ? 'Suspend User' : 'Activate User',
+            status == 'active'
+                ? const Color(0xFFEF4444)
+                : const Color(0xFF10B981),
+            () async {
+              await provider.suspendUser(docId, status);
+            },
+          ),
+        ],
         const SizedBox(width: 6),
         _buildActionButton(
           Icons.lock_reset_rounded,
@@ -1168,8 +1384,159 @@ class _UserManagementSectionState extends State<UserManagementSection>
           const Color(0xFF8B5CF6),
           () => _showResetPasswordDialog(context, provider, email),
         ),
+        const SizedBox(width: 6),
+        isDeleted
+            ? _buildActionButton(
+                Icons.restore_rounded,
+                'Restore User',
+                const Color(0xFF10B981),
+                () => _confirmRestore(context, provider, docId, email),
+              )
+            : _buildActionButton(
+                Icons.delete_outline_rounded,
+                'Delete User',
+                const Color(0xFFEF4444),
+                () => _confirmSoftDelete(context, provider, docId, email),
+              ),
       ],
     );
+  }
+
+  // ── Role conversion / delete-restore handlers (C2) ─────────────────────────
+
+  Future<void> _showConvertRoleDialog(
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    Map<String, dynamic> data,
+    String? name,
+  ) async {
+    final currentRaw = data['role']?.toString();
+    final current = UserRole.fromFirestore(currentRaw);
+    final email = data['email']?.toString() ?? '';
+    final viewerRole = context.read<AuthNotifier>().roleEnum;
+    final assignable = _assignableRoles(viewerRole);
+
+    final selected = await showDialog<UserRole>(
+      context: context,
+      builder: (ctx) {
+        UserRole? choice = current;
+        return StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            title: Text(
+              'Convert Role',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${name ?? email}\nCurrent role: ${current?.displayLabel ?? currentRaw ?? 'Unknown'}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...assignable.map(
+                  (r) => RadioListTile<UserRole>(
+                    value: r,
+                    groupValue: choice,
+                    onChanged: (v) => setLocal(() => choice = v),
+                    title: Text(
+                      r.displayLabel,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: choice == null || choice == current
+                    ? null
+                    : () => Navigator.pop(ctx, choice),
+                child: const Text('Convert'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected == null || !context.mounted) return;
+    final result = await provider.convertUserRole(
+      uid: docId,
+      targetRole: selected,
+      fromRoleRaw: currentRaw,
+      name: name,
+      email: email,
+    );
+    if (!context.mounted) return;
+    result.ok
+        ? CustomSnackbars.showSuccess(context, result.message)
+        : CustomSnackbars.showError(context, result.message);
+  }
+
+  /// Roles the [viewer] is allowed to assign. Admin-tier assignment is
+  /// restricted to those holding [Permission.assignAdminRoles] (super admin).
+  List<UserRole> _assignableRoles(UserRole? viewer) {
+    final base = <UserRole>[
+      UserRole.jobSeeker,
+      UserRole.recruiter,
+      UserRole.recruitmentAgent,
+    ];
+    if (can(viewer, Permission.assignAdminRoles)) {
+      base.addAll([UserRole.admin, UserRole.superAdmin]);
+    }
+    return base;
+  }
+
+  Future<void> _confirmSoftDelete(
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    String email,
+  ) async {
+    final ok = await ConfirmDialog.show(
+      context,
+      title: 'Delete user?',
+      message:
+          'This soft-deletes $email. Their account is disabled and signed out, '
+          'but data is preserved and can be restored.',
+      confirmLabel: 'Delete',
+      danger: true,
+      icon: Icons.delete_outline_rounded,
+    );
+    if (!ok || !context.mounted) return;
+    final result = await provider.softDeleteUser(docId, label: email);
+    if (!context.mounted) return;
+    result.ok
+        ? CustomSnackbars.showSuccess(context, result.message)
+        : CustomSnackbars.showError(context, result.message);
+  }
+
+  Future<void> _confirmRestore(
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    String email,
+  ) async {
+    final result = await provider.restoreUser(docId, label: email);
+    if (!context.mounted) return;
+    result.ok
+        ? CustomSnackbars.showSuccess(context, result.message)
+        : CustomSnackbars.showError(context, result.message);
   }
 
   Widget _buildActionButton(
@@ -1306,27 +1673,38 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Map<String, dynamic> _getRoleConfig(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
+    switch (UserRole.fromFirestore(role)) {
+      case UserRole.superAdmin:
+        return {
+          'color': const Color(0xFF9333EA),
+          'bgColor': const Color(0xFFF3E8FF),
+          'icon': Icons.shield_moon_rounded,
+        };
+      case UserRole.admin:
         return {
           'color': const Color(0xFFDC2626),
           'bgColor': const Color(0xFFFEF2F2),
           'icon': Icons.admin_panel_settings_rounded,
         };
-      case 'recruiter':
+      case UserRole.recruiter:
         return {
           'color': const Color(0xFF6366F1),
           'bgColor': const Color(0xFFEEF2FF),
           'icon': Icons.business_center_rounded,
         };
-      case 'job seeker':
-      case 'job_seeker':
+      case UserRole.recruitmentAgent:
+        return {
+          'color': const Color(0xFF0EA5E9),
+          'bgColor': const Color(0xFFE0F2FE),
+          'icon': Icons.badge_rounded,
+        };
+      case UserRole.jobSeeker:
         return {
           'color': const Color(0xFF10B981),
           'bgColor': const Color(0xFFECFDF5),
           'icon': Icons.work_rounded,
         };
-      default:
+      case null:
         return {
           'color': const Color(0xFF64748B),
           'bgColor': const Color(0xFFF1F5F9),
@@ -1518,7 +1896,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) {
-        String selectedRole = existingData?['role'] ?? 'Job Seeker';
+        String selectedRole =
+            UserRole.fromFirestore(existingData?['role']?.toString())
+                    ?.toFirestore() ??
+                UserRole.jobSeeker.toFirestore();
         String selectedLevel = existingData?['user_lvl'] ?? 'basic';
 
         return StatefulBuilder(
@@ -1737,8 +2118,30 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                       provider.userLevelController.text =
                                           selectedLevel;
 
-                                      final success = await provider
-                                          .addOrEditUser();
+                                      final bool success;
+                                      if (isEdit) {
+                                        success = await provider.addOrEditUser();
+                                      } else {
+                                        // Create via the audited service so the
+                                        // role's collection doc + audit entry
+                                        // are written.
+                                        final result = await provider
+                                            .createUserWithRole(
+                                              name:
+                                                  provider.nameController.text,
+                                              email: provider
+                                                  .emailController.text,
+                                              password: provider
+                                                  .passwordController.text,
+                                              role: UserRole.fromFirestore(
+                                                    selectedRole,
+                                                  ) ??
+                                                  UserRole.jobSeeker,
+                                              userLevel: selectedLevel,
+                                            );
+                                        success = result.ok;
+                                        if (success) provider.clearForm();
+                                      }
 
                                       // CRITICAL FIX: Check mounted on the CORRECT context
                                       if (!mounted) {
@@ -1822,36 +2225,38 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
+  static const Map<UserRole, IconData> _roleIcons = {
+    UserRole.jobSeeker: Icons.work_outline_rounded,
+    UserRole.recruiter: Icons.business_center_rounded,
+    UserRole.recruitmentAgent: Icons.badge_outlined,
+    UserRole.admin: Icons.admin_panel_settings_outlined,
+    UserRole.superAdmin: Icons.shield_moon_outlined,
+  };
+
   Widget _buildRoleSelector(
     String selectedRole,
     ValueChanged<String?> onChanged,
   ) {
+    final viewerRole = context.read<AuthNotifier>().roleEnum;
+    final roles = _assignableRoles(viewerRole);
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
         children: [
-          Expanded(
-            child: _buildRoleOption(
-              'Job Seeker',
-              'Job Seeker',
+          for (final r in roles)
+            _buildRoleOption(
+              r.displayLabel,
+              r.toFirestore(),
               selectedRole,
-              Icons.work_outline_rounded,
+              _roleIcons[r] ?? Icons.person_outline_rounded,
               onChanged,
             ),
-          ),
-          Expanded(
-            child: _buildRoleOption(
-              'Recruiter',
-              'Recruiter',
-              selectedRole,
-              Icons.business_center_rounded,
-              onChanged,
-            ),
-          ),
         ],
       ),
     );

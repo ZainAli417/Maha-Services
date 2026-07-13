@@ -18,6 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/rbac/user_role.dart';
+import '../../core/services/role_management_service.dart';
+
 class AdminProvider extends ChangeNotifier {
   // ── Form controllers ──────────────────────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
@@ -101,16 +104,114 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  // Centralized, audited account/role operations.
+  final RoleManagementService _roleService = RoleManagementService();
+
   Future<void> suspendUser(String docId, String currentStatus) async {
-    final newStatus = currentStatus == 'active' ? 'suspended' : 'active';
-    try {
-      await _firestore.collection('users').doc(docId).update({
-        'account_status': newStatus,
-      });
-    } catch (e) {
-      debugPrint('❌ suspendUser error: $e');
+    final suspend = currentStatus == 'active';
+    await _roleService.setSuspended(uid: docId, suspended: suspend);
+    _candidateCache.remove(docId);
+    _recruiterCache.remove(docId);
+    _safeNotify();
+  }
+
+  /// Converts a user to [targetRole] (audited). [fromRoleRaw] is the user's
+  /// current stored role string, used only for the audit entry.
+  Future<RoleOpResult> convertUserRole({
+    required String uid,
+    required UserRole targetRole,
+    String? fromRoleRaw,
+    String? name,
+    String? email,
+  }) async {
+    final result = await _roleService.convertRole(
+      uid: uid,
+      targetRole: targetRole,
+      fromRole: UserRole.fromFirestore(fromRoleRaw),
+      name: name,
+      email: email,
+    );
+    _candidateCache.remove(uid);
+    _recruiterCache.remove(uid);
+    _safeNotify();
+    return result;
+  }
+
+  /// Soft-deletes a user (status → deleted; restorable).
+  Future<RoleOpResult> softDeleteUser(String uid, {String? label}) async {
+    final result = await _roleService.softDelete(uid: uid, label: label);
+    _candidateCache.remove(uid);
+    _recruiterCache.remove(uid);
+    _safeNotify();
+    return result;
+  }
+
+  /// Restores a previously soft-deleted user.
+  Future<RoleOpResult> restoreUser(String uid, {String? label}) async {
+    final result = await _roleService.restore(uid: uid, label: label);
+    _candidateCache.remove(uid);
+    _recruiterCache.remove(uid);
+    _safeNotify();
+    return result;
+  }
+
+  /// Resets a user's onboarding/profile status.
+  Future<RoleOpResult> resetUserProfile(String uid, {String? label}) async {
+    final result =
+        await _roleService.resetProfileStatus(uid: uid, label: label);
+    _candidateCache.remove(uid);
+    _safeNotify();
+    return result;
+  }
+
+  /// Bulk suspend/activate. Returns the number of successful operations.
+  Future<int> bulkSetSuspended(Iterable<String> uids, bool suspended) async {
+    var ok = 0;
+    for (final uid in uids) {
+      final r = await _roleService.setSuspended(uid: uid, suspended: suspended);
+      if (r.ok) ok++;
+      _candidateCache.remove(uid);
+      _recruiterCache.remove(uid);
     }
     _safeNotify();
+    return ok;
+  }
+
+  /// Bulk soft-delete. Returns the number of successful operations.
+  Future<int> bulkSoftDelete(Iterable<String> uids) async {
+    var ok = 0;
+    for (final uid in uids) {
+      final r = await _roleService.softDelete(uid: uid);
+      if (r.ok) ok++;
+      _candidateCache.remove(uid);
+      _recruiterCache.remove(uid);
+    }
+    _safeNotify();
+    return ok;
+  }
+
+  /// Creates a user account with an explicit role (audited).
+  Future<RoleOpResult> createUserWithRole({
+    required String name,
+    required String email,
+    required String password,
+    required UserRole role,
+    String userLevel = '',
+  }) async {
+    _isLoading = true;
+    _safeNotify();
+    final result = await _roleService.createUser(
+      name: name,
+      email: email,
+      password: password,
+      role: role,
+      userLevel: userLevel,
+    );
+    _emailToUidCache.remove(email.trim());
+    _isLoading = false;
+    _message = result.message;
+    _safeNotify();
+    return result;
   }
 
   Future<void> resetPassword(String email) async {

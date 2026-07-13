@@ -549,7 +549,7 @@ class _HeroSectionState extends State<HeroSection>
           children: [
             Expanded(
               child: _EnhancedButton(
-                onPressed: () => context.go('/register'),
+                onPressed: () => context.go('/register?role=candidate'),
                 isPrimary: true,
                 icon: Icons.person_add_rounded,
                 label: "I'm a Candidate",
@@ -561,7 +561,7 @@ class _HeroSectionState extends State<HeroSection>
             SizedBox(width: isMobile ? 8 : 16),
             Expanded(
               child: _EnhancedButton(
-                onPressed: () => context.go('/register'),
+                onPressed: () => context.go('/register?role=recruiter'),
                 isPrimary: false,
                 icon: Icons.business_center_rounded,
                 label: "I'm a Recruiter",

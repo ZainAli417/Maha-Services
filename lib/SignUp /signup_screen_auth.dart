@@ -12,7 +12,11 @@ import '../Constant/Header_Nav.dart';
 import '../Constant/captcha_web_listeners.dart';
 
 class SignUp_Screen extends StatefulWidget {
-  const SignUp_Screen({super.key});
+  /// Role selected from the navigation context ("Job Seeker" or "Recruiter").
+  /// When null (direct visit to /register) the flow defaults to Job Seeker.
+  final String? initialRole;
+
+  const SignUp_Screen({super.key, this.initialRole});
 
   @override
   State<SignUp_Screen> createState() => _SignUp_ScreenState();
@@ -44,6 +48,11 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       if (!mounted) return;
       final provider = Provider.of<SignupProvider>(context, listen: false);
       provider.clearAll();
+      // Role is fixed by navigation context; no on-screen role toggle.
+      // Direct /register visits default to Job Seeker.
+      provider.setRole(widget.initialRole == 'Recruiter'
+          ? 'Recruiter'
+          : 'Job Seeker');
       if (kIsWeb) {
         setupCaptchaListeners(provider);
       }
@@ -473,9 +482,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(isWide),
-          SizedBox(height: sectionGap),
-          _buildRoleSelector(p, isWide),
+          _buildHeader(isWide, p),
           SizedBox(height: sectionGap),
           _buildEnhancedTextField(
             controller: p.nameController,
@@ -587,11 +594,21 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
     );
   }
 
-  Widget _buildHeader(bool isWide) {
+  Widget _buildHeader(bool isWide, SignupProvider p) {
     final double iconPad = isWide ? 14 : 10;
     final double iconSize = isWide ? 28 : 22;
     final double titleSize = isWide ? 26 : 20;
     final double subSize = isWide ? 13 : 12;
+
+    final isRecruiter = p.role == 'Recruiter';
+    final title =
+        isRecruiter ? 'Create Recruiter Account' : 'Create Candidate Account';
+    final subtitle = isRecruiter
+        ? "Find the world's best aviation professionals."
+        : 'Begin your aviation career today.';
+    final headerIcon = isRecruiter
+        ? Icons.business_center_rounded
+        : Icons.flight_takeoff_rounded;
 
     return Container(
       padding: EdgeInsets.all(isWide ? 24 : 16),
@@ -628,7 +645,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               ],
             ),
             child: Icon(
-              Icons.account_circle_outlined,
+              headerIcon,
               color: Colors.white,
               size: iconSize,
             ),
@@ -639,7 +656,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create Account',
+                  title,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: titleSize,
                     fontWeight: FontWeight.w700,
@@ -649,7 +666,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Start your journey to find the perfect opportunity',
+                  subtitle,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: subSize,
                     color: Colors.grey.shade600,
@@ -923,7 +940,9 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         if (route != null) {
           _showSnackBar('✓ Account created successfully!', isError: false);
           await Future.delayed(const Duration(milliseconds: 500));
-          if (mounted) context.go(route);
+          // New job seekers begin with the aviation onboarding wizard, then
+          // continue to the profile builder (the router enforces this too).
+          if (mounted) context.go('/onboarding');
         } else {
           _showSnackBar(
             provider.generalError ?? 'Failed to create account',
@@ -970,105 +989,6 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
     );
   }
 
-  Widget _buildRoleSelector(SignupProvider p, bool isWide) {
-    return Container(
-      padding: EdgeInsets.all(isWide ? 6 : 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildRoleChip(
-              label: 'Job Seeker',
-              icon: Icons.person_search_rounded,
-              isSelected: p.role == 'Job Seeker',
-              onTap: () => p.setRole('Job Seeker'),
-              compact: !isWide,
-            ),
-          ),
-          SizedBox(width: isWide ? 6 : 4),
-          Expanded(
-            child: _buildRoleChip(
-              label: 'Recruiter',
-              icon: Icons.business_center_rounded,
-              isSelected: p.role == 'Recruiter',
-              onTap: () => p.setRole('Recruiter'),
-              compact: !isWide,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoleChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-    bool compact = false,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        gradient: isSelected
-            ? const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              )
-            : null,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: compact ? 12 : 16,
-              horizontal: compact ? 10 : 18,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
-                  size: compact ? 18 : 22,
-                ),
-                SizedBox(width: compact ? 6 : 10),
-                Flexible(
-                  child: Text(
-                    label,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: compact ? 13 : 14,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : Colors.grey.shade700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildEnhancedTextField({
     required TextEditingController controller,

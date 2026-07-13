@@ -153,7 +153,7 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
                         icon: Icons.person_add_rounded,
                         isPrimary: true,
                         isDarkMode: widget.isDarkMode,
-                        onPressed: () => context.go('/register'),
+                        onPressed: () => context.go('/register?role=candidate'),
                         // small elevation pop when entering
                         entranceProgress: _floatingController.value,
                         isMobile: isMobile,
@@ -175,7 +175,7 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
                         icon: Icons.business_center_rounded,
                         isPrimary: false,
                         isDarkMode: widget.isDarkMode,
-                        onPressed: () => context.go('/register'),
+                        onPressed: () => context.go('/register?role=recruiter'),
                         entranceProgress: _floatingController.value,
                         isMobile: isMobile,
                       ),

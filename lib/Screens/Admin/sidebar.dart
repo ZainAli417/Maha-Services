@@ -86,9 +86,17 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   const SizedBox(height: 20),
                   _buildSectionLabel('SYSTEM'),
                   const SizedBox(height: 8),
-                  _buildLockedItem(
-                    icon: Icons.verified_user_outlined,
-                    label: 'Verification',
+                  _buildMenuItem(
+                    icon: Icons.receipt_long_outlined,
+                    activeIcon: Icons.receipt_long,
+                    label: 'Audit Logs',
+                    menuKey: 'Audit Logs',
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.quiz_outlined,
+                    activeIcon: Icons.quiz,
+                    label: 'Questionnaires',
+                    menuKey: 'Questionnaires',
                   ),
                   _buildLockedItem(
                     icon: Icons.report_outlined,
