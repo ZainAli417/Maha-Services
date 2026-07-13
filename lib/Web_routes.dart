@@ -23,9 +23,9 @@ import 'Screens/Recruiter/Recruiter_Dashbaord.dart';
 import 'Screens/Recruiter/Recruiter_Shortlisting.dart';
 import 'Screens/Recruiter/Request_Box.dart';
 import 'Screens/Recruiter/archived_jobs_screen.dart';
-import 'SignUp /profile_builder.dart';
+import 'SignUp/profile_builder.dart';
 import 'Screens/Onboarding/onboarding_screen.dart';
-import 'SignUp /signup_screen_auth.dart';
+import 'SignUp/signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
 import 'Screens/Job_Seeker/js_settings_screen.dart';
 

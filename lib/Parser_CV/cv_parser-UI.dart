@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../SignUp /signup_provider.dart';
+import '../SignUp/signup_provider.dart';
 import '../Parser_CV/cv_parser.dart';
 
 // ─── Breakpoints ─────────────────────────────────────────────────────────────

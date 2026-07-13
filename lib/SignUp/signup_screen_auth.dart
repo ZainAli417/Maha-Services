@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../Constant/captcha.dart';
 import '../core/widgets/custom_snackbars.dart';
-import 'package:job_portal/SignUp%20/signup_provider.dart';
+import 'package:job_portal/SignUp/signup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Constant/Header_Nav.dart';

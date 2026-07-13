@@ -1,6 +1,6 @@
 import 'package:web/web.dart' as web;
 import 'dart:js_interop';
-import '../SignUp /signup_provider.dart';
+import '../SignUp/signup_provider.dart';
 
 void setupCaptchaListeners(SignupProvider provider) {
   web.window.addEventListener(

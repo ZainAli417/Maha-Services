@@ -21,7 +21,7 @@ import 'Screens/Recruiter/AI Candidate Matching_Provider.dart';
 import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Recruiter_provider_Job_listing.dart';
 import 'Screens/Recruiter/R_Initials_provider.dart';
-import 'SignUp /signup_provider.dart';
+import 'SignUp/signup_provider.dart';
 import 'Screens/Job_Seeker/JS_Initials_provider.dart';
 import 'Web_routes.dart';
 import 'core/theme/app_theme.dart';
