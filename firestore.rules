@@ -32,18 +32,6 @@ service cloud.firestore {
       );
     }
 
-    function isSuperAdmin() {
-      return isAuth() && (
-        userRole() == 'superadmin' ||
-        userRole() == 'super admin' ||
-        userRole() == 'super_admin' ||
-        (
-          exists(/databases/$(database)/documents/admin/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/admin/$(request.auth.uid)).data.get('level', '') == 'super'
-        )
-      );
-    }
-
     // "Recruiter tier" — recruiter, employer, and recruitment agent share the
     // same capabilities for now.
     function isRecruiter() {

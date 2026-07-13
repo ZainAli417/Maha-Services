@@ -8,6 +8,7 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/custom_snackbars.dart';
 import 'admin_recruiter_request_provider.dart';
 import 'user_detail_panel.dart';
+import 'widgets/admin_header.dart';
 
 class UserManagementSection extends StatefulWidget {
   const UserManagementSection({super.key});
@@ -117,8 +118,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Skip header on mobile — wrapper already shows it
-                  if (!isMobile) _buildModernHeader(context, provider),
-                  if (!isMobile) const SizedBox(height: 28),
+                  if (!isMobile)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(32, 24, 32, 0),
+                      child: _buildModernHeader(context, provider),
+                    ),
+                  if (!isMobile) const SizedBox(height: 20),
                   _buildFilters(),
                   SizedBox(height: isMobile ? 12 : 24),
                   Expanded(child: _buildUsersTable(provider)),
@@ -132,120 +137,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildModernHeader(BuildContext context, AdminProvider prov) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.supervised_user_circle,
-              color: Color(0xFF6366F1),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'User Management',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 16 : 20,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  'Add, Upgrade or Suspend Users from the portal',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          _buildAddUserButton(context, prov, isMobile),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddUserButton(
-    BuildContext context,
-    AdminProvider provider,
-    bool isMobile,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        child: isMobile
-            ? IconButton(
-                onPressed: () => _showAddUserDialog(context, provider),
-                icon: const Icon(Icons.person_add_rounded, size: 20),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.all(12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              )
-            : ElevatedButton.icon(
-                onPressed: () => _showAddUserDialog(context, provider),
-                icon: const Icon(Icons.person_add_rounded, size: 18),
-                label: Text(
-                  'Add User',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                style:
-                    ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 20,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0,
-                      shadowColor: const Color(
-                        0xFF6366F1,
-                      ).withValues(alpha: 0.4),
-                    ).copyWith(
-                      elevation: WidgetStateProperty.resolveWith<double>(
-                        (states) =>
-                            states.contains(WidgetState.hovered) ? 4 : 0,
-                      ),
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                        (states) => states.contains(WidgetState.hovered)
-                            ? const Color(0xFF4F46E5)
-                            : const Color(0xFF6366F1),
-                      ),
-                    ),
-              ),
-      ),
+    return AdminGradientHeader(
+      icon: Icons.supervised_user_circle_rounded,
+      title: 'User Management',
+      subtitle: 'Create, verify, convert roles, suspend or remove accounts.',
+      actions: [
+        AdminHeaderButton(
+          icon: Icons.person_add_rounded,
+          label: 'Add user',
+          filled: true,
+          onPressed: () => _showAddUserDialog(context, prov),
+        ),
+      ],
     );
   }
 
@@ -1339,66 +1242,112 @@ class _UserManagementSectionState extends State<UserManagementSection>
     String? name,
   ) {
     final isDeleted = status == 'deleted';
+    // Two primary quick-actions + an overflow menu. Keeping the row to three
+    // hit-targets prevents the action cell from overflowing on medium widths.
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildActionButton(
           Icons.visibility_outlined,
-          'View Profile',
+          'View profile',
           const Color(0xFF64748B),
           () => UserDetailPanel.show(context, uid: docId, userData: data),
         ),
         const SizedBox(width: 6),
         _buildActionButton(
           Icons.edit_note_rounded,
-          'Edit User',
+          'Edit user',
           const Color(0xFF6366F1),
           () => _showEditUserDialog(context, provider, data, docId, name),
         ),
         const SizedBox(width: 6),
-        _buildActionButton(
-          Icons.swap_horiz_rounded,
-          'Convert Role',
-          const Color(0xFF0EA5E9),
-          () => _showConvertRoleDialog(context, provider, docId, data, name),
-        ),
-        if (!isDeleted) ...[
-          const SizedBox(width: 6),
-          _buildActionButton(
-            status == 'active'
-                ? Icons.block_rounded
-                : Icons.check_circle_rounded,
-            status == 'active' ? 'Suspend User' : 'Activate User',
-            status == 'active'
-                ? const Color(0xFFEF4444)
-                : const Color(0xFF10B981),
-            () async {
-              await provider.suspendUser(docId, status);
-            },
-          ),
-        ],
-        const SizedBox(width: 6),
-        _buildActionButton(
-          Icons.lock_reset_rounded,
-          'Reset Password',
-          const Color(0xFF8B5CF6),
-          () => _showResetPasswordDialog(context, provider, email),
-        ),
-        const SizedBox(width: 6),
-        isDeleted
-            ? _buildActionButton(
-                Icons.restore_rounded,
-                'Restore User',
-                const Color(0xFF10B981),
-                () => _confirmRestore(context, provider, docId, email),
-              )
-            : _buildActionButton(
-                Icons.delete_outline_rounded,
-                'Delete User',
-                const Color(0xFFEF4444),
-                () => _confirmSoftDelete(context, provider, docId, email),
-              ),
+        _buildOverflowMenu(context, provider, docId, data, status, email, name,
+            isDeleted),
       ],
+    );
+  }
+
+  /// Secondary actions collapsed into a themed popup menu.
+  Widget _buildOverflowMenu(
+    BuildContext context,
+    AdminProvider provider,
+    String docId,
+    Map<String, dynamic> data,
+    String status,
+    String email,
+    String? name,
+    bool isDeleted,
+  ) {
+    return PopupMenuButton<String>(
+      tooltip: 'More actions',
+      icon: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: const Color(0xFF64748B).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF64748B).withValues(alpha: 0.15)),
+        ),
+        child: const Icon(Icons.more_horiz_rounded,
+            size: 18, color: Color(0xFF475569)),
+      ),
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onSelected: (value) async {
+        switch (value) {
+          case 'convert':
+            _showConvertRoleDialog(context, provider, docId, data, name);
+          case 'toggle':
+            await provider.suspendUser(docId, status);
+          case 'reset':
+            _showResetPasswordDialog(context, provider, email);
+          case 'delete':
+            _confirmSoftDelete(context, provider, docId, email);
+          case 'restore':
+            _confirmRestore(context, provider, docId, email);
+        }
+      },
+      itemBuilder: (_) => [
+        _menuItem('convert', Icons.swap_horiz_rounded, 'Convert role',
+            const Color(0xFF0EA5E9)),
+        if (!isDeleted)
+          _menuItem(
+            'toggle',
+            status == 'active' ? Icons.block_rounded : Icons.check_circle_rounded,
+            status == 'active' ? 'Suspend user' : 'Activate user',
+            status == 'active' ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+          ),
+        _menuItem('reset', Icons.lock_reset_rounded, 'Reset password',
+            const Color(0xFF8B5CF6)),
+        const PopupMenuDivider(),
+        if (isDeleted)
+          _menuItem('restore', Icons.restore_rounded, 'Restore user',
+              const Color(0xFF10B981))
+        else
+          _menuItem('delete', Icons.delete_outline_rounded, 'Delete user',
+              const Color(0xFFEF4444)),
+      ],
+    );
+  }
+
+  PopupMenuItem<String> _menuItem(
+      String value, IconData icon, String label, Color color) {
+    return PopupMenuItem<String>(
+      value: value,
+      height: 44,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 12),
+          Text(label,
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF334155))),
+        ],
+      ),
     );
   }
 

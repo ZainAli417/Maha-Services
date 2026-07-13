@@ -8,6 +8,7 @@ import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/error_view.dart';
 import '../../core/widgets/loading_view.dart';
+import 'widgets/admin_header.dart';
 
 /// Admin manager for the onboarding questionnaire: seed defaults, add/edit/
 /// delete aviation roles and their questions, then publish to Firestore.
@@ -128,113 +129,204 @@ class _QuestionnaireManagementSectionState
     if (_error != null) {
       return ErrorView(message: _error!, onRetry: _load);
     }
+    final totalQuestions =
+        _roles.fold<int>(0, (sum, r) => sum + r.questions.length);
     return Container(
-      color: const Color(0xFFFAFAFA),
-      padding: EdgeInsets.all(isMobile ? 12 : 24),
+      color: const Color(0xFFF6F7FB),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _toolbar(),
+          Padding(
+            padding: EdgeInsets.fromLTRB(isMobile ? 12 : 24, isMobile ? 12 : 24,
+                isMobile ? 12 : 24, 0),
+            child: AdminGradientHeader(
+              icon: Icons.quiz_rounded,
+              title: 'Onboarding Questionnaires',
+              subtitle:
+                  'Manage aviation roles and the questions each one asks.',
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF2563EB)],
+              ),
+              stats: [
+                AdminHeaderStat('roles', '${_roles.length}',
+                    icon: Icons.badge_outlined),
+                AdminHeaderStat('questions', '$totalQuestions',
+                    icon: Icons.help_outline_rounded),
+                if (_dirty)
+                  const AdminHeaderStat('unpublished', '•',
+                      icon: Icons.edit_rounded),
+              ],
+              actions: [
+                AdminHeaderButton(
+                  icon: Icons.download_rounded,
+                  label: 'Seed defaults',
+                  onPressed: _saving ? null : _seed,
+                ),
+                AdminHeaderButton(
+                  icon: Icons.add_rounded,
+                  label: 'Add role',
+                  onPressed: _saving ? null : _addRole,
+                ),
+                AdminHeaderButton(
+                  icon: Icons.publish_rounded,
+                  label: _dirty ? 'Publish changes' : 'Published',
+                  filled: true,
+                  busy: _saving,
+                  onPressed: (_saving || !_dirty) ? null : _publish,
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           Expanded(
-            child: isMobile
-                ? _questionsPanel()
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(width: 280, child: _rolesPanel()),
-                      const SizedBox(width: 16),
-                      Expanded(child: _questionsPanel()),
-                    ],
-                  ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  isMobile ? 12 : 24, 0, isMobile ? 12 : 24, isMobile ? 12 : 24),
+              child: isMobile
+                  ? _questionsPanel()
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(width: 300, child: _rolesPanel()),
+                        const SizedBox(width: 16),
+                        Expanded(child: _questionsPanel()),
+                      ],
+                    ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _toolbar() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Text('${_roles.length} roles',
-            style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700, color: _ink)),
-        if (_dirty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text('Unpublished changes',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFB45309))),
-          ),
-        const SizedBox(width: 8),
-        OutlinedButton.icon(
-          onPressed: _saving ? null : _seed,
-          icon: const Icon(Icons.download_rounded, size: 16),
-          label: const Text('Seed defaults'),
-        ),
-        OutlinedButton.icon(
-          onPressed: _saving ? null : _addRole,
-          icon: const Icon(Icons.add_rounded, size: 16),
-          label: const Text('Add role'),
-        ),
-        ElevatedButton.icon(
-          onPressed: (_saving || !_dirty) ? null : _publish,
-          icon: _saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.publish_rounded, size: 16),
-          label: const Text('Publish'),
-        ),
-      ],
-    );
-  }
+  // Deterministic accent color per category for visual grouping.
+  static const _categoryColors = [
+    Color(0xFF6366F1), Color(0xFF0EA5E9), Color(0xFF10B981), Color(0xFFF59E0B),
+    Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF14B8A6), Color(0xFFEF4444),
+  ];
+  Color _categoryColor(String category) =>
+      _categoryColors[category.hashCode.abs() % _categoryColors.length];
 
   Widget _rolesPanel() {
+    // Group roles by category, preserving order.
+    final byCategory = <String, List<AviationRole>>{};
+    for (final r in _roles) {
+      byCategory.putIfAbsent(r.category, () => []).add(r);
+    }
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(8),
-        itemCount: _roles.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 2),
-        itemBuilder: (_, i) {
-          final r = _roles[i];
-          final selected = r.id == _selectedRoleId;
-          return Material(
-            color: selected ? const Color(0xFFEEF2FF) : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            child: ListTile(
-              dense: true,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              title: Text(r.title,
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13, fontWeight: FontWeight.w600, color: _ink)),
-              subtitle: Text('${r.category} · ${r.questions.length} questions',
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11, color: _muted)),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                onPressed: () => _deleteRole(r),
+      child: ListView(
+        padding: const EdgeInsets.all(10),
+        children: [
+          for (final entry in byCategory.entries) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _categoryColor(entry.key),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      entry.key.toUpperCase(),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _muted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  Text('${entry.value.length}',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11, color: _muted)),
+                ],
               ),
-              onTap: () => setState(() => _selectedRoleId = r.id),
             ),
-          );
-        },
+            for (final r in entry.value) _roleTile(r),
+            const SizedBox(height: 6),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _roleTile(AviationRole r) {
+    final selected = r.id == _selectedRoleId;
+    final color = _categoryColor(r.category);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Material(
+        color: selected ? color.withValues(alpha: 0.1) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => setState(() => _selectedRoleId = r.id),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: selected ? color.withValues(alpha: 0.4) : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.work_outline_rounded, size: 15, color: color),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(r.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _ink)),
+                      Text('${r.questions.length} questions',
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11, color: _muted)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      size: 17, color: Color(0xFF94A3B8)),
+                  onPressed: () => _deleteRole(r),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -242,49 +334,92 @@ class _QuestionnaireManagementSectionState
   Widget _questionsPanel() {
     final role = _selected;
     if (role == null) {
-      return const EmptyState(
-        icon: Icons.quiz_outlined,
-        title: 'No role selected',
-        subtitle: 'Add or select a role to edit its questions.',
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE9EDF5)),
+        ),
+        child: const EmptyState(
+          icon: Icons.quiz_outlined,
+          title: 'No role selected',
+          subtitle: 'Add or select a role to edit its questions.',
+        ),
       );
     }
+    final color = _categoryColor(role.category);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE9EDF5)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Row(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.badge_outlined, size: 20, color: color),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(role.title,
                           style: GoogleFonts.plusJakartaSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
                               color: _ink)),
-                      Text(role.category,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12, color: _muted)),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(role.category,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: color)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('${role.questions.length} questions',
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12, color: _muted)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                TextButton.icon(
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(backgroundColor: _primary),
                   onPressed: () => _editQuestion(role, null),
-                  icon: const Icon(Icons.add_rounded, size: 16),
+                  icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Add question'),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, color: _border),
+          const Divider(height: 1, color: Color(0xFFEDF1F7)),
           Expanded(
             child: role.questions.isEmpty
                 ? const EmptyState(
@@ -294,48 +429,118 @@ class _QuestionnaireManagementSectionState
                     compact: true,
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(12),
                     itemCount: role.questions.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                    itemBuilder: (_, i) {
-                      final q = role.questions[i];
-                      return ListTile(
-                        dense: true,
-                        title: Text(q.label,
-                            style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _ink)),
-                        subtitle: Text(
-                          '${q.type.name}'
-                          '${q.group != null ? ' · ${q.group}' : ''}'
-                          '${q.required ? ' · required' : ''}'
-                          '${q.options.isNotEmpty ? ' · ${q.options.length} options' : ''}',
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11, color: _muted),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              onPressed: () => _editQuestion(role, q),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded,
-                                  size: 18),
-                              onPressed: () => _deleteQuestion(role, q),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) =>
+                        _questionCard(role, role.questions[i], i),
                   ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _questionCard(AviationRole role, OnboardingQuestion q, int index) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFCFE),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEDF1F7)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text('${index + 1}',
+                style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF6366F1))),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(q.label,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: _ink)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _tag(_typeLabel(q.type), const Color(0xFF6366F1)),
+                    if (q.group != null)
+                      _tag(q.group!, const Color(0xFF0EA5E9)),
+                    if (q.required)
+                      _tag('required', const Color(0xFFEF4444)),
+                    if (q.options.isNotEmpty)
+                      _tag('${q.options.length} options',
+                          const Color(0xFF10B981)),
+                    if (q.unit != null) _tag(q.unit!, const Color(0xFF8B5CF6)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.edit_outlined, size: 17, color: Color(0xFF6366F1)),
+            onPressed: () => _editQuestion(role, q),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.delete_outline_rounded,
+                size: 17, color: Color(0xFFEF4444)),
+            onPressed: () => _deleteQuestion(role, q),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tag(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label,
+          style: GoogleFonts.plusJakartaSans(
+              fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
+    );
+  }
+
+  String _typeLabel(QuestionType t) {
+    switch (t) {
+      case QuestionType.text:
+        return 'Text';
+      case QuestionType.longText:
+        return 'Long text';
+      case QuestionType.number:
+        return 'Number';
+      case QuestionType.singleSelect:
+        return 'Single select';
+      case QuestionType.multiSelect:
+        return 'Multi select';
+      case QuestionType.boolean:
+        return 'Yes / No';
+      case QuestionType.date:
+        return 'Date';
+    }
   }
 
   // ── Mutations ─────────────────────────────────────────────────────────────
