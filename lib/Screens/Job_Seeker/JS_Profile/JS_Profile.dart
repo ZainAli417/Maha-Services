@@ -490,7 +490,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       body: Consumer<ProfileProvider_NEW>(
         builder: (context, prov, _) {
           if (prov.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildBrandedLoader();
           }
           if (isMobile) {
             return Column(
@@ -524,6 +524,51 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildBrandedLoader() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(18),
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Loading your profile…',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF3E5C76),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -711,11 +756,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Widget _buildStepIndicators() {
     final isMobile = _isMobile;
     return SizedBox(
-      height: isMobile ? 42 : 56,
+      height: isMobile ? 40 : 54,
       child: ListView.builder(
         controller: _stepScrollController,
         scrollDirection: Axis.horizontal,
         itemCount: _stepTitles.length,
+        cacheExtent: 700,
         itemBuilder: (context, index) {
           final isActive = index == _currentStep;
           final isCompleted = index < _currentStep;
@@ -726,27 +772,46 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   setState(() => _currentStep = index);
                   _scrollToCurrentStep();
                 },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
+                borderRadius: BorderRadius.circular(999),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 8 : 20, // Increased from 8/16
-                    vertical: isMobile ? 8 : 12, // Increased from 6
+                    horizontal: isMobile ? 10 : 18,
+                    vertical: isMobile ? 7 : 11,
                   ),
                   decoration: BoxDecoration(
+                    gradient: isActive
+                        ? const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF14507F), Color(0xFF0A2E4F)],
+                          )
+                        : null,
                     color: isActive
-                        ? const Color(0xFF14507F).withValues(alpha: 0.08)
+                        ? null
                         : (isCompleted
-                              ? const Color(0xFF10B981).withValues(alpha: 0.08)
-                              : Colors.white),
-                    borderRadius: BorderRadius.circular(8),
+                            ? const Color(0xFFE4F6F4)
+                            : const Color(0xFFF4F9FB)),
+                    borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: isActive
-                          ? const Color(0xFF14507F).withValues(alpha: 0.3)
+                          ? const Color(0xFF43E0D2)
                           : (isCompleted
-                                ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                                : Colors.grey.shade200),
-                      width: 1,
+                              ? const Color(0xFF2EC4B6).withValues(alpha: 0.4)
+                              : const Color(0xFFDCE7EF)),
+                      width: isActive ? 1.4 : 1,
                     ),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF14507F)
+                                  .withValues(alpha: 0.28),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ]
+                        : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -754,25 +819,25 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       Icon(
                         isCompleted ? Icons.check_circle : _stepIcons[index],
                         color: isActive
-                            ? const Color(0xFF14507F)
+                            ? const Color(0xFF43E0D2)
                             : (isCompleted
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFF64748B)),
+                                ? const Color(0xFF15A99C)
+                                : const Color(0xFF8AA5B5)),
                         size: isMobile ? 14 : 18,
                       ),
-                      SizedBox(width: isMobile ? 4 : 8),
+                      SizedBox(width: isMobile ? 5 : 8),
                       Text(
                         _stepTitles[index],
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 12 : 14,
+                          fontSize: isMobile ? 11.5 : 13.5,
                           fontWeight: isActive
-                              ? FontWeight.w600
+                              ? FontWeight.w700
                               : FontWeight.w500,
                           color: isActive
-                              ? const Color(0xFF0F172A)
+                              ? Colors.white
                               : (isCompleted
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFF475569)),
+                                  ? const Color(0xFF15A99C)
+                                  : const Color(0xFF5E7A8E)),
                         ),
                       ),
                     ],
@@ -781,19 +846,218 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               ),
               if (index < _stepTitles.length - 1)
                 Container(
-                  width: isMobile ? 12 : 24,
+                  width: isMobile ? 12 : 22,
                   height: 2,
-                  margin: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 8),
+                  margin: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 7),
                   decoration: BoxDecoration(
                     color: index < _currentStep
-                        ? const Color(0xFF10B981)
-                        : Colors.grey.shade200,
+                        ? const Color(0xFF2EC4B6)
+                        : const Color(0xFFDCE7EF),
                     borderRadius: BorderRadius.circular(1),
                   ),
                 ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  // Branded section sub-header: tiny teal eyebrow + bold navy title.
+  Widget _sectionHeader(String eyebrow, String title, {IconData? icon}) {
+    final isMobile = _isMobile;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          eyebrow.toUpperCase(),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: isMobile ? 9.5 : 10.5,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: const Color(0xFF15A99C),
+          ),
+        ),
+        SizedBox(height: isMobile ? 3 : 4),
+        Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: isMobile ? 16 : 18, color: const Color(0xFF14507F)),
+              SizedBox(width: isMobile ? 6 : 8),
+            ],
+            Flexible(
+              child: Text(
+                title,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 15 : 18,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0B2239),
+                  letterSpacing: -0.2,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Brand gradient primary action button (teal→navy) used for "Add ..." actions.
+  Widget _brandAddButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final isMobile = _isMobile;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 22,
+            vertical: isMobile ? 11 : 13,
+          ),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2EC4B6).withValues(alpha: 0.30),
+                blurRadius: 12,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: isMobile ? 16 : 18, color: Colors.white),
+              SizedBox(width: isMobile ? 6 : 8),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 12 : 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Thin teal-tinted divider.
+  Widget _brandDivider() => Container(
+        height: 1,
+        color: const Color(0xFFDCE7EF),
+      );
+
+  // Branded white entry card with brand border, soft shadow and left accent bar.
+  Widget _entryCard({
+    required Color accent,
+    required IconData icon,
+    required VoidCallback onRemoveTap,
+    required String title,
+    String? subtitle,
+  }) {
+    final isMobile = _isMobile;
+    return Container(
+      margin: EdgeInsets.only(bottom: isMobile ? 10 : 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 16),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: isMobile ? 46 : 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [accent, const Color(0xFF2EC4B6)],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomLeft: Radius.circular(14),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(isMobile ? 8 : 10),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon,
+                        color: accent, size: isMobile ? 18 : 20),
+                  ),
+                  SizedBox(width: isMobile ? 10 : 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: isMobile ? 13 : 14,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0B2239),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (subtitle != null && subtitle.trim().isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            subtitle,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isMobile ? 11 : 12,
+                              color: const Color(0xFF5E7A8E),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onRemoveTap,
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Color(0xFFEF4444),
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 36),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1130,68 +1394,61 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildSkillsSection(ProfileProvider_NEW prov) {
+    final isMobile = _isMobile;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.interests_outlined,
-              color: Color(0xFF64748B),
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Skills',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF475569),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: prov.skillsList.asMap().entries.map((e) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF14507F).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: const Color(0xFF14507F).withValues(alpha: 0.2),
-                  width: 1,
+        _sectionHeader('Expertise', 'Skills', icon: Icons.interests_outlined),
+        SizedBox(height: isMobile ? 12 : 16),
+        if (prov.skillsList.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: prov.skillsList.asMap().entries.map((e) {
+              return Container(
+                padding:
+                    const EdgeInsets.only(left: 12, right: 6, top: 7, bottom: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE4F6F4),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF2EC4B6).withValues(alpha: 0.35),
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    e.value,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: const Color(0xFF14507F),
-                      fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      e.value,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        color: const Color(0xFF14507F),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => prov.removeSkillAt(e.key),
-                    child: const Icon(
-                      Icons.close,
-                      color: Color(0xFF14507F),
-                      size: 16,
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () => prov.removeSkillAt(e.key),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14507F).withValues(alpha: 0.10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Color(0xFF14507F),
+                          size: 13,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 16),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        SizedBox(height: isMobile ? 12 : 16),
         Row(
           children: [
             Expanded(
@@ -1201,38 +1458,55 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   hintText: 'Add a skill',
                   hintStyle: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: const Color(0xFF94A3B8),
+                    color: const Color(0xFF8AA5B5),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  filled: false,
+                  filled: true,
+                  fillColor: const Color(0xFFF4F9FB),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF14507F)),
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                        color: Color(0xFF2EC4B6), width: 1.6),
                   ),
                 ),
-                style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: const Color(0xFF0B2239),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Material(
-              color: const Color(0xFF10B981),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.transparent,
               child: InkWell(
                 onTap: () => prov.addSkillEntry(context),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2EC4B6).withValues(alpha: 0.30),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: const Icon(Icons.add, size: 20, color: Colors.white),
                 ),
               ),
@@ -1370,123 +1644,38 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             icon: Icons.grade_outlined,
           ),
           const SizedBox(height: 20),
-          Material(
-            color: const Color(0xFF10B981),
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              onTap: () {
-                prov.tempSchool = _institutionCtrl.text;
-                prov.tempEduStart = _eduStartYearCtrl.text;
-                prov.tempEduEnd = _eduEndYearCtrl.text;
-                prov.tempFieldOfStudy = _majorCtrl.text;
-                prov.tempDegree = _marksCtrl.text;
-                prov.addEducationEntry(context);
-                _institutionCtrl.clear();
-                _eduStartYearCtrl.clear();
-                _eduEndYearCtrl.clear();
-                _majorCtrl.clear();
-                _marksCtrl.clear();
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _isMobile ? 16 : 20,
-                  vertical: _isMobile ? 10 : 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: _isMobile ? 16 : 18,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: _isMobile ? 6 : 8),
-                    Text(
-                      'Add Education',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: _isMobile ? 12 : 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          _brandAddButton(
+            label: 'Add Education',
+            icon: Icons.add_circle_outline,
+            onTap: () {
+              prov.tempSchool = _institutionCtrl.text;
+              prov.tempEduStart = _eduStartYearCtrl.text;
+              prov.tempEduEnd = _eduEndYearCtrl.text;
+              prov.tempFieldOfStudy = _majorCtrl.text;
+              prov.tempDegree = _marksCtrl.text;
+              prov.addEducationEntry(context);
+              _institutionCtrl.clear();
+              _eduStartYearCtrl.clear();
+              _eduEndYearCtrl.clear();
+              _majorCtrl.clear();
+              _marksCtrl.clear();
+            },
           ),
           if (prov.educationalProfile.isNotEmpty) ...[
             SizedBox(height: _isMobile ? 20 : 32),
-            const Divider(height: 1),
+            _brandDivider(),
             SizedBox(height: _isMobile ? 16 : 24),
-            Text(
-              'Added Education',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: _isMobile ? 13 : 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
+            _sectionHeader('Saved', 'Added Education'),
             SizedBox(height: _isMobile ? 12 : 16),
             ...prov.educationalProfile.asMap().entries.map((e) {
               final item = e.value;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF14507F).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.school_outlined,
-                        color: Color(0xFF14507F),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['institutionName']?.toString() ??
-                                'Institution',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${item['duration'] ?? ''} • ${item['majorSubjects'] ?? ''}',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => prov.removeEducationAt(e.key),
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Color(0xFFEF4444),
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
+              return _entryCard(
+                accent: const Color(0xFF14507F),
+                icon: Icons.school_outlined,
+                onRemoveTap: () => prov.removeEducationAt(e.key),
+                title: item['institutionName']?.toString() ?? 'Institution',
+                subtitle:
+                    '${item['duration'] ?? ''} • ${item['majorSubjects'] ?? ''}',
               );
             }),
           ],
@@ -1563,18 +1752,25 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.info_outline,
-                    color: Color(0xFF64748B),
-                    size: 16,
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF14507F).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF14507F),
+                      size: 14,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Service Status',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF475569),
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3E5C76),
                     ),
                   ),
                 ],
@@ -1583,9 +1779,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
+                  color: const Color(0xFFF4F9FB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFDCE7EF)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -1955,81 +2151,58 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           ),
           const SizedBox(height: 20),
 
-          Material(
-            color: const Color(0xFF10B981),
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              onTap: () {
-                if (prov.tempCompany.trim().isEmpty &&
-                    prov.tempRole.trim().isEmpty &&
-                    prov.tempExpDescription.trim().isEmpty) {
-                  showErrorTop(
-                    context,
-                    "Please fill at least organization, role, or duties",
-                  );
-                  return;
-                }
+          _brandAddButton(
+            label: 'Add Experience',
+            icon: Icons.add_circle_outline,
+            onTap: () {
+              if (prov.tempCompany.trim().isEmpty &&
+                  prov.tempRole.trim().isEmpty &&
+                  prov.tempExpDescription.trim().isEmpty) {
+                showErrorTop(
+                  context,
+                  "Please fill at least organization, role, or duties",
+                );
+                return;
+              }
 
-                prov.addExperienceEntry(context);
+              prov.addExperienceEntry(context);
 
-                // ✅ Clear all controllers after adding
-                _expOrgCtrl.clear();
-                _expRoleCtrl.clear();
-                _expDurationCtrl.clear();
-                _expDutiesCtrl.clear();
-                _expRankCtrl.clear();
-                _expUnitCtrl.clear();
-                _expLocationCtrl.clear();
-                _expFlightHoursCtrl.clear();
-                _expAircraftTypeCtrl.clear();
-                _expCommandCtrl.clear();
-                _expStartDateCtrl.clear();
-                _expEndDateCtrl.clear();
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _isMobile ? 16 : 20,
-                  vertical: _isMobile ? 10 : 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: _isMobile ? 16 : 18,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: _isMobile ? 6 : 8),
-                    Text(
-                      'Add Experience',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: _isMobile ? 12 : 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+              // ✅ Clear all controllers after adding
+              _expOrgCtrl.clear();
+              _expRoleCtrl.clear();
+              _expDurationCtrl.clear();
+              _expDutiesCtrl.clear();
+              _expRankCtrl.clear();
+              _expUnitCtrl.clear();
+              _expLocationCtrl.clear();
+              _expFlightHoursCtrl.clear();
+              _expAircraftTypeCtrl.clear();
+              _expCommandCtrl.clear();
+              _expStartDateCtrl.clear();
+              _expEndDateCtrl.clear();
+            },
           ),
 
-          // Rest of the code remains the same (documents section and display section)
-          // const SizedBox(height: 32),
-          // const Divider(height: 1),
           const SizedBox(height: 24),
 
           Row(
             children: [
-              const Icon(Icons.attach_file, color: Color(0xFF64748B), size: 20),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF14507F).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: const Icon(Icons.attach_file,
+                    color: Color(0xFF14507F), size: 15),
+              ),
               const SizedBox(width: 8),
               Text(
                 'Supporting Documents (Optional)',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF64748B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3E5C76),
                 ),
               ),
             ],
@@ -2123,16 +2296,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
           if (prov.professionalExperience.isNotEmpty) ...[
             const SizedBox(height: 32),
-            const Divider(height: 1),
+            _brandDivider(),
             const SizedBox(height: 24),
-            Text(
-              'Added Experience',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
+            _sectionHeader('Saved', 'Added Experience'),
             const SizedBox(height: 16),
 
             ...prov.professionalExperience.asMap().entries.map((e) {
@@ -2153,16 +2319,13 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 padding: EdgeInsets.all(_isMobile ? 14 : 18),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(_isMobile ? 8 : 12),
-                  border: Border.all(
-                    color: const Color(0xFFE2E8F0),
-                    width: 1.5,
-                  ),
+                  borderRadius: BorderRadius.circular(_isMobile ? 14 : 16),
+                  border: Border.all(color: const Color(0xFFDCE7EF)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: const Color(0xFF0B2239).withValues(alpha: 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -2441,58 +2604,36 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           ),
           const SizedBox(height: 20),
 
-          Material(
-            color: const Color(0xFF10B981),
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              onTap: () {
-                prov.addCertificationEntry(context);
-                _certNameCtrl.clear();
-                _certOrgCtrl.clear();
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: _isMobile ? 16 : 20,
-                  vertical: _isMobile ? 10 : 12,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: _isMobile ? 16 : 18,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: _isMobile ? 6 : 8),
-                    Text(
-                      'Add Certification',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: _isMobile ? 12 : 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          _brandAddButton(
+            label: 'Add Certification',
+            icon: Icons.add_circle_outline,
+            onTap: () {
+              prov.addCertificationEntry(context);
+              _certNameCtrl.clear();
+              _certOrgCtrl.clear();
+            },
           ),
           // ✅ NEW: Supporting Documents Section
           const SizedBox(height: 32),
 
-          // const Divider(height: 1),
-          // const SizedBox(height: 24),
           Row(
             children: [
-              const Icon(Icons.attach_file, color: Color(0xFF64748B), size: 20),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF14507F).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: const Icon(Icons.attach_file,
+                    color: Color(0xFF14507F), size: 15),
+              ),
               const SizedBox(width: 8),
               Text(
                 'Supporting Documents (Optional)',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF64748B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3E5C76),
                 ),
               ),
             ],
@@ -2587,16 +2728,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
           if (prov.certifications.isNotEmpty) ...[
             const SizedBox(height: 32),
-            const Divider(height: 1),
+            _brandDivider(),
             const SizedBox(height: 24),
-            Text(
-              'Added Certifications',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
+            _sectionHeader('Saved', 'Added Certifications'),
             const SizedBox(height: 16),
 
             ...prov.certifications.asMap().entries.map((e) {
@@ -2604,74 +2738,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               final organization = cert['organization'] ?? '';
               final name = cert['name'] ?? 'Certification';
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFBBF7D0)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.verified_outlined,
-                        color: Color(0xFF10B981),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF0F172A),
-                            ),
-                          ),
-                          if (organization.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.business_outlined,
-                                  size: 12,
-                                  color: Color(0xFF64748B),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  organization,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
-                                    color: const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => prov.removeCertificationAt(e.key),
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Color(0xFFEF4444),
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
+              return _entryCard(
+                accent: const Color(0xFF15A99C),
+                icon: Icons.verified_outlined,
+                onRemoveTap: () => prov.removeCertificationAt(e.key),
+                title: name,
+                subtitle: organization.isNotEmpty ? organization : '—',
               );
             }),
           ],
@@ -2743,24 +2815,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: const Color(0xFF14507F),
-                size: isMobile ? 18 : 24,
-              ),
-              SizedBox(width: isMobile ? 8 : 12),
-              Text(
-                title,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: isMobile ? 15 : 18,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-            ],
-          ),
+          _sectionHeader('Section', title, icon: icon),
           SizedBox(height: isMobile ? 16 : 24),
           Row(
             children: [
@@ -2771,41 +2826,56 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     hintText: hint,
                     hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 12 : 13,
-                      color: const Color(0xFF94A3B8),
+                      color: const Color(0xFF8AA5B5),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: isMobile ? 10 : 12,
                     ),
                     isDense: isMobile,
-                    filled: false,
+                    filled: true,
+                    fillColor: const Color(0xFFF4F9FB),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.grey.shade200),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFF14507F)),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                          color: Color(0xFF2EC4B6), width: 1.6),
                     ),
                   ),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 13 : 14,
+                    color: const Color(0xFF0B2239),
                   ),
                 ),
               ),
               SizedBox(width: isMobile ? 8 : 12),
               Material(
-                color: const Color(0xFF10B981),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.transparent,
                 child: InkWell(
                   onTap: onAdd,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: EdgeInsets.all(isMobile ? 10 : 12),
+                    padding: EdgeInsets.all(isMobile ? 11 : 13),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2EC4B6).withValues(alpha: 0.30),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Icon(
                       Icons.add,
                       size: isMobile ? 16 : 20,
@@ -2818,62 +2888,16 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           ),
           if (items.isNotEmpty) ...[
             SizedBox(height: isMobile ? 20 : 32),
-            const Divider(height: 1),
+            _brandDivider(),
             SizedBox(height: isMobile ? 16 : 24),
-            Text(
-              'Added $title',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: isMobile ? 13 : 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
+            _sectionHeader('Saved', 'Added $title'),
             SizedBox(height: isMobile ? 12 : 16),
             ...items.asMap().entries.map((e) {
-              return Container(
-                margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
-                padding: EdgeInsets.all(isMobile ? 12 : 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(isMobile ? 8 : 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF14507F).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        itemIcon,
-                        color: const Color(0xFF14507F),
-                        size: isMobile ? 16 : 20,
-                      ),
-                    ),
-                    SizedBox(width: isMobile ? 10 : 12),
-                    Expanded(
-                      child: Text(
-                        e.value,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 11 : 13,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => onRemove(e.key),
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: const Color(0xFFEF4444),
-                        size: isMobile ? 18 : 20,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
+              return _entryCard(
+                accent: const Color(0xFF14507F),
+                icon: itemIcon,
+                onRemoveTap: () => onRemove(e.key),
+                title: e.value,
               );
             }),
           ],
@@ -3074,15 +3098,19 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     setState(() => _currentStep--);
                     _scrollToCurrentStep();
                   },
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isMobile ? 12 : 24,
-                      vertical: isMobile ? 8 : 14,
+                      horizontal: isMobile ? 14 : 24,
+                      vertical: isMobile ? 9 : 14,
                     ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                      border: Border.all(
+                        color: const Color(0xFF14507F),
+                        width: 1.4,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3090,15 +3118,15 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         Icon(
                           Icons.chevron_left,
                           size: isMobile ? 16 : 20,
-                          color: const Color(0xFF475569),
+                          color: const Color(0xFF14507F),
                         ),
                         SizedBox(width: isMobile ? 4 : 8),
                         Text(
                           isMobile ? 'Back' : 'Previous',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: isMobile ? 12 : 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF475569),
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF14507F),
                           ),
                         ),
                       ],
@@ -3111,21 +3139,38 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             Row(
               children: [
                 Material(
-                  // ✅ CHANGED: Red if dirty, green if clean
-                  color: isDirty
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF10B981),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
                   child: InkWell(
                     onTap: () async {
                       await _saveCurrentSection(prov);
                       if (mounted) setState(() {});
                     },
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: isMobile ? 12 : 24,
-                        vertical: isMobile ? 8 : 14,
+                        horizontal: isMobile ? 14 : 24,
+                        vertical: isMobile ? 9 : 14,
+                      ),
+                      decoration: BoxDecoration(
+                        // Dirty -> warm (amber→coral) to keep the unsaved
+                        // signal; saved -> brand teal→navy gradient.
+                        gradient: LinearGradient(
+                          colors: isDirty
+                              ? const [Color(0xFFFFB020), Color(0xFFFF7A59)]
+                              : const [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isDirty
+                                    ? const Color(0xFFFF7A59)
+                                    : const Color(0xFF2EC4B6))
+                                .withValues(alpha: 0.30),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -3142,7 +3187,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                 : 'Saved',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: isMobile ? 11 : 14,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
@@ -3154,8 +3199,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 if (_currentStep < _stepTitles.length - 1) ...[
                   const SizedBox(width: 12),
                   Material(
-                    color: const Color(0xFF14507F),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       onTap: () async {
                         // ✅ NEW: Check if there are unsaved changes
@@ -3240,11 +3285,25 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           _scrollToCurrentStep();
                         }
                       },
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 12 : 24,
-                          vertical: isMobile ? 8 : 14,
+                          horizontal: isMobile ? 14 : 24,
+                          vertical: isMobile ? 9 : 14,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  const Color(0xFF14507F).withValues(alpha: 0.28),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -3370,10 +3429,17 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF64748B),
-              size: isMobile ? 14 : 16,
+            Container(
+              padding: EdgeInsets.all(isMobile ? 4 : 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF14507F).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF14507F),
+                size: isMobile ? 12 : 14,
+              ),
             ),
             SizedBox(width: isMobile ? 6 : 8),
             Flexible(
@@ -3381,15 +3447,15 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 label,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 11 : 13,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF475569),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3E5C76),
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        SizedBox(height: isMobile ? 4 : 8),
+        SizedBox(height: isMobile ? 5 : 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
@@ -3397,33 +3463,35 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             hintText: hint ?? label,
             hintStyle: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 12 : 13,
-              color: const Color(0xFF94A3B8),
+              color: const Color(0xFF8AA5B5),
             ),
             contentPadding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 10 : 16,
-              vertical: isMobile ? 8 : 12,
+              horizontal: isMobile ? 12 : 16,
+              vertical: isMobile ? 10 : 13,
             ),
             isDense: isMobile,
-            filled: false,
+            filled: true,
+            fillColor: const Color(0xFFF4F9FB),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFDCE7EF)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                color: Color(0xFF14507F),
-                width: 1.5,
+                color: Color(0xFF2EC4B6),
+                width: 1.6,
               ),
             ),
           ),
           style: GoogleFonts.plusJakartaSans(
             fontSize: isMobile ? 12 : 14,
-            color: const Color(0xFF0F172A),
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF0B2239),
           ),
           onChanged: onChanged,
         ),

@@ -13,31 +13,39 @@ import 'JS_Top_Bar.dart';
 import '../../services/job_alert_service.dart';
 
 // ═══════════════════════════════════════════════════════════════
-//  DESIGN TOKENS — Material-3 inspired, high-contrast accessible
+//  DESIGN TOKENS — Maha HR brand (navy + teal), accessible
 // ═══════════════════════════════════════════════════════════════
 abstract final class _Tokens {
-  // Primary palette
-  static const Color primary = Color(0xFF0A2E4F); // Indigo 600
-  static const Color primarySoft = Color(0xFFE8F1F8); // Indigo 50
-  static const Color accent = Color(0xFF15A99C); // Violet 600
+  // Brand primary palette (navy)
+  static const Color primary = Color(0xFF14507F); // navy primary
+  static const Color primaryDeep = Color(0xFF0A2E4F); // deep navy
+  static const Color primarySoft = Color(0xFFE8F1F8); // navy tint
+  static const Color accent = Color(0xFF2EC4B6); // teal accent
+  static const Color accentDeep = Color(0xFF15A99C); // teal deep
+  static const Color accentSoft = Color(0xFFE4F6F4); // teal tint
+
+  // Hero / deep surfaces
+  static const Color hero1 = Color(0xFF061C31);
+  static const Color hero2 = Color(0xFF0A2E4F);
+  static const Color hero3 = Color(0xFF14507F);
 
   // Neutral palette
-  static const Color background = Color(0xFFF8FAFC); // Slate 50
+  static const Color background = Color(0xFFF4F9FB); // bgSoft
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE2E8F0); // Slate 200
-  static const Color divider = Color(0xFFF1F5F9); // Slate 100
+  static const Color border = Color(0xFFDCE7EF); // brand border
+  static const Color divider = Color(0xFFEDF4F8); // faint divider
 
   // Text palette
-  static const Color textDark = Color(0xFF0F172A); // Slate 900
-  static const Color textBase = Color(0xFF334155); // Slate 700
-  static const Color textMuted = Color(0xFF64748B); // Slate 500
-  static const Color textLight = Color(0xFF94A3B8); // Slate 400
+  static const Color textDark = Color(0xFF0B2239); // ink
+  static const Color textBase = Color(0xFF3E5C76); // slate
+  static const Color textMuted = Color(0xFF5E7A8E); // muted
+  static const Color textLight = Color(0xFF8AA5B5); // faint
 
   // Semantic
-  static const Color success = Color(0xFF10B981); // Emerald 500
-  static const Color successSoft = Color(0xFFD1FAE5); // Emerald 100
-  static const Color warning = Color(0xFFF59E0B); // Amber 500
-  static const Color danger = Color(0xFFEF4444); // Red 500
+  static const Color success = Color(0xFF10B981);
+  static const Color successSoft = Color(0xFFD1FAE5);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color danger = Color(0xFFEF4444);
 
   // Motion
   static const Duration fast = Duration(milliseconds: 200);
@@ -309,7 +317,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
           color: _Tokens.textMuted,
         ),
         floatingLabelStyle: GoogleFonts.plusJakartaSans(
-          color: _Tokens.primary,
+          color: _Tokens.accentDeep,
           fontWeight: FontWeight.w600,
         ),
         suffixIcon: IconButton(
@@ -328,11 +336,11 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _Tokens.divider),
+          borderSide: const BorderSide(color: _Tokens.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _Tokens.primary, width: 1.5),
+          borderSide: const BorderSide(color: _Tokens.accent, width: 1.6),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -601,64 +609,96 @@ class _AppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: isCompact ? 56 : 72,
-      padding: EdgeInsets.symmetric(horizontal: isCompact ? 16 : 28),
-      decoration: const BoxDecoration(
-        color: _Tokens.surface,
-        border: Border(bottom: BorderSide(color: _Tokens.divider)),
-      ),
-      child: Row(
-        children: [
-          if (isCompact)
-            IconButton(
-              icon: const Icon(Icons.menu_rounded, size: 22),
-              onPressed: onMenuTap,
-              style: IconButton.styleFrom(foregroundColor: _Tokens.textDark),
-            ),
-          if (isCompact) const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_Tokens.primary, _Tokens.accent],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.settings_outlined,
-              size: 20,
-              color: Colors.white,
-            ),
+    return RepaintBoundary(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          isCompact ? 12 : 24,
+          isCompact ? 12 : 20,
+          isCompact ? 12 : 24,
+          0,
+        ),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 14 : 22,
+            vertical: isCompact ? 14 : 20,
           ),
-          const SizedBox(width: 14),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Settings',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: isCompact ? 16 : 20,
-                  fontWeight: FontWeight.w700,
-                  color: _Tokens.textDark,
-                  letterSpacing: -0.3,
-                ),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [_Tokens.hero1, _Tokens.hero2, _Tokens.hero3],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: _Tokens.primaryDeep.withValues(alpha: 0.28),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
-              if (!isCompact)
-                Text(
-                  'Manage your account preferences',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: _Tokens.textMuted,
-                    height: 1.3,
-                  ),
-                ),
             ],
           ),
-        ],
+          child: Row(
+            children: [
+              if (isCompact)
+                IconButton(
+                  icon: const Icon(Icons.menu_rounded, size: 22),
+                  onPressed: onMenuTap,
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+              if (isCompact) const SizedBox(width: 8),
+              // Glass teal icon chip
+              Container(
+                padding: EdgeInsets.all(isCompact ? 9 : 11),
+                decoration: BoxDecoration(
+                  color: _Tokens.accent.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _Tokens.accent.withValues(alpha: 0.45),
+                  ),
+                ),
+                child: Icon(
+                  Icons.settings_outlined,
+                  size: isCompact ? 18 : 22,
+                  color: const Color(0xFF43E0D2),
+                ),
+              ),
+              SizedBox(width: isCompact ? 12 : 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Settings',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isCompact ? 17 : 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Manage your account preferences',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isCompact ? 11.5 : 13,
+                        color: Colors.white.withValues(alpha: 0.72),
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -699,7 +739,7 @@ class _SettingsContent extends StatelessWidget {
         ? 32.0
         : 40.0;
 
-    // Center content on large screens with max-width constraint [^4^]
+    // Center content on large screens with max-width constraint
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -708,98 +748,99 @@ class _SettingsContent extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
-            24,
+            isCompact ? 16 : 24,
             horizontalPadding,
-            48,
+            isCompact ? 32 : 48,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SectionHeader(
-                icon: Icons.notifications_outlined,
+              _SectionCard(
+                eyebrow: 'NOTIFICATIONS',
+                icon: Icons.notifications_active_outlined,
                 title: 'Notifications & Alerts',
                 subtitle: 'Control how you receive job notifications',
+                isCompact: isCompact,
                 delay: 0,
                 controller: staggerController,
+                children: [
+                  _ToggleTile(
+                    icon: Icons.email_outlined,
+                    accent: _Tokens.primary,
+                    accentBg: _Tokens.primarySoft,
+                    title: 'Job Posting Alerts',
+                    description:
+                        'Receive email notifications whenever recruiters post new positions. '
+                        'Be the first to apply.',
+                    value: jobAlertsEnabled,
+                    onChanged: onToggleJobAlerts,
+                    isSaving: isSavingAlerts,
+                    isCompact: isCompact,
+                  ),
+                  const _TileDivider(),
+                  _ToggleTile(
+                    icon: Icons.campaign_outlined,
+                    accent: _Tokens.accentDeep,
+                    accentBg: _Tokens.accentSoft,
+                    title: 'Newsletter & Updates',
+                    description:
+                        'Get weekly digests with career tips, industry insights, '
+                        'and platform updates.',
+                    value: newsletterEnabled,
+                    onChanged: onToggleNewsletter,
+                    isSaving: isSavingNewsletter,
+                    isCompact: isCompact,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: isCompact ? 16 : 24),
 
-              _ToggleCard(
-                icon: Icons.email_outlined,
-                iconColor: _Tokens.primary,
-                iconBgColor: _Tokens.primarySoft,
-                title: 'Job Posting Alerts',
-                description:
-                    'Receive email notifications whenever recruiters post new job positions. '
-                    'Stay ahead of the competition by being the first to apply.',
-                value: jobAlertsEnabled,
-                onChanged: onToggleJobAlerts,
-                isSaving: isSavingAlerts,
-                delay: 1,
-                controller: staggerController,
-              ),
-              const SizedBox(height: 14),
-
-              _ToggleCard(
-                icon: Icons.campaign_outlined,
-                iconColor: _Tokens.accent,
-                iconBgColor: const Color(0xFFE4F6F4), // Violet 100
-                title: 'Newsletter & Updates',
-                description:
-                    'Get weekly digests with career tips, industry insights, '
-                    'and platform updates straight to your inbox.',
-                value: newsletterEnabled,
-                onChanged: onToggleNewsletter,
-                isSaving: isSavingNewsletter,
-                delay: 2,
-                controller: staggerController,
-              ),
-
-              const SizedBox(height: 36),
-
-              _SectionHeader(
+              _SectionCard(
+                eyebrow: 'ACCOUNT',
                 icon: Icons.shield_outlined,
                 title: 'Privacy & Security',
                 subtitle: 'Manage your data and account security',
+                isCompact: isCompact,
                 delay: 3,
                 controller: staggerController,
+                children: [
+                  _ActionTile(
+                    icon: Icons.password_rounded,
+                    accent: _Tokens.primary,
+                    accentBg: _Tokens.primarySoft,
+                    title: 'Change Password',
+                    description:
+                        'Update your password to keep your account secure.',
+                    actionLabel: 'Update',
+                    onTap: onTapChangePassword,
+                    isCompact: isCompact,
+                  ),
+                  const _TileDivider(),
+                  _ActionTile(
+                    icon: Icons.delete_outline_rounded,
+                    accent: _Tokens.danger,
+                    accentBg: const Color(0xFFFEE2E2),
+                    title: 'Delete Account',
+                    description:
+                        'Permanently delete your account and all associated data. '
+                        'This action cannot be undone.',
+                    actionLabel: 'Delete',
+                    onTap: () {
+                      /* Show confirmation dialog */
+                    },
+                    isDestructive: true,
+                    isCompact: isCompact,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
 
-              _ActionCard(
-                icon: Icons.password_rounded,
-                iconColor: _Tokens.warning,
-                iconBgColor: const Color(0xFFFEF3C7), // Amber 100
-                title: 'Change Password',
-                description:
-                    'Update your password to keep your account secure.',
-                actionLabel: 'Update',
-                onTap: onTapChangePassword,
-                delay: 4,
+              SizedBox(height: isCompact ? 16 : 24),
+
+              _InfoCard(
+                isCompact: isCompact,
+                delay: 6,
                 controller: staggerController,
               ),
-              const SizedBox(height: 14),
-
-              _ActionCard(
-                icon: Icons.delete_outline_rounded,
-                iconColor: _Tokens.danger,
-                iconBgColor: const Color(0xFFFEE2E2), // Red 100
-                title: 'Delete Account',
-                description:
-                    'Permanently delete your account and all associated data. '
-                    'This action cannot be undone.',
-                actionLabel: 'Delete',
-                onTap: () {
-                  /* Show confirmation dialog */
-                },
-                isDestructive: true,
-                delay: 5,
-                controller: staggerController,
-              ),
-
-              const SizedBox(height: 36),
-
-              _InfoCard(delay: 6, controller: staggerController),
             ],
           ),
         ),
@@ -809,362 +850,33 @@ class _SettingsContent extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  SECTION HEADER — with staggered slide+fade
+//  SECTION CARD — branded white card w/ teal eyebrow + navy title
 // ═══════════════════════════════════════════════════════════════
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({
+    required this.eyebrow,
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.isCompact,
     required this.delay,
     required this.controller,
+    required this.children,
   });
 
+  final String eyebrow;
   final IconData icon;
   final String title;
   final String subtitle;
+  final bool isCompact;
   final int delay;
   final AnimationController controller;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    final animation =
-        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: controller,
-            curve: Interval(
-              delay * 0.08,
-              (delay * 0.08) + 0.4,
-              curve: Curves.easeOutQuart,
-            ),
-          ),
-        );
-
-    final fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: controller,
-        curve: Interval(
-          delay * 0.08,
-          (delay * 0.08) + 0.35,
-          curve: Curves.easeOut,
-        ),
-      ),
-    );
-
-    return SlideTransition(
-      position: animation,
-      child: FadeTransition(
-        opacity: fade,
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: 24,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [_Tokens.primary, _Tokens.accent],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Icon(icon, size: 20, color: _Tokens.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: _Tokens.textDark,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12.5,
-                      color: _Tokens.textMuted,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  TOGGLE CARD — Hoverable on web, animated status badge
-// ═══════════════════════════════════════════════════════════════
-class _ToggleCard extends StatefulWidget {
-  const _ToggleCard({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBgColor,
-    required this.title,
-    required this.description,
-    required this.value,
-    required this.onChanged,
-    required this.isSaving,
-    required this.delay,
-    required this.controller,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBgColor;
-  final String title;
-  final String description;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final bool isSaving;
-  final int delay;
-  final AnimationController controller;
-
-  @override
-  State<_ToggleCard> createState() => _ToggleCardState();
-}
-
-class _ToggleCardState extends State<_ToggleCard>
-    with SingleTickerProviderStateMixin {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final animation =
-        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: widget.controller,
-            curve: Interval(
-              widget.delay * 0.08,
-              (widget.delay * 0.08) + 0.45,
-              curve: Curves.easeOutQuart,
-            ),
-          ),
-        );
-
-    final fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: widget.controller,
-        curve: Interval(
-          widget.delay * 0.08,
-          (widget.delay * 0.08) + 0.4,
-          curve: Curves.easeOut,
-        ),
-      ),
-    );
-
-    return SlideTransition(
-      position: animation,
-      child: FadeTransition(
-        opacity: fade,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _isHovered = true),
-          onExit: (_) => setState(() => _isHovered = false),
-          child: AnimatedContainer(
-            duration: _Tokens.base,
-            curve: Curves.easeOutQuart,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: _Tokens.surface,
-              borderRadius: BorderRadius.circular(_Tokens.cardRadius),
-              border: Border.all(
-                color: widget.value
-                    ? widget.iconColor.withValues(alpha: 0.25)
-                    : _isHovered
-                    ? _Tokens.border.withValues(alpha: 0.8)
-                    : _Tokens.divider,
-                width: widget.value ? 1.5 : 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: _Tokens.textDark.withValues(
-                    alpha: _isHovered ? 0.06 : 0.03,
-                  ),
-                  blurRadius: _isHovered ? 16 : 8,
-                  offset: const Offset(0, 4),
-                  spreadRadius: _isHovered ? -2 : 0,
-                ),
-              ],
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon
-                AnimatedContainer(
-                  duration: _Tokens.fast,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: widget.iconBgColor,
-                    borderRadius: BorderRadius.circular(_Tokens.iconRadius),
-                  ),
-                  child: Icon(widget.icon, size: 22, color: widget.iconColor),
-                ),
-                const SizedBox(width: 16),
-
-                // Content
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title + Switch
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              widget.title,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.w700,
-                                color: _Tokens.textDark,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (widget.isSaving)
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: _Tokens.primary,
-                              ),
-                            )
-                          else
-                            Switch.adaptive(
-                              value: widget.value,
-                              onChanged: widget.onChanged,
-                              activeColor: Colors.white,
-                              activeTrackColor: widget.iconColor,
-                              inactiveThumbColor: Colors.white,
-                              inactiveTrackColor: _Tokens.textLight.withValues(
-                                alpha: 0.35,
-                              ),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-
-                      // Description
-                      Text(
-                        widget.description,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12.5,
-                          color: _Tokens.textMuted,
-                          height: 1.55,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Status badge
-                      AnimatedContainer(
-                        duration: _Tokens.base,
-                        curve: Curves.easeOutQuart,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: widget.value
-                              ? widget.iconColor.withValues(alpha: 0.08)
-                              : _Tokens.divider,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: widget.value
-                                ? widget.iconColor.withValues(alpha: 0.2)
-                                : Colors.transparent,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AnimatedSwitcher(
-                              duration: _Tokens.fast,
-                              transitionBuilder: (child, anim) =>
-                                  ScaleTransition(scale: anim, child: child),
-                              child: Icon(
-                                widget.value
-                                    ? Icons.check_circle_rounded
-                                    : Icons.circle_outlined,
-                                key: ValueKey(widget.value),
-                                size: 13,
-                                color: widget.value
-                                    ? widget.iconColor
-                                    : _Tokens.textLight,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              widget.value ? 'Enabled' : 'Disabled',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                color: widget.value
-                                    ? widget.iconColor
-                                    : _Tokens.textLight,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  ACTION CARD — For navigation items (password, delete, etc.)
-// ═══════════════════════════════════════════════════════════════
-class _ActionCard extends StatelessWidget {
-  const _ActionCard({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBgColor,
-    required this.title,
-    required this.description,
-    required this.actionLabel,
-    required this.onTap,
-    required this.delay,
-    required this.controller,
-    this.isDestructive = false,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBgColor;
-  final String title;
-  final String description;
-  final String actionLabel;
-  final VoidCallback onTap;
-  final bool isDestructive;
-  final int delay;
-  final AnimationController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final animation =
-        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+    final slide =
+        Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero).animate(
           CurvedAnimation(
             parent: controller,
             curve: Interval(
@@ -1174,7 +886,6 @@ class _ActionCard extends StatelessWidget {
             ),
           ),
         );
-
     final fade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: controller,
@@ -1187,84 +898,319 @@ class _ActionCard extends StatelessWidget {
     );
 
     return SlideTransition(
-      position: animation,
+      position: slide,
       child: FadeTransition(
         opacity: fade,
-        child: Material(
-          color: _Tokens.surface,
-          borderRadius: BorderRadius.circular(_Tokens.cardRadius),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            hoverColor: _Tokens.primarySoft.withValues(alpha: 0.3),
-            splashColor: _Tokens.primary.withValues(alpha: 0.05),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(color: _Tokens.divider),
-                borderRadius: BorderRadius.circular(_Tokens.cardRadius),
+        child: Container(
+          decoration: BoxDecoration(
+            color: _Tokens.surface,
+            borderRadius: BorderRadius.circular(isCompact ? 16 : 20),
+            border: Border.all(color: _Tokens.border),
+            boxShadow: [
+              BoxShadow(
+                color: _Tokens.textDark.withValues(alpha: 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: iconBgColor,
-                      borderRadius: BorderRadius.circular(_Tokens.iconRadius),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isCompact ? 14 : 20,
+                  isCompact ? 14 : 18,
+                  isCompact ? 14 : 20,
+                  isCompact ? 10 : 14,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(isCompact ? 8 : 10),
+                      decoration: BoxDecoration(
+                        color: _Tokens.accentSoft,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        icon,
+                        size: isCompact ? 18 : 20,
+                        color: _Tokens.accentDeep,
+                      ),
                     ),
-                    child: Icon(icon, size: 22, color: iconColor),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: _Tokens.textDark,
-                            letterSpacing: -0.2,
+                    SizedBox(width: isCompact ? 10 : 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            eyebrow,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: _Tokens.accentDeep,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          description,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12.5,
-                            color: _Tokens.textMuted,
-                            height: 1.55,
+                          const SizedBox(height: 2),
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: isCompact ? 15 : 17,
+                              fontWeight: FontWeight.w800,
+                              color: _Tokens.textDark,
+                              letterSpacing: -0.2,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: onTap,
-                    style: TextButton.styleFrom(
-                      foregroundColor: isDestructive
-                          ? _Tokens.danger
-                          : _Tokens.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12.5,
+                          if (!isCompact) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5,
+                                color: _Tokens.textMuted,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    child: Text(actionLabel),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const _TileDivider(),
+              ...children,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Thin brand divider between tiles
+class _TileDivider extends StatelessWidget {
+  const _TileDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(height: 1, thickness: 1, color: _Tokens.divider);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOGGLE TILE — row tile inside a section card (teal switch)
+// ═══════════════════════════════════════════════════════════════
+class _ToggleTile extends StatelessWidget {
+  const _ToggleTile({
+    required this.icon,
+    required this.accent,
+    required this.accentBg,
+    required this.title,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+    required this.isSaving,
+    required this.isCompact,
+  });
+
+  final IconData icon;
+  final Color accent;
+  final Color accentBg;
+  final String title;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final bool isSaving;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 14 : 20,
+        vertical: isCompact ? 12 : 16,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Leading tinted rounded-square icon
+          Container(
+            padding: EdgeInsets.all(isCompact ? 9 : 11),
+            decoration: BoxDecoration(
+              color: accentBg,
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(icon, size: isCompact ? 18 : 22, color: accent),
+          ),
+          SizedBox(width: isCompact ? 12 : 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isCompact ? 13.5 : 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: _Tokens.textDark,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  maxLines: isCompact ? 2 : 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isCompact ? 11.5 : 12.5,
+                    color: _Tokens.textMuted,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: isCompact ? 8 : 12),
+          // Trailing control
+          if (isSaving)
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: _Tokens.accentDeep,
+              ),
+            )
+          else
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: Colors.white,
+              activeTrackColor: _Tokens.accent,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: _Tokens.textLight.withValues(alpha: 0.35),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ACTION TILE — row tile w/ trailing button (brand / error red)
+// ═══════════════════════════════════════════════════════════════
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.accent,
+    required this.accentBg,
+    required this.title,
+    required this.description,
+    required this.actionLabel,
+    required this.onTap,
+    required this.isCompact,
+    this.isDestructive = false,
+  });
+
+  final IconData icon;
+  final Color accent;
+  final Color accentBg;
+  final String title;
+  final String description;
+  final String actionLabel;
+  final VoidCallback onTap;
+  final bool isCompact;
+  final bool isDestructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color btnColor = isDestructive ? _Tokens.danger : _Tokens.primary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: (isDestructive ? _Tokens.danger : _Tokens.primary)
+            .withValues(alpha: 0.04),
+        splashColor: btnColor.withValues(alpha: 0.05),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 14 : 20,
+            vertical: isCompact ? 12 : 16,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(isCompact ? 9 : 11),
+                decoration: BoxDecoration(
+                  color: accentBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: isCompact ? 18 : 22, color: accent),
+              ),
+              SizedBox(width: isCompact ? 12 : 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isCompact ? 13.5 : 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDestructive ? _Tokens.danger : _Tokens.textDark,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      maxLines: isCompact ? 2 : 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isCompact ? 11.5 : 12.5,
+                        color: _Tokens.textMuted,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: isCompact ? 8 : 12),
+              // Trailing branded button
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isCompact ? 12 : 16,
+                  vertical: isCompact ? 7 : 9,
+                ),
+                decoration: BoxDecoration(
+                  color: btnColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: btnColor.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  actionLabel,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: isCompact ? 11.5 : 12.5,
+                    color: btnColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1276,8 +1222,13 @@ class _ActionCard extends StatelessWidget {
 //  INFO CARD — Gradient card with explanation
 // ═══════════════════════════════════════════════════════════════
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.delay, required this.controller});
+  const _InfoCard({
+    required this.isCompact,
+    required this.delay,
+    required this.controller,
+  });
 
+  final bool isCompact;
   final int delay;
   final AnimationController controller;
 
@@ -1311,18 +1262,18 @@ class _InfoCard extends StatelessWidget {
       child: FadeTransition(
         opacity: fade,
         child: Container(
-          padding: const EdgeInsets.all(22),
+          padding: EdgeInsets.all(isCompact ? 16 : 22),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
                 _Tokens.primary.withValues(alpha: 0.06),
-                _Tokens.accent.withValues(alpha: 0.03),
+                _Tokens.accent.withValues(alpha: 0.05),
               ],
             ),
-            borderRadius: BorderRadius.circular(_Tokens.cardRadius),
-            border: Border.all(color: _Tokens.primary.withValues(alpha: 0.12)),
+            borderRadius: BorderRadius.circular(isCompact ? 16 : 20),
+            border: Border.all(color: _Tokens.accent.withValues(alpha: 0.18)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1430,7 +1381,7 @@ class _SkeletonLine extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: _Tokens.divider,
+        color: _Tokens.primarySoft,
         borderRadius: BorderRadius.circular(8),
       ),
     );
@@ -1446,7 +1397,7 @@ class _SkeletonCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Tokens.surface,
         borderRadius: BorderRadius.circular(_Tokens.cardRadius),
-        border: Border.all(color: _Tokens.divider),
+        border: Border.all(color: _Tokens.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1455,7 +1406,7 @@ class _SkeletonCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: _Tokens.divider,
+              color: _Tokens.accentSoft,
               borderRadius: BorderRadius.circular(_Tokens.iconRadius),
             ),
           ),
@@ -1468,7 +1419,7 @@ class _SkeletonCard extends StatelessWidget {
                   width: 140,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: _Tokens.divider,
+                    color: _Tokens.primarySoft,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -1476,7 +1427,7 @@ class _SkeletonCard extends StatelessWidget {
                 Container(
                   height: 12,
                   decoration: BoxDecoration(
-                    color: _Tokens.divider,
+                    color: _Tokens.primarySoft,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -1485,7 +1436,7 @@ class _SkeletonCard extends StatelessWidget {
                   height: 12,
                   width: 200,
                   decoration: BoxDecoration(
-                    color: _Tokens.divider,
+                    color: _Tokens.primarySoft,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -1548,23 +1499,53 @@ class _AccessDeniedView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 28),
-              FilledButton.icon(
-                onPressed: () => context.go('/recruiter-dashboard'),
-                icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text('Return to Dashboard'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _Tokens.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  textStyle: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+              // Gradient primary action
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => context.go('/recruiter-dashboard'),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [_Tokens.accent, _Tokens.primary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _Tokens.accent.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.arrow_back_rounded,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Return to Dashboard',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

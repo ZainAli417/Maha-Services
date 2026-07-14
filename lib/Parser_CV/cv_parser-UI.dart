@@ -63,6 +63,27 @@ class BrandColors {
   static const indigoHover = Color(0xFF0A2E4F);
   static const emerald = Color(0xFF10B981);
   static const rose = Color(0xFFF43F5E);
+
+  // Brand accents (navy + teal system)
+  static const navy = Color(0xFF14507F);
+  static const navyDeep = Color(0xFF0A2E4F);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealBright = Color(0xFF43E0D2);
+  static const tealDeep = Color(0xFF15A99C);
+  static const tealTint = Color(0xFFE4F6F4);
+  static const navyTint = Color(0xFFE8F1F8);
+  static const border = Color(0xFFDCE7EF);
+  static const bgSoft = Color(0xFFF4F9FB);
+  static const ink = Color(0xFF0B2239);
+  static const slateBrand = Color(0xFF3E5C76);
+  static const muted = Color(0xFF5E7A8E);
+  static const faint = Color(0xFF8AA5B5);
+
+  static const brandGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [teal, navy],
+  );
 }
 
 class BrandTypography {
@@ -449,7 +470,8 @@ class _CvUploadSectionState extends State<CvUploadSection>
 
   Widget _buildDropZone(double w) {
     final isMob = _BP.isMobile(w);
-    final height = isMob ? 200.0 : 270.0;
+    final height = isMob ? 220.0 : 288.0;
+    final hover = _isHoveringUpload;
     return MouseRegion(
       onEnter: (_) => setState(() => _isHoveringUpload = true),
       onExit: (_) => setState(() => _isHoveringUpload = false),
@@ -458,54 +480,124 @@ class _CvUploadSectionState extends State<CvUploadSection>
         onTap: _handleFileSelection,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
           width: double.infinity,
           height: height,
+          padding: EdgeInsets.symmetric(horizontal: isMob ? 16 : 28),
           decoration: BoxDecoration(
-            color: _isHoveringUpload ? BrandColors.slate50 : BrandColors.white,
-            borderRadius: BorderRadius.circular(isMob ? 16 : 20),
+            color: hover ? BrandColors.tealTint : BrandColors.bgSoft,
+            borderRadius: BorderRadius.circular(isMob ? 18 : 22),
             border: Border.all(
-              color: _isHoveringUpload
-                  ? BrandColors.indigo
-                  : BrandColors.slate200,
+              color: hover ? BrandColors.teal : BrandColors.border,
               width: 2,
             ),
-            boxShadow: _isHoveringUpload
+            boxShadow: hover
                 ? [
                     BoxShadow(
-                      color: BrandColors.indigo.withValues(alpha: 0.08),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+                      color: BrandColors.teal.withValues(alpha: 0.28),
+                      blurRadius: 30,
+                      offset: const Offset(0, 12),
                     ),
                   ]
                 : [
                     BoxShadow(
-                      color: BrandColors.slate950.withValues(alpha: 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: BrandColors.ink.withValues(alpha: 0.04),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
                     ),
                   ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.cloud_upload_outlined,
-                size: isMob ? 38 : 52,
-                color: _isHoveringUpload
-                    ? BrandColors.indigo
-                    : BrandColors.slate400,
+              // Gradient icon badge
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                padding: EdgeInsets.all(isMob ? 12 : 16),
+                decoration: BoxDecoration(
+                  gradient: BrandColors.brandGradient,
+                  borderRadius: BorderRadius.circular(isMob ? 14 : 18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BrandColors.teal.withValues(
+                        alpha: hover ? 0.45 : 0.25,
+                      ),
+                      blurRadius: hover ? 22 : 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.cloud_upload_rounded,
+                  size: isMob ? 26 : 34,
+                  color: Colors.white,
+                ),
               ),
-              SizedBox(height: isMob ? 12 : 18),
+              SizedBox(height: isMob ? 14 : 18),
               Text(
-                isMob ? 'Tap to upload resume' : 'Drag and drop resume here',
-                style: BrandTypography.h2.copyWith(fontSize: isMob ? 15 : 18),
+                isMob ? 'Tap to upload your CV' : 'Drag & drop your CV here',
+                textAlign: TextAlign.center,
+                style: BrandTypography.h2.copyWith(
+                  fontSize: isMob ? 16 : 19,
+                  color: BrandColors.ink,
+                ),
               ),
               const SizedBox(height: 6),
               Text(
-                'Supports PDF, DOCX up to 15 MB',
-                style: BrandTypography.caption.copyWith(
-                  color: BrandColors.slate400,
+                isMob ? 'or browse from your device' : 'or click to browse files',
+                textAlign: TextAlign.center,
+                style: BrandTypography.body.copyWith(
+                  color: BrandColors.muted,
+                  fontSize: isMob ? 12 : 14,
                 ),
+              ),
+              SizedBox(height: isMob ? 14 : 18),
+              // Gradient "Browse files" affordance
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMob ? 18 : 24,
+                  vertical: isMob ? 9 : 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: BrandColors.brandGradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BrandColors.teal.withValues(alpha: 0.32),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.folder_open_rounded,
+                        size: isMob ? 15 : 17, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Browse files',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMob ? 13 : 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: isMob ? 14 : 18),
+              // Supported-format chips
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: const [
+                  _FormatChip(label: 'PDF'),
+                  _FormatChip(label: 'DOCX'),
+                  _FormatChip(label: 'TXT'),
+                  _FormatChip(label: 'Up to 15 MB'),
+                ],
               ),
             ],
           ),
@@ -516,105 +608,119 @@ class _CvUploadSectionState extends State<CvUploadSection>
 
   // ─── PROCESSING VIEW ──────────────────────────────────────────────────────
   Widget _buildProcessingView() {
+    final isMob = _LD.mob(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              TweenAnimationBuilder(
-                tween: Tween<double>(begin: 0, end: 1),
-                duration: const Duration(seconds: 2),
-                builder: (_, double v, _) => Container(
-                  width: 120 + v * 20,
-                  height: 120 + v * 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: BrandColors.indigo.withValues(
-                        alpha: 0.2 * (1 - v),
-                      ),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              TweenAnimationBuilder(
-                tween: Tween<double>(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 1500),
-                builder: (_, double v, _) => Container(
-                  width: 100 + v * 15,
-                  height: 100 + v * 15,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: BrandColors.indigo.withValues(
-                        alpha: 0.3 * (1 - v),
-                      ),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: BrandColors.white,
-                  border: Border.all(color: BrandColors.slate200, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: BrandColors.indigo.withValues(alpha: 0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: isMob ? 24 : 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated brand ring — isolated repaint layer
+            RepaintBoundary(
+              child: SizedBox(
+                width: 128,
+                height: 128,
                 child: Stack(
                   alignment: Alignment.center,
-                  children: const [
-                    SizedBox(
-                      width: 90,
-                      height: 90,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: BrandColors.indigo,
-                        backgroundColor: Colors.transparent,
+                  children: [
+                    TweenAnimationBuilder(
+                      tween: Tween<double>(begin: 0, end: 1),
+                      duration: const Duration(seconds: 2),
+                      builder: (_, double v, _) => Container(
+                        width: 120 + v * 20,
+                        height: 120 + v * 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: BrandColors.teal.withValues(
+                              alpha: 0.25 * (1 - v),
+                            ),
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ),
-                    Icon(
-                      Icons.description_outlined,
-                      size: 36,
-                      color: BrandColors.indigo,
+                    TweenAnimationBuilder(
+                      tween: Tween<double>(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 1500),
+                      builder: (_, double v, _) => Container(
+                        width: 100 + v * 15,
+                        height: 100 + v * 15,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: BrandColors.teal.withValues(
+                              alpha: 0.35 * (1 - v),
+                            ),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 92,
+                      height: 92,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: BrandColors.white,
+                        border: Border.all(color: BrandColors.border, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: BrandColors.teal.withValues(alpha: 0.22),
+                            blurRadius: 22,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 92,
+                            height: 92,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: BrandColors.teal,
+                              backgroundColor: BrandColors.tealTint,
+                            ),
+                          ),
+                          Icon(
+                            Icons.description_rounded,
+                            size: 34,
+                            color: BrandColors.navy,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 36),
-          Text(
-            'Analyzing Document',
-            style: BrandTypography.h2.copyWith(fontSize: 24),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Extracting aviation data',
-                style: BrandTypography.body.copyWith(
-                  color: BrandColors.slate400,
-                  fontSize: 14,
-                ),
+            ),
+            SizedBox(height: isMob ? 28 : 36),
+            Text(
+              'Analyzing Document',
+              style: BrandTypography.h2.copyWith(
+                fontSize: isMob ? 20 : 24,
+                color: BrandColors.ink,
               ),
-              const SizedBox(width: 4),
-              _LoadingDots(),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Extracting aviation data',
+                  style: BrandTypography.body.copyWith(
+                    color: BrandColors.muted,
+                    fontSize: isMob ? 13 : 14,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                RepaintBoundary(child: _LoadingDots()),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -760,17 +866,42 @@ class _CvUploadSectionState extends State<CvUploadSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'TECHNICAL COMPETENCIES',
-          style: BrandTypography.label.copyWith(fontSize: 11),
+        Row(
+          children: [
+            Container(
+              width: 22,
+              height: 3,
+              decoration: BoxDecoration(
+                gradient: BrandColors.brandGradient,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'TECHNICAL COMPETENCIES',
+              style: BrandTypography.label.copyWith(
+                fontSize: 11,
+                color: BrandColors.tealDeep,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: isMob ? 10 : 14),
         Container(
           padding: EdgeInsets.all(_BP.cardPad(w)),
           decoration: BoxDecoration(
             color: BrandColors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BrandColors.slate200, width: 1.5),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: BrandColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: BrandColors.ink.withValues(alpha: 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Wrap(
             spacing: isMob ? 8 : 10,
@@ -783,20 +914,21 @@ class _CvUploadSectionState extends State<CvUploadSection>
                       ? _selectedSkills.remove(s)
                       : _selectedSkills.add(s),
                 ),
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
                   padding: EdgeInsets.symmetric(
                     horizontal: isMob ? 10 : 14,
                     vertical: isMob ? 7 : 10,
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? BrandColors.indigo.withValues(alpha: 0.08)
-                        : BrandColors.slate50,
-                    borderRadius: BorderRadius.circular(9),
+                        ? BrandColors.teal.withValues(alpha: 0.12)
+                        : BrandColors.bgSoft,
+                    borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: selected
-                          ? BrandColors.indigo
-                          : BrandColors.slate200,
+                          ? BrandColors.teal
+                          : BrandColors.border,
                       width: 1.5,
                     ),
                   ),
@@ -808,19 +940,19 @@ class _CvUploadSectionState extends State<CvUploadSection>
                         style: BrandTypography.caption.copyWith(
                           fontSize: isMob ? 11 : 12,
                           color: selected
-                              ? BrandColors.indigo
-                              : BrandColors.slate600,
+                              ? BrandColors.tealDeep
+                              : BrandColors.muted,
                           fontWeight: selected
                               ? FontWeight.w700
-                              : FontWeight.w500,
+                              : FontWeight.w600,
                         ),
                       ),
                       if (selected) ...[
                         const SizedBox(width: 5),
                         const Icon(
-                          Icons.check_circle,
+                          Icons.check_circle_rounded,
                           size: 13,
-                          color: BrandColors.indigo,
+                          color: BrandColors.tealDeep,
                         ),
                       ],
                     ],
@@ -1357,7 +1489,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
       ),
       decoration: const BoxDecoration(
         color: BrandColors.white,
-        border: Border(top: BorderSide(color: BrandColors.slate200, width: 1)),
+        border: Border(top: BorderSide(color: BrandColors.border, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: _currentStep > 0
@@ -1365,57 +1497,75 @@ class _CvUploadSectionState extends State<CvUploadSection>
             : MainAxisAlignment.end,
         children: [
           if (_currentStep > 0)
-            OutlinedButton(
+            OutlinedButton.icon(
               onPressed: () => setState(() => _currentStep--),
+              icon: const Icon(Icons.arrow_back_rounded,
+                  size: 16, color: BrandColors.navy),
+              label: Text(
+                'Previous',
+                style: BrandTypography.body.copyWith(
+                  color: BrandColors.navy,
+                  fontWeight: FontWeight.w700,
+                  fontSize: isMob ? 13 : 15,
+                ),
+              ),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMob ? 16 : 24,
                   vertical: isMob ? 12 : 16,
                 ),
-                side: const BorderSide(color: BrandColors.slate300, width: 1.5),
+                side: const BorderSide(color: BrandColors.navy, width: 1.4),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+              ),
+            ),
+          // Gradient primary — decoration wraps a transparent ElevatedButton
+          // so the existing validate/step/submit logic is untouched.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: BrandColors.brandGradient,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: BrandColors.teal.withValues(alpha: 0.32),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_formKeys[_currentStep]!.currentState!.validate()) {
+                  if (_currentStep < 3) {
+                    setState(() => _currentStep++);
+                  } else {
+                    _submitFinal();
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isMob ? 18 : 30,
+                  vertical: isMob ? 12 : 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
               ),
               child: Text(
-                'Previous',
+                _currentStep == 3
+                    ? (isMob ? 'Confirm & Create' : 'Confirm & Create Account')
+                    : 'Continue →',
                 style: BrandTypography.body.copyWith(
-                  color: BrandColors.slate600,
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
                   fontSize: isMob ? 13 : 15,
                 ),
-              ),
-            ),
-          ElevatedButton(
-            onPressed: () {
-              if (_formKeys[_currentStep]!.currentState!.validate()) {
-                if (_currentStep < 3) {
-                  setState(() => _currentStep++);
-                } else {
-                  _submitFinal();
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BrandColors.slate950,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMob ? 18 : 30,
-                vertical: isMob ? 12 : 16,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              _currentStep == 3
-                  ? (isMob ? 'Confirm & Create' : 'Confirm & Create Account')
-                  : 'Continue →',
-              style: BrandTypography.body.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: isMob ? 13 : 15,
               ),
             ),
           ),
@@ -1430,20 +1580,70 @@ class _CvUploadSectionState extends State<CvUploadSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            Container(
+              width: 22,
+              height: 3,
+              decoration: BoxDecoration(
+                gradient: BrandColors.brandGradient,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'STEP DETAILS',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isMob ? 10 : 11,
+                fontWeight: FontWeight.w700,
+                color: BrandColors.tealDeep,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: isMob ? 8 : 10),
         Text(
           title,
-          style: BrandTypography.h1.copyWith(fontSize: isMob ? 20 : 26),
+          style: BrandTypography.h1.copyWith(
+            fontSize: isMob ? 20 : 26,
+            color: BrandColors.ink,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           sub,
           style: BrandTypography.body.copyWith(
-            color: BrandColors.slate400,
+            color: BrandColors.muted,
             fontSize: isMob ? 13 : 15,
           ),
         ),
       ],
     );
+  }
+
+  IconData _iconForLabel(String label) {
+    final l = label.toLowerCase();
+    if (l.contains('name')) return Icons.person_outline_rounded;
+    if (l.contains('email')) return Icons.email_outlined;
+    if (l.contains('phone')) return Icons.phone_iphone_rounded;
+    if (l.contains('location')) return Icons.location_on_outlined;
+    if (l.contains('summary') || l.contains('duties') || l.contains('bio')) {
+      return Icons.notes_rounded;
+    }
+    if (l.contains('institution')) return Icons.account_balance_outlined;
+    if (l.contains('major') || l.contains('subject')) {
+      return Icons.menu_book_outlined;
+    }
+    if (l.contains('duration')) return Icons.calendar_today_outlined;
+    if (l.contains('gpa') || l.contains('marks')) return Icons.grade_outlined;
+    if (l.contains('organization')) return Icons.business_outlined;
+    if (l.contains('role')) return Icons.badge_outlined;
+    if (l.contains('rank')) return Icons.military_tech_outlined;
+    if (l.contains('unit')) return Icons.groups_outlined;
+    if (l.contains('aircraft')) return Icons.flight_outlined;
+    if (l.contains('hours')) return Icons.timer_outlined;
+    return Icons.edit_outlined;
   }
 
   Widget _buildTextField(
@@ -1452,50 +1652,91 @@ class _CvUploadSectionState extends State<CvUploadSection>
     bool required = false,
     int maxLines = 1,
   ]) {
+    final multiline = maxLines > 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: BrandTypography.label.copyWith(fontSize: 11),
+        Row(
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: BrandTypography.label.copyWith(
+                fontSize: 11,
+                color: BrandColors.slateBrand,
+              ),
+            ),
+            if (required) ...[
+              const SizedBox(width: 4),
+              Text(
+                '*',
+                style: BrandTypography.label.copyWith(
+                  fontSize: 11,
+                  color: BrandColors.teal,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 7),
         TextFormField(
           controller: ctrl,
           maxLines: maxLines,
-          style: BrandTypography.body.copyWith(fontSize: 14),
+          style: BrandTypography.body.copyWith(
+            fontSize: 14,
+            color: BrandColors.ink,
+          ),
           validator: required
               ? (v) => v!.isEmpty ? 'Field required' : null
               : null,
           decoration: InputDecoration(
+            filled: true,
+            fillColor: BrandColors.bgSoft,
+            isDense: true,
+            prefixIcon: Padding(
+              padding: EdgeInsets.only(
+                left: 12,
+                right: 10,
+                bottom: multiline ? 40 : 0,
+              ),
+              child: Icon(
+                _iconForLabel(label),
+                size: 18,
+                color: BrandColors.teal,
+              ),
+            ),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 40,
+              minHeight: 0,
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 13,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                color: BrandColors.slate200,
+                color: BrandColors.border,
                 width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                color: BrandColors.slate200,
+                color: BrandColors.border,
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: BrandColors.indigo, width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: BrandColors.teal, width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: BrandColors.rose, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: BrandColors.rose, width: 2),
             ),
           ),
@@ -1514,25 +1755,41 @@ class _CvUploadSectionState extends State<CvUploadSection>
       padding: EdgeInsets.all(_BP.cardPad(w)),
       decoration: BoxDecoration(
         color: BrandColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: BrandColors.slate200, width: 1.5),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: BrandColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: BrandColors.ink.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.bookmark_border,
-                size: 16,
-                color: BrandColors.indigo,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: BrandColors.brandGradient,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.bookmark_rounded,
+                  size: 15,
+                  color: Colors.white,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Text(
                 title,
                 style: BrandTypography.label.copyWith(
-                  color: BrandColors.indigo,
+                  color: BrandColors.tealDeep,
                   fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
@@ -1546,15 +1803,48 @@ class _CvUploadSectionState extends State<CvUploadSection>
 
   Widget _buildEmptyState(String msg) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(36),
+    padding: const EdgeInsets.all(32),
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: BrandColors.slate200, width: 1.5),
+      color: BrandColors.bgSoft,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: BrandColors.border),
     ),
     child: Center(
-      child: Text(
-        msg,
-        style: BrandTypography.body.copyWith(color: BrandColors.slate400),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: BrandColors.tealTint,
+              shape: BoxShape.circle,
+              border: Border.all(color: BrandColors.teal.withValues(alpha: 0.3)),
+            ),
+            child: const Icon(
+              Icons.folder_off_outlined,
+              size: 26,
+              color: BrandColors.tealDeep,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Nothing here yet',
+            style: BrandTypography.h2.copyWith(
+              fontSize: 16,
+              color: BrandColors.ink,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            msg,
+            textAlign: TextAlign.center,
+            style: BrandTypography.body.copyWith(
+              color: BrandColors.muted,
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     ),
   );
@@ -1686,7 +1976,10 @@ class _TopBar extends StatelessWidget {
             child: Container(
               height: 4,
               margin: const EdgeInsets.symmetric(horizontal: 3),
-              color: done ? BrandColors.emerald : BrandColors.slate200,
+              decoration: BoxDecoration(
+                color: done ? BrandColors.teal : BrandColors.border,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           );
         }
@@ -1695,28 +1988,38 @@ class _TopBar extends StatelessWidget {
         final isDone = currentStep > idx;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          width: isCur ? 50 : 40,
-          height: isCur ? 50 : 40,
+          width: isCur ? 46 : 38,
+          height: isCur ? 46 : 38,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
+            gradient: isCur ? BrandColors.brandGradient : null,
             color: isCur
-                ? BrandColors.indigo
+                ? null
                 : isDone
-                ? BrandColors.emerald
+                ? BrandColors.teal
                 : BrandColors.white,
             border: Border.all(
               color: isCur
-                  ? BrandColors.indigo
+                  ? BrandColors.teal
                   : isDone
-                  ? BrandColors.emerald
-                  : BrandColors.slate300,
+                  ? BrandColors.teal
+                  : BrandColors.border,
               width: 1.5,
             ),
+            boxShadow: isCur
+                ? [
+                    BoxShadow(
+                      color: BrandColors.teal.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
           child: Icon(
             isDone ? Icons.check_rounded : _steps[idx]['icon'] as IconData,
-            size: 25,
-            color: (isCur || isDone) ? Colors.white : BrandColors.slate400,
+            size: 22,
+            color: (isCur || isDone) ? Colors.white : BrandColors.faint,
           ),
         );
       }),
@@ -1741,23 +2044,24 @@ class _TopBar extends StatelessWidget {
                   height: isCur ? 40 : 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    gradient: isCur ? BrandColors.brandGradient : null,
                     color: isCur
-                        ? BrandColors.indigo
+                        ? null
                         : isDone
-                        ? BrandColors.emerald
+                        ? BrandColors.teal
                         : BrandColors.white,
                     border: Border.all(
                       color: isCur
-                          ? BrandColors.indigo
+                          ? BrandColors.teal
                           : isDone
-                          ? BrandColors.emerald
-                          : BrandColors.slate300,
+                          ? BrandColors.teal
+                          : BrandColors.border,
                       width: 2,
                     ),
                     boxShadow: isCur
                         ? [
                             BoxShadow(
-                              color: BrandColors.indigo.withValues(alpha: 0.28),
+                              color: BrandColors.teal.withValues(alpha: 0.35),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -1768,10 +2072,10 @@ class _TopBar extends StatelessWidget {
                     isDone
                         ? Icons.check_rounded
                         : _steps[idx]['icon'] as IconData,
-                    size: 25,
+                    size: 22,
                     color: (isCur || isDone)
                         ? Colors.white
-                        : BrandColors.slate400,
+                        : BrandColors.faint,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1781,10 +2085,10 @@ class _TopBar extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: isCur ? FontWeight.w700 : FontWeight.w500,
                     color: isCur
-                        ? BrandColors.slate950
+                        ? BrandColors.navy
                         : isDone
-                        ? BrandColors.emerald
-                        : BrandColors.slate400,
+                        ? BrandColors.tealDeep
+                        : BrandColors.faint,
                   ),
                 ),
               ],
@@ -1794,7 +2098,10 @@ class _TopBar extends StatelessWidget {
                 width: isTab ? 32 : 44,
                 height: 2,
                 margin: const EdgeInsets.only(bottom: 22, left: 6, right: 6),
-                color: isDone ? BrandColors.emerald : BrandColors.slate200,
+                decoration: BoxDecoration(
+                  color: isDone ? BrandColors.teal : BrandColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
           ],
         );
@@ -1834,6 +2141,35 @@ class _TopBar extends StatelessWidget {
       ],
     ),
   );
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// FORMAT CHIP — supported-format pill for the upload card
+// ═════════════════════════════════════════════════════════════════════════════
+class _FormatChip extends StatelessWidget {
+  final String label;
+  const _FormatChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: BrandColors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: BrandColors.teal.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: BrandColors.tealDeep,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

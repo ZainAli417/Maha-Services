@@ -425,7 +425,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(
-                    right: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                    right: BorderSide(color: Color(0xFFDCE7EF), width: 1),
                   ),
                 ),
                 child: _isSidebarCollapsed
@@ -460,11 +460,11 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           height: 60,
           width: double.infinity,
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+            border: Border(bottom: BorderSide(color: Color(0xFFDCE7EF))),
           ),
           child: IconButton(
             onPressed: () => setState(() => _isSidebarCollapsed = false),
-            icon: const Icon(Icons.menu, color: Color(0xFF374151)),
+            icon: const Icon(Icons.menu_rounded, color: Color(0xFF14507F)),
             tooltip: 'Expand Filters',
           ),
         ),
@@ -506,20 +506,20 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: const BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Color(0xFFE2E8F0)),
-              top: BorderSide(color: Color(0xFFE2E8F0)),
+              bottom: BorderSide(color: Color(0xFFDCE7EF)),
+              top: BorderSide(color: Color(0xFFDCE7EF)),
             ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.tune, size: 24, color: Color(0xFF374151)),
+              const Icon(Icons.tune_rounded, size: 22, color: Color(0xFF15A99C)),
               const SizedBox(width: 12),
               Text(
                 'Filters & Search',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF374151),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF14507F),
                 ),
               ),
               const Spacer(),
@@ -548,15 +548,15 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 IconButton(
                   onPressed: () => setState(() => _isSidebarCollapsed = true),
                   icon: const Icon(
-                    Icons.chevron_left,
-                    color: Color(0xFF374151),
+                    Icons.chevron_left_rounded,
+                    color: Color(0xFF14507F),
                   ),
                   tooltip: 'Collapse Filters',
                 )
               else
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Color(0xFF374151)),
+                  icon: const Icon(Icons.close_rounded, color: Color(0xFF14507F)),
                 ),
             ],
           ),
@@ -667,7 +667,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         vertical: isMobile ? 8 : 10,
       ),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+        color: Color(0xFFFFFFFF),
+        border: Border(bottom: BorderSide(color: Color(0xFFDCE7EF), width: 1)),
       ),
       child: isMobile
           ? Column(
@@ -679,9 +680,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       child: Text(
                         '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF374151),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF14507F),
                         ),
                       ),
                     ),
@@ -724,9 +725,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                 Text(
                   '${_filteredJobs.length} job${_filteredJobs.length == 1 ? '' : 's'} found',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF374151),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF14507F),
                   ),
                 ),
                 const Spacer(),
@@ -777,21 +778,23 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
+        color: const Color(0xFFF4F9FB),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.sort, size: 16, color: Color(0xFF64748B)),
+          const Icon(Icons.sort_rounded, size: 16, color: Color(0xFF15A99C)),
           const SizedBox(width: 8),
           DropdownButton<String>(
             value: _selectedSortOption,
             underline: const SizedBox(),
+            borderRadius: BorderRadius.circular(12),
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: const Color(0xFF64748B),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF14507F),
             ),
             items: const [
               DropdownMenuItem(value: 'newest', child: Text('Newest First')),
@@ -816,39 +819,103 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
 
     if (_filteredJobs.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: isMobile ? 48 : 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'No jobs found',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: isMobile ? 16 : 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Branded gradient icon circle.
+              Container(
+                width: isMobile ? 76 : 96,
+                height: isMobile ? 76 : 96,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFE4F6F4), Color(0xFFE8F1F8)],
+                  ),
+                ),
+                child: Icon(
+                  Icons.search_off_rounded,
+                  size: isMobile ? 36 : 46,
+                  color: const Color(0xFF15A99C),
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Try adjusting your filters or search terms',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: isMobile ? 12 : 14,
-                color: Colors.grey[500],
+              const SizedBox(height: 18),
+              Text(
+                'No jobs found',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0A2E4F),
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Try adjusting your filters or search terms',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: isMobile ? 12.5 : 14,
+                  color: const Color(0xFF5E7A8E),
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (_activeFiltersCount > 0) ...[
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _clearFilters,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF2EC4B6,
+                          ).withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.clear_all_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Clear all filters',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       );
     }
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      cacheExtent: 700,
       itemCount: _filteredJobs.length,
       itemBuilder: (context, index) {
         return Padding(
@@ -864,55 +931,90 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Search Jobs',
+          'SEARCH',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: const Color(0xFF15A99C),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Find your next role',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF374151),
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14507F),
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: TextField(
-            controller: _searchController,
-            focusNode: _searchFocusNode,
-            style: GoogleFonts.plusJakartaSans(fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Search jobs, companies, skills...',
-              hintStyle: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                color: const Color(0xFF64748B),
+        AnimatedBuilder(
+          animation: _searchFocusNode,
+          builder: (context, _) {
+            final focused = _searchFocusNode.hasFocus;
+            return Container(
+              decoration: BoxDecoration(
+                color: focused ? Colors.white : const Color(0xFFF4F9FB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: focused
+                      ? const Color(0xFF2EC4B6)
+                      : const Color(0xFFDCE7EF),
+                  width: focused ? 1.6 : 1,
+                ),
+                boxShadow: focused
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF2EC4B6).withValues(alpha: 0.18),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : null,
               ),
-              prefixIcon: const Icon(
-                Icons.search,
-                size: 20,
-                color: Color(0xFF64748B),
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14,
+                  color: const Color(0xFF0B2239),
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search jobs, companies, skills...',
+                  hintStyle: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: const Color(0xFF8AA5B5),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: focused
+                        ? const Color(0xFF15A99C)
+                        : const Color(0xFF5E7A8E),
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.clear_rounded,
+                            size: 18,
+                            color: Color(0xFF5E7A8E),
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            _applyFilters();
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
               ),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: Color(0xFF64748B),
-                      ),
-                      onPressed: () {
-                        _searchController.clear();
-                        _applyFilters();
-                      },
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-            ),
-          ),
+            );
+          },
         ),
       ],
     );
@@ -922,13 +1024,26 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF374151),
-          ),
+        Row(
+          children: [
+            Container(
+              width: 3,
+              height: 16,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2EC4B6),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF14507F),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         ...children,
@@ -943,18 +1058,18 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         Text(
           'Salary Range',
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF374151),
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14507F),
           ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            color: const Color(0xFFF4F9FB),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFDCE7EF)),
           ),
           child: Column(
             children: [
@@ -965,26 +1080,26 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     '\$${(_salaryRange.start / 1000).round()}k',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF374151),
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF15A99C),
                     ),
                   ),
                   Text(
                     '\$${(_salaryRange.end / 1000).round()}k',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF374151),
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF15A99C),
                     ),
                   ),
                 ],
               ),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFF14507F),
-                  inactiveTrackColor: const Color(0xFFE5E7EB),
+                  activeTrackColor: const Color(0xFF2EC4B6),
+                  inactiveTrackColor: const Color(0xFFDCE7EF),
                   thumbColor: const Color(0xFF14507F),
-                  overlayColor: const Color(0xFF14507F).withValues(alpha: 0.2),
+                  overlayColor: const Color(0xFF2EC4B6).withValues(alpha: 0.2),
                   trackHeight: 4,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 8,
@@ -1021,9 +1136,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         Text(
           'Benefits',
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF374151),
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF14507F),
           ),
         ),
         const SizedBox(height: 12),
@@ -1033,6 +1148,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           children: _getUniqueList('benefits').map((benefit) {
             final isSelected = _selectedBenefits.contains(benefit);
             return InkWell(
+              borderRadius: BorderRadius.circular(999),
               onTap: () {
                 setState(() {
                   isSelected
@@ -1047,12 +1163,15 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF14507F) : Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isSelected
+                      ? const Color(0xFF2EC4B6).withValues(alpha: 0.14)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF14507F)
-                        : const Color(0xFFD1D5DB),
+                        ? const Color(0xFF2EC4B6)
+                        : const Color(0xFFDCE7EF),
+                    width: isSelected ? 1.4 : 1,
                   ),
                 ),
                 child: Text(
@@ -1062,7 +1181,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : const Color(0xFF374151),
+                    color: isSelected
+                        ? const Color(0xFF15A99C)
+                        : const Color(0xFF3E5C76),
                   ),
                 ),
               ),
@@ -1087,9 +1208,9 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
         Text(
           label,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF374151),
+            color: const Color(0xFF3E5C76),
           ),
         ),
         const SizedBox(height: 8),
@@ -1097,9 +1218,13 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFD1D5DB)),
+            color: value != null ? const Color(0xFFE4F6F4) : Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: value != null
+                  ? const Color(0xFF2EC4B6)
+                  : const Color(0xFFDCE7EF),
+            ),
           ),
           child: DropdownButton<String>(
             value: value,
@@ -1107,14 +1232,20 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               'All ${label}s',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: const Color(0xFF9CA3AF),
+                color: const Color(0xFF8AA5B5),
               ),
             ),
             isExpanded: true,
             underline: const SizedBox(),
+            borderRadius: BorderRadius.circular(12),
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFF5E7A8E),
+            ),
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: const Color(0xFF374151),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF14507F),
             ),
             items: [
               DropdownMenuItem<String>(
@@ -1123,7 +1254,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   'All ${label}s',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
-                    color: const Color(0xFF9CA3AF),
+                    color: const Color(0xFF8AA5B5),
                   ),
                 ),
               ),
@@ -1228,90 +1359,87 @@ class _CompactJobCardState extends State<CompactJobCard>
     final responsibilities = job['responsibilities'] as String? ?? '';
     final skills = (job['skills'] as List<dynamic>?)?.cast<String>() ?? [];
     final logoUrl = job['logoUrl'] as String?;
+    final nature = job['nature'] as String? ?? '';
+    final salary = job['salary'] as String? ?? '';
+    final experience = job['experience'] as String? ?? '';
     final postedAgo = _getRelativeTime(job['timestamp'] as Timestamp?);
-    final primaryColor = Theme.of(context).primaryColor;
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 1000;
     final cardPad = isMobile ? 10.0 : 16.0;
-    final titleSize = isMobile ? 14.0 : 16.0;
+    final titleSize = isMobile ? 15.0 : 17.0;
     final subSize = isMobile ? 11.0 : 13.0;
     final logoSize = isMobile ? 38.0 : 50.0;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onExit: (_) {
-        setState(() => _isHovered = false);
-        _controller.reverse();
-      },
-      child: GestureDetector(
-        onTap: _showDetails,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 1.0, end: _isHovered ? 1.015 : 1.0),
-          duration: const Duration(milliseconds: 200),
-          builder: (_, scale, child) => Transform.scale(
-            scale: scale,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 300),
-              opacity: isActive ? 1 : 0.65,
-              child: child,
-            ),
-          ),
-          child: Container(
+    return RepaintBoundary(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: _showDetails,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
             constraints: const BoxConstraints(maxWidth: 800),
             margin: const EdgeInsets.symmetric(horizontal: 4),
+            transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isActive
-                    ? [Colors.white, Colors.grey.shade50]
-                    : [Colors.grey.shade100, Colors.grey.shade200],
-              ),
-              borderRadius: BorderRadius.circular(16),
+              // Muted (color, not Opacity) treatment for inactive jobs so
+              // no saveLayer is created while the list scrolls.
+              color: isActive ? Colors.white : const Color(0xFFF4F9FB),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: _isHovered
-                    ? primaryColor.withValues(alpha: 0.6)
-                    : Colors.grey.shade200,
-                width: _isHovered ? 2 : 1,
+                    ? const Color(0xFF2EC4B6)
+                    : const Color(0xFFDCE7EF),
+                width: _isHovered ? 1.6 : 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: _isHovered
-                      ? primaryColor.withValues(alpha: 0.15)
-                      : Colors.black.withValues(alpha: 0.04),
-                  blurRadius: _isHovered ? 20 : 8,
-                  offset: Offset(0, _isHovered ? 8 : 2),
+                      ? const Color(0xFF2EC4B6).withValues(alpha: 0.22)
+                      : const Color(0xFF0B2239).withValues(alpha: 0.05),
+                  blurRadius: _isHovered ? 22 : 16,
+                  offset: Offset(0, _isHovered ? 12 : 8),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: EdgeInsets.all(cardPad),
-                    decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
+                    decoration: const BoxDecoration(color: Color(0xFFF4F9FB)),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Company logo tile (rounded-square, brand-tinted).
                         Container(
                           width: logoSize,
                           height: logoSize,
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [Colors.grey.shade100, Colors.white],
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              isMobile ? 10 : 12,
                             ),
+                            border: Border.all(color: const Color(0xFFDCE7EF)),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                                color: const Color(
+                                  0xFF0B2239,
+                                ).withValues(alpha: 0.06),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
                           child: logoUrl != null && logoUrl.isNotEmpty
-                              ? ClipOval(
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    isMobile ? 9 : 11,
+                                  ),
                                   child: CachedNetworkImage(
                                     imageUrl: logoUrl,
                                     fit: BoxFit.cover,
@@ -1322,12 +1450,12 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   ),
                                 )
                               : Icon(
-                                  Icons.business_center,
-                                  color: const Color(0xFF64748B),
+                                  Icons.business_center_rounded,
+                                  color: const Color(0xFF2178B5),
                                   size: isMobile ? 18 : 24,
                                 ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1336,32 +1464,59 @@ class _CompactJobCardState extends State<CompactJobCard>
                                 title,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: titleSize,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF14507F),
                                   height: 1.2,
                                 ),
-                                maxLines: 1,
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              // Company + department (muted row, brand icon).
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.apartment_rounded,
+                                    size: 13,
+                                    color: Color(0xFF15A99C),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      '$company  •  $department',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: subSize,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF5E7A8E),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                '$company • $department',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: subSize,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF64748B),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                location,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: isMobile ? 10 : 12,
-                                  color: const Color(0xFF64748B),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              // Location (muted row, brand icon).
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 13,
+                                    color: Color(0xFF8AA5B5),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      location,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: isMobile ? 10 : 12,
+                                        color: const Color(0xFF5E7A8E),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                               // const SizedBox(height: 4),
                               // Row(
@@ -1386,30 +1541,41 @@ class _CompactJobCardState extends State<CompactJobCard>
                             ],
                           ),
                         ),
-                        if (postedAgo.isNotEmpty)
+                        if (postedAgo.isNotEmpty && !isMobile)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
+                              horizontal: 8,
+                              vertical: 4,
                             ),
                             decoration: BoxDecoration(
                               color: const Color(
-                                0xFF003366,
-                              ).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
+                                0xFF14507F,
+                              ).withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(999),
                               border: Border.all(
                                 color: const Color(
-                                  0xFF003366,
+                                  0xFF14507F,
                                 ).withValues(alpha: 0.3),
                               ),
                             ),
-                            child: Text(
-                              '$postedAgo ago',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF003366),
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.schedule_rounded,
+                                  size: 11,
+                                  color: Color(0xFF14507F),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '$postedAgo ago',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF14507F),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         const SizedBox(width: 6),
@@ -1493,35 +1659,66 @@ class _CompactJobCardState extends State<CompactJobCard>
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(cardPad + 4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Color-coded meta pills: employment type, salary,
+                        // experience — brand palette, wraps on mobile.
+                        if (nature.isNotEmpty ||
+                            salary.isNotEmpty ||
+                            experience.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              if (nature.isNotEmpty)
+                                _ModernChip(
+                                  text: nature,
+                                  color: _brandTagColor(nature),
+                                  icon: Icons.work_outline_rounded,
+                                ),
+                              if (salary.isNotEmpty)
+                                _ModernChip(
+                                  text: salary,
+                                  color: const Color(0xFF15A99C),
+                                  icon: Icons.payments_outlined,
+                                ),
+                              if (experience.isNotEmpty && !isMobile)
+                                _ModernChip(
+                                  text: experience,
+                                  color: const Color(0xFF2178B5),
+                                  icon: Icons.timeline_rounded,
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                        ],
                         if (description.isNotEmpty)
                           _buildDetailSection(
                             'Job Description',
-                            Icons.description,
+                            Icons.description_outlined,
                             Text(
                               description,
                               style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                color: Colors.black87,
+                                fontSize: isMobile ? 12.5 : 14,
+                                color: const Color(0xFF3E5C76),
                                 height: 1.5,
                               ),
-                              maxLines: 3,
+                              maxLines: isMobile ? 2 : 3,
                               overflow: TextOverflow.ellipsis,
                               softWrap: true,
                             ),
                           ),
-                        if (responsibilities.isNotEmpty)
+                        if (responsibilities.isNotEmpty && !isMobile)
                           _buildDetailSection(
                             'Key Responsibilities',
-                            Icons.checklist,
+                            Icons.checklist_rounded,
                             Text(
                               responsibilities,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 14,
-                                color: Colors.black87,
+                                color: const Color(0xFF3E5C76),
                                 height: 1.5,
                               ),
                               maxLines: 3,
@@ -1532,35 +1729,39 @@ class _CompactJobCardState extends State<CompactJobCard>
                         const SizedBox(height: 5),
                         if (skills.isNotEmpty) ...[
                           Text(
-                            'Skills Required',
+                            'SKILLS REQUIRED',
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: const Color(0xFF15A99C),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Wrap(
                                 spacing: 6,
-                                runSpacing: 4,
-                                children: skills.take(4).map((skill) {
-                                  return _ModernChip(
-                                    text: skill,
-                                    color: Colors.blue.shade600,
-                                  );
-                                }).toList(),
+                                runSpacing: 6,
+                                children: skills
+                                    .take(isMobile ? 3 : 4)
+                                    .map((skill) {
+                                      return _ModernChip(
+                                        text: skill,
+                                        color: const Color(0xFF2178B5),
+                                      );
+                                    })
+                                    .toList(),
                               ),
-                              if (skills.length > 4)
+                              if (skills.length > (isMobile ? 3 : 4))
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.only(top: 6),
                                   child: Text(
-                                    '+${skills.length - 4} more',
+                                    '+${skills.length - (isMobile ? 3 : 4)} more',
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 10,
-                                      color: Colors.grey.shade600,
+                                      color: const Color(0xFF5E7A8E),
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
@@ -1588,6 +1789,8 @@ class _CompactJobCardState extends State<CompactJobCard>
                             return Row(
                               children: [
                                 // 1. View Details button
+                                // Secondary / ghost button — white, navy
+                                // border, navy label.
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: _showDetails,
@@ -1596,22 +1799,12 @@ class _CompactJobCardState extends State<CompactJobCard>
                                         vertical: isMobile ? 10 : 12,
                                       ),
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            primaryColor,
-                                            primaryColor.withValues(alpha: 0.8),
-                                          ],
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: const Color(0xFF14507F),
+                                          width: 1.4,
                                         ),
-                                        borderRadius: BorderRadius.circular(8),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: primaryColor.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
                                       ),
                                       child: Row(
                                         mainAxisAlignment:
@@ -1621,15 +1814,15 @@ class _CompactJobCardState extends State<CompactJobCard>
                                             'View Details',
                                             style: GoogleFonts.plusJakartaSans(
                                               fontSize: isMobile ? 13 : 15,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF14507F),
                                             ),
                                           ),
                                           const SizedBox(width: 5),
                                           const Icon(
                                             Icons.arrow_forward_ios,
                                             size: 11,
-                                            color: Colors.white,
+                                            color: Color(0xFF14507F),
                                           ),
                                         ],
                                       ),
@@ -1656,32 +1849,39 @@ class _CompactJobCardState extends State<CompactJobCard>
                                         ),
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
                                             colors: already
-                                                ? [
-                                                    Colors.grey[300]!,
-                                                    Colors.grey[400]!,
+                                                ? const [
+                                                    Color(0xFFE8F1F8),
+                                                    Color(0xFFE4F6F4),
                                                   ]
-                                                : [
-                                                    primaryColor,
-                                                    primaryColor.withValues(
-                                                      alpha: 0.8,
-                                                    ),
+                                                : const [
+                                                    Color(0xFF2EC4B6),
+                                                    Color(0xFF14507F),
                                                   ],
                                           ),
                                           borderRadius: BorderRadius.circular(
-                                            8,
+                                            12,
                                           ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  (already
-                                                          ? Colors.grey
-                                                          : primaryColor)
-                                                      .withValues(alpha: 0.3),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
+                                          border: already
+                                              ? Border.all(
+                                                  color: const Color(
+                                                    0xFFDCE7EF,
+                                                  ),
+                                                )
+                                              : null,
+                                          boxShadow: already
+                                              ? null
+                                              : [
+                                                  BoxShadow(
+                                                    color: const Color(
+                                                      0xFF2EC4B6,
+                                                    ).withValues(alpha: 0.35),
+                                                    blurRadius: 12,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                ],
                                         ),
                                         child: loading
                                             ? const Center(
@@ -1703,11 +1903,14 @@ class _CompactJobCardState extends State<CompactJobCard>
                                                 children: [
                                                   Icon(
                                                     already
-                                                        ? Icons.hourglass_top
-                                                        : Icons.send,
+                                                        ? Icons
+                                                              .check_circle_rounded
+                                                        : Icons.send_rounded,
                                                     size: isMobile ? 14 : 18,
                                                     color: already
-                                                        ? Colors.grey[700]
+                                                        ? const Color(
+                                                            0xFF15A99C,
+                                                          )
                                                         : Colors.white,
                                                   ),
                                                   const SizedBox(width: 6),
@@ -1722,10 +1925,11 @@ class _CompactJobCardState extends State<CompactJobCard>
                                                                 ? 12
                                                                 : 15,
                                                             fontWeight:
-                                                                FontWeight.w600,
+                                                                FontWeight.w700,
                                                             color: already
-                                                                ? Colors
-                                                                      .grey[700]
+                                                                ? const Color(
+                                                                    0xFF15A99C,
+                                                                  )
                                                                 : Colors.white,
                                                           ),
                                                       overflow:
@@ -1801,8 +2005,8 @@ class _CompactJobCardState extends State<CompactJobCard>
                 'Application Submitted!',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0A2E4F),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -1813,32 +2017,48 @@ class _CompactJobCardState extends State<CompactJobCard>
                 'Your profile has been shared with the recruiter.\nOnly shortlisted candidates will be notified for an interview session.',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
-                  color: Colors.grey[700],
+                  color: const Color(0xFF3E5C76),
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
 
-              // OK button
+              // OK button (brand gradient primary)
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B365D),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    elevation: 2,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2EC4B6).withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: Text(
-                    'OK',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: Text(
+                      'OK',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -1858,14 +2078,21 @@ class _CompactJobCardState extends State<CompactJobCard>
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: Theme.of(context).primaryColor),
-              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 14, color: const Color(0xFF15A99C)),
+              ),
+              const SizedBox(width: 8),
               Text(
                 title,
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF14507F),
                 ),
               ),
             ],
@@ -1878,29 +2105,57 @@ class _CompactJobCardState extends State<CompactJobCard>
   }
 }
 
-/// Modern chip widget with enhanced styling
+/// Maps an employment-type / status label to a brand accent color so tags
+/// read as navy / teal / blue / amber (never indigo).
+Color _brandTagColor(String value) {
+  final t = value.toLowerCase();
+  if (t.contains('full')) return const Color(0xFF15A99C); // teal deep
+  if (t.contains('part')) return const Color(0xFF2178B5); // blue
+  if (t.contains('contract') || t.contains('temp')) {
+    return const Color(0xFFFFB020); // amber
+  }
+  if (t.contains('intern')) return const Color(0xFFFF7A59); // coral
+  if (t.contains('remote')) return const Color(0xFF2EC4B6); // teal
+  return const Color(0xFF14507F); // navy default
+}
+
+/// Brand pill: tinted background + accent border + accent w700 label.
+/// Optional [icon] renders a small leading glyph in the accent color.
 class _ModernChip extends StatelessWidget {
   final String text;
   final Color color;
+  final IconData? icon;
 
-  const _ModernChip({required this.text, required this.color});
+  const _ModernChip({required this.text, required this.color, this.icon});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1), // Light color background for chips
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+      padding: EdgeInsets.symmetric(
+        horizontal: icon != null ? 10 : 12,
+        vertical: 6,
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            text,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

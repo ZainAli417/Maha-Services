@@ -127,79 +127,144 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Widget _buildCompletionCard(int totalScore, Color scoreColor) {
     final isMobile = MediaQuery.of(context).size.width < 768;
+    final provider = widget.provider;
+    final avatarSize = isMobile ? 46.0 : 56.0;
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.08)),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Profile Strength',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 12 : 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF374151),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _getScoreLabel(totalScore),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 10 : 12,
-                      fontWeight: FontWeight.w600,
-                      color: scoreColor,
-                    ),
-                  ),
-                ],
-              ),
+              // Avatar with teal ring — decode small for web perf.
               Container(
-                width: isMobile ? 40 : 50,
-                height: isMobile ? 40 : 50,
+                width: avatarSize,
+                height: avatarSize,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: scoreColor.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: scoreColor.withValues(alpha: 0.2),
-                    width: 2,
+                  border: Border.all(color: const Color(0xFF2EC4B6), width: 2),
+                  gradient: provider.profilePicUrl.isEmpty
+                      ? const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
+                        )
+                      : null,
+                  image: provider.profilePicUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: ResizeImage(
+                            NetworkImage(provider.profilePicUrl),
+                            width: 160,
+                            height: 160,
+                          ),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: provider.profilePicUrl.isEmpty
+                    ? Text(
+                        _initials(),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: isMobile ? 15 : 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      )
+                    : null,
+              ),
+              SizedBox(width: isMobile ? 10 : 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _displayName(),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMobile ? 13 : 15,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0B2239),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _getScoreLabel(totalScore),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMobile ? 10 : 12,
+                        fontWeight: FontWeight.w700,
+                        color: scoreColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: isMobile ? 42 : 52,
+                height: isMobile ? 42 : 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2EC4B6).withValues(alpha: 0.30),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Text(
                   '$totalScore%',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 11 : 14,
-                    fontWeight: FontWeight.w700,
-                    color: scoreColor,
+                    fontSize: isMobile ? 11 : 13,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: isMobile ? 10 : 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: totalScore / 100,
-              minHeight: isMobile ? 8 : 10,
-              backgroundColor: const Color(0xFFF3F4F6),
-              valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
-            ),
+          SizedBox(height: isMobile ? 12 : 16),
+          // Gradient completeness bar (teal→navy).
+          Stack(
+            children: [
+              Container(
+                height: isMobile ? 8 : 10,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F9FB),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: (totalScore / 100).clamp(0.0, 1.0),
+                child: Container(
+                  height: isMobile ? 8 : 10,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -257,7 +322,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
           style: GoogleFonts.plusJakartaSans(
             fontSize: isMobile ? 13 : 15,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF111827),
+            color: const Color(0xFF0B2239),
           ),
         ),
         SizedBox(height: isMobile ? 8 : 12),
@@ -280,13 +345,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               ),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                borderRadius: BorderRadius.circular(isMobile ? 10 : 14),
+                border: Border.all(color: const Color(0xFFDCE7EF)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFF0B2239).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -304,7 +369,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: isMobile ? 13 : 16,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF111827),
+                      color: const Color(0xFF0B2239),
                     ),
                   ),
                   Text(
@@ -331,11 +396,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -346,7 +412,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             children: [
               Icon(
                 Icons.checklist_rtl_rounded,
-                color: const Color(0xFF1E3A8A),
+                color: const Color(0xFF14507F),
                 size: isMobile ? 13 : 16,
               ),
               SizedBox(width: isMobile ? 6 : 10),
@@ -355,7 +421,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
+                  color: const Color(0xFF0B2239),
                 ),
               ),
             ],
@@ -480,11 +546,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -495,7 +562,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             children: [
               Icon(
                 Icons.diamond_rounded,
-                color: const Color(0xFF1E3A8A),
+                color: const Color(0xFF14507F),
                 size: isMobile ? 13 : 16,
               ),
               SizedBox(width: isMobile ? 6 : 10),
@@ -504,7 +571,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
+                  color: const Color(0xFF0B2239),
                 ),
               ),
             ],
@@ -520,16 +587,18 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                   vertical: isMobile ? 4 : 7,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(isMobile ? 8 : 12),
-                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                  color: const Color(0xFFE4F6F4),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: const Color(0xFF2EC4B6).withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Text(
                   skill,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 9 : 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1E40AF),
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF14507F),
                   ),
                 ),
               );
@@ -561,11 +630,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 14 : 20),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -576,7 +646,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             children: [
               Icon(
                 Icons.contact_mail_rounded,
-                color: const Color(0xFF1E3A8A),
+                color: const Color(0xFF14507F),
                 size: isMobile ? 13 : 16,
               ),
               SizedBox(width: isMobile ? 6 : 10),
@@ -585,7 +655,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: isMobile ? 12 : 15,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF111827),
+                  color: const Color(0xFF0B2239),
                 ),
               ),
             ],
@@ -692,12 +762,12 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
           Container(
             padding: EdgeInsets.all(isMobile ? 6 : 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
+              color: const Color(0xFFE8F1F8),
+              borderRadius: BorderRadius.circular(isMobile ? 7 : 9),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF6B7280),
+              color: const Color(0xFF14507F),
               size: isMobile ? 10 : 12,
             ),
           ),
