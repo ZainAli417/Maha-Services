@@ -15,8 +15,8 @@ class JobDetailModal extends StatelessWidget {
   static const _slate400 = Color(0xFF94A3B8);
   static const _slate200 = Color(0xFFE2E8F0);
   static const _slate50 = Color(0xFFFAFAFA);
-  static const _indigo = Color(0xFF6366F1);
-  static const _indigoSoft = Color(0xFFEEF2FF);
+  static const _indigo = Color(0xFF14507F);
+  static const _indigoSoft = Color(0xFFE8F1F8);
   static const _emerald = Color(0xFF059669);
   static const _emeraldBg = Color(0xFFECFDF5);
   static const _amber = Color(0xFFD97706);

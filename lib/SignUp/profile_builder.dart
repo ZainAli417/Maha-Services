@@ -36,7 +36,7 @@ class _BP {
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 class _T {
-  static const primary = Color(0xFF6366F1);
+  static const primary = Color(0xFF14507F);
   static const green = Color(0xFF059669);
   static const textPri = Color(0xFF0F172A);
   static const textSec = Color(0xFF64748B);
@@ -44,7 +44,7 @@ class _T {
   static const bg = Color(0xFFF8FAFC);
   static const white = Color(0xFFFFFFFF);
   static const border = Color(0xFFE2E8F0);
-  static const indigo10 = Color(0xFFEEF2FF);
+  static const indigo10 = Color(0xFFE8F1F8);
   static const red = Color(0xFFDC2626);
 
   static TextStyle label({
@@ -417,7 +417,7 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           Image.asset(
-            'images/logo.png',
+            'images/logo_new.jpeg',
             width: isMob ? 100 : 72,
             height: isMob ? 100 : 72,
             fit: BoxFit.contain,

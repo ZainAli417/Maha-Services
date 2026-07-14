@@ -21,8 +21,6 @@ class JobSeekerSidebar extends StatefulWidget {
 }
 
 class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
-  int? _hoveredIndex;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<JS_TopNavProvider>(
@@ -193,17 +191,27 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
 
   Widget _buildLogoSection() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       child: Row(
         children: [
           // Logo
           Container(
-            width: 40,
-            height: 40,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: const DecorationImage(
-                image: AssetImage('images/logo.png'),
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const ClipOval(
+              child: Image(
+                image: AssetImage('images/logo_new.jpeg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -215,21 +223,21 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'MAHA SERVICES',
+                  'MAHA',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
-                    letterSpacing: 0.3,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0B2239),
+                    letterSpacing: 2.2,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
-                  'Job Seeker Portal',
+                  'HR SERVICES',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF2EC4B6),
+                    letterSpacing: 3,
                   ),
                 ),
               ],
@@ -261,7 +269,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
               ),
             ),
             child: Center(
@@ -401,43 +409,54 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
     required VoidCallback onTap,
     String? badge,
   }) {
-    final isHovered = _hoveredIndex == index;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredIndex = index),
-      onExit: (_) => setState(() => _hoveredIndex = null),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 4),
-        decoration: BoxDecoration(
-          color: isActive
-              ? const Color(0xFF6366F1).withValues(alpha: 0.08)
-              : (isHovered ? Colors.grey.shade50 : Colors.transparent),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive
-                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
-                : Colors.transparent,
-            width: 1,
-          ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(8),
-            splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        gradient: isActive
+            ? LinearGradient(
+                colors: [
+                  const Color(0xFF14507F).withValues(alpha: 0.12),
+                  const Color(0xFF2EC4B6).withValues(alpha: 0.10),
+                ],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          splashColor: const Color(0xFF14507F).withValues(alpha: 0.1),
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Row(
                 children: [
+                  // Active accent bar
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: 3,
+                    height: 20,
+                    margin: EdgeInsets.only(right: isActive ? 9 : 12),
+                    decoration: BoxDecoration(
+                      gradient: isActive
+                          ? const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                            )
+                          : null,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
                   // Icon
                   Icon(
                     isActive ? activeIcon : icon,
                     size: 20,
                     color: isActive
-                        ? const Color(0xFF6366F1)
+                        ? const Color(0xFF14507F)
                         : const Color(0xFF64748B),
                   ),
                   const SizedBox(width: 12),
@@ -481,7 +500,6 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -527,7 +545,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
           const SizedBox(height: 12),
           // Copyright
           Text(
-            '© 2025 Maha Services',
+            '© 2026 Maha HR Services',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
               color: Colors.grey.shade500,

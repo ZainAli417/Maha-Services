@@ -17,9 +17,9 @@ import '../../services/job_alert_service.dart';
 // ═══════════════════════════════════════════════════════════════
 abstract final class _Tokens {
   // Primary palette
-  static const Color primary = Color(0xFF4F46E5); // Indigo 600
-  static const Color primarySoft = Color(0xFFEEF2FF); // Indigo 50
-  static const Color accent = Color(0xFF7C3AED); // Violet 600
+  static const Color primary = Color(0xFF0A2E4F); // Indigo 600
+  static const Color primarySoft = Color(0xFFE8F1F8); // Indigo 50
+  static const Color accent = Color(0xFF15A99C); // Violet 600
 
   // Neutral palette
   static const Color background = Color(0xFFF8FAFC); // Slate 50
@@ -743,7 +743,7 @@ class _SettingsContent extends StatelessWidget {
               _ToggleCard(
                 icon: Icons.campaign_outlined,
                 iconColor: _Tokens.accent,
-                iconBgColor: const Color(0xFFF3E8FF), // Violet 100
+                iconBgColor: const Color(0xFFE4F6F4), // Violet 100
                 title: 'Newsletter & Updates',
                 description:
                     'Get weekly digests with career tips, industry insights, '

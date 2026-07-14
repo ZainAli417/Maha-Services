@@ -59,7 +59,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Color _getScoreColor(int score) {
     if (score >= 80) return const Color(0xFF10B981); // Emerald
-    if (score >= 60) return const Color(0xFF6366F1); // Blue
+    if (score >= 60) return const Color(0xFF14507F); // Blue
     if (score >= 40) return const Color(0xFFF59E0B); // Amber
     return const Color(0xFFEF4444); // Red
   }
@@ -104,7 +104,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    color: const Color(0xFF14507F).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -215,13 +215,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         'icon': Icons.school_rounded,
         'val': provider.educationalProfile.length.toString(),
         'label': 'Education',
-        'col': const Color(0xFF6366F1),
+        'col': const Color(0xFF14507F),
       },
       {
         'icon': Icons.work_rounded,
         'val': provider.professionalExperience.length.toString(),
         'label': 'Experience',
-        'col': const Color(0xFF8B5CF6),
+        'col': const Color(0xFF2EC4B6),
       },
       {
         'icon': Icons.verified_rounded,
@@ -239,7 +239,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
         'icon': Icons.article_rounded,
         'val': provider.publications.length.toString(),
         'label': 'Publications',
-        'col': const Color(0xFFEC4899),
+        'col': const Color(0xFF43E0D2),
       },
       {
         'icon': Icons.folder_copy_rounded,
@@ -365,13 +365,13 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             'Personal Info',
             _scorePersonal(),
             _wPersonal,
-            const Color(0xFF6366F1),
+            const Color(0xFF14507F),
           ),
           _buildProgressRow(
             'Education',
             _scoreEducation(),
             _wEducation,
-            const Color(0xFF8B5CF6),
+            const Color(0xFF2EC4B6),
           ),
           _buildProgressRow(
             'Prof. Profile',
@@ -389,7 +389,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
             'Certifications',
             _scoreCertifications(),
             _wCertifications,
-            const Color(0xFFEC4899),
+            const Color(0xFF43E0D2),
           ),
         ],
       ),
@@ -661,7 +661,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: isMobile ? 10 : 12,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF14507F),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -670,7 +670,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
                           ? Icons.keyboard_arrow_up_rounded
                           : Icons.keyboard_arrow_down_rounded,
                       size: isMobile ? 14 : 16,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF14507F),
                     ),
                   ],
                 ),

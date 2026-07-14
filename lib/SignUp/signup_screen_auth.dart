@@ -9,6 +9,7 @@ import 'package:job_portal/SignUp/signup_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Constant/Header_Nav.dart';
+import '../Constant/brand.dart';
 import '../Constant/captcha_web_listeners.dart';
 
 class SignUp_Screen extends StatefulWidget {
@@ -130,7 +131,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0F0F23), Color(0xFF1a1a3e), Color(0xFF2d1b4e)],
+            colors: [Brand.heroDeep, Brand.heroMid, Brand.heroGlow],
           ),
         ),
         child: Stack(
@@ -181,7 +182,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF667eea).withValues(alpha: 0.4),
+                      Brand.teal.withValues(alpha: 0.4),
                       Colors.transparent,
                     ],
                   ),
@@ -204,7 +205,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFf093fb).withValues(alpha: 0.3),
+                      Brand.blue.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
@@ -224,10 +225,10 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea).withValues(alpha: 0.15),
+            color: Brand.teal.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: const Color(0xFF667eea).withValues(alpha: 0.3),
+              color: Brand.teal.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -265,7 +266,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         const SizedBox(height: 16),
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [Colors.white, Color(0xFFb8c5ff)],
+            colors: [Colors.white, Brand.tealBright],
           ).createShader(bounds),
           child: Text(
             'Maha Services',
@@ -315,12 +316,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF8B5CF6)],
+                colors: [Brand.teal, Brand.navy],
               ),
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withValues(alpha: 0.4),
+                  color: Brand.teal.withValues(alpha: 0.4),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -367,7 +368,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F0F23),
+                color: Brand.heroDeep,
                 letterSpacing: 0.5,
               ),
             ),
@@ -384,7 +385,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           child: _CompactMetric(
             value: '1.2K',
             label: 'Jobs',
-            color: Color(0xFF667eea),
+            color: Brand.teal,
             icon: Icons.work_outline_rounded,
           ),
         ),
@@ -402,7 +403,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           child: _CompactMetric(
             value: '5.4K',
             label: 'Hires',
-            color: Color(0xFFf093fb),
+            color: Brand.blue,
             icon: Icons.trending_up_rounded,
           ),
         ),
@@ -541,7 +542,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 _isPasswordVisible
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
-                color: const Color(0xFF6366F1),
+                color: Brand.teal,
                 size: 20,
               ),
               onPressed: () =>
@@ -572,7 +573,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 _isConfirmPasswordVisible
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
-                color: const Color(0xFF6366F1),
+                color: Brand.teal,
                 size: 20,
               ),
               onPressed: () => setState(
@@ -615,15 +616,15 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.1),
-            const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+            Brand.teal.withValues(alpha: 0.1),
+            Brand.navy.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+          color: Brand.teal.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -633,12 +634,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             padding: EdgeInsets.all(iconPad),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Brand.teal, Brand.tealDeep],
               ),
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                  color: Brand.teal.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -734,12 +735,12 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         padding: EdgeInsets.all(isWide ? 16 : 12),
         decoration: BoxDecoration(
           color: provider.jobAlertsEnabled
-              ? const Color(0xFF6366F1).withValues(alpha: 0.05)
+              ? Brand.teal.withValues(alpha: 0.05)
               : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: provider.jobAlertsEnabled
-                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+                ? Brand.teal.withValues(alpha: 0.3)
                 : Colors.grey.shade200,
             width: provider.jobAlertsEnabled ? 1.5 : 1,
           ),
@@ -754,7 +755,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               decoration: BoxDecoration(
                 gradient: provider.jobAlertsEnabled
                     ? const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        colors: [Brand.teal, Brand.tealDeep],
                       )
                     : null,
                 color: provider.jobAlertsEnabled ? null : Colors.white,
@@ -768,7 +769,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                 boxShadow: provider.jobAlertsEnabled
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                          color: Brand.teal.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -793,7 +794,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
                       const Icon(
                         Icons.notifications_active_rounded,
                         size: 16,
-                        color: Color(0xFF6366F1),
+                        color: Brand.teal,
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -834,7 +835,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
         decoration: BoxDecoration(
           gradient: verified
               ? const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Brand.teal, Brand.tealDeep],
                 )
               : LinearGradient(
                   colors: [Colors.grey.shade100, Colors.grey.shade200],
@@ -847,7 +848,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
           boxShadow: verified
               ? [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    color: Brand.teal.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -1041,7 +1042,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             ),
             helperText: helperText,
             helperStyle: GoogleFonts.plusJakartaSans(
-              color: const Color(0xFF6366F1),
+              color: Brand.teal,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -1051,13 +1052,13 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF6366F1).withValues(alpha: 0.15),
-                    const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                    Brand.teal.withValues(alpha: 0.15),
+                    Brand.navy.withValues(alpha: 0.15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: const Color(0xFF6366F1), size: 18),
+              child: Icon(icon, color: Brand.teal, size: 18),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -1071,7 +1072,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide: const BorderSide(color: Brand.teal, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -1205,7 +1206,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                'images/logo.png',
+                'images/logo_new.jpeg',
                 width: 32,
                 height: 32,
                 fit: BoxFit.contain,

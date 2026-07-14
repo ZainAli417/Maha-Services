@@ -59,8 +59,8 @@ class BrandColors {
   static const slate200 = Color(0xFFE2E8F0);
   static const slate100 = Color(0xFFF1F5F9);
   static const slate50 = Color(0xFFF8FAFC);
-  static const indigo = Color(0xFF6366F1);
-  static const indigoHover = Color(0xFF4F46E5);
+  static const indigo = Color(0xFF14507F);
+  static const indigoHover = Color(0xFF0A2E4F);
   static const emerald = Color(0xFF10B981);
   static const rose = Color(0xFFF43F5E);
 }
@@ -361,10 +361,60 @@ class _CvUploadSectionState extends State<CvUploadSection>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(height: isMob ? 8 : 20),
-              Text(
-                'Professional Data Extraction',
-                style: BrandTypography.h1.copyWith(fontSize: isMob ? 22 : 30),
-                textAlign: TextAlign.center,
+              // Gradient icon badge
+              Container(
+                padding: EdgeInsets.all(isMob ? 14 : 18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+                  ),
+                  borderRadius: BorderRadius.circular(isMob ? 16 : 20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2EC4B6).withValues(alpha: 0.4),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.auto_awesome_rounded,
+                    color: Colors.white, size: isMob ? 26 : 34),
+              ),
+              SizedBox(height: isMob ? 16 : 22),
+              // Eyebrow badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                      color: const Color(0xFF2EC4B6).withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  'ATS CV ANALYZER',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: isMob ? 10 : 11,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF15A99C),
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ),
+              SizedBox(height: isMob ? 14 : 18),
+              // Gradient title
+              ShaderMask(
+                shaderCallback: (b) => const LinearGradient(
+                  colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
+                ).createShader(b),
+                child: Text(
+                  'Professional Data Extraction',
+                  style: BrandTypography.h1
+                      .copyWith(fontSize: isMob ? 22 : 30, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
               ),
               SizedBox(height: isMob ? 8 : 12),
               Text(
@@ -1578,7 +1628,7 @@ class _TopBar extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Image.asset(
-                        'images/logo.png',
+                        'images/logo_new.jpeg',
                         height: 60,
                         fit: BoxFit.fill,
                       ),
@@ -1601,7 +1651,7 @@ class _TopBar extends StatelessWidget {
               : Row(
                   children: [
                     Image.asset(
-                      'images/logo.png',
+                      'images/logo_new.jpeg',
                       height: isMob ? 70 : 68,
                       fit: BoxFit.contain,
                     ),

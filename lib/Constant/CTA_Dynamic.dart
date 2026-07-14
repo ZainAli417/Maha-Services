@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'brand.dart';
+
 /// Scroll-aware CTA buttons:
 /// - If scrolled more than half the screen height downwards, two floating CTAs (left + right) appear
 ///   and remain fixed to the bottom edge of the screen until scrolled back up.
@@ -270,16 +272,15 @@ class _FloatingCTAState extends State<_FloatingCTA>
           );
 
           final backgroundColor = widget.isPrimary
-              ? const Color(0xFF6366F1)
+              ? Brand.teal
               : (widget.isDarkMode ? const Color(0xFF1E293B) : Colors.white);
 
-          final foregroundColor = widget.isPrimary
-              ? Colors.white
-              : const Color(0xFF10B981);
+          final foregroundColor =
+              widget.isPrimary ? Colors.white : Brand.navy;
 
           final shadowColor = widget.isPrimary
-              ? const Color(0xFF6366F1).withValues(alpha: 0.4)
-              : const Color(0xFF10B981).withValues(alpha: 0.25);
+              ? Brand.teal.withValues(alpha: 0.4)
+              : Brand.navy.withValues(alpha: 0.25);
 
           return Transform.scale(
             scale: scale,
@@ -302,7 +303,7 @@ class _FloatingCTAState extends State<_FloatingCTA>
                     border: widget.isPrimary
                         ? null
                         : Border.all(
-                            color: const Color(0xFF10B981),
+                            color: Brand.navy,
                             width: widget.isMobile ? 1.5 : 2,
                           ),
                   ),

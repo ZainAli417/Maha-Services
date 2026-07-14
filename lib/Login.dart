@@ -21,6 +21,7 @@ import 'core/widgets/custom_snackbars.dart';
 import 'Constant/Header_Nav.dart';
 import 'Constant/Forget Password.dart';
 import 'login_provider.dart';
+import 'Constant/brand.dart';
 
 class JobSeekerLoginScreen extends StatefulWidget {
   const JobSeekerLoginScreen({super.key});
@@ -185,7 +186,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0F0F23), Color(0xFF1a1a3e), Color(0xFF2d1b4e)],
+          colors: [Brand.heroDeep, Brand.heroMid, Brand.heroGlow],
         ),
       ),
       child: Stack(
@@ -230,7 +231,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF667eea).withValues(alpha: 0.4),
+                    Brand.teal.withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -250,7 +251,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFf093fb).withValues(alpha: 0.3),
+                    Brand.blue.withValues(alpha: 0.3),
                     Colors.transparent,
                   ],
                 ),
@@ -269,10 +270,10 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea).withValues(alpha: 0.15),
+            color: Brand.teal.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(100),
             border: Border.all(
-              color: const Color(0xFF667eea).withValues(alpha: 0.3),
+              color: Brand.teal.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -310,7 +311,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         const SizedBox(height: 16),
         ShaderMask(
           shaderCallback: (bounds) => const LinearGradient(
-            colors: [Colors.white, Color(0xFFb8c5ff)],
+            colors: [Colors.white, Brand.tealBright],
           ).createShader(bounds),
           child: Text(
             'Maha Services',
@@ -362,12 +363,12 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF667eea), Color(0xFF8B5CF6)],
+                  colors: [Brand.teal, Brand.navy],
                 ),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF667eea).withValues(alpha: 0.4),
+                    color: Brand.teal.withValues(alpha: 0.4),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -414,7 +415,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F0F23),
+                  color: Brand.heroDeep,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -432,7 +433,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           child: _CompactMetric(
             value: '1.2K',
             label: 'Jobs',
-            color: const Color(0xFF667eea),
+            color: Brand.teal,
             icon: Icons.work_outline_rounded,
           ),
         ),
@@ -450,7 +451,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           child: _CompactMetric(
             value: '5.4K',
             label: 'Hires',
-            color: const Color(0xFFf093fb),
+            color: Brand.blue,
             icon: Icons.trending_up_rounded,
           ),
         ),
@@ -551,7 +552,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                       padding: const EdgeInsets.only(bottom: 30),
                       child: Center(
                         child: Image.asset(
-                          'images/logo.png',
+                          'images/logo_new.jpeg',
                           height: 90,
                           fit: BoxFit.fill,
                         ),
@@ -564,7 +565,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                         padding: EdgeInsets.all(iconPad),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            colors: [Brand.teal, Brand.tealDeep],
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -590,7 +591,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Sign in to continue your journey',
+                              'Choose Your Role to continue your journey',
                               style: GoogleFonts.plusJakartaSans(
                                 color: const Color(0xFF6B7280),
                                 fontSize: subFontSize,
@@ -658,7 +659,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                               child: Text(
                                 'Forgot password?',
                                 style: GoogleFonts.plusJakartaSans(
-                                  color: const Color(0xFF6366F1),
+                                  color: Brand.teal,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -677,14 +678,12 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                             height: btnHeight,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                colors: [Brand.teal, Brand.tealDeep],
                               ),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(
-                                    0xFF6366F1,
-                                  ).withValues(alpha: 0.3),
+                                  color: Brand.teal.withValues(alpha: 0.3),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -760,7 +759,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
                             child: Text(
                               'Sign Up',
                               style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF6366F1),
+                                color: Brand.teal,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -851,7 +850,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+        borderSide: const BorderSide(color: Brand.teal, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -877,7 +876,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         hint: 'you@example.com',
         prefix: const Icon(
           Icons.email_rounded,
-          color: Color(0xFF6366F1),
+          color: Brand.teal,
           size: 20,
         ),
       ),
@@ -903,7 +902,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
         hint: '••••••••',
         prefix: const Icon(
           Icons.lock_rounded,
-          color: Color(0xFF6366F1),
+          color: Brand.teal,
           size: 20,
         ),
         suffix: IconButton(
@@ -933,7 +932,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
           decoration: BoxDecoration(
             gradient: selected
                 ? const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Brand.teal, Brand.tealDeep],
                   )
                 : null,
             color: selected ? null : Colors.transparent,
@@ -941,7 +940,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      color: Brand.teal.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

@@ -81,7 +81,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF6366F1),
+              primary: Color(0xFF14507F),
               onPrimary: Colors.white,
               surface: Colors.white,
               onSurface: Color(0xFF0F172A),
@@ -188,7 +188,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF6366F1)
+                                    ? const Color(0xFF14507F)
                                     : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -229,7 +229,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFF14507F),
                   ),
                   child: Text(
                     'OK',
@@ -529,66 +529,99 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildTopBar() {
-    const Color kPrimaryBlue = Color(0xFF6366F1);
-    const Color kTextPrimary = Color(0xFF0F172A);
-    const Color kTextSecondary = Color(0xFF475569);
     final isMobile = _isMobile;
 
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 24,
-          vertical: isMobile ? 10 : 16,
-        ),
-        decoration: const BoxDecoration(color: Colors.white),
-        child: Row(
-          children: [
-            if (isMobile)
-              IconButton(
-                icon: const Icon(Icons.menu_rounded, size: 24),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              ),
-            Container(
-              padding: EdgeInsets.all(isMobile ? 8 : 10),
-              decoration: BoxDecoration(
-                color: kPrimaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.person_add_alt_outlined,
-                size: isMobile ? 18 : 24,
-                color: kPrimaryBlue,
-              ),
+    // Rich navy→teal branded banner. RepaintBoundary isolates it from the
+    // step content that rebuilds on every field change / navigation.
+    return RepaintBoundary(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+              isMobile ? 10 : 20, isMobile ? 8 : 18, isMobile ? 10 : 20, 2),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 14 : 22,
+              vertical: isMobile ? 12 : 18,
             ),
-            SizedBox(width: isMobile ? 12 : 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Profile',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 15 : 18,
-                      fontWeight: FontWeight.w600,
-                      color: kTextPrimary,
-                      height: 1.2,
-                    ),
-                  ),
-                  Text(
-                    'One Click Profile Analyzer & CV Builder',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 11 : 13,
-                      color: kTextSecondary,
-                      height: 1.2,
-                    ),
-                  ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF061C31),
+                  Color(0xFF0A2E4F),
+                  Color(0xFF14507F),
                 ],
               ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF14507F).withValues(alpha: 0.28),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
-            _buildProgressIndicator(),
-          ],
+            child: Row(
+              children: [
+                if (isMobile)
+                  IconButton(
+                    icon: const Icon(Icons.menu_rounded,
+                        size: 24, color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 34, minHeight: 34),
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
+                if (isMobile) const SizedBox(width: 4),
+                Container(
+                  padding: EdgeInsets.all(isMobile ? 9 : 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFF43E0D2).withValues(alpha: 0.4)),
+                  ),
+                  child: Icon(
+                    Icons.person_add_alt_outlined,
+                    size: isMobile ? 18 : 24,
+                    color: const Color(0xFF43E0D2),
+                  ),
+                ),
+                SizedBox(width: isMobile ? 12 : 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Profile',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: isMobile ? 17 : 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1.15,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        'One-click profile analyzer & CV builder',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: isMobile ? 11 : 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          height: 1.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                _buildProgressIndicator(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -598,14 +631,14 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     final isMobile = _isMobile;
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
+        horizontal: isMobile ? 10 : 16,
         vertical: isMobile ? 6 : 10,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+          color: const Color(0xFF43E0D2).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -616,8 +649,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             'Step ${_currentStep + 1} of ${_stepTitles.length}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 11 : 13,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6366F1),
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF43E0D2),
             ),
           ),
           if (!isMobile) ...[
@@ -626,7 +659,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               width: 100,
               height: 6,
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: FractionallySizedBox(
@@ -634,7 +667,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 widthFactor: (_currentStep + 1) / _stepTitles.length,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF43E0D2), Color(0xFF2EC4B6)],
+                    ),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -699,14 +734,14 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? const Color(0xFF6366F1).withValues(alpha: 0.08)
+                        ? const Color(0xFF14507F).withValues(alpha: 0.08)
                         : (isCompleted
                               ? const Color(0xFF10B981).withValues(alpha: 0.08)
                               : Colors.white),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isActive
-                          ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+                          ? const Color(0xFF14507F).withValues(alpha: 0.3)
                           : (isCompleted
                                 ? const Color(0xFF10B981).withValues(alpha: 0.3)
                                 : Colors.grey.shade200),
@@ -719,7 +754,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       Icon(
                         isCompleted ? Icons.check_circle : _stepIcons[index],
                         color: isActive
-                            ? const Color(0xFF6366F1)
+                            ? const Color(0xFF14507F)
                             : (isCompleted
                                   ? const Color(0xFF10B981)
                                   : const Color(0xFF64748B)),
@@ -797,7 +832,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //   children: [
           //     Icon(
           //       Icons.person_outline,
-          //       color: const Color(0xFF6366F1),
+          //       color: const Color(0xFF14507F),
           //       size: 24,
           //     ),
           //     const SizedBox(width: 12),
@@ -826,18 +861,25 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         height: _isMobile ? 56 : 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.indigo),
+                          border: Border.all(
+                              color: const Color(0xFF2EC4B6), width: 2),
                           gradient: prov.profilePicUrl.isEmpty
                               ? const LinearGradient(
                                   colors: [
-                                    Color(0xFF6366F1),
-                                    Color(0xFF8B5CF6),
+                                    Color(0xFF14507F),
+                                    Color(0xFF2EC4B6),
                                   ],
                                 )
                               : null,
                           image: prov.profilePicUrl.isNotEmpty
                               ? DecorationImage(
-                                  image: NetworkImage(prov.profilePicUrl),
+                                  // Decode at target size — an 80px avatar
+                                  // never needs a full-res network decode.
+                                  image: ResizeImage(
+                                    NetworkImage(prov.profilePicUrl),
+                                    width: 200,
+                                    height: 200,
+                                  ),
                                   fit: BoxFit.cover,
                                 )
                               : null,
@@ -856,7 +898,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         child: Container(
                           padding: EdgeInsets.all(_isMobile ? 5 : 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF14507F),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
@@ -1117,10 +1159,10 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                color: const Color(0xFF14507F).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  color: const Color(0xFF14507F).withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -1131,7 +1173,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     e.value,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF14507F),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1140,7 +1182,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     onTap: () => prov.removeSkillAt(e.key),
                     child: const Icon(
                       Icons.close,
-                      color: Color(0xFF6366F1),
+                      color: Color(0xFF14507F),
                       size: 16,
                     ),
                   ),
@@ -1176,7 +1218,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF6366F1)),
+                    borderSide: const BorderSide(color: Color(0xFF14507F)),
                   ),
                 ),
                 style: GoogleFonts.plusJakartaSans(fontSize: 14),
@@ -1210,7 +1252,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //   children: [
           //     Icon(
           //       Icons.school_outlined,
-          //       color: const Color(0xFF6366F1),
+          //       color: const Color(0xFF14507F),
           //       size: 24,
           //     ),
           //     const SizedBox(width: 12),
@@ -1401,12 +1443,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                        color: const Color(0xFF14507F).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.school_outlined,
-                        color: Color(0xFF6366F1),
+                        color: Color(0xFF14507F),
                         size: 20,
                       ),
                     ),
@@ -1462,7 +1504,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //   children: [
           //     const Icon(
           //       Icons.work_outline,
-          //       color: Color(0xFF6366F1),
+          //       color: Color(0xFF14507F),
           //       size: 24,
           //     ),
           //     const SizedBox(width: 12),
@@ -1660,7 +1702,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //   children: [
           //     const Icon(
           //       Icons.flight_takeoff,
-          //       color: Color(0xFF6366F1),
+          //       color: Color(0xFF14507F),
           //       size: 24,
           //     ),
           //     const SizedBox(width: 12),
@@ -2003,7 +2045,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 16),
 
           Material(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+            color: const Color(0xFF14507F).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () => _pickAndUploadExperienceDoc(prov),
@@ -2019,7 +2061,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Icon(
                       Icons.upload_file,
                       size: _isMobile ? 16 : 18,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF14507F),
                     ),
                     SizedBox(width: _isMobile ? 6 : 8),
                     Text(
@@ -2027,7 +2069,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: _isMobile ? 12 : 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF14507F),
                       ),
                     ),
                   ],
@@ -2044,15 +2086,15 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F9FF),
+                  color: const Color(0xFFEAF3FA),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFBAE6FD)),
+                  border: Border.all(color: const Color(0xFFCBE3F3)),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.description,
-                      color: Color(0xFF0284C7),
+                      color: Color(0xFF2178B5),
                       size: 18,
                     ),
                     const SizedBox(width: 12),
@@ -2134,7 +2176,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           padding: EdgeInsets.all(_isMobile ? 8 : 12),
                           decoration: BoxDecoration(
                             color: const Color(
-                              0xFF6366F1,
+                              0xFF14507F,
                             ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
                               _isMobile ? 8 : 10,
@@ -2142,7 +2184,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                           ),
                           child: Icon(
                             Icons.flight_takeoff,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF14507F),
                             size: _isMobile ? 20 : 24,
                           ),
                         ),
@@ -2167,7 +2209,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                     Icon(
                                       Icons.military_tech,
                                       size: _isMobile ? 12 : 14,
-                                      color: const Color(0xFF6366F1),
+                                      color: const Color(0xFF14507F),
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
@@ -2175,7 +2217,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: _isMobile ? 11 : 13,
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF6366F1),
+                                        color: const Color(0xFF14507F),
                                       ),
                                     ),
                                   ],
@@ -2291,7 +2333,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               const Icon(
                                 Icons.flight,
                                 size: 16,
-                                color: Color(0xFF6366F1),
+                                color: Color(0xFF14507F),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -2319,7 +2361,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               const Icon(
                                 Icons.access_time,
                                 size: 16,
-                                color: Color(0xFF6366F1),
+                                color: Color(0xFF14507F),
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -2367,7 +2409,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           //   children: [
           //     const Icon(
           //       Icons.card_membership_outlined,
-          //       color: Color(0xFF6366F1),
+          //       color: Color(0xFF14507F),
           //       size: 24,
           //     ),
           //     const SizedBox(width: 12),
@@ -2466,7 +2508,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
           const SizedBox(height: 16),
 
           Material(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+            color: const Color(0xFF14507F).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () => _pickAndUploadCertificationDoc(prov),
@@ -2482,7 +2524,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     const Icon(
                       Icons.upload_file,
                       size: 18,
-                      color: Color(0xFF6366F1),
+                      color: Color(0xFF14507F),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -2490,7 +2532,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF14507F),
                       ),
                     ),
                   ],
@@ -2507,15 +2549,15 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F9FF),
+                  color: const Color(0xFFEAF3FA),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFBAE6FD)),
+                  border: Border.all(color: const Color(0xFFCBE3F3)),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.description,
-                      color: Color(0xFF0284C7),
+                      color: Color(0xFF2178B5),
                       size: 18,
                     ),
                     const SizedBox(width: 12),
@@ -2705,7 +2747,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             children: [
               Icon(
                 icon,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF14507F),
                 size: isMobile ? 18 : 24,
               ),
               SizedBox(width: isMobile ? 8 : 12),
@@ -2747,7 +2789,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Color(0xFF6366F1)),
+                      borderSide: const BorderSide(color: Color(0xFF14507F)),
                     ),
                   ),
                   style: GoogleFonts.plusJakartaSans(
@@ -2801,12 +2843,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     Container(
                       padding: EdgeInsets.all(isMobile ? 8 : 10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                        color: const Color(0xFF14507F).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         itemIcon,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF14507F),
                         size: isMobile ? 16 : 20,
                       ),
                     ),
@@ -2849,7 +2891,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             children: [
               Icon(
                 Icons.folder_outlined,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF14507F),
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -3112,7 +3154,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                 if (_currentStep < _stepTitles.length - 1) ...[
                   const SizedBox(width: 12),
                   Material(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF14507F),
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       onTap: () async {
@@ -3241,7 +3283,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF14507F),
                             width: 1.5,
                           ),
                           borderRadius: BorderRadius.circular(8),
@@ -3252,7 +3294,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                             const Icon(
                               Icons.analytics_outlined,
                               size: 16,
-                              color: Color(0xFF6366F1),
+                              color: Color(0xFF14507F),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -3260,7 +3302,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF6366F1),
+                                color: const Color(0xFF14507F),
                               ),
                             ),
                           ],
@@ -3374,7 +3416,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(
-                color: Color(0xFF6366F1),
+                color: Color(0xFF14507F),
                 width: 1.5,
               ),
             ),

@@ -283,7 +283,7 @@ class _AdminSidebarState extends State<AdminSidebar> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: const DecorationImage(
-                image: AssetImage('images/logo.png'),
+                image: AssetImage('images/logo_new.jpeg'),
                 fit: BoxFit.cover,
               ),
             ),

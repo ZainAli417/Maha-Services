@@ -63,6 +63,7 @@ flutter:
     - images/
     - images/anim.json
     - images/logo.png
+    - images/logo_new.jpeg
     - images/splash.webp
     - images/signup_recruiter.svg
     - images/signup_jobseeker.svg

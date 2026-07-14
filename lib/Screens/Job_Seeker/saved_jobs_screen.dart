@@ -83,7 +83,7 @@ class _SavedJobsTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF6366F1);
+    const primaryBlue = Color(0xFF14507F);
     const textPrimary = Color(0xFF0F172A);
     const textSecondary = Color(0xFF475569);
 

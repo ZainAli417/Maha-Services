@@ -166,15 +166,40 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, 0),
+          AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, 0),
       child: Row(
         children: [
-          const Icon(Icons.flight_takeoff_rounded, color: AppColors.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text('Aviation Onboarding',
-                style: AppText.heading(fs: 16, fw: FontWeight.w700)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, AppColors.accent],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.flight_takeoff_rounded,
+                color: Colors.white, size: 20),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Aviation Onboarding',
+                    style: AppText.heading(fs: 17, fw: FontWeight.w800)),
+                Text('Tell us about your expertise to tailor your profile',
+                    style: AppText.body(fs: 12, color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
           TextButton(onPressed: onSkipAll, child: const Text('Skip for now')),
         ],
       ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math' as math;
 import 'Header_Nav.dart';
+import 'brand.dart';
+import 'site_chrome.dart';
 import 'package:go_router/go_router.dart';
 
 class PremiumPricingPage extends StatefulWidget {
@@ -15,7 +16,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
-  late AnimationController _gridController;
 
   bool _isAnnual = true;
   int _hoveredCardIndex = -1;
@@ -29,11 +29,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       vsync: this,
     )..forward();
 
-    _gridController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 30),
-    )..repeat();
-
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -44,7 +39,6 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _gridController.dispose();
     super.dispose();
   }
 
@@ -52,25 +46,11 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 900;
-    final horizontalPadding = isMobile ? 20.0 : 40.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFC),
+      backgroundColor: Brand.bgSoft,
       body: Stack(
         children: [
-          // Animated grid pattern background
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _gridController,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: _GridPainter(_gridController.value),
-                  size: Size.infinite,
-                );
-              },
-            ),
-          ),
-
           Column(
             children: [
               Expanded(
@@ -96,19 +76,19 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                             child: Column(
                               children: [
                                 const HeaderNav(),
-
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 32),
                                 _buildHeader(isMobile),
                                 const SizedBox(height: 40),
                                 _buildUserTypeSelector(isMobile),
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 28),
                                 _buildBillingToggle(isMobile),
-                                const SizedBox(height: 64),
+                                const SizedBox(height: 56),
                                 _buildPricingCards(),
-                                const SizedBox(height: 80),
+                                const SizedBox(height: 72),
                                 _buildFAQSection(isMobile),
-                                const SizedBox(height: 80),
-                                _buildFooter(),
+                                const SizedBox(height: 20),
+                                const SiteStatsBand(),
+                                const SiteFooter(),
                               ],
                             ),
                           ),
@@ -125,41 +105,28 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
+  // ─── Page header (light) ───────────────────────────────────────────────────
   Widget _buildHeader(bool isMobile) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 40),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              color: Brand.teal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                width: 1,
-              ),
+              border: Border.all(color: Brand.teal.withValues(alpha: 0.3)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF6366F1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
+                const BrandPulseDot(color: Brand.teal),
+                const SizedBox(width: 9),
                 Text(
                   'PRICING PLANS',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
-                    letterSpacing: 1.2,
-                  ),
+                  style: Brand.font(12, FontWeight.w700, Brand.tealDeep,
+                      spacing: 1.2),
                 ),
               ],
             ),
@@ -167,27 +134,19 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           const SizedBox(height: 24),
           Text(
             'Choose Your Perfect Plan',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: isMobile ? 32 : 48,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
-              letterSpacing: -1.5,
-              height: 1.1,
-            ),
+            style: Brand.font(
+                isMobile ? 32 : 48, FontWeight.w800, Brand.ink,
+                height: 1.1, spacing: -1.2),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           SizedBox(
             width: isMobile ? double.infinity : 600,
             child: Text(
-              'Tailored solutions for job seekers, recruiters, and admins. Start free, scale as you grow.',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: isMobile ? 16 : 18,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF64748B),
-                height: 1.6,
-                letterSpacing: -0.2,
-              ),
+              'Tailored solutions for job seekers, recruiters and admins. Start free, scale as you grow.',
+              style: Brand.font(
+                  isMobile ? 15 : 18, FontWeight.w500, Brand.muted,
+                  height: 1.6),
               textAlign: TextAlign.center,
             ),
           ),
@@ -198,9 +157,9 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
 
   Widget _buildUserTypeSelector(bool isMobile) {
     final userTypes = [
-      {'label': 'Job Seeker', 'icon': Icons.person_search},
-      {'label': 'Recruiter', 'icon': Icons.business_center},
-      {'label': 'Admin', 'icon': Icons.admin_panel_settings},
+      {'label': 'Job Seeker', 'icon': Icons.person_search_rounded},
+      {'label': 'Recruiter', 'icon': Icons.business_center_rounded},
+      {'label': 'Admin', 'icon': Icons.admin_panel_settings_rounded},
     ];
 
     return Container(
@@ -209,10 +168,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Brand.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            color: Brand.ink.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -247,12 +206,18 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           decoration: BoxDecoration(
             gradient: isSelected
-                ? const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  )
+                ? const LinearGradient(colors: [Brand.teal, Brand.tealDeep])
                 : null,
             color: isSelected ? null : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                        color: Brand.teal.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4)),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisAlignment: isMobile
@@ -262,17 +227,13 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
               Icon(
                 type['icon'] as IconData,
                 size: 20,
-                color: isSelected ? Colors.white : const Color(0xFF64748B),
+                color: isSelected ? Colors.white : Brand.muted,
               ),
               const SizedBox(width: 8),
               Text(
                 type['label'] as String,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
-                  letterSpacing: -0.2,
-                ),
+                style: Brand.font(15, FontWeight.w600,
+                    isSelected ? Colors.white : Brand.muted),
               ),
             ],
           ),
@@ -287,10 +248,10 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Brand.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            color: Brand.ink.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -325,7 +286,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF6366F1) : Colors.transparent,
+          color: isActive ? Brand.teal : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -333,29 +294,21 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           children: [
             Text(
               label,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : const Color(0xFF64748B),
-                letterSpacing: -0.2,
-              ),
+              style: Brand.font(15, FontWeight.w600,
+                  isActive ? Colors.white : Brand.muted),
             ),
             if (showBadge) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
+                  color: isActive ? Colors.white : Brand.teal,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   'Save 20%',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
+                  style: Brand.font(11, FontWeight.w700,
+                      isActive ? Brand.tealDeep : Colors.white, spacing: 0.5),
                 ),
               ),
             ],
@@ -603,18 +556,16 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isPopular
-                  ? const Color(0xFF6366F1)
-                  : const Color(0xFFE2E8F0),
+              color: isPopular ? Brand.teal : Brand.border,
               width: isPopular ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isHovered
                     ? (isPopular
-                          ? const Color(0xFF6366F1).withValues(alpha: 0.15)
-                          : const Color(0xFF0F172A).withValues(alpha: 0.08))
-                    : const Color(0xFF0F172A).withValues(alpha: 0.04),
+                          ? Brand.teal.withValues(alpha: 0.2)
+                          : Brand.ink.withValues(alpha: 0.1))
+                    : Brand.ink.withValues(alpha: 0.05),
                 blurRadius: isHovered ? 32 : 16,
                 offset: Offset(0, isHovered ? 12 : 4),
               ),
@@ -635,7 +586,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                         ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                            colors: [Brand.teal, Brand.tealDeep],
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -655,7 +606,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: Brand.ink,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -665,7 +616,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                        color: Brand.muted,
                         letterSpacing: -0.1,
                       ),
                     ),
@@ -678,7 +629,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
+                            color: Brand.ink,
                             height: 1.4,
                           ),
                         ),
@@ -700,7 +651,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 56,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
+                              color: Brand.ink,
                               letterSpacing: -2,
                               height: 1,
                             ),
@@ -714,7 +665,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF64748B),
+                        color: Brand.muted,
                         letterSpacing: -0.1,
                       ),
                     ),
@@ -726,7 +677,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
                       () => context.go('/login'),
                     ),
                     const SizedBox(height: 32),
-                    Container(height: 1, color: const Color(0xFFE2E8F0)),
+                    Container(height: 1, color: Brand.border),
                     const SizedBox(height: 24),
                     ...List.generate((plan['features'] as List).length, (i) {
                       final feature = (plan['features'] as List)[i];
@@ -782,21 +733,19 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           gradient: isPrimary
-              ? const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                )
+              ? const LinearGradient(colors: [Brand.teal, Brand.tealDeep])
               : null,
           color: isPrimary ? null : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: isPrimary
               ? null
-              : Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+              : Border.all(color: Brand.border, width: 1.5),
           boxShadow: isHovered
               ? [
                   BoxShadow(
                     color: isPrimary
-                        ? const Color(0xFF6366F1).withValues(alpha: 0.4)
-                        : const Color(0xFF0F172A).withValues(alpha: 0.1),
+                        ? Brand.teal.withValues(alpha: 0.4)
+                        : Brand.ink.withValues(alpha: 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -809,7 +758,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           style: GoogleFonts.plusJakartaSans(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: isPrimary ? Colors.white : const Color(0xFF0F172A),
+            color: isPrimary ? Colors.white : Brand.ink,
             letterSpacing: -0.2,
           ),
         ),
@@ -825,7 +774,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
           height: 20,
           decoration: BoxDecoration(
             color: included
-                ? const Color(0xFF6366F1).withValues(alpha: 0.1)
+                ? Brand.teal.withValues(alpha: 0.12)
                 : const Color(0xFFF1F5F9),
             shape: BoxShape.circle,
           ),
@@ -833,9 +782,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             child: Icon(
               included ? Icons.check_rounded : Icons.close_rounded,
               size: 14,
-              color: included
-                  ? const Color(0xFF6366F1)
-                  : const Color(0xFF94A3B8),
+              color: included ? Brand.tealDeep : Brand.faint,
             ),
           ),
         ),
@@ -846,9 +793,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: included
-                  ? const Color(0xFF334155)
-                  : const Color(0xFF94A3B8),
+              color: included ? Brand.slate : Brand.faint,
               letterSpacing: -0.1,
               decoration: included ? null : TextDecoration.lineThrough,
             ),
@@ -869,7 +814,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 28 : 32,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: Brand.ink,
               letterSpacing: -1,
             ),
             textAlign: TextAlign.center,
@@ -905,7 +850,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Brand.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -915,7 +860,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0F172A),
+              color: Brand.ink,
               letterSpacing: -0.2,
             ),
           ),
@@ -925,7 +870,7 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF64748B),
+              color: Brand.muted,
               height: 1.6,
               letterSpacing: -0.1,
             ),
@@ -935,573 +880,4 @@ class _PremiumPricingPageState extends State<PremiumPricingPage>
     );
   }
 
-  Widget _buildFooter() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-
-    return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [const Color(0xFF1F2937), const Color(0xFF111827)],
-          ),
-        ),
-        child: Column(
-          children: [
-            _buildStatsShowcase(),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 20 : (isTablet ? 30 : 50),
-                vertical: 10,
-              ),
-              child: Column(
-                children: [
-                  isMobile
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFooterBrand(),
-                            // const SizedBox(height: 24),
-                            // _buildFooterColumn('For Candidates', [
-                            //   'Create Profile',
-                            //   'Build CV',
-                            //   'Browse Jobs',
-                            //   'Career Resources',
-                            // ]),
-                            // const SizedBox(height: 20),
-                            // _buildFooterColumn('For Recruiters', [
-                            //   'Find Talent',
-                            //   'Submit Requests',
-                            //   'Pricing Plans',
-                            //   'Success Stories',
-                            // ]),
-                            // const SizedBox(height: 20),
-                            // _buildFooterColumn('Company', [
-                            //   'About Us',
-                            //   'Contact',
-                            //   'Careers',
-                            //   'Privacy Policy',
-                            // ]),
-                          ],
-                        )
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(flex: 2, child: _buildFooterBrand()),
-                            // SizedBox(width: isTablet ? 30 : 80),
-                            // Expanded(
-                            //   child: _buildFooterColumn('For Candidates', [
-                            //     'Create Profile',
-                            //     'Build CV',
-                            //     'Browse Jobs',
-                            //     'Career Resources',
-                            //   ]),
-                            // ),
-                            // SizedBox(width: isTablet ? 20 : 60),
-                            // Expanded(
-                            //   child: _buildFooterColumn('For Recruiters', [
-                            //     'Find Talent',
-                            //     'Submit Requests',
-                            //     'Pricing Plans',
-                            //     'Success Stories',
-                            //   ]),
-                            // ),
-                            // SizedBox(width: isTablet ? 20 : 60),
-                            // Expanded(
-                            //   child: _buildFooterColumn('Company', [
-                            //     'About Us',
-                            //     'Contact',
-                            //     'Careers',
-                            //     'Privacy Policy',
-                            //   ]),
-                            // ),
-                          ],
-                        ),
-                ],
-              ),
-            ),
-            _buildFooterBottom(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooterBrand() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final titleFontSize = isMobile ? 20.0 : 28.0;
-    final descFontSize = isMobile ? 12.0 : 14.0;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MAHA SERVICES',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: titleFontSize,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: isMobile ? 10 : 16),
-        Text(
-          'Revolutionizing recruitment through an intelligent 4-stage hiring ecosystem. Connecting talent with opportunity seamlessly.',
-          style: GoogleFonts.plusJakartaSans(
-            color: const Color(0xFF9CA3AF),
-            fontSize: descFontSize,
-            height: 1.8,
-          ),
-        ),
-        SizedBox(height: isMobile ? 16 : 24),
-      ],
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon, Color color) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final pad = isMobile ? 8.0 : 10.0;
-    final iconSize = isMobile ? 16.0 : 20.0;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: Container(
-        padding: EdgeInsets.all(pad),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Icon(icon, color: color, size: iconSize),
-      ),
-    );
-  }
-
-  Widget _buildStatsShowcase() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final vPad = isMobile ? 24.0 : 50.0;
-    final hPad = isMobile ? 16.0 : (isTablet ? 30.0 : 80.0);
-    final titleFontSize = isMobile ? 24.0 : (isTablet ? 32.0 : 42.0);
-    final subtitleFontSize = isMobile ? 13.0 : 18.0;
-    final provenFontSize = isMobile ? 10.0 : 12.0;
-    final statSpacing = isMobile ? 12.0 : (isTablet ? 20.0 : 50.0);
-
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: vPad, horizontal: hPad),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-            const Color(0x00f9fafb),
-          ],
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 12 : 20,
-              vertical: isMobile ? 5 : 8,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(50),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-            ),
-            child: Text(
-              '⚡ PROVEN SUCCESS',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: provenFontSize,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-          SizedBox(height: isMobile ? 12 : 20),
-          Text(
-            'Trusted by Industry Leaders',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: titleFontSize,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: isMobile ? 8 : 12),
-          Text(
-            'Real numbers, real impact - see how we transform hiring',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: subtitleFontSize,
-              color: Colors.white.withValues(alpha: 0.7),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: isMobile ? 24 : 70),
-          isMobile
-              ? Wrap(
-                  spacing: statSpacing,
-                  runSpacing: statSpacing,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _buildSuccessMetric(
-                      '15K+',
-                      'Successfully Hired',
-                      Icons.people_rounded,
-                    ),
-                    _buildSuccessMetric(
-                      '98%',
-                      'Success Rate',
-                      Icons.trending_up_rounded,
-                    ),
-                    _buildSuccessMetric(
-                      '24h',
-                      'Avg. Response',
-                      Icons.schedule_rounded,
-                    ),
-                    _buildSuccessMetric(
-                      '500+',
-                      'Active Recruiters',
-                      Icons.business_rounded,
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildSuccessMetric(
-                      '15K+',
-                      'Successfully Hired',
-                      Icons.people_rounded,
-                    ),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric(
-                      '98%',
-                      'Success Rate',
-                      Icons.trending_up_rounded,
-                    ),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric(
-                      '24h',
-                      'Avg. Response',
-                      Icons.schedule_rounded,
-                    ),
-                    SizedBox(width: statSpacing),
-                    _buildSuccessMetric(
-                      '500+',
-                      'Active Recruiters',
-                      Icons.business_rounded,
-                    ),
-                  ],
-                ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSuccessMetric(String value, String label, IconData icon) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final hPad = isMobile ? 14.0 : 24.0;
-    final vPad = isMobile ? 10.0 : 16.0;
-    final iconSize = isMobile ? 18.0 : 24.0;
-    final valueFontSize = isMobile ? 18.0 : 24.0;
-    final labelFontSize = isMobile ? 10.0 : 12.0;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white.withValues(alpha: 0.6),
-            size: iconSize,
-          ),
-          SizedBox(width: isMobile ? 8 : 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: valueFontSize,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: labelFontSize,
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFooterBottom() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 600;
-    final isTablet = screenWidth >= 600 && screenWidth < 1024;
-    final hPad = isMobile ? 16.0 : (isTablet ? 40.0 : 80.0);
-    final vPad = isMobile ? 16.0 : 30.0;
-    final copyrightFontSize = isMobile ? 11.0 : 13.0;
-    final aiFontSize = isMobile ? 10.0 : 12.0;
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFF374151), width: 1)),
-      ),
-      child: isMobile
-          ? Column(
-              children: [
-                Text(
-                  '© 2026 Maha Services. All rights reserved.',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFF6B7280),
-                    fontSize: copyrightFontSize,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.psychology_rounded,
-                        color: Color(0xFF6366F1),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Developed by MahaServices',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF6366F1),
-                          fontSize: aiFontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '© 2025 Maha Services. All rights reserved.',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: const Color(0xFF6B7280),
-                    fontSize: copyrightFontSize,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.psychology_rounded,
-                        color: Color(0xFF6366F1),
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Powered by AI',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: const Color(0xFF6366F1),
-                          fontSize: aiFontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class _GridPainter extends CustomPainter {
-  final double animationValue;
-
-  _GridPainter(this.animationValue);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double gridSize = 100.0;
-    final offset = animationValue * gridSize;
-
-    // Base grid paint (dimmed, more prominent)
-    final baseGridPaint = Paint()
-      ..color = const Color(0xFF4A90E2).withValues(alpha: 0.15)
-      ..strokeWidth = 1.6
-      ..style = PaintingStyle.stroke;
-
-    // Neon beam paint for grid lines
-    final beamPaint = Paint()
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-
-    // Draw vertical lines with moving beam effect
-    int verticalIndex = 0;
-    for (
-      double x = -gridSize + (offset % gridSize);
-      x < size.width + gridSize;
-      x += gridSize
-    ) {
-      // Draw base line
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), baseGridPaint);
-
-      // Create moving beam along the line
-      final beamProgress = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-      final beamStart = beamProgress * size.height;
-      final beamLength = size.height * 0.4; // Beam covers 30% of line
-
-      final verticalGradient = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.transparent,
-          const Color(0xFFF7E6FF).withValues(alpha: 0.4),
-          const Color(0xFFF7E6FF).withValues(alpha: 0.9),
-          const Color(0xFFF7E6FF).withValues(alpha: 0.4),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
-      );
-
-      beamPaint.shader = verticalGradient.createShader(
-        Rect.fromLTWH(x - 20, beamStart - beamLength / 2, 40, beamLength),
-      );
-
-      canvas.drawLine(
-        Offset(x, math.max(0, beamStart - beamLength / 2)),
-        Offset(x, math.min(size.height, beamStart + beamLength / 2)),
-        beamPaint,
-      );
-
-      verticalIndex++;
-    }
-
-    // Draw horizontal lines with moving beam effect
-    int horizontalIndex = 0;
-    for (
-      double y = -gridSize + (offset % gridSize);
-      y < size.height + gridSize;
-      y += gridSize
-    ) {
-      // Draw base line
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), baseGridPaint);
-
-      // Create moving beam along the line
-      final beamProgress =
-          (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
-      final beamStart = beamProgress * size.width;
-      final beamLength = size.width * 0.6; // Beam covers 30% of line
-
-      final horizontalGradient = LinearGradient(
-        colors: [
-          Colors.transparent,
-          const Color(0xFFE6EFFF).withValues(alpha: 0.4),
-          const Color(0xFFE6EFFF).withValues(alpha: 0.9),
-          const Color(0xFFE6EFFF).withValues(alpha: 0.4),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
-      );
-
-      beamPaint.shader = horizontalGradient.createShader(
-        Rect.fromLTWH(beamStart - beamLength / 2, y - 20, beamLength, 40),
-      );
-
-      canvas.drawLine(
-        Offset(math.max(0, beamStart - beamLength / 2), y),
-        Offset(math.min(size.width, beamStart + beamLength / 2), y),
-        beamPaint,
-      );
-
-      horizontalIndex++;
-    }
-
-    // Add extra glow at beam intersections
-    final intersectionPaint = Paint()
-      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
-
-    verticalIndex = 0;
-    for (
-      double x = -gridSize + (offset % gridSize);
-      x < size.width + gridSize;
-      x += gridSize
-    ) {
-      horizontalIndex = 0;
-      for (
-        double y = -gridSize + (offset % gridSize);
-        y < size.height + gridSize;
-        y += gridSize
-      ) {
-        final beamProgressV = (animationValue * 2 + verticalIndex * 0.3) % 1.0;
-        final beamProgressH =
-            (animationValue * 1.5 + horizontalIndex * 0.25) % 1.0;
-
-        // Check if beams are near intersection
-        final verticalBeamY = beamProgressV * size.height;
-        final horizontalBeamX = beamProgressH * size.width;
-
-        if ((verticalBeamY - y).abs() < 50 &&
-            (horizontalBeamX - x).abs() < 50) {
-          canvas.drawCircle(Offset(x, y), 8, intersectionPaint);
-        }
-
-        horizontalIndex++;
-      }
-      verticalIndex++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(_GridPainter oldDelegate) => true;
 }

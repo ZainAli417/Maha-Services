@@ -210,7 +210,7 @@ class ProfessionalCVGenerator {
     // Colorful watermark logo
     pw.MemoryImage? logoImage;
     try {
-      final logoData = await rootBundle.load('images/logo.png');
+      final logoData = await rootBundle.load('images/logo_new.jpeg');
       logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
     } catch (_) {}
 

@@ -475,7 +475,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF14507F),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -530,7 +530,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF14507F),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -582,8 +582,8 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                       icon: const Icon(Icons.clear_all, size: 18),
                       label: const Text('Clear All Filters'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF6366F1),
-                        side: const BorderSide(color: Color(0xFF6366F1)),
+                        foregroundColor: const Color(0xFF14507F),
+                        side: const BorderSide(color: Color(0xFF14507F)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -693,7 +693,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                         label: Text('$_activeFiltersCount'),
                         child: const Icon(
                           Icons.tune,
-                          color: Color(0xFF6366F1),
+                          color: Color(0xFF14507F),
                           size: 20,
                         ),
                       ),
@@ -981,10 +981,10 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
               ),
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFF6366F1),
+                  activeTrackColor: const Color(0xFF14507F),
                   inactiveTrackColor: const Color(0xFFE5E7EB),
-                  thumbColor: const Color(0xFF6366F1),
-                  overlayColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  thumbColor: const Color(0xFF14507F),
+                  overlayColor: const Color(0xFF14507F).withValues(alpha: 0.2),
                   trackHeight: 4,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 8,
@@ -1047,11 +1047,11 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF6366F1) : Colors.white,
+                  color: isSelected ? const Color(0xFF14507F) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF6366F1)
+                        ? const Color(0xFF14507F)
                         : const Color(0xFFD1D5DB),
                   ),
                 ),
@@ -1315,6 +1315,10 @@ class _CompactJobCardState extends State<CompactJobCard>
                                   child: CachedNetworkImage(
                                     imageUrl: logoUrl,
                                     fit: BoxFit.cover,
+                                    // Decode small — these are ~50px logos in
+                                    // a scrolling list; caps raster cost.
+                                    memCacheWidth: 120,
+                                    memCacheHeight: 120,
                                   ),
                                 )
                               : Icon(
@@ -1441,7 +1445,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                             : Icons.bookmark_added_rounded,
                                         color: isSaved
                                             ? const Color(0xFF64748B)
-                                            : const Color(0xFF6366F1),
+                                            : const Color(0xFF14507F),
                                       );
                                     } catch (e) {
                                       if (!mounted) return;
@@ -1460,13 +1464,13 @@ class _CompactJobCardState extends State<CompactJobCard>
                                     decoration: BoxDecoration(
                                       color: isSaved
                                           ? const Color(
-                                              0xFF6366F1,
+                                              0xFF14507F,
                                             ).withValues(alpha: 0.12)
                                           : Colors.white,
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: isSaved
-                                            ? const Color(0xFF6366F1)
+                                            ? const Color(0xFF14507F)
                                             : Colors.grey.shade300,
                                       ),
                                     ),
@@ -1476,7 +1480,7 @@ class _CompactJobCardState extends State<CompactJobCard>
                                           : Icons.bookmark_border_rounded,
                                       size: 18,
                                       color: isSaved
-                                          ? const Color(0xFF6366F1)
+                                          ? const Color(0xFF14507F)
                                           : const Color(0xFF64748B),
                                     ),
                                   ),

@@ -38,18 +38,18 @@ class _C {
   static const surfaceL = Color(0xFFFFFFFF);
   static const border = Color(0xFFE8ECF4);
 
-  static const indigo = Color(0xFF6366F1);
-  static const indigoLt = Color(0xFFEEEDFC);
-  static const teal = Color(0xFF0891B2);
-  static const tealLt = Color(0xFFE0F5FA);
+  static const indigo = Color(0xFF14507F);
+  static const indigoLt = Color(0xFFE8F1F8);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealLt = Color(0xFFE4F6F4);
   static const emerald = Color(0xFF059669);
   static const emeraldL = Color(0xFFDCFCED);
   static const amber = Color(0xFFD97706);
   static const amberLt = Color(0xFFFEF3CD);
   static const rose = Color(0xFFE11D48);
   static const roseLt = Color(0xFFFCE7ED);
-  static const violet = Color(0xFF7C3AED);
-  static const violetLt = Color(0xFFF1ECFE);
+  static const violet = Color(0xFF15A99C);
+  static const violetLt = Color(0xFFE4F6F4);
   static const slate = Color(0xFF64748B);
 
   static const t1 = Color(0xFF0F172A);
@@ -1050,7 +1050,7 @@ class _StatusBarChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (_) =>
-                const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
+                const FlLine(color: Color(0xFFF4F9FB), strokeWidth: 1),
           ),
           borderData: FlBorderData(show: false),
           barGroups: List.generate(values.length, (i) {
@@ -1439,7 +1439,7 @@ class _TrendChart extends StatelessWidget {
                   drawVerticalLine: false,
                   horizontalInterval: safeMax / 4,
                   getDrawingHorizontalLine: (_) =>
-                      const FlLine(color: Color(0xFFF0F3FA), strokeWidth: 1),
+                      const FlLine(color: Color(0xFFF4F9FB), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -1696,7 +1696,7 @@ class _TableRow extends StatelessWidget {
             : null,
         border: isLast
             ? null
-            : const Border(bottom: BorderSide(color: Color(0xFFF0F3FA))),
+            : const Border(bottom: BorderSide(color: Color(0xFFF4F9FB))),
       ),
       child: Row(
         children: [

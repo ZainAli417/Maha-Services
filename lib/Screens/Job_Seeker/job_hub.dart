@@ -143,14 +143,14 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
                                     color: const Color(
-                                      0xFF6366F1,
+                                      0xFF14507F,
                                     ).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(7),
                                   ),
                                   child: const Icon(
                                     Icons.screen_search_desktop_outlined,
                                     size: 16,
-                                    color: Color(0xFF6366F1),
+                                    color: Color(0xFF14507F),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -336,64 +336,114 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
   }
 
   Widget _buildWelcomeSection() {
-    const Color kPrimaryBlue = Color(0xFF6366F1);
-    const Color kTextPrimary = Color(0xFF0F172A);
-    const Color kTextSecondary = Color(0xFF475569);
-    const Color kBorderLight = Color(0xFFE2E8F0);
-
     final w = MediaQuery.of(context).size.width;
     final isMobile = w < 768;
     final hPad = isMobile ? 12.0 : 24.0;
-    final vPad = isMobile ? 10.0 : 16.0;
-    final iconSz = isMobile ? 18.0 : 24.0;
-    final titleSz = isMobile ? 15.0 : 18.0;
-    final subSz = isMobile ? 11.0 : 13.0;
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(isMobile ? 8 : 10),
-            decoration: BoxDecoration(
-              color: kPrimaryBlue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+    // Rich navy→teal branded banner. RepaintBoundary isolates it from the
+    // scrolling jobs list so it never repaints during scroll.
+    return RepaintBoundary(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(hPad, isMobile ? 10 : 16, hPad, 4),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 22, vertical: isMobile ? 14 : 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF061C31), Color(0xFF0A2E4F), Color(0xFF14507F)],
             ),
-            child: Icon(
-              Icons.screen_search_desktop_outlined,
-              size: iconSz,
-              color: kPrimaryBlue,
-            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF14507F).withValues(alpha: 0.28),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-          SizedBox(width: isMobile ? 12 : 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Job Hub',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 15 : 16,
-                    fontWeight: FontWeight.w700,
-                    color: kTextPrimary,
-                    height: 1.2,
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(isMobile ? 9 : 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: const Color(0xFF43E0D2).withValues(alpha: 0.4)),
+                ),
+                child: Icon(
+                  Icons.screen_search_desktop_outlined,
+                  size: isMobile ? 18 : 24,
+                  color: const Color(0xFF43E0D2),
+                ),
+              ),
+              SizedBox(width: isMobile ? 12 : 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Job Hub',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMobile ? 17 : 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.15,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    Text(
+                      'Explore jobs and become part of your dream company',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMobile ? 11 : 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        height: 1.25,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (!isMobile)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2EC4B6).withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                        color: const Color(0xFF43E0D2).withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF43E0D2),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'Live openings',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF43E0D2),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'Explore Jobs and Be a part of your Dream Company',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: isMobile ? 11 : 12,
-                    color: kTextSecondary,
-                    height: 1.2,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
