@@ -32,6 +32,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
     'Rejected': 0,
   };
   Map<String, int> topRecruiters = {};
+  Map<String, int> jobsByLocation = {};
   List<Map<String, dynamic>> recentRequests = [];
   List<Map<String, dynamic>> allJobs = [];
 
@@ -186,6 +187,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
           if (_disposed) return;
           int open = 0, closed = 0;
           List<Map<String, dynamic>> tempJobs = [];
+          final Map<String, int> locCounts = {};
           for (var doc in snap.docs) {
             final data = doc.data();
             final status = (data['status'] ?? 'open').toString().toLowerCase();
@@ -193,6 +195,12 @@ class AdminAnalyticsProvider extends ChangeNotifier {
               closed++;
             } else {
               open++;
+            }
+
+            // Geographical aggregation — count jobs per location.
+            final loc = (data['location'] ?? '').toString().trim();
+            if (loc.isNotEmpty && loc.toLowerCase() != 'not specified') {
+              locCounts[loc] = (locCounts[loc] ?? 0) + 1;
             }
 
             tempJobs.add({
@@ -203,6 +211,14 @@ class AdminAnalyticsProvider extends ChangeNotifier {
           }
           allJobs = tempJobs;
           jobsByStatus = {'Open': open, 'Closed': closed};
+
+          // Sort locations descending by count and keep the top 8.
+          final sortedLocations = locCounts.keys.toList()
+            ..sort((a, b) => locCounts[b]!.compareTo(locCounts[a]!));
+          jobsByLocation = {
+            for (var k in sortedLocations.take(8)) k: locCounts[k]!,
+          };
+
           _safeNotify();
         });
 

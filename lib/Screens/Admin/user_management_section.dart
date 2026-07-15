@@ -2,13 +2,58 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:job_portal/Constant/brand_snackbar.dart';
 import '../../Web_routes.dart' show AuthNotifier;
 import '../../core/rbac/rbac.dart';
 import '../../core/widgets/confirm_dialog.dart';
-import '../../core/widgets/custom_snackbars.dart';
 import 'admin_recruiter_request_provider.dart';
 import 'user_detail_panel.dart';
 import 'widgets/admin_header.dart';
+
+/// Navy + teal brand tokens for the admin user-management screen. Values come
+/// straight from the shared admin palette so this screen reads as one system
+/// with the rest of the portal. No indigo/violet is permitted here.
+class _C {
+  const _C._();
+  static const hero = Color(0xFF061C31);
+  static const heroAlt = Color(0xFF0A2E4F);
+  static const navy = Color(0xFF14507F);
+  static const deepNavy = Color(0xFF0A2E4F);
+  static const blue = Color(0xFF2178B5);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealBright = Color(0xFF43E0D2);
+  static const tealDeep = Color(0xFF15A99C);
+  static const coral = Color(0xFFFF7A59);
+  static const amber = Color(0xFFFFB020);
+  static const ink = Color(0xFF0B2239);
+  static const slate = Color(0xFF3E5C76);
+  static const muted = Color(0xFF5E7A8E);
+  static const faint = Color(0xFF8AA5B5);
+  static const border = Color(0xFFDCE7EF);
+  static const bgSoft = Color(0xFFF4F9FB);
+  static const tealTint = Color(0xFFE4F6F4);
+  static const navyTint = Color(0xFFE8F1F8);
+  static const white = Color(0xFFFFFFFF);
+  static const success = Color(0xFF10B981);
+  static const error = Color(0xFFEF4444);
+  static const warning = Color(0xFFF59E0B);
+
+  static const primaryGradient = LinearGradient(
+    colors: [teal, navy],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static const badgeGradient = LinearGradient(
+    colors: [tealBright, navy],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static final cardShadow = BoxShadow(
+    color: ink.withValues(alpha: 0.05),
+    blurRadius: 16,
+    offset: const Offset(0, 8),
+  );
+}
 
 class UserManagementSection extends StatefulWidget {
   const UserManagementSection({super.key});
@@ -113,7 +158,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           child: SlideTransition(
             position: _slideAnimation,
             child: Container(
-              color: const Color(0xFFFAFAFA),
+              color: _C.bgSoft,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -244,13 +289,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
             });
           },
           icon: const Icon(Icons.refresh_rounded),
+          tooltip: 'Reset filters',
           style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF64748B),
+            backgroundColor: _C.navyTint,
+            foregroundColor: _C.navy,
             padding: const EdgeInsets.all(12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-              side: BorderSide(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: _C.border),
             ),
           ),
         ),
@@ -263,34 +309,44 @@ class _UserManagementSectionState extends State<UserManagementSection>
       height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border, width: 1.2),
       ),
       child: TextField(
         onChanged: (value) => setState(() => _searchQuery = value),
+        cursorColor: _C.navy,
         style: GoogleFonts.plusJakartaSans(
-          fontSize: 14,
-          color: const Color(0xFF0F172A),
+          fontSize: 15,
+          color: _C.ink,
           fontWeight: FontWeight.w600,
         ),
         decoration: InputDecoration(
           hintText: 'Search by name or email...',
           hintStyle: GoogleFonts.plusJakartaSans(
-            color: const Color(0xFF94A3B8),
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+            color: _C.muted,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
           ),
           filled: false,
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            color: Color(0xFF94A3B8),
-            size: 20,
+          prefixIcon: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: _C.tealTint,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.search_rounded,
+              color: _C.tealDeep,
+              size: 18,
+            ),
           ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(
                     Icons.close_rounded,
-                    color: Color(0xFF94A3B8),
+                    color: _C.muted,
                     size: 18,
                   ),
                   onPressed: () => setState(() => _searchQuery = ''),
@@ -298,8 +354,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+            horizontal: 14,
+            vertical: 13,
           ),
         ),
       ),
@@ -315,32 +371,27 @@ class _UserManagementSectionState extends State<UserManagementSection>
   ) {
     return Container(
       height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border, width: 1.2),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           onChanged: onChanged,
+          borderRadius: BorderRadius.circular(12),
+          dropdownColor: Colors.white,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 14,
-            color: const Color(0xFF0F172A),
+            fontSize: 15,
+            color: _C.ink,
             fontWeight: FontWeight.w600,
           ),
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
             size: 20,
-            color: Color(0xFF64748B),
+            color: _C.navy,
           ),
           isExpanded: false,
           items: items.map((item) {
@@ -349,7 +400,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 16, color: const Color(0xFF64748B)),
+                  Icon(icon, size: 16, color: _C.tealDeep),
                   const SizedBox(width: 8),
                   Text(
                     item == 'all'
@@ -362,7 +413,11 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                     word[0].toUpperCase() + word.substring(1),
                               )
                               .join(' '),
-                    style: GoogleFonts.plusJakartaSans(fontSize: 14),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _C.ink,
+                    ),
                   ),
                 ],
               ),
@@ -387,18 +442,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
         ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _C.border),
+          boxShadow: [_C.cardShadow],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('users')
@@ -433,15 +482,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 return Column(
                   children: [
                     // Compact count header
+                    if (capped) _buildCappedNotice(),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
                       ),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFAFAFA),
+                        color: _C.bgSoft,
                         border: Border(
-                          bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                          bottom: BorderSide(color: _C.border),
                         ),
                       ),
                       child: Row(
@@ -449,15 +499,15 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           const Icon(
                             Icons.people_outline_rounded,
                             size: 16,
-                            color: Color(0xFF94A3B8),
+                            color: _C.tealDeep,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '${users.length} user${users.length != 1 ? 's' : ''}',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.w700,
+                              color: _C.slate,
                             ),
                           ),
                         ],
@@ -466,6 +516,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     Expanded(
                       child: ListView.separated(
                         controller: _scrollController,
+                        cacheExtent: 700,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
@@ -503,47 +554,51 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       controller: _scrollController,
                       padding: EdgeInsets.zero,
                       itemCount: users.length,
+                      cacheExtent: 700,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         final doc = users[index];
                         final data = doc.data() as Map<String, dynamic>;
 
-                        return AnimatedBuilder(
-                          animation: _staggerController,
-                          builder: (context, child) {
-                            final animationValue = CurvedAnimation(
-                              parent: _staggerController,
-                              curve: Interval(
-                                (index / users.length) * 0.5,
-                                1.0,
-                                curve: Curves.easeOutQuart,
-                              ),
-                            ).value;
-
-                            return Opacity(
-                              opacity: animationValue,
-                              child: Transform.translate(
-                                offset: Offset(0, 20 * (1 - animationValue)),
-                                child: Column(
-                                  children: [
-                                    _buildUserRow(
-                                      context,
-                                      provider,
-                                      doc.id,
-                                      data,
-                                      index,
-                                    ),
-                                    if (index < users.length - 1)
-                                      const Divider(
-                                        height: 1,
-                                        thickness: 1,
-                                        color: Color(0xFFF1F5F9),
-                                      ),
-                                  ],
+                        return RepaintBoundary(
+                          child: AnimatedBuilder(
+                            animation: _staggerController,
+                            builder: (context, child) {
+                              final animationValue = CurvedAnimation(
+                                parent: _staggerController,
+                                curve: Interval(
+                                  (index / users.length) * 0.5,
+                                  1.0,
+                                  curve: Curves.easeOutQuart,
                                 ),
-                              ),
-                            );
-                          },
+                              ).value;
+
+                              return Opacity(
+                                opacity: animationValue,
+                                child: Transform.translate(
+                                  offset: Offset(0, 20 * (1 - animationValue)),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Column(
+                              children: [
+                                _buildUserRow(
+                                  context,
+                                  provider,
+                                  doc.id,
+                                  data,
+                                  index,
+                                ),
+                                if (index < users.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: _C.border,
+                                  ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -584,8 +639,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _C.border),
+            boxShadow: [_C.cardShadow],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,30 +649,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               // Top row: avatar + name + status
               Row(
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF7C3AED)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        displayName.isNotEmpty
-                            ? displayName[0].toUpperCase()
-                            : '?',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildAvatar(displayName, size: 40),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -626,8 +659,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           displayName,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0F172A),
+                            fontWeight: FontWeight.w700,
+                            color: _C.ink,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -636,7 +669,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
                           email,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
-                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                            color: _C.muted,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -647,19 +681,21 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   _buildStatusBadge(status),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+              const Divider(height: 1, thickness: 1, color: _C.border),
+              const SizedBox(height: 12),
               // Bottom row: role + level + actions
               Row(
                 children: [
-                  _buildRoleBadge(role),
+                  Flexible(child: _buildRoleBadge(role)),
                   const SizedBox(width: 8),
-                  _buildLevelBadge(userLevel),
+                  Flexible(child: _buildLevelBadge(userLevel)),
                   const Spacer(),
                   // Compact actions
                   _buildActionButton(
                     Icons.edit_note_rounded,
                     'Edit',
-                    const Color(0xFF6366F1),
+                    _C.navy,
                     () => _showEditUserDialog(
                       context,
                       provider,
@@ -674,16 +710,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         ? Icons.block_rounded
                         : Icons.check_circle_rounded,
                     status == 'active' ? 'Suspend' : 'Activate',
-                    status == 'active'
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFF10B981),
+                    status == 'active' ? _C.error : _C.success,
                     () async => await provider.suspendUser(docId, status),
                   ),
                   const SizedBox(width: 4),
                   _buildActionButton(
                     Icons.lock_reset_rounded,
                     'Reset',
-                    const Color(0xFF8B5CF6),
+                    _C.tealDeep,
                     () => _showResetPasswordDialog(context, provider, email),
                   ),
                 ],
@@ -724,10 +758,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
+        color: _C.bgSoft,
         border: Border(
           bottom: BorderSide(
-            color: _isScrolled ? const Color(0xFFE2E8F0) : Colors.transparent,
+            color: _isScrolled ? _C.border : Colors.transparent,
             width: 1,
           ),
         ),
@@ -778,7 +812,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
           : MainAxisAlignment.start,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+          Icon(icon, size: 14, color: _C.tealDeep),
           const SizedBox(width: 8),
         ],
         Text(
@@ -786,9 +820,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
           textAlign: align,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF64748B),
-            letterSpacing: 0.5,
+            fontWeight: FontWeight.w800,
+            color: _C.slate,
+            letterSpacing: 1.2,
           ),
         ),
       ],
@@ -808,14 +842,23 @@ class _UserManagementSectionState extends State<UserManagementSection>
     final role = data['role'] ?? 'N/A';
     final userLevel = data['user_lvl'] ?? 'basic';
 
+    final isSelected = _selected.contains(docId);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: isSelected ? _C.navyTint : Colors.white,
+        border: Border(
+          left: BorderSide(
+            color: isSelected ? _C.teal : Colors.transparent,
+            width: 3,
+          ),
+        ),
+      ),
       child: InkWell(
         onTap: () {},
-        hoverColor: const Color(0xFFFAFAFA),
+        hoverColor: _C.navyTint.withValues(alpha: 0.6),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 21, vertical: 16),
           child: FutureBuilder<String>(
             future: provider.fetchUnifiedName(data['uid'] ?? docId),
             builder: (context, snapshot) {
@@ -831,7 +874,12 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   SizedBox(
                     width: 44,
                     child: Checkbox(
-                      value: _selected.contains(docId),
+                      value: isSelected,
+                      activeColor: _C.navy,
+                      side: const BorderSide(color: _C.faint, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       onChanged: (v) => setState(() {
                         v == true
                             ? _selected.add(docId)
@@ -864,42 +912,50 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
+  /// Branded gradient-initial avatar (navy -> teal). Avatars in this screen are
+  /// initials-only (no network image), so no image decode is required; if a
+  /// URL is ever attached it should be decoded via ResizeImage(...) <= 160px.
+  Widget _buildAvatar(String name, {double size = 40}) {
+    final initials = name.trim().isEmpty
+        ? '?'
+        : name
+            .trim()
+            .split(RegExp(r'\s+'))
+            .take(2)
+            .map((w) => w.isEmpty ? '' : w[0])
+            .join()
+            .toUpperCase();
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: _C.badgeGradient,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: _C.teal.withValues(alpha: 0.22),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initials,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: initials.length > 1 ? size * 0.34 : size * 0.4,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserInfo(String name, String email) {
     return Row(
       children: [
-        Hero(
-          tag: 'avatar_$name',
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF7C3AED)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ),
+        Hero(tag: 'avatar_$name', child: _buildAvatar(name, size: 40)),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -910,8 +966,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 name,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w700,
+                  color: _C.ink,
                   height: 1.3,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -923,7 +979,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF64748B),
+                  color: _C.muted,
                   height: 1.3,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -946,8 +1002,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
         message: 'Role: ${label.toUpperCase()}',
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(6),
+          color: _C.ink,
+          borderRadius: BorderRadius.circular(8),
         ),
         textStyle: GoogleFonts.plusJakartaSans(
           fontSize: 12,
@@ -956,10 +1012,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: roleConfig['bgColor'],
-            borderRadius: BorderRadius.circular(16),
+            color: (roleConfig['color'] as Color).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: roleConfig['color']!.withValues(alpha: 0.15),
+              color: (roleConfig['color'] as Color).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -967,12 +1023,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
             children: [
               Icon(roleConfig['icon'], size: 13, color: roleConfig['color']),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: roleConfig['color'],
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: roleConfig['color'],
+                  ),
                 ),
               ),
             ],
@@ -995,16 +1055,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
     IconData icon;
 
     if (isPremium) {
-      bgColor = const Color(0xFFFFFBEB);
-      borderColor = const Color(0xFFFCD34D).withValues(alpha: 0.5);
-      iconColor = const Color(0xFFF59E0B);
+      bgColor = _C.amber.withValues(alpha: 0.12);
+      borderColor = _C.amber.withValues(alpha: 0.3);
+      iconColor = const Color(0xFFB45309);
       textColor = const Color(0xFFB45309);
       icon = Icons.workspace_premium_rounded;
     } else {
-      bgColor = const Color(0xFFF1F5F9);
-      borderColor = const Color(0xFFE2E8F0);
-      iconColor = const Color(0xFF64748B);
-      textColor = const Color(0xFF64748B);
+      bgColor = _C.navyTint;
+      borderColor = _C.border;
+      iconColor = _C.slate;
+      textColor = _C.slate;
       icon = Icons.person_outline;
     }
 
@@ -1014,7 +1074,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(999),
           border: Border.all(color: borderColor),
         ),
         child: Row(
@@ -1022,12 +1082,16 @@ class _UserManagementSectionState extends State<UserManagementSection>
           children: [
             Icon(icon, size: 14, color: iconColor),
             const SizedBox(width: 6),
-            Text(
-              userLevel[0].toUpperCase() + userLevel.substring(1),
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: textColor,
+            Flexible(
+              child: Text(
+                userLevel[0].toUpperCase() + userLevel.substring(1),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
               ),
             ),
           ],
@@ -1037,19 +1101,26 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildStatusBadge(String status) {
-    final isActive = status.toLowerCase() == 'active';
+    // active -> teal/green success; suspended/inactive -> amber; deleted -> red.
+    final s = status.toLowerCase();
+    final Color color;
+    switch (s) {
+      case 'active':
+        color = _C.success;
+      case 'suspended':
+      case 'inactive':
+        color = _C.warning;
+      default:
+        color = _C.error;
+    }
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isActive
-                ? const Color(0xFF6EE7B7).withValues(alpha: 0.5)
-                : const Color(0xFFFCA5A5).withValues(alpha: 0.5),
-          ),
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1059,20 +1130,18 @@ class _UserManagementSectionState extends State<UserManagementSection>
               height: 6,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isActive
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
+                color: color,
               ),
             ),
             const SizedBox(width: 6),
             Text(
-              status[0].toUpperCase() + status.substring(1),
+              status.isEmpty
+                  ? 'Unknown'
+                  : status[0].toUpperCase() + status.substring(1),
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isActive
-                    ? const Color(0xFF059669)
-                    : const Color(0xFFDC2626),
+                fontWeight: FontWeight.w700,
+                color: color,
               ),
             ),
           ],
@@ -1087,7 +1156,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: const Color(0xFFFFF7ED),
+      color: _C.amber.withValues(alpha: 0.12),
       child: Row(
         children: [
           const Icon(Icons.info_outline_rounded,
@@ -1100,7 +1169,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: const Color(0xFFB45309),
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -1120,7 +1189,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFFEEF2FF),
+      decoration: const BoxDecoration(
+        color: _C.navyTint,
+        border: Border(bottom: BorderSide(color: _C.border)),
+      ),
       child: Row(
         children: [
           TextButton.icon(
@@ -1129,21 +1201,28 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   ? _selected.removeAll(pageIds)
                   : _selected.addAll(pageIds);
             }),
+            style: TextButton.styleFrom(foregroundColor: _C.navy),
             icon: Icon(
               allOnPageSelected
                   ? Icons.remove_done_rounded
                   : Icons.done_all_rounded,
               size: 16,
             ),
-            label: Text(allOnPageSelected ? 'Unselect page' : 'Select page'),
+            label: Text(
+              allOnPageSelected ? 'Unselect page' : 'Select page',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+            ),
           ),
           const SizedBox(width: 8),
           Text(
             '${_selected.length} selected',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF4F46E5),
+              fontWeight: FontWeight.w800,
+              color: _C.tealDeep,
             ),
           ),
           const Spacer(),
@@ -1151,22 +1230,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
             const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(_C.navy),
+              ),
             )
           else ...[
             _bulkBtn('Activate', Icons.check_circle_rounded,
-                const Color(0xFF10B981), () => _runBulk(context, provider, 'activate')),
+                _C.success, () => _runBulk(context, provider, 'activate')),
             const SizedBox(width: 6),
-            _bulkBtn('Suspend', Icons.block_rounded, const Color(0xFFF59E0B),
+            _bulkBtn('Suspend', Icons.block_rounded, _C.warning,
                 () => _runBulk(context, provider, 'suspend')),
             const SizedBox(width: 6),
             _bulkBtn('Delete', Icons.delete_outline_rounded,
-                const Color(0xFFEF4444), () => _runBulk(context, provider, 'delete')),
+                _C.error, () => _runBulk(context, provider, 'delete')),
             const SizedBox(width: 6),
             IconButton(
               tooltip: 'Clear selection',
               onPressed: () => setState(_selected.clear),
-              icon: const Icon(Icons.close_rounded, size: 18),
+              icon: const Icon(Icons.close_rounded, size: 18, color: _C.slate),
             ),
           ],
         ],
@@ -1228,7 +1310,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       _bulkBusy = false;
     });
     if (context.mounted) {
-      CustomSnackbars.showSuccess(context, '$label complete ($done)');
+      BrandSnack.success(context, '$label complete ($done)');
     }
   }
 
@@ -1251,14 +1333,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
         _buildActionButton(
           Icons.visibility_outlined,
           'View profile',
-          const Color(0xFF64748B),
+          _C.tealDeep,
           () => UserDetailPanel.show(context, uid: docId, userData: data),
         ),
         const SizedBox(width: 6),
         _buildActionButton(
           Icons.edit_note_rounded,
           'Edit user',
-          const Color(0xFF6366F1),
+          _C.navy,
           () => _showEditUserDialog(context, provider, data, docId, name),
         ),
         const SizedBox(width: 6),
@@ -1285,16 +1367,19 @@ class _UserManagementSectionState extends State<UserManagementSection>
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: const Color(0xFF64748B).withValues(alpha: 0.08),
+          color: _C.navy.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF64748B).withValues(alpha: 0.15)),
+          border: Border.all(color: _C.navy.withValues(alpha: 0.15)),
         ),
-        child: const Icon(Icons.more_horiz_rounded,
-            size: 18, color: Color(0xFF475569)),
+        child: const Icon(Icons.more_horiz_rounded, size: 18, color: _C.navy),
       ),
       padding: EdgeInsets.zero,
+      color: Colors.white,
       position: PopupMenuPosition.under,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: _C.border),
+      ),
       onSelected: (value) async {
         switch (value) {
           case 'convert':
@@ -1320,7 +1405,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             status == 'active' ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
           ),
         _menuItem('reset', Icons.lock_reset_rounded, 'Reset password',
-            const Color(0xFF8B5CF6)),
+            const Color(0xFF2EC4B6)),
         const PopupMenuDivider(),
         if (isDeleted)
           _menuItem('restore', Icons.restore_rounded, 'Restore user',
@@ -1433,8 +1518,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
     if (!context.mounted) return;
     result.ok
-        ? CustomSnackbars.showSuccess(context, result.message)
-        : CustomSnackbars.showError(context, result.message);
+        ? BrandSnack.success(context, result.message)
+        : BrandSnack.error(context, result.message);
   }
 
   /// Roles the [viewer] is allowed to assign. Admin-tier assignment is
@@ -1471,8 +1556,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
     final result = await provider.softDeleteUser(docId, label: email);
     if (!context.mounted) return;
     result.ok
-        ? CustomSnackbars.showSuccess(context, result.message)
-        : CustomSnackbars.showError(context, result.message);
+        ? BrandSnack.success(context, result.message)
+        : BrandSnack.error(context, result.message);
   }
 
   Future<void> _confirmRestore(
@@ -1484,8 +1569,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
     final result = await provider.restoreUser(docId, label: email);
     if (!context.mounted) return;
     result.ok
-        ? CustomSnackbars.showSuccess(context, result.message)
-        : CustomSnackbars.showError(context, result.message);
+        ? BrandSnack.success(context, result.message)
+        : BrandSnack.error(context, result.message);
   }
 
   Widget _buildActionButton(
@@ -1575,7 +1660,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  color: const Color(0xFF14507F).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -1583,7 +1668,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF14507F),
                   ),
                 ),
               ),
@@ -1609,7 +1694,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       style: IconButton.styleFrom(
         backgroundColor: onTap != null ? Colors.white : Colors.transparent,
         foregroundColor: onTap != null
-            ? const Color(0xFF6366F1)
+            ? const Color(0xFF14507F)
             : Colors.grey.shade400,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -1637,7 +1722,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         };
       case UserRole.recruiter:
         return {
-          'color': const Color(0xFF6366F1),
+          'color': const Color(0xFF14507F),
           'bgColor': const Color(0xFFEEF2FF),
           'icon': Icons.business_center_rounded,
         };
@@ -1672,7 +1757,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             height: 48,
             child: CircularProgressIndicator(
               valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF6366F1),
+                Color(0xFF14507F),
               ),
               strokeWidth: 3,
               backgroundColor: const Color(0xFFE0E7FF),
@@ -1741,7 +1826,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF14507F),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -1805,7 +1890,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               'Clear Filters',
               style: GoogleFonts.plusJakartaSans(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF14507F),
               ),
             ),
           ),
@@ -1888,7 +1973,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       padding: EdgeInsets.all(isMobile ? 20 : 28),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                          colors: [Color(0xFF14507F), Color(0xFF0A2E4F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -2098,7 +2183,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                       }
 
                                       if (success) {
-                                        CustomSnackbars.showSuccess(
+                                        BrandSnack.success(
                                           context,
                                           provider.message,
                                         );
@@ -2107,7 +2192,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                                           Navigator.pop(dialogContext);
                                         }
                                       } else {
-                                        CustomSnackbars.showError(
+                                        BrandSnack.error(
                                           context,
                                           provider.message,
                                         );
@@ -2138,7 +2223,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                             ),
                             style:
                                 ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF6366F1),
+                                  backgroundColor: const Color(0xFF14507F),
                                   foregroundColor: Colors.white,
                                   disabledBackgroundColor: const Color(
                                     0xFFCBD5E1,
@@ -2244,7 +2329,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
               icon,
               size: 18,
               color: isSelected
-                  ? const Color(0xFF4F46E5)
+                  ? const Color(0xFF0A2E4F)
                   : const Color(0xFF94A3B8),
             ),
             const SizedBox(width: 8),
@@ -2255,7 +2340,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: isSelected
-                      ? const Color(0xFF4F46E5)
+                      ? const Color(0xFF0A2E4F)
                       : const Color(0xFF64748B),
                 ),
               ),
@@ -2290,7 +2375,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF0A2E4F), width: 1.5),
         ),
       ),
       icon: const Icon(
@@ -2395,7 +2480,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                color: Color(0xFF4F46E5),
+                color: Color(0xFF0A2E4F),
                 width: 1.5,
               ),
             ),
@@ -2462,7 +2547,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
                       ),
                       child: const Icon(
                         Icons.lock_reset_rounded,
-                        color: Color(0xFF8B5CF6),
+                        color: Color(0xFF2EC4B6),
                         size: 40,
                       ),
                     ),
@@ -2553,13 +2638,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
                         onPressed: () {
                           provider.resetPassword(email);
                           Navigator.pop(dialogContext);
-                          CustomSnackbars.showSuccess(
+                          BrandSnack.success(
                             context,
                             'Reset link sent successfully',
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
+                          backgroundColor: const Color(0xFF14507F),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

@@ -781,69 +781,83 @@ class ProfileProvider_NEW extends ChangeNotifier {
     _safeNotifyListeners();
   }
 
-  // Temp Updates (Only notify, no dirty flag)
+  // Temp Updates — mark the owning section dirty on ANY input, so the Save
+  // button reflects unsaved changes the moment the user edits an input area.
   void updateTempSchool(String v) {
     tempSchool = v;
+    educationDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempDegree(String v) {
     tempDegree = v;
+    educationDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempFieldOfStudy(String v) {
     tempFieldOfStudy = v;
+    educationDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempEduStart(String v) {
     tempEduStart = v;
+    educationDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempEduEnd(String v) {
     tempEduEnd = v;
+    educationDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempCompany(String v) {
     tempCompany = v;
+    experienceDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempRole(String v) {
     tempRole = v;
+    experienceDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempExpStart(String v) {
     tempExpStart = v;
+    experienceDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempExpEnd(String v) {
     tempExpEnd = v;
+    experienceDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempExpDescription(String v) {
     tempExpDescription = v;
+    experienceDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempCertName(String v) {
     tempCertName = v;
+    certificationsDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempCertInstitution(String v) {
     tempCertInstitution = v;
+    certificationsDirty = true;
     _safeNotifyListeners();
   }
 
   void updateTempCertYear(String v) {
     tempCertYear = v;
+    certificationsDirty = true;
     _safeNotifyListeners();
   }
 

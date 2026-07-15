@@ -9,28 +9,39 @@ import 'admin_analytics_dashboard_Provider.dart';
 //  DESIGN TOKENS  — Light Professional
 // ═══════════════════════════════════════════════════════════════════════════
 class _C {
-  static const canvas = Color(0xFFF8FAFC);
+  static const canvas = Color(0xFFF4F9FB); // bgSoft
   static const surface = Color(0xFFFFFFFF);
   static const surfaceL = Color(0xFFFAFBFD);
-  static const border = Color(0xFFE8ECF4);
+  static const border = Color(0xFFDCE7EF);
 
-  static const indigo = Color(0xFF4F46E5);
-  static const indigoLt = Color(0xFFEEEDFC);
-  static const teal = Color(0xFF0891B2);
-  static const tealLt = Color(0xFFE0F5FA);
-  static const emerald = Color(0xFF059669);
+  // Brand primaries — navy + teal. Named for clarity in chart series.
+  static const navy = Color(0xFF14507F);
+  static const navyDeep = Color(0xFF0A2E4F);
+  static const blue = Color(0xFF2178B5);
+  static const tealDeep = Color(0xFF15A99C);
+  static const tealBright = Color(0xFF43E0D2);
+  static const coral = Color(0xFFFF7A59);
+  static const coralLt = Color(0xFFFFEDE7);
+
+  // Legacy token names retained, values rebranded to the navy+teal palette
+  // (indigo → navy, violet → blue) so all charts/cards stay coherent.
+  static const indigo = Color(0xFF14507F); // navy
+  static const indigoLt = Color(0xFFE8F1F8); // navy tint
+  static const teal = Color(0xFF2EC4B6);
+  static const tealLt = Color(0xFFE4F6F4); // teal tint
+  static const emerald = Color(0xFF10B981); // success
   static const emeraldL = Color(0xFFDCFCED);
-  static const amber = Color(0xFFD97706);
+  static const amber = Color(0xFFF59E0B); // warning / pending
   static const amberLt = Color(0xFFFEF3CD);
-  static const rose = Color(0xFFE11D48);
+  static const rose = Color(0xFFEF4444); // error
   static const roseLt = Color(0xFFFCE7ED);
-  static const violet = Color(0xFF7C3AED);
-  static const violetLt = Color(0xFFF1ECFE);
-  static const slate = Color(0xFF64748B);
+  static const violet = Color(0xFF2178B5); // blue
+  static const violetLt = Color(0xFFE8F1F8); // navy tint
+  static const slate = Color(0xFF3E5C76);
 
-  static const t1 = Color(0xFF0F172A);
-  static const t2 = Color(0xFF475569);
-  static const t3 = Color(0xFF94A3B8);
+  static const t1 = Color(0xFF0B2239); // ink
+  static const t2 = Color(0xFF3E5C76); // slate
+  static const t3 = Color(0xFF8AA5B5); // faint
 
   static TextStyle p(
     double size, {
@@ -77,15 +88,29 @@ class _AdminAnalyticsDashboardScreenState
               if (isMid) _buildModernHeader(context, prov),
               Expanded(
                 child: prov.loading && prov.totalUsers == 0
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: _C.indigo,
-                          strokeWidth: 2,
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              color: _C.navy,
+                              strokeWidth: 3,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading analytics…',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF5E7A8E),
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     : RefreshIndicator(
                         onRefresh: prov.refresh,
-                        color: _C.indigo,
+                        color: _C.navy,
                         backgroundColor: _C.surface,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,19 +143,30 @@ class _AdminAnalyticsDashboardScreenState
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
       height: 72,
-      decoration: BoxDecoration(color: Color(0xFFF8FAFC)),
+      decoration: const BoxDecoration(color: _C.canvas),
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              gradient: const LinearGradient(
+                colors: [_C.teal, _C.navy],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: _C.teal.withValues(alpha: 0.28),
+                  blurRadius: 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.supervised_user_circle,
-              color: Color(0xFF6366F1),
+              color: Colors.white,
               size: 24,
             ),
           ),
@@ -141,11 +177,20 @@ class _AdminAnalyticsDashboardScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  'ADMIN ANALYTICS',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                    color: _C.tealDeep,
+                  ),
+                ),
+                Text(
                   'Insights Dashboard',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: isMobile ? 16 : 20,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
+                    fontWeight: FontWeight.w800,
+                    color: _C.t1,
                   ),
                 ),
                 Text(
@@ -153,7 +198,7 @@ class _AdminAnalyticsDashboardScreenState
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
+                    color: _C.t2,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -314,8 +359,165 @@ class _MainContent extends StatelessWidget {
                   _JobsBarCard(data: prov.jobsByStatus),
                 ],
               ),
+        const SizedBox(height: 28),
+
+        // GEOGRAPHICAL DISTRIBUTION — jobs by location
+        _SectionHead(
+          icon: Icons.public_rounded,
+          title: 'Geographical Distribution',
+        ),
+        const SizedBox(height: 14),
+        _GeoCard(data: prov.jobsByLocation),
         const SizedBox(height: 32),
       ],
+    );
+  }
+}
+
+/// Branded "Jobs by Location" card — ranked proportional bars (teal→navy) with
+/// a no-data state. Lightweight (no chart lib) and RepaintBoundary-isolated.
+class _GeoCard extends StatelessWidget {
+  final Map<String, int> data;
+  const _GeoCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = data.entries.toList();
+    final maxV = entries.isEmpty
+        ? 1
+        : entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    return RepaintBoundary(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: _C.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _C.border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x140B2239),
+              blurRadius: 16,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [_C.tealDeep, _C.navy],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.public_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Jobs by Location',
+                          style: _C.p(15, fw: FontWeight.w800)),
+                      Text('Top hiring regions',
+                          style:
+                              _C.p(12, fw: FontWeight.w500, color: _C.t3)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            if (entries.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 22),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: const BoxDecoration(
+                          color: _C.tealLt,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.map_outlined,
+                            color: _C.tealDeep, size: 26),
+                      ),
+                      const SizedBox(height: 12),
+                      Text('No location data yet',
+                          style: _C.p(13, fw: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Job locations appear here as jobs are posted.',
+                        textAlign: TextAlign.center,
+                        style: _C.p(12, fw: FontWeight.w500, color: _C.t3),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...List.generate(entries.length, (i) {
+                final e = entries[i];
+                final frac = maxV == 0 ? 0.0 : e.value / maxV;
+                return Padding(
+                  padding: EdgeInsets.only(
+                      bottom: i == entries.length - 1 ? 0 : 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              e.key,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: _C.p(13, fw: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text('${e.value}',
+                              style: _C.p(13,
+                                  fw: FontWeight.w800, color: _C.navy)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Stack(
+                          children: [
+                            Container(height: 8, color: _C.canvas),
+                            FractionallySizedBox(
+                              widthFactor: frac.clamp(0.04, 1.0),
+                              child: Container(
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [_C.teal, _C.navy],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -670,8 +872,8 @@ class _KpiGrid extends StatelessWidget {
         'Job Seekers',
         prov.totalJobSeekers,
         'Candidates',
-        _C.violet,
-        _C.violetLt,
+        _C.blue,
+        _C.indigoLt,
         onTap: () => onNavigate?.call('User Management'),
       ),
       _KD(
@@ -688,8 +890,17 @@ class _KpiGrid extends StatelessWidget {
         'Recruitment Agents',
         prov.totalRecruitmentAgents,
         'Recruiter-tier',
-        _C.teal,
+        _C.tealDeep,
         _C.tealLt,
+        onTap: () => onNavigate?.call('User Management'),
+      ),
+      _KD(
+        Icons.admin_panel_settings_rounded,
+        'Admins',
+        prov.totalAdmins,
+        'Admin + super admin',
+        _C.coral,
+        _C.coralLt,
         onTap: () => onNavigate?.call('User Management'),
       ),
       _KD(
@@ -697,8 +908,8 @@ class _KpiGrid extends StatelessWidget {
         'Jobs Posted',
         prov.totalJobs,
         'Public listings',
-        _C.teal,
-        _C.tealLt,
+        _C.navy,
+        _C.indigoLt,
         onTap: () => _showJobsPopup(context, prov),
       ),
       _KD(
@@ -709,6 +920,14 @@ class _KpiGrid extends StatelessWidget {
         _C.amber,
         _C.amberLt,
         onTap: () => onNavigate?.call('Recruiter Requests'),
+      ),
+      _KD(
+        Icons.how_to_reg_rounded,
+        'Candidates Processed',
+        prov.candidatesProcessed,
+        'Handed over',
+        _C.tealDeep,
+        _C.tealLt,
       ),
     ];
 
@@ -803,12 +1022,26 @@ class _KpiCardVertical extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: EdgeInsets.all(compact ? 7 : 9),
+                padding: EdgeInsets.all(compact ? 8 : 10),
                 decoration: BoxDecoration(
-                  color: d.bg,
-                  borderRadius: BorderRadius.circular(9),
+                  gradient: LinearGradient(
+                    colors: [
+                      d.accent,
+                      Color.lerp(d.accent, _C.navyDeep, 0.45)!,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: d.accent.withValues(alpha: 0.30),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(d.icon, color: d.accent, size: compact ? 15 : 18),
+                child: Icon(d.icon, color: Colors.white, size: compact ? 15 : 18),
               ),
               if (d.onTap != null)
                 InkWell(
@@ -902,15 +1135,26 @@ class _KpiCardHorizontal extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icon box
+          // Icon box — tinted gradient badge
           Container(
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: d.bg,
-              borderRadius: BorderRadius.circular(9),
+              gradient: LinearGradient(
+                colors: [d.accent, Color.lerp(d.accent, _C.navyDeep, 0.45)!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: d.accent.withValues(alpha: 0.28),
+                  blurRadius: 7,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            child: Icon(d.icon, color: d.accent, size: 17),
+            child: Icon(d.icon, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 12),
 
@@ -1037,36 +1281,38 @@ class _UserBreakdown extends StatelessWidget {
                   child: total == 0
                       ? const Icon(
                           Icons.donut_large_rounded,
-                          color: _C.border,
+                          color: _C.t3,
                           size: 48,
                         )
-                      : PieChart(
-                          PieChartData(
-                            sectionsSpace: 3,
-                            centerSpaceRadius: 30,
-                            sections: [
-                              PieChartSectionData(
-                                color: _C.teal,
-                                value: prov.totalJobSeekers.toDouble(),
-                                title: '',
-                                radius: 16,
-                              ),
-                              PieChartSectionData(
-                                color: _C.indigo,
-                                value: prov.totalRecruiters.toDouble(),
-                                title: '',
-                                radius: 16,
-                              ),
-                              PieChartSectionData(
-                                color: _C.violet,
-                                value: prov.totalAdmins.toDouble(),
-                                title: '',
-                                radius: 16,
-                              ),
-                            ],
-                          ),
-                          swapAnimationDuration: const Duration(
-                            milliseconds: 700,
+                      : RepaintBoundary(
+                          child: PieChart(
+                            PieChartData(
+                              sectionsSpace: 3,
+                              centerSpaceRadius: 30,
+                              sections: [
+                                PieChartSectionData(
+                                  color: _C.teal,
+                                  value: prov.totalJobSeekers.toDouble(),
+                                  title: '',
+                                  radius: 16,
+                                ),
+                                PieChartSectionData(
+                                  color: _C.navy,
+                                  value: prov.totalRecruiters.toDouble(),
+                                  title: '',
+                                  radius: 16,
+                                ),
+                                PieChartSectionData(
+                                  color: _C.blue,
+                                  value: prov.totalAdmins.toDouble(),
+                                  title: '',
+                                  radius: 16,
+                                ),
+                              ],
+                            ),
+                            swapAnimationDuration: const Duration(
+                              milliseconds: 700,
+                            ),
                           ),
                         ),
                 ),
@@ -1214,7 +1460,8 @@ class _SkillsChart extends StatelessWidget {
         ? counts.reduce((a, b) => a > b ? a : b).toDouble() * 1.3
         : 10.0;
 
-    return _Card(
+    return RepaintBoundary(
+      child: _Card(
       height: 370,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1394,6 +1641,7 @@ class _SkillsChart extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 }
@@ -1505,7 +1753,8 @@ class _RequestsLineCard extends StatelessWidget {
     final maxY = rawMax < 1 ? 5.0 : rawMax * 1.35;
     final total = values.fold(0, (s, v) => s + v.toInt());
 
-    return _Card(
+    return RepaintBoundary(
+      child: _Card(
       height: 260,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1655,6 +1904,7 @@ class _RequestsLineCard extends StatelessWidget {
           ],
         ],
       ),
+      ),
     );
   }
 }
@@ -1675,7 +1925,8 @@ class _JobsBarCard extends StatelessWidget {
     final maxY = rawMax < 1 ? 5.0 : rawMax * 1.35;
     final total = values.fold(0, (s, v) => s + v.toInt());
 
-    return _Card(
+    return RepaintBoundary(
+      child: _Card(
       height: 260,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1829,6 +2080,7 @@ class _JobsBarCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }
@@ -2291,15 +2543,52 @@ class _CardHead extends StatelessWidget {
 class _SectionHead extends StatelessWidget {
   final IconData icon;
   final String title;
-  const _SectionHead({required this.icon, required this.title});
+  final String eyebrow;
+  const _SectionHead({
+    required this.icon,
+    required this.title,
+    this.eyebrow = 'OVERVIEW',
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: _C.indigo, size: 16),
-        const SizedBox(width: 8),
-        Text(title, style: _C.p(15)),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [_C.teal, _C.navy],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: _C.teal.withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 15),
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              eyebrow,
+              style: _C.p(
+                9.5,
+                fw: FontWeight.w700,
+                color: _C.tealDeep,
+              ).copyWith(letterSpacing: 1.2),
+            ),
+            Text(title, style: _C.p(15, fw: FontWeight.w800)),
+          ],
+        ),
         const SizedBox(width: 12),
         Expanded(child: Container(height: 1, color: _C.border)),
       ],

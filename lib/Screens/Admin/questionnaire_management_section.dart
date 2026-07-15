@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:job_portal/Constant/brand_snackbar.dart';
 
 import '../../core/onboarding/models/aviation_role.dart';
 import '../../core/onboarding/models/question.dart';
@@ -9,6 +10,29 @@ import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/error_view.dart';
 import '../../core/widgets/loading_view.dart';
 import 'widgets/admin_header.dart';
+
+/// Navy + teal brand tokens shared across this screen's content and dialogs.
+class _C {
+  static const hero = Color(0xFF061C31);
+  static const heroAlt = Color(0xFF0A2E4F);
+  static const navy = Color(0xFF14507F);
+  static const deepNavy = Color(0xFF0A2E4F);
+  static const blue = Color(0xFF2178B5);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealDeep = Color(0xFF15A99C);
+  static const coral = Color(0xFFFF7A59);
+  static const amber = Color(0xFFFFB020);
+  static const ink = Color(0xFF0B2239);
+  static const slate = Color(0xFF3E5C76);
+  static const muted = Color(0xFF5E7A8E);
+  static const faint = Color(0xFF8AA5B5);
+  static const border = Color(0xFFDCE7EF);
+  static const bgSoft = Color(0xFFF4F9FB);
+  static const tealTint = Color(0xFFE4F6F4);
+  static const navyTint = Color(0xFFE8F1F8);
+  static const success = Color(0xFF10B981);
+  static const error = Color(0xFFEF4444);
+}
 
 /// Admin manager for the onboarding questionnaire: seed defaults, add/edit/
 /// delete aviation roles and their questions, then publish to Firestore.
@@ -31,11 +55,6 @@ class _QuestionnaireManagementSectionState
 
   List<AviationRole> _roles = [];
   String? _selectedRoleId;
-
-  static const _ink = Color(0xFF0F172A);
-  static const _muted = Color(0xFF64748B);
-  static const _border = Color(0xFFE2E8F0);
-  static const _primary = Color(0xFF6366F1);
 
   @override
   void initState() {
@@ -96,7 +115,7 @@ class _QuestionnaireManagementSectionState
       await _service.seedDefaults();
       await _load();
     } catch (e) {
-      if (mounted) _snack('Seed failed: $e');
+      if (mounted) BrandSnack.error(context, 'Seed failed: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -108,17 +127,14 @@ class _QuestionnaireManagementSectionState
       await _service.saveRoles(_roles);
       if (mounted) {
         setState(() => _dirty = false);
-        _snack('Questionnaire published');
+        BrandSnack.success(context, 'Questionnaire published');
       }
     } catch (e) {
-      if (mounted) _snack('Publish failed: $e');
+      if (mounted) BrandSnack.error(context, 'Publish failed: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
-
-  void _snack(String m) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +148,7 @@ class _QuestionnaireManagementSectionState
     final totalQuestions =
         _roles.fold<int>(0, (sum, r) => sum + r.questions.length);
     return Container(
-      color: const Color(0xFFF6F7FB),
+      color: _C.bgSoft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -147,7 +163,7 @@ class _QuestionnaireManagementSectionState
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF2563EB)],
+                colors: [_C.hero, _C.navy, _C.tealDeep],
               ),
               stats: [
                 AdminHeaderStat('roles', '${_roles.length}',
@@ -185,7 +201,14 @@ class _QuestionnaireManagementSectionState
               padding: EdgeInsets.fromLTRB(
                   isMobile ? 12 : 24, 0, isMobile ? 12 : 24, isMobile ? 12 : 24),
               child: isMobile
-                  ? _questionsPanel()
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _mobileRoleSelector(),
+                        const SizedBox(height: 12),
+                        Expanded(child: _questionsPanel()),
+                      ],
+                    )
                   : Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -201,13 +224,84 @@ class _QuestionnaireManagementSectionState
     );
   }
 
-  // Deterministic accent color per category for visual grouping.
+  // Deterministic accent color per category for visual grouping (brand hues).
   static const _categoryColors = [
-    Color(0xFF6366F1), Color(0xFF0EA5E9), Color(0xFF10B981), Color(0xFFF59E0B),
-    Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF14B8A6), Color(0xFFEF4444),
+    _C.navy, _C.blue, _C.teal, _C.tealDeep,
+    _C.coral, _C.amber, _C.success, _C.deepNavy,
   ];
   Color _categoryColor(String category) =>
       _categoryColors[category.hashCode.abs() % _categoryColors.length];
+
+  // Shared card decoration for the two side panels.
+  BoxDecoration get _panelDecoration => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _C.border),
+        boxShadow: [
+          BoxShadow(
+            color: _C.ink.withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      );
+
+  /// Horizontal role picker shown on compact (mobile) layouts where the side
+  /// panel is hidden.
+  Widget _mobileRoleSelector() {
+    if (_roles.isEmpty) return const SizedBox.shrink();
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _roles.length,
+        cacheExtent: 700,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final r = _roles[i];
+          final selected = r.id == _selectedRoleId;
+          final color = _categoryColor(r.category);
+          return Material(
+            color: selected ? color.withValues(alpha: 0.12) : Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            child: InkWell(
+              onTap: () => setState(() => _selectedRoleId = r.id),
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: selected
+                        ? color.withValues(alpha: 0.45)
+                        : _C.border,
+                    width: selected ? 1.4 : 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.work_outline_rounded,
+                        size: 15,
+                        color: selected ? color : _C.faint),
+                    const SizedBox(width: 7),
+                    Text(
+                      r.title,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? color : _C.slate,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _rolesPanel() {
     // Group roles by category, preserving order.
@@ -216,24 +310,14 @@ class _QuestionnaireManagementSectionState
       byCategory.putIfAbsent(r.category, () => []).add(r);
     }
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE9EDF5)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: _panelDecoration,
       child: ListView(
         padding: const EdgeInsets.all(10),
+        cacheExtent: 700,
         children: [
           for (final entry in byCategory.entries) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+              padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
               child: Row(
                 children: [
                   Container(
@@ -250,15 +334,17 @@ class _QuestionnaireManagementSectionState
                       entry.key.toUpperCase(),
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: _muted,
-                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w800,
+                        color: _C.tealDeep,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
                   Text('${entry.value.length}',
                       style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11, color: _muted)),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: _C.faint)),
                 ],
               ),
             ),
@@ -275,55 +361,73 @@ class _QuestionnaireManagementSectionState
     final color = _categoryColor(r.category);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        color: selected ? color.withValues(alpha: 0.1) : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: () => setState(() => _selectedRoleId = r.id),
+      child: _Hoverable(
+        builder: (hovered) => Material(
+          color: selected
+              ? color.withValues(alpha: 0.10)
+              : (hovered ? _C.bgSoft : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: selected ? color.withValues(alpha: 0.4) : Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() => _selectedRoleId = r.id),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(6, 10, 6, 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color:
+                      selected ? color.withValues(alpha: 0.35) : Colors.transparent,
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: [
+                  // Left accent bar on the active row.
+                  Container(
+                    width: 3,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: selected ? color : Colors.transparent,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
-                  child: Icon(Icons.work_outline_rounded, size: 15, color: color),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(r.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: _ink)),
-                      Text('${r.questions.length} questions',
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11, color: _muted)),
-                    ],
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child:
+                        Icon(Icons.work_outline_rounded, size: 15, color: color),
                   ),
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      size: 17, color: Color(0xFF94A3B8)),
-                  onPressed: () => _deleteRole(r),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(r.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _C.ink)),
+                        Text('${r.questions.length} questions',
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: _C.muted)),
+                      ],
+                    ),
+                  ),
+                  _iconAction(
+                    Icons.delete_outline_rounded,
+                    _C.error,
+                    () => _deleteRole(r),
+                    'Delete role',
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -332,40 +436,27 @@ class _QuestionnaireManagementSectionState
   }
 
   Widget _questionsPanel() {
+    final isMobile = MediaQuery.of(context).size.width < 768;
     final role = _selected;
     if (role == null) {
       return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE9EDF5)),
-        ),
+        decoration: _panelDecoration,
         child: const EmptyState(
           icon: Icons.quiz_outlined,
           title: 'No role selected',
           subtitle: 'Add or select a role to edit its questions.',
+          iconColor: _C.navy,
         ),
       );
     }
     final color = _categoryColor(role.category);
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE9EDF5)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: _panelDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(isMobile ? 14 : 18),
             child: Row(
               children: [
                 Container(
@@ -382,54 +473,72 @@ class _QuestionnaireManagementSectionState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(role.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.plusJakartaSans(
-                              fontSize: 17,
+                              fontSize: isMobile ? 15 : 17,
                               fontWeight: FontWeight.w800,
-                              color: _ink)),
+                              color: _C.ink)),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                                horizontal: 9, vertical: 3),
                             decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
+                              color: color.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                  color: color.withValues(alpha: 0.3)),
                             ),
                             child: Text(role.category,
                                 style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w700,
                                     color: color)),
                           ),
                           const SizedBox(width: 8),
-                          Text('${role.questions.length} questions',
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12, color: _muted)),
+                          Flexible(
+                            child: Text('${role.questions.length} questions',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: _C.muted)),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(backgroundColor: _primary),
+                const SizedBox(width: 10),
+                _GradientButton(
+                  label: isMobile ? 'Add' : 'Add question',
+                  icon: Icons.add_rounded,
                   onPressed: () => _editQuestion(role, null),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add question'),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFEDF1F7)),
+          Container(height: 1, color: _C.border),
           Expanded(
             child: role.questions.isEmpty
-                ? const EmptyState(
+                ? EmptyState(
                     icon: Icons.help_outline_rounded,
                     title: 'No questions',
                     subtitle: 'Add the first question for this role.',
+                    iconColor: _C.teal,
                     compact: true,
+                    action: _GradientButton(
+                      label: 'Add question',
+                      icon: Icons.add_rounded,
+                      onPressed: () => _editQuestion(role, null),
+                    ),
                   )
                 : ListView.separated(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(isMobile ? 10 : 12),
+                    cacheExtent: 700,
                     itemCount: role.questions.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (_, i) =>
@@ -442,71 +551,103 @@ class _QuestionnaireManagementSectionState
   }
 
   Widget _questionCard(AviationRole role, OnboardingQuestion q, int index) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFBFCFE),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDF1F7)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 26,
-            height: 26,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(8),
+    final color = _categoryColor(role.category);
+    return RepaintBoundary(
+      child: _Hoverable(
+        builder: (hovered) => AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOut,
+          transform:
+              Matrix4.translationValues(0, hovered ? -3 : 0, 0),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: hovered ? _C.teal.withValues(alpha: 0.5) : _C.border,
             ),
-            child: Text('${index + 1}',
-                style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6366F1))),
+            boxShadow: hovered
+                ? [
+                    BoxShadow(
+                      color: _C.teal.withValues(alpha: 0.16),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(q.label,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text('${index + 1}',
                     style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: _ink)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: color)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _tag(_typeLabel(q.type), const Color(0xFF6366F1)),
-                    if (q.group != null)
-                      _tag(q.group!, const Color(0xFF0EA5E9)),
-                    if (q.required)
-                      _tag('required', const Color(0xFFEF4444)),
-                    if (q.options.isNotEmpty)
-                      _tag('${q.options.length} options',
-                          const Color(0xFF10B981)),
-                    if (q.unit != null) _tag(q.unit!, const Color(0xFF8B5CF6)),
+                    Text(q.label,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: _C.ink)),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _tag(_typeLabel(q.type), _C.navy),
+                        if (q.group != null) _tag(q.group!, _C.blue),
+                        if (q.required) _tag('required', _C.error),
+                        if (q.options.isNotEmpty)
+                          _tag('${q.options.length} options', _C.tealDeep),
+                        if (q.unit != null) _tag(q.unit!, _C.amber),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              _iconAction(Icons.edit_outlined, _C.navy,
+                  () => _editQuestion(role, q), 'Edit question'),
+              const SizedBox(width: 6),
+              _iconAction(Icons.delete_outline_rounded, _C.error,
+                  () => _deleteQuestion(role, q), 'Delete question'),
+            ],
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.edit_outlined, size: 17, color: Color(0xFF6366F1)),
-            onPressed: () => _editQuestion(role, q),
+        ),
+      ),
+    );
+  }
+
+  // Small tinted square icon action button.
+  Widget _iconAction(
+      IconData icon, Color color, VoidCallback onTap, String tooltip) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(9),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(9),
+          child: Padding(
+            padding: const EdgeInsets.all(7),
+            child: Icon(icon, size: 16, color: color),
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.delete_outline_rounded,
-                size: 17, color: Color(0xFFEF4444)),
-            onPressed: () => _deleteQuestion(role, q),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -515,12 +656,13 @@ class _QuestionnaireManagementSectionState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(label,
           style: GoogleFonts.plusJakartaSans(
-              fontSize: 10.5, fontWeight: FontWeight.w600, color: color)),
+              fontSize: 10.5, fontWeight: FontWeight.w700, color: color)),
     );
   }
 
@@ -550,7 +692,7 @@ class _QuestionnaireManagementSectionState
     if (result == null) return;
     final id = result.$1;
     if (_roles.any((r) => r.id == id)) {
-      _snack('A role with id "$id" already exists.');
+      BrandSnack.warning(context, 'A role with id "$id" already exists.');
       return;
     }
     setState(() {
@@ -608,37 +750,51 @@ class _QuestionnaireManagementSectionState
     final catC = TextEditingController(text: 'Other');
     return showDialog<(String, String, String)>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add role'),
-        content: Column(
+      builder: (ctx) => _DialogScaffold(
+        icon: Icons.badge_outlined,
+        title: 'Add role',
+        subtitle: 'Create a new aviation role to hold questions.',
+        body: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            _labelledField(
+              label: 'Role id',
+              required: true,
+              hint: 'slug, e.g. flight_planner',
               controller: idC,
-              decoration: const InputDecoration(
-                  labelText: 'Role id (slug, e.g. flight_planner)'),
+              icon: Icons.tag_rounded,
             ),
-            TextField(
+            const SizedBox(height: 16),
+            _labelledField(
+              label: 'Title',
+              required: true,
+              hint: 'e.g. Flight Planner',
               controller: titleC,
-              decoration: const InputDecoration(labelText: 'Title'),
+              icon: Icons.title_rounded,
             ),
-            TextField(
+            const SizedBox(height: 16),
+            _labelledField(
+              label: 'Category',
+              hint: 'e.g. Operations',
               controller: catC,
-              decoration: const InputDecoration(labelText: 'Category'),
+              icon: Icons.category_outlined,
             ),
           ],
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
+          _GhostButton(
+            label: 'Cancel',
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          const SizedBox(width: 10),
+          _GradientButton(
+            label: 'Add role',
             onPressed: () {
               final id = idC.text.trim().toLowerCase().replaceAll(' ', '_');
               if (id.isEmpty || titleC.text.trim().isEmpty) return;
-              Navigator.pop(
-                  ctx, (id, titleC.text.trim(), catC.text.trim()));
+              Navigator.pop(ctx, (id, titleC.text.trim(), catC.text.trim()));
             },
-            child: const Text('Add'),
           ),
         ],
       ),
@@ -657,105 +813,615 @@ class _QuestionnaireManagementSectionState
     var type = existing?.type ?? QuestionType.text;
     var required = existing?.required ?? false;
 
+    List<String> parsedOptions() => optionsC.text
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
     return showDialog<OnboardingQuestion>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          title: Text(existing == null ? 'Add question' : 'Edit question'),
-          content: SizedBox(
-            width: 420,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        builder: (ctx, setLocal) {
+          final needsOptions = type == QuestionType.singleSelect ||
+              type == QuestionType.multiSelect;
+          return _DialogScaffold(
+            icon: existing == null
+                ? Icons.add_circle_outline_rounded
+                : Icons.edit_outlined,
+            title: existing == null ? 'Add question' : 'Edit question',
+            subtitle: existing == null
+                ? 'Define a new question for this role.'
+                : 'Update the details of this question.',
+            body: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _labelledField(
+                  label: 'Question id',
+                  required: true,
+                  hint: 'unique key',
+                  controller: idC,
+                  enabled: existing == null,
+                  icon: Icons.key_rounded,
+                ),
+                const SizedBox(height: 16),
+                _labelledField(
+                  label: 'Label',
+                  required: true,
+                  hint: 'The question shown to applicants',
+                  controller: labelC,
+                  icon: Icons.short_text_rounded,
+                ),
+                const SizedBox(height: 16),
+                _FieldLabel(text: 'Question type'),
+                const SizedBox(height: 8),
+                _TypeSelector(
+                  selected: type,
+                  labelFor: _typeLabel,
+                  onChanged: (t) => setLocal(() => type = t),
+                ),
+                const SizedBox(height: 16),
+                _labelledField(
+                  label: 'Group (page)',
+                  hint: 'Optional section grouping',
+                  controller: groupC,
+                  icon: Icons.layers_outlined,
+                ),
+                const SizedBox(height: 16),
+                _labelledField(
+                  label: 'Help text',
+                  hint: 'Optional guidance shown under the field',
+                  controller: helpC,
+                  icon: Icons.help_outline_rounded,
+                ),
+                if (type == QuestionType.number) ...[
+                  const SizedBox(height: 16),
+                  _labelledField(
+                    label: 'Unit',
+                    hint: 'Optional, e.g. hours, kg',
+                    controller: unitC,
+                    icon: Icons.straighten_rounded,
+                  ),
+                ],
+                if (needsOptions) ...[
+                  const SizedBox(height: 16),
+                  _labelledField(
+                    label: 'Options',
+                    required: true,
+                    hint: 'Comma-separated, e.g. Yes, No, Maybe',
+                    controller: optionsC,
+                    icon: Icons.list_rounded,
+                    onChanged: (_) => setLocal(() {}),
+                  ),
+                  if (parsedOptions().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final o in parsedOptions())
+                          _tag(o, _C.tealDeep),
+                      ],
+                    ),
+                  ],
+                ],
+                const SizedBox(height: 16),
+                _RequiredToggle(
+                  value: required,
+                  onChanged: (v) => setLocal(() => required = v),
+                ),
+              ],
+            ),
+            actions: [
+              _GhostButton(
+                label: 'Cancel',
+                onPressed: () => Navigator.pop(ctx),
+              ),
+              const SizedBox(width: 10),
+              _GradientButton(
+                label: existing == null ? 'Add question' : 'Save changes',
+                icon: Icons.check_rounded,
+                onPressed: () {
+                  final id = idC.text.trim();
+                  if (id.isEmpty || labelC.text.trim().isEmpty) return;
+                  Navigator.pop(
+                    ctx,
+                    OnboardingQuestion(
+                      id: id,
+                      label: labelC.text.trim(),
+                      type: type,
+                      required: required,
+                      group: groupC.text.trim().isEmpty
+                          ? null
+                          : groupC.text.trim(),
+                      helpText:
+                          helpC.text.trim().isEmpty ? null : helpC.text.trim(),
+                      unit:
+                          unitC.text.trim().isEmpty ? null : unitC.text.trim(),
+                      options: parsedOptions(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// A labelled, branded text field used across the dialogs.
+  Widget _labelledField({
+    required String label,
+    required TextEditingController controller,
+    String? hint,
+    IconData? icon,
+    bool required = false,
+    bool enabled = true,
+    ValueChanged<String>? onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FieldLabel(text: label, required: required),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          onChanged: onChanged,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: enabled ? _C.ink : _C.muted,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: _C.muted,
+            ),
+            isDense: true,
+            filled: true,
+            fillColor: enabled ? Colors.white : _C.bgSoft,
+            prefixIcon: icon == null
+                ? null
+                : Padding(
+                    padding: const EdgeInsets.only(left: 12, right: 8),
+                    child: Icon(icon, size: 18, color: _C.tealDeep),
+                  ),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 0, minHeight: 0),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _C.border, width: 1.2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _C.navy, width: 1.6),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _C.border, width: 1.2),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _C.border, width: 1.2),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Reusable branded dialog primitives ───────────────────────────────────────
+
+/// A rounded, branded dialog shell: gradient icon badge header, scrollable
+/// body and a bottom actions row.
+class _DialogScaffold extends StatelessWidget {
+  const _DialogScaffold({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    required this.actions,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget body;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 700;
+    return Dialog(
+      backgroundColor: Colors.white,
+      clipBehavior: Clip.antiAlias,
+      insetPadding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 16 : 40, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 520,
+          maxHeight: size.height * 0.9,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header strip.
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 10, 16),
+              decoration: const BoxDecoration(
+                color: _C.bgSoft,
+                border: Border(bottom: BorderSide(color: _C.border)),
+              ),
+              child: Row(
                 children: [
-                  TextField(
-                    controller: idC,
-                    enabled: existing == null,
-                    decoration: const InputDecoration(
-                        labelText: 'Question id (unique key)'),
-                  ),
-                  TextField(
-                    controller: labelC,
-                    decoration: const InputDecoration(labelText: 'Label'),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<QuestionType>(
-                    initialValue: type,
-                    decoration: const InputDecoration(labelText: 'Type'),
-                    items: QuestionType.values
-                        .map((t) =>
-                            DropdownMenuItem(value: t, child: Text(t.name)))
-                        .toList(),
-                    onChanged: (v) => setLocal(() => type = v ?? type),
-                  ),
-                  TextField(
-                    controller: groupC,
-                    decoration:
-                        const InputDecoration(labelText: 'Group (page)'),
-                  ),
-                  TextField(
-                    controller: helpC,
-                    decoration:
-                        const InputDecoration(labelText: 'Help text (optional)'),
-                  ),
-                  if (type == QuestionType.number)
-                    TextField(
-                      controller: unitC,
-                      decoration:
-                          const InputDecoration(labelText: 'Unit (optional)'),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [_C.teal, _C.navy],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _C.teal.withValues(alpha: 0.32),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  if (type == QuestionType.singleSelect ||
-                      type == QuestionType.multiSelect)
-                    TextField(
-                      controller: optionsC,
-                      decoration: const InputDecoration(
-                          labelText: 'Options (comma-separated)'),
+                    child: Icon(icon, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: _C.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: _C.muted,
+                          ),
+                        ),
+                      ],
                     ),
-                  SwitchListTile(
-                    value: required,
-                    onChanged: (v) => setLocal(() => required = v),
-                    title: const Text('Required'),
-                    contentPadding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        size: 20, color: _C.muted),
+                    splashRadius: 20,
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () {
-                final id = idC.text.trim();
-                if (id.isEmpty || labelC.text.trim().isEmpty) return;
-                final options = optionsC.text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList();
-                Navigator.pop(
-                  ctx,
-                  OnboardingQuestion(
-                    id: id,
-                    label: labelC.text.trim(),
-                    type: type,
-                    required: required,
-                    group: groupC.text.trim().isEmpty
-                        ? null
-                        : groupC.text.trim(),
-                    helpText:
-                        helpC.text.trim().isEmpty ? null : helpC.text.trim(),
-                    unit: unitC.text.trim().isEmpty ? null : unitC.text.trim(),
-                    options: options,
-                  ),
-                );
-              },
-              child: const Text('Save'),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: body,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              decoration:
+                  const BoxDecoration(color: Colors.white, border: Border(
+                top: BorderSide(color: _C.border),
+              )),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions,
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// A field label with an optional coral required-asterisk.
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.text, this.required = false});
+  final String text;
+  final bool required;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          text,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: _C.slate,
+          ),
+        ),
+        if (required)
+          Text(
+            ' *',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: _C.coral,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Wrap of selectable chips for choosing a question type.
+class _TypeSelector extends StatelessWidget {
+  const _TypeSelector({
+    required this.selected,
+    required this.labelFor,
+    required this.onChanged,
+  });
+
+  final QuestionType selected;
+  final String Function(QuestionType) labelFor;
+  final ValueChanged<QuestionType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final t in QuestionType.values)
+          _TypeChip(
+            label: labelFor(t),
+            selected: t == selected,
+            onTap: () => onChanged(t),
+          ),
+      ],
+    );
+  }
+}
+
+class _TypeChip extends StatelessWidget {
+  const _TypeChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? _C.navy.withValues(alpha: 0.10) : Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? _C.navy : _C.border,
+              width: selected ? 1.5 : 1.2,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selected) ...[
+                const Icon(Icons.check_rounded, size: 15, color: _C.navy),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? _C.navy : _C.slate,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Branded "Required" toggle row.
+class _RequiredToggle extends StatelessWidget {
+  const _RequiredToggle({required this.value, required this.onChanged});
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: _C.bgSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _C.border, width: 1.2),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.flag_rounded, size: 18, color: _C.tealDeep),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Required field',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _C.ink,
+                  ),
+                ),
+                Text(
+                  'Applicants must answer this question',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: _C.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: _C.teal,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ghost (secondary) button: navy text + navy border.
+class _GhostButton extends StatelessWidget {
+  const _GhostButton({required this.label, required this.onPressed});
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: _C.navy,
+        side: const BorderSide(color: _C.navy, width: 1.4),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        textStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      child: Text(label),
+    );
+  }
+}
+
+/// Gradient primary button (teal→navy), or a red destructive variant.
+class _GradientButton extends StatelessWidget {
+  const _GradientButton({
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.danger = false,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    final gradient = danger
+        ? const LinearGradient(colors: [Color(0xFFF87171), _C.error])
+        : const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [_C.teal, _C.navy],
+          );
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: enabled ? gradient : null,
+            color: enabled ? null : _C.border,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: (danger ? _C.error : _C.teal)
+                          .withValues(alpha: 0.32),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 18, color: Colors.white),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  label,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Provides a hover flag to its [builder] for web hover-lift affordances.
+class _Hoverable extends StatefulWidget {
+  const _Hoverable({required this.builder});
+  final Widget Function(bool hovered) builder;
+
+  @override
+  State<_Hoverable> createState() => _HoverableState();
+}
+
+class _HoverableState extends State<_Hoverable> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: widget.builder(_hovered),
     );
   }
 }

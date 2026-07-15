@@ -3,7 +3,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AdminSidebar extends StatefulWidget {
+/// ── Brand palette (navy + teal) — coherent with the job seeker / recruiter
+/// sidebars and the rest of the app. ──
+class _S {
+  static const heroDeep = Color(0xFF061C31);
+  static const navy = Color(0xFF14507F);
+  static const navyDeep = Color(0xFF0A2E4F);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealDeep = Color(0xFF15A99C);
+  static const ink = Color(0xFF0B2239);
+  static const slate = Color(0xFF3E5C76);
+  static const muted = Color(0xFF5E7A8E);
+  static const faint = Color(0xFF8AA5B5);
+  static const border = Color(0xFFDCE7EF);
+  static const navyTint = Color(0xFFE8F1F8);
+  static const bgSoft = Color(0xFFF4F9FB);
+  static const error = Color(0xFFEF4444);
+}
+
+class AdminSidebar extends StatelessWidget {
   final Function(String) onMenuSelected;
   final String selectedMenu;
 
@@ -15,24 +33,17 @@ class AdminSidebar extends StatefulWidget {
   });
 
   @override
-  State<AdminSidebar> createState() => _AdminSidebarState();
-}
-
-class _AdminSidebarState extends State<AdminSidebar> {
-  @override
   Widget build(BuildContext context) {
     return Container(
       width: 260,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        border: Border(
-          right: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: _S.border, width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(2, 0),
+            color: Color(0x0F0B2239),
+            blurRadius: 16,
+            offset: Offset(2, 0),
           ),
         ],
       ),
@@ -42,18 +53,16 @@ class _AdminSidebarState extends State<AdminSidebar> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildLogoSection(),
-            const Divider(height: 1, thickness: 1),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: const AdminProfile(),
+            const Divider(height: 1, thickness: 1, color: _S.border),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: AdminProfile(),
             ),
-            const Divider(height: 1, thickness: 1),
+            const Divider(height: 1, thickness: 1, color: _S.border),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 12,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 children: [
                   _buildSectionLabel('MAIN'),
                   const SizedBox(height: 8),
@@ -109,8 +118,8 @@ class _AdminSidebarState extends State<AdminSidebar> {
                 ],
               ),
             ),
-            const Divider(height: 1, thickness: 1),
-            _buildFooter(),
+            const Divider(height: 1, thickness: 1, color: _S.border),
+            _buildFooter(context),
           ],
         ),
       ),
@@ -119,108 +128,76 @@ class _AdminSidebarState extends State<AdminSidebar> {
 
   // ── Recruiter Requests with LIVE Firestore badge ──
   Widget _buildRecruiterRequestItem() {
-    final isSelected = widget.selectedMenu == 'Recruiter Requests';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? const Color(0xFF6366F1).withValues(alpha: 0.08)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isSelected
-              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
-              : Colors.transparent,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => widget.onMenuSelected('Recruiter Requests'),
-          borderRadius: BorderRadius.circular(8),
-          splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
-                  isSelected
-                      ? Icons.business_center
-                      : Icons.business_center_outlined,
-                  size: 20,
-                  color: isSelected
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF64748B),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
+    final isSelected = selectedMenu == 'Recruiter Requests';
+    return _MenuShell(
+      isSelected: isSelected,
+      onTap: () => onMenuSelected('Recruiter Requests'),
+      child: Row(
+        children: [
+          Icon(
+            isSelected
+                ? Icons.business_center
+                : Icons.business_center_outlined,
+            size: 20,
+            color: isSelected ? _S.tealDeep : _S.muted,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Recruiter Requests',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? _S.ink : _S.slate,
+              ),
+            ),
+          ),
+          // Live badge from Firestore
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('recruiter_requests')
+                .where('status', isEqualTo: 'pending')
+                .snapshots(),
+            builder: (context, snapshot) {
+              final count =
+                  snapshot.hasData ? snapshot.data!.docs.length : 0;
+              if (count == 0) return const SizedBox.shrink();
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.elasticOut,
+                builder: (context, value, child) {
+                  return Transform.scale(scale: value, child: child);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _S.error,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _S.error.withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: Text(
-                    'Recruiter Requests',
+                    '$count',
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFF475569),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                // Live badge from Firestore
-                StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('recruiter_requests')
-                      .where('status', isEqualTo: 'pending')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    final count = snapshot.hasData
-                        ? snapshot.data!.docs.length
-                        : 0;
-                    if (count == 0) return const SizedBox.shrink();
-                    return TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.elasticOut,
-                      builder: (context, value, child) {
-                        return Transform.scale(scale: value, child: child);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFFEF4444,
-                              ).withValues(alpha: 0.35),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          '$count',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
@@ -230,12 +207,12 @@ class _AdminSidebarState extends State<AdminSidebar> {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       child: Opacity(
-        opacity: 0.7,
+        opacity: 0.75,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           child: Row(
             children: [
-              Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
+              Icon(icon, size: 20, color: _S.faint),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -243,22 +220,23 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF94A3B8),
+                    color: _S.faint,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                    colors: [_S.teal, _S.navy],
                   ),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'Soon',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     letterSpacing: 0.5,
@@ -273,19 +251,27 @@ class _AdminSidebarState extends State<AdminSidebar> {
   }
 
   Widget _buildLogoSection() {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
+              shape: BoxShape.circle,
+              border: Border.all(color: _S.teal.withValues(alpha: 0.5), width: 2),
               image: const DecorationImage(
                 image: AssetImage('images/logo_new.jpeg'),
                 fit: BoxFit.cover,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: _S.navy.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -294,21 +280,31 @@ class _AdminSidebarState extends State<AdminSidebar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'MAHA SERVICES',
+                  'MAHA HR SERVICES',
                   style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0F172A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: _S.ink,
                     letterSpacing: 0.3,
+                    height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Admin Portal',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
+                const SizedBox(height: 3),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _S.teal.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Admin Portal',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: _S.tealDeep,
+                      letterSpacing: 0.4,
+                    ),
                   ),
                 ),
               ],
@@ -327,8 +323,8 @@ class _AdminSidebarState extends State<AdminSidebar> {
         style: GoogleFonts.plusJakartaSans(
           fontSize: 10,
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF94A3B8),
-          letterSpacing: 1,
+          color: _S.faint,
+          letterSpacing: 1.2,
         ),
       ),
     );
@@ -340,64 +336,35 @@ class _AdminSidebarState extends State<AdminSidebar> {
     required String label,
     required String menuKey,
   }) {
-    final isSelected = widget.selectedMenu == menuKey;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? const Color(0xFF6366F1).withValues(alpha: 0.08)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isSelected
-              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
-              : Colors.transparent,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => widget.onMenuSelected(menuKey),
-          borderRadius: BorderRadius.circular(8),
-          splashColor: const Color(0xFF6366F1).withValues(alpha: 0.1),
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
-                  isSelected ? activeIcon : icon,
-                  size: 20,
-                  color: isSelected
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF64748B),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFF475569),
-                    ),
-                  ),
-                ),
-              ],
+    final isSelected = selectedMenu == menuKey;
+    return _MenuShell(
+      isSelected: isSelected,
+      onTap: () => onMenuSelected(menuKey),
+      child: Row(
+        children: [
+          Icon(
+            isSelected ? activeIcon : icon,
+            size: 20,
+            color: isSelected ? _S.tealDeep : _S.muted,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? _S.ink : _S.slate,
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildFooter() {
-    return Container(
+  Widget _buildFooter(BuildContext context) {
+    return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
@@ -409,17 +376,18 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   context: context,
                   builder: (context) => AlertDialog(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     title: Text(
                       'Confirm Logout',
                       style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
+                        color: _S.ink,
                       ),
                     ),
                     content: Text(
                       'Are you sure you want to logout?',
-                      style: GoogleFonts.plusJakartaSans(),
+                      style: GoogleFonts.plusJakartaSans(color: _S.slate),
                     ),
                     actions: [
                       TextButton(
@@ -427,20 +395,21 @@ class _AdminSidebarState extends State<AdminSidebar> {
                         child: Text(
                           'Cancel',
                           style: GoogleFonts.plusJakartaSans(
-                            color: Colors.grey.shade600,
+                            color: _S.muted,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
                         style: TextButton.styleFrom(
-                          backgroundColor: Colors.red.shade50,
+                          backgroundColor: _S.error.withValues(alpha: 0.08),
                         ),
                         child: Text(
                           'Logout',
                           style: GoogleFonts.plusJakartaSans(
-                            color: Colors.red.shade600,
-                            fontWeight: FontWeight.w600,
+                            color: _S.error,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -451,28 +420,26 @@ class _AdminSidebarState extends State<AdminSidebar> {
                   await FirebaseAuth.instance.signOut();
                 }
               },
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 11),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
+                  color: _S.error.withValues(alpha: 0.05),
+                  border: Border.all(color: _S.error.withValues(alpha: 0.35)),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.logout_rounded,
-                      size: 16,
-                      color: Colors.red.shade600,
-                    ),
+                    const Icon(Icons.logout_rounded,
+                        size: 16, color: _S.error),
                     const SizedBox(width: 8),
                     Text(
                       'Logout',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.red.shade600,
+                        fontWeight: FontWeight.w700,
+                        color: _S.error,
                       ),
                     ),
                   ],
@@ -482,14 +449,71 @@ class _AdminSidebarState extends State<AdminSidebar> {
           ),
           const SizedBox(height: 12),
           Text(
-            '© 2025 Maha Services',
+            '© 2026 Maha HR Services',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 11,
-              color: Colors.grey.shade500,
+              fontWeight: FontWeight.w500,
+              color: _S.faint,
             ),
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Shared menu-row shell: navy-tint background + teal left accent bar when
+/// selected, transparent otherwise. No grey hover fill (avoids the flicker).
+class _MenuShell extends StatelessWidget {
+  const _MenuShell({
+    required this.isSelected,
+    required this.onTap,
+    required this.child,
+  });
+
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? _S.navyTint : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          splashColor: _S.teal.withValues(alpha: 0.12),
+          highlightColor: Colors.transparent,
+          hoverColor: _S.navyTint.withValues(alpha: 0.5),
+          child: Row(
+            children: [
+              // Teal left accent bar on the active item
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 3,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: isSelected ? _S.tealDeep : Colors.transparent,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 13, vertical: 11),
+                  child: child,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -508,27 +532,36 @@ class AdminProfile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
+        color: _S.bgSoft,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _S.border),
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [_S.tealDeep, _S.navy],
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: _S.teal.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 name.substring(0, 1).toUpperCase(),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
               ),
@@ -546,18 +579,14 @@ class AdminProfile extends StatelessWidget {
                         name.capitalize(),
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w700,
+                          color: _S.ink,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
-                      Icons.verified,
-                      size: 14,
-                      color: Color(0xFF6366F1),
-                    ),
+                    const Icon(Icons.verified, size: 14, color: _S.tealDeep),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -566,7 +595,7 @@ class AdminProfile extends StatelessWidget {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
+                    color: _S.muted,
                   ),
                 ),
               ],

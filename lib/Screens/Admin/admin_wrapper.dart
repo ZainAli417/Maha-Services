@@ -76,7 +76,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 if (isMobile) _buildMobileTopBar(),
                 Expanded(
                   child: Container(
-                    color: const Color(0xFFFAFAFA),
+                    color: const Color(0xFFF4F9FB),
                     child: _buildContent(),
                   ),
                 ),
@@ -95,7 +95,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: Color(0xFFFAFAFA)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFDCE7EF))),
+      ),
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -112,10 +115,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF15A99C), Color(0xFF14507F)],
+                ),
+                borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(icon, size: 16, color: const Color(0xFF6366F1)),
+              child: Icon(icon, size: 16, color: Colors.white),
             ),
             const SizedBox(width: 10),
             // Title + subtitle

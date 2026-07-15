@@ -94,9 +94,10 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Container(
-      color: const Color(0xFFF6F7FB),
+      color: const Color(0xFFF4F9FB),
       child: ListView(
         padding: EdgeInsets.all(isMobile ? 12 : 24),
+        cacheExtent: 700,
         children: [
           AdminGradientHeader(
             icon: Icons.receipt_long_rounded,
@@ -105,7 +106,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF0F766E), Color(0xFF0891B2), Color(0xFF2563EB)],
+              colors: [Color(0xFF061C31), Color(0xFF14507F), Color(0xFF15A99C)],
             ),
             actions: [
               AdminHeaderButton(
@@ -125,10 +126,10 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFE9EDF5)),
+              border: Border.all(color: const Color(0xFFDCE7EF)),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                  color: const Color(0xFF0B2239).withValues(alpha: 0.05),
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),
@@ -176,6 +177,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
           icon: Icons.receipt_long_outlined,
           title: 'No audit entries',
           subtitle: 'Admin actions will appear here as they happen.',
+          iconColor: Color(0xFF14507F),
           compact: true,
         ),
       );
@@ -190,7 +192,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
           separatorBuilder: (_, _) => const SizedBox(height: 6),
           itemBuilder: (_, i) => _row(_docs[i].data()),
         ),
-        const Divider(height: 1, color: Color(0xFFF1F5F9)),
+        const Divider(height: 1, color: Color(0xFFDCE7EF)),
         Padding(
           padding: const EdgeInsets.all(10),
           child: PaginationBar(
@@ -225,13 +227,23 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFCFE),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDF1F7)),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Left accent bar tinted by the action color.
+          Container(
+            width: 3,
+            height: 38,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
           Container(
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
@@ -254,8 +266,10 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
+                          color: color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999),
+                          border:
+                              Border.all(color: color.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           _labelFor(action),
@@ -316,7 +330,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
   Color _colorFor(String action) {
     switch (action) {
       case AuditAction.userCreated:
-        return const Color(0xFF6366F1);
+        return const Color(0xFF14507F);
       case AuditAction.userRoleChanged:
         return const Color(0xFF0EA5E9);
       case AuditAction.userSuspended:
@@ -328,9 +342,9 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
       case AuditAction.userRestored:
         return const Color(0xFF10B981);
       case AuditAction.userProfileReset:
-        return const Color(0xFF8B5CF6);
+        return const Color(0xFF15A99C);
       case AuditAction.questionnairePublished:
-        return const Color(0xFF7C3AED);
+        return const Color(0xFF2EC4B6);
       default:
         return const Color(0xFF64748B);
     }
@@ -338,7 +352,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
 
   Color _colorForFilter(String key) {
     final action = _actionFilters[key];
-    return action == null ? const Color(0xFF4F46E5) : _colorFor(action);
+    return action == null ? const Color(0xFF14507F) : _colorFor(action);
   }
 
   IconData _iconFor(String action) {

@@ -30,10 +30,10 @@ class UserDetailPanel extends StatelessWidget {
     );
   }
 
-  static const _ink = Color(0xFF0F172A);
-  static const _muted = Color(0xFF64748B);
-  static const _border = Color(0xFFE2E8F0);
-  static const _primary = Color(0xFF6366F1);
+  static const _ink = Color(0xFF0B2239);
+  static const _muted = Color(0xFF5E7A8E);
+  static const _border = Color(0xFFDCE7EF);
+  static const _primary = Color(0xFF14507F);
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +98,7 @@ class UserDetailPanel extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+          colors: [Color(0xFF15A99C), Color(0xFF14507F)],
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -375,7 +375,7 @@ class _DocumentsList extends StatelessWidget {
       child: Row(
         children: [
           const Icon(Icons.description_outlined,
-              size: 18, color: Color(0xFF6366F1)),
+              size: 18, color: Color(0xFF14507F)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

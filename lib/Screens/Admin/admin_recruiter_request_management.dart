@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:job_portal/Constant/brand_snackbar.dart';
 
 import 'admin_recruiter_request_provider.dart';
 
@@ -14,42 +15,67 @@ class _BP {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Modern Professional Palette - Pure White Theme
+//  Maha HR Services — Navy + Teal Brand Palette
 // ─────────────────────────────────────────────────────────────────────────────
 class _C {
-  // Backgrounds - Pure white
+  // Backgrounds
   static const bg = Color(0xFFFFFFFF);
-  static const bgLight = Color(0xFFF8FAFC);
+  static const bgLight = Color(0xFFF4F9FB); // bgSoft
   static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE2E8F0);
-  static const divider = Color(0xFFF8FAFC);
+  static const border = Color(0xFFDCE7EF);
+  static const divider = Color(0xFFF4F9FB);
 
-  // Primary - Indigo
-  static const primary = Color(0xFF6366F1);
-  static const primaryLight = Color(0xFFF0F4FF);
-  static const primaryLt = Color(0xFFF0F4FF);
+  // Primary - Navy (was indigo)
+  static const primary = Color(0xFF14507F); // navy
+  static const primaryLight = Color(0xFFE8F1F8); // navy tint
+  static const primaryLt = Color(0xFFE8F1F8); // navy tint
 
-  // Semantic colors
-  static const success = Color(0xFF10B981);
-  static const successLight = Color(0xFFF0FDF4);
-  static const successLt = Color(0xFFF0FDF4);
-  static const warning = Color(0xFFFB923C);
-  static const warningLight = Color(0xFFFEF3C7);
-  static const warningLt = Color(0xFFFEF3C7);
-  static const danger = Color(0xFFEF4444);
-  static const dangerLight = Color(0xFFFEE2E2);
+  // Brand accents
+  static const navy = Color(0xFF14507F);
+  static const deepNavy = Color(0xFF0A2E4F);
+  static const hero = Color(0xFF061C31);
+  static const blue = Color(0xFF2178B5);
+  static const teal = Color(0xFF2EC4B6);
+  static const tealBright = Color(0xFF43E0D2);
+  static const tealDeep = Color(0xFF15A99C);
+  static const coral = Color(0xFFFF7A59);
+  static const amber = Color(0xFFFFB020);
+  static const tealTint = Color(0xFFE4F6F4);
+  static const navyTint = Color(0xFFE8F1F8);
+
+  // Semantic colors (status semantics preserved)
+  static const success = Color(0xFF10B981); // approved / active
+  static const successLight = Color(0xFFE7F7F0);
+  static const successLt = Color(0xFFE7F7F0);
+  static const warning = Color(0xFFF59E0B); // pending → amber
+  static const warningLight = Color(0xFFFEF4E0);
+  static const warningLt = Color(0xFFFEF4E0);
+  static const danger = Color(0xFFEF4444); // rejected / closed
+  static const dangerLight = Color(0xFFFEECEC);
 
   // Text hierarchy
-  static const txt1 = Color(0xFF0F172A);
-  static const txt2 = Color(0xFF64748B);
-  static const txt3 = Color(0xFF94A3B8);
-  static const txt4 = Color(0xFFCBD5E1);
+  static const txt1 = Color(0xFF0B2239); // ink
+  static const txt2 = Color(0xFF3E5C76); // slate
+  static const txt3 = Color(0xFF5E7A8E); // muted
+  static const txt4 = Color(0xFF8AA5B5); // faint
 
-  // Accent colors
-  static const accent = Color(0xFF8B5CF6);
-  static const accentLight = Color(0xFFF5F3FF);
-  static const info = Color(0xFF0EA5E9);
-  static const infoLight = Color(0xFFF0F9FF);
+  // Accent colors (teal)
+  static const accent = Color(0xFF2EC4B6);
+  static const accentLight = Color(0xFFE4F6F4);
+  static const info = Color(0xFF2178B5);
+  static const infoLight = Color(0xFFE8F1F8);
+
+  // Brand gradients
+  static const gradPrimary = LinearGradient(
+    colors: [teal, navy],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static const gradHero = LinearGradient(
+    colors: [hero, deepNavy],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -354,12 +380,19 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 width: isDesktop ? 46 : 40,
                 height: isDesktop ? 46 : 40,
                 decoration: BoxDecoration(
-                  color: _C.primary.withValues(alpha: .1),
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: _C.gradPrimary,
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _C.teal.withValues(alpha: .30),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.assignment_turned_in_outlined,
-                  color: _C.primary,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(width: 12),
@@ -367,6 +400,16 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'RECRUITER PIPELINE',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: _C.tealDeep,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
                     Text(
                       'Recruiter Requests',
                       style: GoogleFonts.plusJakartaSans(
@@ -731,21 +774,19 @@ class _DashboardBodyState extends State<_DashboardBody> {
                   _StatusDropdown(
                     current: status,
                     onChanged: (ns) async {
-                      // Capture messenger before await to avoid deactivated context error
-                      final sm = ScaffoldMessenger.maybeOf(ctx);
                       final ok = await prov.updateRequestStatus(
                         requestId: reqId,
                         newStatus: ns,
                         performedBy: 'admin_dashboard',
                       );
                       if (!mounted) return; // Check if still in tree
-                      if (sm != null) {
-                        _showInstantToast(
-                          sm,
-                          ok ? 'Status → ${ns.toUpperCase()}' : 'Update failed',
-                          ok,
-                        );
-                      }
+                      _toast(
+                        ctx,
+                        ok
+                            ? 'Status updated to ${ns.toUpperCase()}'
+                            : 'Update failed',
+                        ok,
+                      );
                     },
                   ),
                 ],
@@ -800,34 +841,14 @@ class _DashboardBodyState extends State<_DashboardBody> {
     );
   }
 
-  // ── Toast ─────────────────────────────────────────────────────────────────
+  // ── Toast (branded snackbars) ───────────────────────────────────────────────
 
   void _toast(BuildContext ctx, String msg, bool ok) {
     if (!mounted) return;
-    final sm = ScaffoldMessenger.maybeOf(ctx);
-    if (sm != null) _showInstantToast(sm, msg, ok);
-  }
-
-  void _showInstantToast(ScaffoldMessengerState sm, String msg, bool ok) {
-    try {
-      sm
-        ..clearSnackBars()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              msg,
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
-            ),
-            backgroundColor: ok ? _C.success : _C.danger,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-    } catch (e) {
-      debugPrint('⚠️ Toast error: $e');
+    if (ok) {
+      BrandSnack.success(ctx, msg);
+    } else {
+      BrandSnack.error(ctx, msg);
     }
   }
 
@@ -1062,7 +1083,7 @@ class _SearchField extends StatelessWidget {
     controller: controller,
     onChanged: onChanged,
     style: GoogleFonts.plusJakartaSans(
-      fontSize: 13,
+      fontSize: 15,
       fontWeight: FontWeight.w600,
       color: _C.txt1,
     ),
@@ -1070,14 +1091,25 @@ class _SearchField extends StatelessWidget {
       hintText: 'Search by request, email, recruiter...',
       hintStyle: GoogleFonts.plusJakartaSans(
         fontSize: 13,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         color: _C.txt3,
       ),
-      prefixIcon: const Icon(Icons.search_rounded, size: 19, color: _C.txt3),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+        child: Container(
+          width: 30,
+          decoration: BoxDecoration(
+            color: _C.tealTint,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.search_rounded, size: 17, color: _C.tealDeep),
+        ),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 40),
       suffixIcon: controller.text.isEmpty
           ? null
           : IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18),
+              icon: const Icon(Icons.close_rounded, size: 18, color: _C.txt3),
               onPressed: () {
                 controller.clear();
                 onChanged('');
@@ -1085,18 +1117,19 @@ class _SearchField extends StatelessWidget {
             ),
       isDense: true,
       filled: true,
-      fillColor: _C.bgLight,
+      fillColor: _C.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _C.border),
+        borderSide: const BorderSide(color: _C.border, width: 1.2),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _C.border),
+        borderSide: const BorderSide(color: _C.border, width: 1.2),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _C.primary),
+        borderSide: const BorderSide(color: _C.navy, width: 1.6),
       ),
     ),
   );
@@ -1446,7 +1479,7 @@ class _CandidateGrid extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 //  REQUEST TILE
 // ─────────────────────────────────────────────────────────────────────────────
-class _RequestTile extends StatelessWidget {
+class _RequestTile extends StatefulWidget {
   final String id, email, status, date;
   final int total;
   final bool selected;
@@ -1462,8 +1495,15 @@ class _RequestTile extends StatelessWidget {
     required this.onTap,
   });
 
+  @override
+  State<_RequestTile> createState() => _RequestTileState();
+}
+
+class _RequestTileState extends State<_RequestTile> {
+  bool _hover = false;
+
   Color _col() {
-    final s = status.toLowerCase();
+    final s = widget.status.toLowerCase();
     if (s == 'active' || s == 'approved') return _C.success;
     if (s == 'pending') return _C.warning;
     if (s == 'rejected' || s == 'closed') return _C.danger;
@@ -1473,127 +1513,183 @@ class _RequestTile extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     final c = _col();
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      decoration: BoxDecoration(
-        color: selected ? _C.primaryLight : _C.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: selected ? _C.primary.withValues(alpha: .55) : _C.border,
-        ),
-        boxShadow: selected
-            ? [
-                BoxShadow(
-                  color: _C.primary.withValues(alpha: .10),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : null,
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: c.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(9),
+    final selected = widget.selected;
+    return RepaintBoundary(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(
+            0,
+            (_hover && !selected) ? -3 : 0,
+            0,
+          ),
+          decoration: BoxDecoration(
+            color: selected ? _C.primaryLight : _C.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? _C.navy.withValues(alpha: .55)
+                  : (_hover ? _C.teal.withValues(alpha: .5) : _C.border),
+              width: selected ? 1.4 : 1.2,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: _C.navy.withValues(alpha: .12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
                     ),
-                    child: Icon(Icons.assignment_outlined, color: c, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'REQ #$id',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: selected ? _C.primary : _C.txt1,
+                  ]
+                : (_hover
+                      ? [
+                          BoxShadow(
+                            color: _C.teal.withValues(alpha: .18),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : null),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onTap,
+                child: Stack(
+                  children: [
+                    if (selected)
+                      Positioned(
+                        left: 0,
+                        top: 10,
+                        bottom: 10,
+                        child: Container(
+                          width: 3.5,
+                          decoration: BoxDecoration(
+                            gradient: _C.gradPrimary,
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          email,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: _C.txt2,
-                            fontWeight: FontWeight.w600,
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: c.withValues(alpha: .12),
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                                child: Icon(
+                                  Icons.assignment_outlined,
+                                  color: c,
+                                  size: 18,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'REQ #${widget.id}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: selected
+                                            ? _C.primary
+                                            : _C.txt1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      widget.email,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        color: _C.txt2,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                color: selected ? _C.primary : _C.txt3,
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: selected ? _C.primary : _C.txt3,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: c.withValues(alpha: .1),
-                      borderRadius: BorderRadius.circular(99),
-                      border: Border.all(color: c.withValues(alpha: .18)),
-                    ),
-                    child: Text(
-                      status.toUpperCase(),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: c,
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: c.withValues(alpha: .1),
+                                  borderRadius: BorderRadius.circular(99),
+                                  border: Border.all(
+                                    color: c.withValues(alpha: .18),
+                                  ),
+                                ),
+                                child: Text(
+                                  widget.status.toUpperCase(),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: c,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Icon(
+                                Icons.people_outline,
+                                size: 13,
+                                color: selected ? _C.primary : _C.txt3,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${widget.total}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: selected ? _C.primary : _C.txt2,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                widget.date,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: _C.txt3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Icon(
-                    Icons.people_outline,
-                    size: 13,
-                    color: selected ? _C.primary : _C.txt3,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$total',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: selected ? _C.primary : _C.txt2,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    date,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: _C.txt3,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1741,12 +1837,18 @@ class _Avatar extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: url.isEmpty
             ? const LinearGradient(
-                colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                colors: [_C.teal, _C.navy],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               )
             : null,
         image: url.isNotEmpty
             ? DecorationImage(
-                image: NetworkImage(url),
+                image: ResizeImage(
+                  NetworkImage(url),
+                  width: (size * 2).round(),
+                  height: (size * 2).round(),
+                ),
                 fit: BoxFit.cover,
                 onError: (_, _) {},
               )
@@ -1856,30 +1958,30 @@ class _StatusDropdown extends StatelessWidget {
 //  CANDIDATE CARD  (grid tile)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Design tokens - Modern professional theme ─────────────────────────────────
+// ─── Design tokens - Navy + Teal brand ─────────────────────────────────────────
 abstract final class _T {
-  // Surface / background - Pure white
-  static const bg = Color(0xFFF8FAFC);
-  static const bgLight = Color(0xFFF8FAFC);
+  // Surface / background
+  static const bg = Color(0xFFF4F9FB);
+  static const bgLight = Color(0xFFF4F9FB);
   static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE2E8F0);
-  static const divider = Color(0xFFF8FAFC);
+  static const border = Color(0xFFDCE7EF);
+  static const divider = Color(0xFFF4F9FB);
 
   // Text hierarchy
-  static const txt1 = Color(0xFF0F172A);
-  static const txt2 = Color(0xFF64748B);
-  static const txt3 = Color(0xFF94A3B8);
+  static const txt1 = Color(0xFF0B2239); // ink
+  static const txt2 = Color(0xFF3E5C76); // slate
+  static const txt3 = Color(0xFF5E7A8E); // muted
 
   // Semantic colors
-  static const primary = Color(0xFF6366F1);
+  static const primary = Color(0xFF14507F); // navy
   static const success = Color(0xFF10B981);
-  static const warning = Color(0xFFFB923C);
+  static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
 
-  // Accent palette (stage colours) - Modern vibrant
-  static const blue = Color(0xFF0EA5E9);
-  static const violet = Color(0xFF8B5CF6);
-  static const pink = Color(0xFFEC4899);
+  // Accent palette (pipeline stage colours) - navy → blue → teal → coral → green
+  static const blue = Color(0xFF2178B5);
+  static const violet = Color(0xFF2EC4B6); // teal (was violet)
+  static const pink = Color(0xFFFF7A59); // coral (was pink)
   static const emerald = Color(0xFF10B981);
 
   // Typography helpers
@@ -2550,7 +2652,7 @@ class _CVSheet extends StatelessWidget {
                                         ? jobTitle
                                         : currentRole,
                                     style: GoogleFonts.plusJakartaSans(
-                                      color: const Color(0xFF818CF8),
+                                      color: const Color(0xFF43E0D2),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -2656,7 +2758,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'PROFESSIONAL STATUS',
                                 Icons.work_outline,
-                                const Color(0xFF8B5CF6),
+                                const Color(0xFF2EC4B6),
                                 [
                                   _Row2(
                                     currentRole.isNotEmpty
@@ -2688,7 +2790,7 @@ class _CVSheet extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.analytics_outlined,
-                                    color: const Color(0xFF0EA5E9),
+                                    color: const Color(0xFF2178B5),
                                     size: 17,
                                   ),
                                   const SizedBox(width: 10),
@@ -2750,7 +2852,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'SOCIAL LINKS',
                                 Icons.link_rounded,
-                                const Color(0xFF06B6D4),
+                                const Color(0xFF15A99C),
                                 [
                                   Wrap(
                                     spacing: 8,
@@ -2761,7 +2863,7 @@ class _CVSheet extends StatelessWidget {
                                             label: _U.hostLabel(l),
                                             url: l,
                                             icon: _U.icon(l),
-                                            color: const Color(0xFF06B6D4),
+                                            color: const Color(0xFF15A99C),
                                           ),
                                         )
                                         .toList(),
@@ -2776,7 +2878,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'EXPERIENCE',
                                 Icons.business_center_outlined,
-                                const Color(0xFF3B82F6),
+                                const Color(0xFF2178B5),
                                 expList.map(_ExpCard.new).toList(),
                               ),
                             ],
@@ -2850,7 +2952,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'CERTIFICATIONS',
                                 Icons.verified_outlined,
-                                const Color(0xFFEC4899),
+                                const Color(0xFFFF7A59),
                                 certList
                                     .map(
                                       (c) => _CertCard(
@@ -2878,7 +2980,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'EXPERIENCE DOCUMENTS',
                                 Icons.folder_outlined,
-                                const Color(0xFF059669),
+                                const Color(0xFF15A99C),
                                 [
                                   Wrap(
                                     spacing: 8,
@@ -2889,7 +2991,7 @@ class _CVSheet extends StatelessWidget {
                                             label: e.key,
                                             url: e.value,
                                             icon: Icons.description_outlined,
-                                            color: const Color(0xFF059669),
+                                            color: const Color(0xFF15A99C),
                                           ),
                                         )
                                         .toList(),
@@ -2904,7 +3006,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'CERTIFICATION DOCUMENTS',
                                 Icons.workspace_premium_outlined,
-                                const Color(0xFFEC4899),
+                                const Color(0xFFFF7A59),
                                 [
                                   Wrap(
                                     spacing: 8,
@@ -2915,7 +3017,7 @@ class _CVSheet extends StatelessWidget {
                                             label: e.key,
                                             url: e.value,
                                             icon: Icons.verified_outlined,
-                                            color: const Color(0xFFEC4899),
+                                            color: const Color(0xFFFF7A59),
                                           ),
                                         )
                                         .toList(),
@@ -2955,7 +3057,7 @@ class _CVSheet extends StatelessWidget {
                               _Sec(
                                 'PUBLICATIONS',
                                 Icons.article_outlined,
-                                const Color(0xFF0EA5E9),
+                                const Color(0xFF2178B5),
                                 [
                                   Wrap(
                                     spacing: 8,
@@ -2964,7 +3066,7 @@ class _CVSheet extends StatelessWidget {
                                         .map(
                                           (p) => _TextChip(
                                             text: p,
-                                            color: const Color(0xFF0EA5E9),
+                                            color: const Color(0xFF2178B5),
                                             icon: Icons.article_outlined,
                                           ),
                                         )
@@ -3339,11 +3441,11 @@ class _MatchScoreCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _Sub('Skills', skillMatch, const Color(0xFF3B82F6)),
+                      _Sub('Skills', skillMatch, const Color(0xFF2178B5)),
                       const SizedBox(width: 12),
                       _Sub('Education', eduMatch, _C.warning),
                       const SizedBox(width: 12),
-                      _Sub('Experience', expMatch, const Color(0xFF8B5CF6)),
+                      _Sub('Experience', expMatch, const Color(0xFF2EC4B6)),
                     ],
                   ),
                 ],
@@ -3520,7 +3622,7 @@ class _ExpCard extends StatelessWidget {
             Text(
               org,
               style: GoogleFonts.plusJakartaSans(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF2178B5),
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -3646,13 +3748,13 @@ class _CertCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: const Color(0xFFFDF4FF),
+      color: const Color(0xFFFFF1EC),
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: const Color(0xFFEC4899).withValues(alpha: .2)),
+      border: Border.all(color: const Color(0xFFFF7A59).withValues(alpha: .2)),
     ),
     child: Row(
       children: [
-        const Icon(Icons.verified_rounded, color: Color(0xFFEC4899), size: 15),
+        const Icon(Icons.verified_rounded, color: Color(0xFFFF7A59), size: 15),
         const SizedBox(width: 10),
         Expanded(
           child: Column(

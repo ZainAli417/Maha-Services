@@ -33,12 +33,12 @@ class AdminGradientHeader extends StatelessWidget {
             const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFF8B5CF6)],
+              colors: [Color(0xFF061C31), Color(0xFF0A2E4F), Color(0xFF14507F)],
             ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.28),
+            color: const Color(0xFF0B2239).withValues(alpha: 0.30),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -199,19 +199,19 @@ class AdminHeaderButton extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: filled ? const Color(0xFF6366F1) : Colors.white,
+                        color: filled ? const Color(0xFF14507F) : Colors.white,
                       ),
                     )
                   : Icon(icon,
                       size: 17,
-                      color: filled ? const Color(0xFF4F46E5) : Colors.white),
+                      color: filled ? const Color(0xFF14507F) : Colors.white),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: filled ? const Color(0xFF4F46E5) : Colors.white,
+                  color: filled ? const Color(0xFF14507F) : Colors.white,
                 ),
               ),
             ],
