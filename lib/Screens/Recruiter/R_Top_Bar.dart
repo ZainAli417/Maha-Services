@@ -27,9 +27,9 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
         final initials = provider.initials;
 
         final sidebarWidth = widget.isDrawer
-            // Mobile: Narrower drawer, clamped between 180 and 230
-            ? (MediaQuery.of(context).size.width * 0.35).clamp(180.0, 230.0)
-            : 240.0; // Desktop: Reduced from 260 to 240
+            // Mobile: Wider drawer for better spacing
+            ? (MediaQuery.of(context).size.width * 0.42).clamp(220.0, 280.0)
+            : 280.0; // Desktop: increased width for a more comfortable sidebar
         return Container(
           width: sidebarWidth,
           decoration: BoxDecoration(

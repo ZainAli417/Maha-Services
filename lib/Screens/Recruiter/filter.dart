@@ -204,7 +204,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                           min: 0,
                           max: 30,
                           divisions: 30,
-                          activeColor: Color(0xFF8B5CF6),
+                          activeColor: Color(0xFF15A99C),
                           labels: RangeLabels(
                             _tempExperienceYearsRange.start.round().toString(),
                             _tempExperienceYearsRange.end.round().toString(),
@@ -309,7 +309,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasCertifications,
-                          activeColor: Color(0xFF8B5CF6),
+                          activeColor: Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasCertifications = val ?? false;
                             _calculateActiveFilters();
@@ -328,7 +328,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasPublications,
-                          activeColor: Color(0xFF8B5CF6),
+                          activeColor: Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasPublications = val ?? false;
                             _calculateActiveFilters();
@@ -347,7 +347,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasAwards,
-                          activeColor: Color(0xFF8B5CF6),
+                          activeColor: Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasAwards = val ?? false;
                             _calculateActiveFilters();
@@ -406,17 +406,17 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+        border: Border(bottom: BorderSide(color: Color(0xFFDCE7EF))),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(0xFF8B5CF6).withValues(alpha: 0.1),
+              color: Color(0xFF15A99C).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.filter_list, color: Color(0xFF8B5CF6), size: 24),
+            child: Icon(Icons.filter_list, color: Color(0xFF15A99C), size: 24),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -428,14 +428,14 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: Color(0xFF0B2239),
                   ),
                 ),
                 Text(
                   '$_activeFiltersCount filters active',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF5E7A8E),
                   ),
                 ),
               ],
@@ -444,7 +444,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.close),
-            color: Color(0xFF64748B),
+            color: Color(0xFF5E7A8E),
           ),
         ],
       ),
@@ -459,14 +459,14 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: Color(0xFF8B5CF6)),
+              Icon(icon, size: 18, color: Color(0xFF15A99C)),
               SizedBox(width: 8),
               Text(
                 title,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F172A),
+                  color: Color(0xFF0B2239),
                 ),
               ),
             ],
@@ -487,18 +487,18 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFF8FAFC),
+        color: Color(0xFFF4F9FB),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xFFE2E8F0)),
+        border: Border.all(color: Color(0xFFDCE7EF)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down, color: Color(0xFF64748B)),
+          icon: Icon(Icons.arrow_drop_down, color: Color(0xFF5E7A8E)),
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF0B2239),
           ),
           items: items.map((item) {
             return DropdownMenuItem(
@@ -531,16 +531,16 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               _calculateActiveFilters();
             });
           },
-          backgroundColor: Color(0xFFF8FAFC),
-          selectedColor: Color(0xFF8B5CF6).withValues(alpha: 0.2),
-          checkmarkColor: Color(0xFF8B5CF6),
+          backgroundColor: Color(0xFFF4F9FB),
+          selectedColor: Color(0xFF15A99C).withValues(alpha: 0.2),
+          checkmarkColor: Color(0xFF15A99C),
           labelStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
-            color: isSelected ? Color(0xFF8B5CF6) : Color(0xFF64748B),
+            color: isSelected ? Color(0xFF15A99C) : Color(0xFF5E7A8E),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
           side: BorderSide(
-            color: isSelected ? Color(0xFF8B5CF6) : Color(0xFFE2E8F0),
+            color: isSelected ? Color(0xFF15A99C) : Color(0xFFDCE7EF),
           ),
         );
       }).toList(),
@@ -558,7 +558,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: ColorScheme.light(primary: Color(0xFF8B5CF6)),
+                colorScheme: ColorScheme.light(primary: Color(0xFF15A99C)),
               ),
               child: child!,
             );
@@ -574,13 +574,13 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Color(0xFFF8FAFC),
+          color: Color(0xFFF4F9FB),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Color(0xFFE2E8F0)),
+          border: Border.all(color: Color(0xFFDCE7EF)),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, size: 18, color: Color(0xFF64748B)),
+            Icon(Icons.calendar_today, size: 18, color: Color(0xFF5E7A8E)),
             SizedBox(width: 12),
             Text(
               _tempDateRange == null
@@ -588,7 +588,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                   : '${_tempDateRange!.start.toString().split(' ')[0]} - ${_tempDateRange!.end.toString().split(' ')[0]}',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: Color(0xFF0F172A),
+                color: Color(0xFF0B2239),
               ),
             ),
             Spacer(),
@@ -599,7 +599,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                   _tempDateRange = null;
                   _calculateActiveFilters();
                 }),
-                color: Color(0xFF64748B),
+                color: Color(0xFF5E7A8E),
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(),
               ),
@@ -614,7 +614,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+        border: Border(top: BorderSide(color: Color(0xFFDCE7EF))),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -630,7 +630,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               onPressed: _resetFilters,
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Color(0xFFE2E8F0)),
+                side: BorderSide(color: Color(0xFFDCE7EF)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -640,7 +640,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
+                  color: Color(0xFF5E7A8E),
                 ),
               ),
             ),
@@ -652,7 +652,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               onPressed: _applyFilters,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Color(0xFF8B5CF6),
+                backgroundColor: Color(0xFF15A99C),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

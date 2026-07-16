@@ -131,7 +131,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+            color: const Color(0xFF14507F).withValues(alpha: 0.15),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
@@ -156,7 +156,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: const Color(0xFF0B2239),
               letterSpacing: -0.3,
             ),
           ),
@@ -183,7 +183,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
             'Analyzing candidate profiles...',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
-              color: const Color(0xFF94A3B8),
+              color: const Color(0xFF8AA5B5),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -216,12 +216,12 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
+                  colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                    color: const Color(0xFF14507F).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -247,9 +247,9 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
+        color: const Color(0xFFF4F9FB),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: const Color(0xFFDCE7EF), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -308,7 +308,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 decoration: BoxDecoration(
                   gradient: isActive
                       ? const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
+                          colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
                         )
                       : null,
                   color: isActive ? null : const Color(0xFFF1F5F9),
@@ -317,7 +317,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                       ? [
                           BoxShadow(
                             color: const Color(
-                              0xFF6366F1,
+                              0xFF14507F,
                             ).withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
@@ -328,7 +328,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 child: Icon(
                   step['icon'] as IconData,
                   size: isActive ? 24 : 20,
-                  color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                  color: isActive ? Colors.white : const Color(0xFF8AA5B5),
                 ),
               ),
               const SizedBox(height: 8),
@@ -337,8 +337,8 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   color: isActive
-                      ? const Color(0xFF6366F1)
-                      : const Color(0xFF94A3B8),
+                      ? const Color(0xFF14507F)
+                      : const Color(0xFF8AA5B5),
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -359,9 +359,9 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         key: ValueKey<String>(_currentStatus),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
+          color: const Color(0xFFF4F9FB),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          border: Border.all(color: const Color(0xFFDCE7EF), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -371,7 +371,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF6366F1)),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFF14507F)),
               ),
             ),
             const SizedBox(width: 10),
@@ -380,7 +380,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                 _currentStatus,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
-                  color: const Color(0xFF64748B),
+                  color: const Color(0xFF5E7A8E),
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
@@ -431,7 +431,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF0F172A),
+              color: const Color(0xFF0B2239),
             ),
           ),
           const SizedBox(height: 12),
@@ -475,7 +475,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF64748B),
+                    color: const Color(0xFF5E7A8E),
                   ),
                 ),
               ),
@@ -494,7 +494,7 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF14507F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,

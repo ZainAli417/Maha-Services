@@ -11,14 +11,16 @@ import 'package:job_portal/main.dart';
 // 1. DESIGN SYSTEM
 // --------------------------------------------------
 class AppTheme {
-  static const Color primary = Color(0xFF4F46E5);
-  static const Color primaryDark = Color(0xFF4338CA);
-  static const Color primaryLight = Color(0xFFE0E7FF);
-  static const Color background = Color(0xFFF9FAFB);
+  static const Color primary = Color(0xFF14507F);
+  static const Color primaryDark = Color(0xFF0A2E4F);
+  static const Color primaryLight = Color(0xFFE0EFF7);
+  static const Color accent = Color(0xFF2EC4B6);
+  static const Color background = Color(0xFFF4F9FB);
   static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-  static const Color border = Color(0xFFE5E7EB);
+  static const Color textPrimary = Color(0xFF0B2239);
+  static const Color textSecondary = Color(0xFF5E7A8E);
+  static const Color textTertiary = Color(0xFF8AA5B5);
+  static const Color border = Color(0xFFDCE7EF);
   static const Color success = Color(0xFF10B981);
 }
 
@@ -169,12 +171,13 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
       height: 600,
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.border),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 20,
-            offset: Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -192,20 +195,53 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
         border: Border(bottom: BorderSide(color: AppTheme.border)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome, color: AppTheme.primary, size: 22),
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppTheme.accent, AppTheme.primary],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accent.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              'JD Architect',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                color: AppTheme.textPrimary,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'JD Architect',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                Text(
+                  'AI job description builder',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
           IconButton(
@@ -245,24 +281,66 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
           Expanded(
             child: TextField(
               controller: _controller,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                color: AppTheme.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: 'Describe the role...',
+                hintStyle: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: AppTheme.textTertiary,
+                ),
                 filled: true,
                 fillColor: AppTheme.background,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primary,
+                    width: 1.5,
+                  ),
                 ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
           ),
           const SizedBox(width: 8),
-          CircleAvatar(
-            backgroundColor: _hasText ? AppTheme.primary : AppTheme.border,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_upward, color: Colors.white),
-              onPressed: _hasText ? _sendMessage : null,
+          GestureDetector(
+            onTap: _hasText ? _sendMessage : null,
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                gradient: _hasText
+                    ? const LinearGradient(
+                        colors: [AppTheme.accent, AppTheme.primary],
+                      )
+                    : null,
+                color: _hasText ? null : AppTheme.border,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: _hasText
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.accent.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: const Icon(Icons.arrow_upward_rounded, color: Colors.white),
             ),
           ),
         ],
@@ -344,13 +422,19 @@ class _MessageBubbleState extends State<_MessageBubble> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            const CircleAvatar(
-              radius: 16,
-              backgroundColor: AppTheme.primaryLight,
-              child: Icon(
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.accent, AppTheme.primary],
+                ),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(
                 Icons.auto_awesome,
                 size: 16,
-                color: AppTheme.primary,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 8),
@@ -368,7 +452,15 @@ class _MessageBubbleState extends State<_MessageBubble> {
                     maxWidth: MediaQuery.of(context).size.width * 0.65,
                   ),
                   decoration: BoxDecoration(
-                    color: isUser ? AppTheme.primary : AppTheme.background,
+                    gradient: isUser
+                        ? const LinearGradient(
+                            colors: [AppTheme.accent, AppTheme.primary],
+                          )
+                        : null,
+                    color: isUser ? null : AppTheme.background,
+                    border: isUser
+                        ? null
+                        : Border.all(color: AppTheme.border),
                     borderRadius: BorderRadius.circular(18).copyWith(
                       bottomRight: isUser ? const Radius.circular(0) : null,
                       bottomLeft: !isUser ? const Radius.circular(0) : null,
@@ -389,10 +481,14 @@ class _MessageBubbleState extends State<_MessageBubble> {
           ),
           if (isUser) ...[
             const SizedBox(width: 8),
-            const CircleAvatar(
-              radius: 16,
-              backgroundColor: AppTheme.primary,
-              child: Icon(Icons.person, size: 16, color: Colors.white),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryDark,
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(Icons.person, size: 16, color: Colors.white),
             ),
           ],
         ],
@@ -541,13 +637,19 @@ class _TypingIndicator extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 16,
-              backgroundColor: AppTheme.primaryLight,
-              child: Icon(
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.accent, AppTheme.primary],
+                ),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(
                 Icons.auto_awesome,
                 size: 16,
-                color: AppTheme.primary,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 8),
@@ -556,7 +658,7 @@ class _TypingIndicator extends StatelessWidget {
               child: LinearProgressIndicator(
                 minHeight: 2,
                 backgroundColor: Colors.transparent,
-                color: AppTheme.primary,
+                color: AppTheme.accent,
               ),
             ),
           ],

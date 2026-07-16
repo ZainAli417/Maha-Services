@@ -726,17 +726,17 @@ class _ApplicantCard extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF5F3FF) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? const Color(0xFFEAF6F5) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? _cPurple.withValues(alpha: 0.4) : _cBorder,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -1098,6 +1098,19 @@ class _Header extends StatelessWidget {
       children: [
         Row(
           children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_cAccent, _cPrimary]),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.people_alt_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1106,7 +1119,7 @@ class _Header extends StatelessWidget {
                     'Candidate Shortlisting',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: _cTxt,
                       letterSpacing: -0.4,
                     ),
@@ -1295,23 +1308,40 @@ class _Header extends StatelessWidget {
   Widget _desktopHeader(BuildContext context) {
     return Row(
       children: [
+        Container(
+          padding: const EdgeInsets.all(11),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [_cAccent, _cPrimary],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: _cAccent.withValues(alpha: 0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.people_alt_rounded,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Candidate Shortlisting',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: _cTxt,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
+              Text(
+                'Candidate Shortlisting',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: _cTxt,
+                  letterSpacing: -0.5,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -1402,39 +1432,62 @@ class _DesktopActions extends StatelessWidget {
         // Run AI
         Consumer<AIMatchProvider>(
           builder: (ctx, ai, _) {
-            return ElevatedButton.icon(
-              onPressed: ai.isAnalyzing
-                  ? null
-                  : () => showDialog(
-                      context: ctx,
-                      barrierDismissible: false,
-                      builder: (_) => AIMatchScoreScreen(
-                        jobId: jobId ?? '',
-                        jobTitle: provider.applicants.isNotEmpty
-                            ? (provider.applicants.first.jobData?.title ??
-                                  'Job Position')
-                            : 'Job Position',
+            final busy = ai.isAnalyzing;
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: busy
+                    ? null
+                    : () => showDialog(
+                        context: ctx,
+                        barrierDismissible: false,
+                        builder: (_) => AIMatchScoreScreen(
+                          jobId: jobId ?? '',
+                          jobTitle: provider.applicants.isNotEmpty
+                              ? (provider.applicants.first.jobData?.title ??
+                                    'Job Position')
+                              : 'Job Position',
+                        ),
                       ),
-                    ),
-              icon: Icon(
-                ai.isAnalyzing
-                    ? Icons.hourglass_empty
-                    : Icons.psychology_outlined,
-                size: 16,
-              ),
-              label: Text(
-                ai.isAnalyzing ? 'Analyzing…' : 'Run AI Analysis',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                child: Container(
+                  padding: pad,
+                  decoration: BoxDecoration(
+                    gradient: busy
+                        ? null
+                        : const LinearGradient(colors: [_cAccent, _cPrimary]),
+                    color: busy ? _cBorder : null,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: busy
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: _cAccent.withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        busy ? Icons.hourglass_empty : Icons.psychology_rounded,
+                        size: 16,
+                        color: busy ? _cTxtSec : Colors.white,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        busy ? 'Analyzing…' : 'Run AI Analysis',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: busy ? _cTxtSec : Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _cTeal,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: pad,
-                shape: radius,
               ),
             );
           },
@@ -1649,7 +1702,7 @@ class _TableRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFF5F3FF) : Colors.white,
+        color: isSelected ? const Color(0xFFEAF6F5) : Colors.white,
         border: const Border(bottom: BorderSide(color: _cBorder)),
       ),
       child: Row(
@@ -1962,10 +2015,11 @@ class _StatusDropdown extends StatelessWidget {
         );
       }).toList(),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

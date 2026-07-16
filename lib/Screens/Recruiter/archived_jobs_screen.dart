@@ -5,18 +5,19 @@ import 'package:provider/provider.dart';
 import 'R_Top_Bar.dart';
 import 'Recruiter_provider_Job_listing.dart';
 import 'job_detail_dialog_recrutier.dart';
+import '../../Constant/js_header.dart';
 
-const _primary = Color(0xFF6366F1);
-const _primaryLight = Color(0xFFF0F4FF);
-const _textPrimary = Color(0xFF0F172A);
-const _textSecondary = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+const _primary = Color(0xFF14507F);
+const _primaryLight = Color(0xFFE8F1F8);
+const _textPrimary = Color(0xFF0B2239);
+const _textSecondary = Color(0xFF5E7A8E);
+const _border = Color(0xFFDCE7EF);
 const _bgWhite = Color(0xFFFFFFFF);
-const _bgLight = Color(0xFFF8FAFC);
+const _bgLight = Color(0xFFF4F9FB);
 const _success = Color(0xFF10B981);
 const _successLight = Color(0xFFF0FDF4);
 const _warning = Color(0xFFFB923C);
-const _info = Color(0xFF0EA5E9);
+const _info = Color(0xFF2178B5);
 
 class ArchivedJobsScreen extends StatefulWidget {
   const ArchivedJobsScreen({super.key});
@@ -31,7 +32,6 @@ class _ArchivedJobsScreenState extends State<ArchivedJobsScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -46,7 +46,6 @@ class _ArchivedJobsScreenState extends State<ArchivedJobsScreen> {
             child: Column(
               children: [
                 _ArchivedHeader(
-                  isMobile: isMobile,
                   onMenu: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
                 Expanded(
@@ -110,83 +109,17 @@ class _ArchivedJobsScreenState extends State<ArchivedJobsScreen> {
 }
 
 class _ArchivedHeader extends StatelessWidget {
-  final bool isMobile;
   final VoidCallback onMenu;
 
-  const _ArchivedHeader({required this.isMobile, required this.onMenu});
+  const _ArchivedHeader({required this.onMenu});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 28,
-          vertical: isMobile ? 14 : 20,
-        ),
-        decoration: const BoxDecoration(
-          color: _bgWhite,
-          border: Border(bottom: BorderSide(color: _border, width: 1)),
-        ),
-        child: Row(
-          children: [
-            if (isMobile) ...[
-              IconButton(
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  size: 24,
-                  color: _textPrimary,
-                ),
-                onPressed: onMenu,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                splashRadius: 20,
-              ),
-              const SizedBox(width: 8),
-            ],
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _primaryLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.archive_outlined,
-                size: 24,
-                color: _primary,
-              ),
-            ),
-            SizedBox(width: isMobile ? 14 : 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Archived Jobs',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 16 : 18,
-                      fontWeight: FontWeight.w800,
-                      color: _textPrimary,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Manage and restore your hidden job postings',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 12 : 13,
-                      color: _textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return JobSeekerHeader(
+      icon: Icons.archive_rounded,
+      title: 'Archived Jobs',
+      subtitle: 'Manage and restore your hidden job postings',
+      onMenu: onMenu,
     );
   }
 }

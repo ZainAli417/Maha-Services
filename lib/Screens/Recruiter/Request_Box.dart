@@ -5,17 +5,17 @@ import 'package:provider/provider.dart';
 
 import 'LIst_of_Applicants_provider.dart';
 import 'R_Top_Bar.dart';
+import '../../Constant/js_header.dart';
 
 // ─── Design tokens (single source of truth) ───────────────────────────────────
 class _T {
-  static const primary = Color(0xFF6366F1);
-  static const blue = Color(0xFF1E40AF);
-  static const textPri = Color(0xFF0F172A);
-  static const textSec = Color(0xFF64748B);
-  static const textTert = Color(0xFF94A3B8);
-  static const bg = Color(0xFFFAFAFA);
+  static const primary = Color(0xFF14507F);
+  static const textPri = Color(0xFF0B2239);
+  static const textSec = Color(0xFF5E7A8E);
+  static const textTert = Color(0xFF8AA5B5);
+  static const bg = Color(0xFFF4F9FB);
   static const white = Color(0xFFFFFFFF);
-  static const border = Color(0xFFD0D7DE);
+  static const border = Color(0xFFDCE7EF);
   static const success = Color(0xFF1A7F37);
   static const warning = Color(0xFFBF8700);
   static const red = Color(0xFFCF222E);
@@ -95,11 +95,11 @@ Color _requestStatusColor(String s) {
 Color _candidateStatusColor(String s) {
   switch (s) {
     case 'shortlist':
-      return const Color(0xFF4F46E5);
+      return const Color(0xFF14507F);
     case 'screening':
       return const Color(0xFF2563EB);
     case 'interview':
-      return const Color(0xFF7C3AED);
+      return const Color(0xFF2EC4B6);
     case 'technical':
       return const Color(0xFF0891B2);
     case 'offer':
@@ -152,7 +152,7 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
       isMobile: isMobile,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Color(0xFFFAFAFA),
+        backgroundColor: Color(0xFFF4F9FB),
         drawer: isMobile
             ? Drawer(child: RecruiterSidebar(activeIndex: 4, isDrawer: true))
             : null,
@@ -254,23 +254,11 @@ class _MobileTopBar extends StatelessWidget {
   const _MobileTopBar({required this.onMenu});
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 54,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    decoration: const BoxDecoration(color: _T.bg),
-    child: Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.menu_rounded, size: 22),
-          onPressed: onMenu,
-          color: _T.textSec,
-        ),
-        const SizedBox(width: 4),
-        const _HeaderIcon(),
-        const SizedBox(width: 10),
-        Text('Request Box', style: _T.head(fs: 15)),
-      ],
-    ),
+  Widget build(BuildContext context) => JobSeekerHeader(
+    icon: Icons.all_inbox_rounded,
+    title: 'Request Box',
+    subtitle: 'Manage & onboard applicants for your jobs',
+    onMenu: onMenu,
   );
 }
 
@@ -278,44 +266,10 @@ class _DesktopHeader extends StatelessWidget {
   const _DesktopHeader();
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-
-    child: Row(
-      children: [
-        const _HeaderIcon(size: 22),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Applicants Request Box', style: _T.head(fs: 17)),
-              Text(
-                'Manage & Onboard Applicants against Your Posted Jobs',
-                style: _T.label(c: _T.textSec),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _HeaderIcon extends StatelessWidget {
-  final double size;
-  const _HeaderIcon({this.size = 18});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(9),
-    decoration: BoxDecoration(
-      color: _T.blue.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(Icons.all_inbox_outlined, size: size, color: _T.blue),
+  Widget build(BuildContext context) => const JobSeekerHeader(
+    icon: Icons.all_inbox_rounded,
+    title: 'Applicants Request Box',
+    subtitle: 'Manage & onboard applicants against your posted jobs',
   );
 }
 
