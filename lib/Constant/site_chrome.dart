@@ -13,7 +13,7 @@ class SiteStatsBand extends StatelessWidget {
   const SiteStatsBand({super.key});
 
   static const _metrics = [
-    (15.0, 'K+', 'Successfully Hired', Icons.people_rounded, Brand.tealBright),
+    (15.0, 'K+', 'Hired', Icons.people_rounded, Brand.tealBright),
     (98.0, '%', 'Success Rate', Icons.trending_up_rounded, Brand.amber),
     (24.0, 'h', 'Avg. Response', Icons.schedule_rounded, Brand.coral),
     (500.0, '+', 'Active Recruiters', Icons.business_rounded,

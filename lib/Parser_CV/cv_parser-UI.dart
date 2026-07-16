@@ -91,30 +91,30 @@ class BrandTypography {
     fontSize: 34,
     fontWeight: FontWeight.w800,
     letterSpacing: -1,
-    color: BrandColors.slate950,
+    color: BrandColors.ink,
   );
   static TextStyle h2 = GoogleFonts.plusJakartaSans(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
-    color: BrandColors.slate950,
+    color: BrandColors.ink,
   );
   static TextStyle body = GoogleFonts.plusJakartaSans(
     fontSize: 15,
     fontWeight: FontWeight.w600,
-    color: BrandColors.slate800,
+    color: BrandColors.slateBrand,
     height: 1.6,
   );
   static TextStyle label = GoogleFonts.plusJakartaSans(
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    color: BrandColors.slate600,
+    color: BrandColors.slateBrand,
     letterSpacing: 0.5,
   );
   static TextStyle caption = GoogleFonts.plusJakartaSans(
     fontSize: 12,
     fontWeight: FontWeight.w600,
-    color: BrandColors.slate400,
+    color: BrandColors.muted,
     letterSpacing: 0.3,
   );
 }
@@ -442,7 +442,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
                 'Upload your CV. Our AI will automatically categorize your aviation experience, flight hours, and technical certifications.',
                 textAlign: TextAlign.center,
                 style: BrandTypography.body.copyWith(
-                  color: BrandColors.slate400,
+                  color: BrandColors.muted,
                   fontSize: isMob ? 13 : 15,
                 ),
               ),
@@ -1167,7 +1167,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
               Text(
                 'This is how your profile will appear to recruiters.',
                 style: BrandTypography.body.copyWith(
-                  color: BrandColors.slate400,
+                  color: BrandColors.muted,
                   fontSize: 13,
                 ),
                 textAlign: TextAlign.center,
@@ -1181,10 +1181,10 @@ class _CvUploadSectionState extends State<CvUploadSection>
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: BrandColors.slate200),
+            border: Border.all(color: BrandColors.border),
             boxShadow: [
               BoxShadow(
-                color: BrandColors.slate950.withValues(alpha: 0.05),
+                color: BrandColors.ink.withValues(alpha: 0.05),
                 blurRadius: 30,
                 offset: const Offset(0, 15),
               ),
@@ -1195,7 +1195,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
               ? Column(
                   children: [
                     _buildReviewSidebar(isMob: true),
-                    const Divider(height: 1, color: BrandColors.slate200),
+                    const Divider(height: 1, color: BrandColors.border),
                     _buildReviewMain(isMob: true),
                   ],
                 )
@@ -1215,7 +1215,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
 
   Widget _buildReviewSidebar({bool isMob = false}) {
     return Container(
-      color: BrandColors.slate50,
+      color: BrandColors.bgSoft,
       padding: EdgeInsets.all(isMob ? 20 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1250,13 +1250,13 @@ class _CvUploadSectionState extends State<CvUploadSection>
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: BrandColors.slate200),
+                        border: Border.all(color: BrandColors.border),
                       ),
                       child: Text(
                         skill,
                         style: BrandTypography.label.copyWith(
                           fontSize: 10,
-                          color: BrandColors.slate800,
+                          color: BrandColors.slateBrand,
                         ),
                       ),
                     ),
@@ -1286,7 +1286,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
           Text(
             _controllers['bio']?.text ?? 'No professional summary provided.',
             style: BrandTypography.body.copyWith(
-              color: BrandColors.slate800,
+              color: BrandColors.slateBrand,
               height: 1.5,
               fontSize: isMob ? 13 : 15,
             ),
@@ -1310,11 +1310,11 @@ class _CvUploadSectionState extends State<CvUploadSection>
     width: 72,
     height: 72,
     decoration: BoxDecoration(
-      color: BrandColors.slate200,
+      color: BrandColors.border,
       shape: BoxShape.circle,
       border: Border.all(color: Colors.white, width: 3),
     ),
-    child: const Icon(Icons.person, size: 36, color: BrandColors.slate400),
+    child: const Icon(Icons.person, size: 36, color: BrandColors.muted),
   );
 
   Widget _buildReviewSidebarSection(String title, List<Widget> children) =>
@@ -1339,14 +1339,14 @@ class _CvUploadSectionState extends State<CvUploadSection>
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(icon, size: 13, color: BrandColors.slate400),
+          Icon(icon, size: 13, color: BrandColors.muted),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
               style: BrandTypography.body.copyWith(
                 fontSize: 12,
-                color: BrandColors.slate800,
+                color: BrandColors.slateBrand,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -1362,7 +1362,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
       children: [
         Row(
           children: [
-            Icon(icon, size: 18, color: BrandColors.slate950),
+            Icon(icon, size: 18, color: BrandColors.ink),
             const SizedBox(width: 10),
             Text(
               title,
@@ -1373,7 +1373,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
             ),
           ],
         ),
-        const Divider(height: 20, thickness: 1, color: BrandColors.slate950),
+        const Divider(height: 20, thickness: 1, color: BrandColors.ink),
       ],
     ),
   );
@@ -1398,7 +1398,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
                     _controllers['exp_role_$i']?.text ?? '',
                     style: BrandTypography.body.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: BrandColors.slate950,
+                      color: BrandColors.ink,
                     ),
                   ),
                 ),
@@ -1422,7 +1422,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
                 ' | ${_controllers['exp_hours_$i']?.text} hrs',
                 style: BrandTypography.label.copyWith(
                   fontSize: 10,
-                  color: BrandColors.slate400,
+                  color: BrandColors.muted,
                 ),
               ),
             ],
@@ -1431,7 +1431,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
               _controllers['exp_desc_$i']?.text ?? '',
               style: BrandTypography.body.copyWith(
                 fontSize: 13,
-                color: BrandColors.slate800,
+                color: BrandColors.slateBrand,
               ),
             ),
           ],
@@ -1661,7 +1661,8 @@ class _CvUploadSectionState extends State<CvUploadSection>
             Text(
               label.toUpperCase(),
               style: BrandTypography.label.copyWith(
-                fontSize: 11,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
                 color: BrandColors.slateBrand,
               ),
             ),
@@ -1670,7 +1671,7 @@ class _CvUploadSectionState extends State<CvUploadSection>
               Text(
                 '*',
                 style: BrandTypography.label.copyWith(
-                  fontSize: 11,
+                  fontSize: 12.5,
                   color: BrandColors.teal,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1683,7 +1684,8 @@ class _CvUploadSectionState extends State<CvUploadSection>
           controller: ctrl,
           maxLines: maxLines,
           style: BrandTypography.body.copyWith(
-            fontSize: 14,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
             color: BrandColors.ink,
           ),
           validator: required
@@ -1907,7 +1909,7 @@ class _TopBar extends StatelessWidget {
           ),
           decoration: const BoxDecoration(
             color: BrandColors.white,
-            border: Border(bottom: BorderSide(color: BrandColors.slate200)),
+            border: Border(bottom: BorderSide(color: BrandColors.border)),
           ),
           child: isMob
               // ── MOBILE: logo + compact stepper stacked ──────────────────
@@ -2228,7 +2230,7 @@ class _LoadingDotsState extends State<_LoadingDots>
               width: 4,
               height: 4,
               decoration: BoxDecoration(
-                color: BrandColors.slate400.withValues(
+                color: BrandColors.muted.withValues(
                   alpha: 0.4 + 0.6 * _anims[i].value,
                 ),
                 shape: BoxShape.circle,

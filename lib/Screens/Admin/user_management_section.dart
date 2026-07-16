@@ -1396,7 +1396,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
       },
       itemBuilder: (_) => [
         _menuItem('convert', Icons.swap_horiz_rounded, 'Convert role',
-            const Color(0xFF0EA5E9)),
+            const Color(0xFF2178B5)),
         if (!isDeleted)
           _menuItem(
             'toggle',
@@ -2431,10 +2431,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
       child: Text(
         label.toUpperCase(),
         style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
+          fontSize: 12.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
-          color: const Color(0xFF64748B),
+          color: const Color(0xFF3E5C76),
         ),
       ),
     );
@@ -2464,8 +2464,9 @@ class _UserManagementSectionState extends State<UserManagementSection>
             prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
             hintText: 'Enter $label',
             hintStyle: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
-              color: const Color(0xFFCBD5E1),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF5E7A8E).withValues(alpha: 0.6),
             ),
             filled: true,
             fillColor: readOnly ? const Color(0xFFF8FAFC) : Colors.white,

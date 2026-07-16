@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'JS_Top_Bar.dart';
 import 'List_applied_jobs_provider.dart';
+import '../../Constant/js_header.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  RESPONSIVE BREAKPOINTS
@@ -260,46 +261,15 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   }
 
   Widget _buildMobileAppBar(String title) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, size: 22),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          ),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: _C.indigo.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: const Icon(
-              Icons.work_history_rounded,
-              color: _C.indigo,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              title,
-              style: _C.p(14, fw: FontWeight.w600),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const Spacer(),
-          _FilterToggleBtn(
-            active: _showFilters,
-            onTap: () => setState(() => _showFilters = !_showFilters),
-            compact: true,
-          ),
-        ],
+    return JobSeekerHeader(
+      icon: Icons.work_history_rounded,
+      title: title,
+      subtitle: 'Trends & insights',
+      onMenu: () => _scaffoldKey.currentState?.openDrawer(),
+      trailing: _FilterToggleBtn(
+        active: _showFilters,
+        onTap: () => setState(() => _showFilters = !_showFilters),
+        compact: true,
       ),
     );
   }
@@ -499,73 +469,13 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     int filteredCount,
     double w,
   ) {
-    final total = analytics['totalApplications'] as int;
-    final accepted = (analytics['statusBreakdown'] as Map)['accepted'] as int;
-    final pending = (analytics['statusBreakdown'] as Map)['pending'] as int;
-
-    return Container(
-      height: 64,
-      padding: EdgeInsets.symmetric(horizontal: _BP.hPad(w)),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: _C.indigo.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.work_history_rounded,
-              color: _C.indigo,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('My Applications', style: _C.p(16, fw: FontWeight.w600)),
-              Text(
-                'Trends & insights',
-                style: _C.p(11, fw: FontWeight.w500, color: _C.t3),
-              ),
-            ],
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _MiniStatChip(
-                    icon: Icons.inbox_rounded,
-                    label: '$total Total',
-                    color: _C.indigo,
-                  ),
-                  const SizedBox(width: 6),
-                  _MiniStatChip(
-                    icon: Icons.check_circle_rounded,
-                    label: '$accepted Accepted',
-                    color: _C.emerald,
-                  ),
-                  const SizedBox(width: 6),
-                  _MiniStatChip(
-                    icon: Icons.timelapse_rounded,
-                    label: '$pending Pending',
-                    color: _C.amber,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          _FilterToggleBtn(
-            active: _showFilters,
-            onTap: () => setState(() => _showFilters = !_showFilters),
-          ),
-        ],
+    return JobSeekerHeader(
+      icon: Icons.work_history_rounded,
+      title: 'My Applications',
+      subtitle: 'Trends & insights',
+      trailing: _FilterToggleBtn(
+        active: _showFilters,
+        onTap: () => setState(() => _showFilters = !_showFilters),
       ),
     );
   }
@@ -2063,37 +1973,6 @@ class _CompactSearchField extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  SMALL UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
-class _MiniStatChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  const _MiniStatChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 12),
-          const SizedBox(width: 4),
-          Text(label, style: _C.p(10, color: color)),
-        ],
-      ),
-    );
-  }
-}
-
 class _FilterToggleBtn extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
@@ -2106,7 +1985,8 @@ class _FilterToggleBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? _C.indigo : _C.slate;
+    // White-glass styling so it reads clearly on the dark navy→teal header.
+    final accent = active ? const Color(0xFF43E0D2) : Colors.white;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -2116,9 +1996,9 @@ class _FilterToggleBtn extends StatelessWidget {
           vertical: compact ? 6 : 7,
         ),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.07),
+          color: Colors.white.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
+          border: Border.all(color: accent.withValues(alpha: 0.45)),
         ),
         child: compact
             ? Icon(
@@ -2126,7 +2006,7 @@ class _FilterToggleBtn extends StatelessWidget {
                     ? Icons.filter_list_rounded
                     : Icons.filter_list_off_rounded,
                 size: 16,
-                color: color,
+                color: accent,
               )
             : Row(
                 children: [
@@ -2135,12 +2015,12 @@ class _FilterToggleBtn extends StatelessWidget {
                         ? Icons.filter_list_rounded
                         : Icons.filter_list_off_rounded,
                     size: 14,
-                    color: color,
+                    color: accent,
                   ),
                   const SizedBox(width: 5),
                   Text(
                     active ? 'Hide' : 'Filters',
-                    style: _C.p(11, color: color),
+                    style: _C.p(11, color: accent),
                   ),
                 ],
               ),

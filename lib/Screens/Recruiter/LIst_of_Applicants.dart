@@ -26,18 +26,18 @@ class SmoothScrollBehavior extends MaterialScrollBehavior {
 }
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
-const _cPrimary = Color(0xFF6366F1);
-const _cAccent = Color(0xFF818CF8);
-const _cPurple = Color(0xFF8B5CF6);
+const _cPrimary = Color(0xFF14507F);
+const _cAccent = Color(0xFF2EC4B6);
+const _cPurple = Color(0xFF15A99C);
 const _cGreen = Color(0xFF10B981);
 const _cAmber = Color(0xFFF59E0B);
 const _cRed = Color(0xFFEF4444);
-const _cSlate = Color(0xFF64748B);
-const _cSurface = Color(0xFFFAFAFA);
-const _cBorder = Color(0xFFE2E8F0);
-const _cTxt = Color(0xFF0F172A);
-const _cTxtSec = Color(0xFF64748B);
-const _cTxtTert = Color(0xFF94A3B8);
+const _cSlate = Color(0xFF5E7A8E);
+const _cSurface = Color(0xFFF4F9FB);
+const _cBorder = Color(0xFFDCE7EF);
+const _cTxt = Color(0xFF0B2239);
+const _cTxtSec = Color(0xFF5E7A8E);
+const _cTxtTert = Color(0xFF8AA5B5);
 const _cTeal = Color(0xFF086F63);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -269,7 +269,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     return Scaffold(
-      backgroundColor: Color(0xFFFAFAFA),
+      backgroundColor: Color(0xFFF4F9FB),
       body: Consumer<ApplicantsProvider>(
         builder: (ctx, provider, _) {
           if (provider.isLoading) {
@@ -704,9 +704,9 @@ class _ApplicantCard extends StatelessWidget {
 
   static const _avatarColors = [
     Color(0xFF3B82F6),
-    Color(0xFF8B5CF6),
+    Color(0xFF15A99C),
     Color(0xFFEC4899),
-    Color(0xFF06B6D4),
+    Color(0xFF2178B5),
   ];
 
   @override
@@ -1086,7 +1086,7 @@ class _Header extends StatelessWidget {
         isMobile ? 14 : 28,
         isMobile ? 12 : 16,
       ),
-      decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
+      decoration: const BoxDecoration(color: Color(0xFFF4F9FB)),
       child: isMobile ? _mobileHeader(context) : _desktopHeader(context),
     );
   }
@@ -1637,9 +1637,9 @@ class _TableRow extends StatelessWidget {
 
   static const _avatarColors = [
     Color(0xFF3B82F6),
-    Color(0xFF8B5CF6),
+    Color(0xFF15A99C),
     Color(0xFFEC4899),
-    Color(0xFF06B6D4),
+    Color(0xFF2178B5),
   ];
 
   @override
@@ -1926,7 +1926,7 @@ class _StatusDropdown extends StatelessWidget {
     },
     'rejected': {
       'label': 'Rejected',
-      'color': Color(0xFF64748B),
+      'color': Color(0xFF5E7A8E),
       'bg': Color(0xFFF1F5F9),
     },
   };

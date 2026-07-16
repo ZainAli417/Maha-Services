@@ -9,17 +9,18 @@ import 'R_Top_Bar.dart';
 import 'Recruiter_provider_Job_listing.dart';
 import '../../core/widgets/quill_editor.dart';
 import '../../Constant/recruiter_AI.dart';
+import '../../Constant/js_header.dart';
 
-// ─── Colors (mirrors Dashboard_Recruiter) ────────────────────────────────────
-const Color _primary = Color(0xFF6366F1);
-const Color _primaryLight = Color(0xFFF0F4FF);
-const Color _accent = Color(0xFF8B5CF6);
-const Color _accentLight = Color(0xFFF5F3FF);
+// ─── Colors (navy + teal brand) ──────────────────────────────────────────────
+const Color _primary = Color(0xFF14507F);
+const Color _primaryLight = Color(0xFFE8F1F8);
+const Color _accent = Color(0xFF2EC4B6);
+const Color _accentLight = Color(0xFFE4F6F4);
 const Color _bgWhite = Color(0xFFFFFFFF);
-const Color _bgLight = Color(0xFFF8FAFC);
-const Color _textDark = Color(0xFF0F172A);
-const Color _textMid = Color(0xFF64748B);
-const Color _border = Color(0xFFE2E8F0);
+const Color _bgLight = Color(0xFFF4F9FB);
+const Color _textDark = Color(0xFF0B2239);
+const Color _textMid = Color(0xFF5E7A8E);
+const Color _border = Color(0xFFDCE7EF);
 const Color _success = Color(0xFF10B981);
 const Color _successLight = Color(0xFFF0FDF4);
 const Color _warning = Color(0xFFFB923C);
@@ -217,80 +218,13 @@ class _PostJobScreenState extends State<PostJobScreen>
     );
   }
 
-  // ─── APP BAR (mirrors dashboard _buildMobileAppBar style for all sizes) ──
+  // ─── APP BAR (shared navy→teal header, matches all recruiter screens) ─────
   Widget _buildAppBar() {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: 68,
-        padding: EdgeInsets.symmetric(
-          horizontal: _isMobile ? 16 : 28,
-          vertical: _isMobile ? 10 : 12,
-        ),
-        decoration: const BoxDecoration(
-          color: _bgWhite,
-          border: Border(bottom: BorderSide(color: _border, width: 1)),
-        ),
-        child: Row(
-          children: [
-            if (_isMobile) ...[
-              IconButton(
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  size: 24,
-                  color: _textDark,
-                ),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                splashRadius: 20,
-              ),
-              const SizedBox(width: 8),
-            ],
-            // Icon badge — matches dashboard style
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _primaryLight,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.flight_takeoff_outlined,
-                size: 24,
-                color: _primary,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Post a Position',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: _isMobile ? 16 : 18,
-                      fontWeight: FontWeight.w800,
-                      color: _textDark,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  if (!_isMobile)
-                    Text(
-                      'Fill in the details to publish a new listing',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        color: _textMid,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return JobSeekerHeader(
+      icon: Icons.flight_takeoff_rounded,
+      title: 'Post a Position',
+      subtitle: 'Fill in the details to publish a new listing',
+      onMenu: () => _scaffoldKey.currentState?.openDrawer(),
     );
   }
 

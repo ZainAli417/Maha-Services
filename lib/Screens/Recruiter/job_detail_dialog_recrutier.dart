@@ -12,11 +12,11 @@ class JobDetailModal_recruiter extends StatelessWidget {
 
   // ─── Color Palette ────────────────────────────────────────────────────────
   static const Color _bgSurface = Colors.white;
-  static const Color _bgBackground = Color(0xFFF8FAFC);
-  static const Color _textPrimary = Color(0xFF0F172A);
-  static const Color _textSecondary = Color(0xFF64748B);
-  static const Color _accentPrimary = Color(0xFF4F46E5);
-  static const Color _borderColor = Color(0xFFE2E8F0);
+  static const Color _bgBackground = Color(0xFFF4F9FB);
+  static const Color _textPrimary = Color(0xFF0B2239);
+  static const Color _textSecondary = Color(0xFF5E7A8E);
+  static const Color _accentPrimary = Color(0xFF14507F);
+  static const Color _borderColor = Color(0xFFDCE7EF);
   static const Color _dangerColor = Color(0xFFEF4444);
   static const Color _successColor = Color(0xFF10B981);
 

@@ -7,6 +7,7 @@ import 'package:tuple/tuple.dart';
 import 'JS_Top_Bar.dart';
 import 'job_seeker_provider.dart';
 import 'Job_seeker_Available_jobs.dart';
+import '../../Constant/js_header.dart';
 
 /// A ScrollBehavior that enables smooth inertia scrolling on web and desktop
 class SmoothScrollBehavior extends MaterialScrollBehavior {
@@ -115,56 +116,13 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
                   child: Column(
                     children: [
                       if (isMobile)
-                        SafeArea(
-                          bottom: false,
-                          child: Container(
-                            height: 60,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                            ),
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.menu_rounded,
-                                    size: 22,
-                                  ),
-                                  onPressed: () =>
-                                      _scaffoldKey.currentState?.openDrawer(),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 36,
-                                    minHeight: 36,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.all(7),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF14507F,
-                                    ).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(7),
-                                  ),
-                                  child: const Icon(
-                                    Icons.screen_search_desktop_outlined,
-                                    size: 16,
-                                    color: Color(0xFF14507F),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Job Hub',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF0F172A),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        JobSeekerHeader(
+                          icon: Icons.screen_search_desktop_outlined,
+                          title: 'Job Hub',
+                          subtitle:
+                              'Explore jobs and become part of your dream company',
+                          onMenu: () =>
+                              _scaffoldKey.currentState?.openDrawer(),
                         ),
                       Expanded(child: _buildDashboardContent(context)),
                     ],

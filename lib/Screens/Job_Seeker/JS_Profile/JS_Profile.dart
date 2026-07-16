@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Recruiter/LIst_of_Applicants.dart';
 import '../JS_Top_Bar.dart';
+import '../../../Constant/js_header.dart';
 import 'JS_Profile_Provider.dart';
 import 'JS_Profile_Sidebar.dart';
 
@@ -574,101 +575,12 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildTopBar() {
-    final isMobile = _isMobile;
-
-    // Rich navy→teal branded banner. RepaintBoundary isolates it from the
-    // step content that rebuilds on every field change / navigation.
-    return RepaintBoundary(
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-              isMobile ? 10 : 20, isMobile ? 8 : 18, isMobile ? 10 : 20, 2),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 14 : 22,
-              vertical: isMobile ? 12 : 18,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF061C31),
-                  Color(0xFF0A2E4F),
-                  Color(0xFF14507F),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF14507F).withValues(alpha: 0.28),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                if (isMobile)
-                  IconButton(
-                    icon: const Icon(Icons.menu_rounded,
-                        size: 24, color: Colors.white),
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 34, minHeight: 34),
-                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
-                if (isMobile) const SizedBox(width: 4),
-                Container(
-                  padding: EdgeInsets.all(isMobile ? 9 : 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xFF43E0D2).withValues(alpha: 0.4)),
-                  ),
-                  child: Icon(
-                    Icons.person_add_alt_outlined,
-                    size: isMobile ? 18 : 24,
-                    color: const Color(0xFF43E0D2),
-                  ),
-                ),
-                SizedBox(width: isMobile ? 12 : 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Profile',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 17 : 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.15,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      Text(
-                        'One-click profile analyzer & CV builder',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 11 : 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.75),
-                          height: 1.2,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                _buildProgressIndicator(),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return JobSeekerHeader(
+      icon: Icons.person_add_alt_outlined,
+      title: 'Profile',
+      subtitle: 'One-click profile analyzer & CV builder',
+      onMenu: () => _scaffoldKey.currentState?.openDrawer(),
+      trailing: _buildProgressIndicator(),
     );
   }
 

@@ -12,19 +12,20 @@ import 'package:intl/intl.dart';
 import 'LIst_of_Applicants.dart';
 import 'job_detail_dialog_recrutier.dart';
 import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
+import '../../Constant/js_header.dart';
 
 // ─── Shared color tokens ──────────────────────────────────────────────────────
-const _kPrimary = Color(0xFF6366F1);
-const _kAccent = Color(0xFF818CF8);
+const _kPrimary = Color(0xFF14507F);
+const _kAccent = Color(0xFF2EC4B6);
 const _kSuccess = Color(0xFF10B981);
 const _kSurface = Color(0xFFFFFFFF);
-const _kBg = Color(0xFFFAFAFA);
-const _kTxtPrimary = Color(0xFF0F172A);
-const _kTxtSec = Color(0xFF64748B);
-const _kTxtTert = Color(0xFF94A3B8);
-const _kBorder = Color(0xFFE2E8F0);
+const _kBg = Color(0xFFF4F9FB);
+const _kTxtPrimary = Color(0xFF0B2239);
+const _kTxtSec = Color(0xFF5E7A8E);
+const _kTxtTert = Color(0xFF8AA5B5);
+const _kBorder = Color(0xFFDCE7EF);
 const _kBorderLt = Color(0xFFF1F5F9);
-const _kSurfaceEl = Color(0xFFFAFAFA);
+const _kSurfaceEl = Color(0xFFF4F9FB);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TOP-LEVEL SCAFFOLD  (sidebar + appbar, no duplicate header)
@@ -74,7 +75,7 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
               child: Column(
                 children: [
                   // ── Single AppBar (mobile AND desktop) ─────────────────
-                  _AppBar(scaffoldKey: _scaffoldKey, isMobile: isMobile),
+                  _AppBar(scaffoldKey: _scaffoldKey),
                   // ── Content ────────────────────────────────────────────
                   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
@@ -136,99 +137,51 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
 // ─── Unified AppBar (replaces both _buildMobileAppBar + _buildHeader) ─────────
 class _AppBar extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
-  final bool isMobile;
-  const _AppBar({required this.scaffoldKey, required this.isMobile});
+  const _AppBar({required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: 56,
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
-        decoration: const BoxDecoration(color: Color(0xFFFAFAFA)),
-        child: Row(
-          children: [
-            if (isMobile) ...[
-              IconButton(
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  size: 24,
-                  color: _kTxtPrimary,
+    return JobSeekerHeader(
+      icon: Icons.track_changes_rounded,
+      title: 'Job Application Tracker',
+      subtitle: 'Manage & Analyse Applicants',
+      onMenu: () => scaffoldKey.currentState?.openDrawer(),
+      trailing: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go('/post-job'),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                onPressed: () => scaffoldKey.currentState?.openDrawer(),
-              ),
-              const SizedBox(width: 2),
-            ],
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.track_changes_outlined,
-                size: 20,
-                color: Color(0xFF6366F1),
-              ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Job Application Tracker',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: _kTxtPrimary,
-                      height: 1.2,
-                    ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_rounded, color: Colors.white, size: 16),
+                const SizedBox(width: 5),
+                Text(
+                  'Post',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
-                  if (!isMobile)
-                    Text(
-                      'Manage & Analyse Applicants',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        color: _kTxtSec,
-                        height: 1.2,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-            // Post Job button in appbar
-            GestureDetector(
-              onTap: () => context.go('/post-job'),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [_kPrimary, _kAccent]),
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add, color: Colors.white, size: 16),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Post',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
-            SizedBox(width: 10),
-          ],
+          ),
         ),
       ),
     );
@@ -407,7 +360,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
     final isMobile = w < 768;
 
     return Scaffold(
-      backgroundColor: Color(0xFFFAFAFA),
+      backgroundColor: Color(0xFFF4F9FB),
       body: CustomScrollView(
         controller: _scrollCtrl,
         physics: const BouncingScrollPhysics(),
@@ -422,7 +375,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   // ── Command bar ─────────────────────────────────────────────────────────────
   Widget _buildCommandBar(bool isMobile) {
     return Container(
-      color: Color(0xFFFAFAFA),
+      color: Color(0xFFF4F9FB),
       padding: EdgeInsets.fromLTRB(
         isMobile ? 12 : 24,
         isMobile ? 12 : 16,
@@ -1290,7 +1243,7 @@ class _Job_CardsState extends State<Job_Cards>
         builder: (ctx) => Container(
           height: MediaQuery.of(ctx).size.height * 0.88,
           decoration: const BoxDecoration(
-            color: Color(0xFFFAFAFA),
+            color: Color(0xFFF4F9FB),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
@@ -1301,7 +1254,7 @@ class _Job_CardsState extends State<Job_Cards>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Color(0xFFFAFAFA),
+                  color: Color(0xFFF4F9FB),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

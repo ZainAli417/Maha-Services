@@ -9,22 +9,22 @@ import 'filter.dart';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 class _T {
-  static const primary = Color(0xFF6366F1);
-  static const purple = Color(0xFF8B5CF6);
-  static const textPri = Color(0xFF0F172A);
-  static const textSec = Color(0xFF64748B);
-  static const textTert = Color(0xFF94A3B8);
-  static const bg = Color(0xFFFAFAFA);
+  static const primary = Color(0xFF14507F);
+  static const purple = Color(0xFF15A99C);
+  static const textPri = Color(0xFF0B2239);
+  static const textSec = Color(0xFF5E7A8E);
+  static const textTert = Color(0xFF8AA5B5);
+  static const bg = Color(0xFFF4F9FB);
   static const white = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE2E8F0);
+  static const border = Color(0xFFDCE7EF);
   static const success = Color(0xFF10B981);
   static const accent = Color(0xFFEC4899);
 
   static const _avatarColors = [
     Color(0xFF3B82F6),
-    Color(0xFF8B5CF6),
+    Color(0xFF15A99C),
     Color(0xFFEC4899),
-    Color(0xFF06B6D4),
+    Color(0xFF2178B5),
   ];
   static Color avatar(int i) => _avatarColors[i % _avatarColors.length];
 
@@ -1280,13 +1280,13 @@ class _SentBadge extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
-      color: Colors.blue.withValues(alpha: 0.1),
+      color: const Color(0xFF2178B5).withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+      border: Border.all(color: const Color(0xFF2178B5).withValues(alpha: 0.3)),
     ),
     child: Text(
       'SENT',
-      style: _T.label(fs: 9, c: Colors.blue.shade700, fw: FontWeight.w800),
+      style: _T.label(fs: 9, c: const Color(0xFF14507F), fw: FontWeight.w800),
     ),
   );
 }

@@ -11,18 +11,29 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../Screens/Job_Seeker/JS_Top_Bar.dart';
 import '../Screens/Job_Seeker/job_seeker_provider.dart';
+import 'brand_snackbar.dart';
 import 'cv_analysis_provider.dart';
+import 'js_header.dart';
 
-// ─── Colours ────────────────────────────────────────────────────────────────
-const Color kPrimaryBlue = Color(0xFF6366F1);
-const Color kAccentBlue = Color(0xFF6366F1);
-const Color kTextPrimary = Color(0xFF0F172A);
-const Color kTextSecondary = Color(0xFF475569);
-const Color kBorderLight = Color(0xFFE2E8F0);
-const Color kBackgroundGray = Color(0xFFFAFAFA);
-const Color kSuccessGreen = Color(0xFF059669);
-const Color kWarningOrange = Color(0xFFEA580C);
-const Color kErrorRed = Color(0xFFDC2626);
+// ─── Colours (navy + teal brand system) ─────────────────────────────────────
+const Color kPrimaryBlue = Color(0xFF14507F); // brand navy (primary actions)
+const Color kAccentBlue = Color(0xFF2EC4B6); // brand teal (accents)
+const Color kTextPrimary = Color(0xFF0B2239); // ink
+const Color kTextSecondary = Color(0xFF5E7A8E); // muted
+const Color kBorderLight = Color(0xFFDCE7EF); // border
+const Color kBackgroundGray = Color(0xFFF4F9FB); // bgSoft
+const Color kSuccessGreen = Color(0xFF10B981);
+const Color kWarningOrange = Color(0xFFF59E0B);
+const Color kErrorRed = Color(0xFFEF4444);
+const Color kNavyDeep = Color(0xFF0A2E4F);
+const Color kTealDeep = Color(0xFF15A99C);
+
+// Brand gradient (teal → navy) for icon badges & the primary action.
+const LinearGradient kBrandGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
+);
 
 // ─── Breakpoints ────────────────────────────────────────────────────────────
 class _BP {
@@ -111,18 +122,11 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
   }
 
   void _showSnackBar(BuildContext ctx, String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(ctx).showSnackBar(
-      SnackBar(
-        content: Text(
-          msg,
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: isError ? kErrorRed : kSuccessGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+    if (isError) {
+      BrandSnack.error(ctx, msg);
+    } else {
+      BrandSnack.success(ctx, msg);
+    }
   }
 
   @override
@@ -252,79 +256,21 @@ class _CompactHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    final isMobile = _BP.isMobile(w);
-    final hPad = isMobile ? 10.0 : 20.0;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: hPad,
-        vertical: isMobile ? 8 : 12,
-      ),
-      decoration: const BoxDecoration(color: Colors.white),
-      child: SafeArea(
-        bottom: false,
-        top: isMobile,
-        child: Row(
-          children: [
-            if (isMobile) ...[
-              IconButton(
-                icon: const Icon(Icons.menu_rounded, size: 22),
-                onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+    return JobSeekerHeader(
+      icon: Icons.document_scanner_rounded,
+      title: 'CV Analyzer',
+      subtitle: 'ATS Analysis & Scoring',
+      onMenu: () => scaffoldKey.currentState?.openDrawer(),
+      trailing: provider.isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.2,
+                valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
-              const SizedBox(width: 4),
-            ],
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: kPrimaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.document_scanner_outlined,
-                size: 20,
-                color: kPrimaryBlue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'CV Analyzer',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 15 : 16,
-                      fontWeight: FontWeight.w700,
-                      color: kTextPrimary,
-                    ),
-                  ),
-                  Text(
-                    'ATS Analysis & Scoring',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 11 : 12,
-                      color: kTextSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (provider.isLoading)
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
-                  strokeWidth: 2,
-                ),
-              ),
-          ],
-        ),
-      ),
+            )
+          : null,
     );
   }
 }
@@ -496,27 +442,55 @@ class _InputPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: isLoading ? null : onAnalyze,
-                  icon: Icon(
-                    isLoading ? Icons.hourglass_empty : Icons.auto_awesome,
-                    size: 16,
-                  ),
-                  label: Text(
-                    isLoading ? 'Analyzing…' : 'Analyze CV',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 13 : 14,
-                      fontWeight: FontWeight.w600,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: isLoading ? null : onAnalyze,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: isLoading ? null : kBrandGradient,
+                        color: isLoading
+                            ? kTextSecondary.withValues(alpha: 0.35)
+                            : null,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: isLoading
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: kAccentBlue.withValues(alpha: 0.35),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: isMobile ? 14 : 18,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isLoading
+                                  ? Icons.hourglass_empty_rounded
+                                  : Icons.auto_awesome_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isLoading ? 'Analyzing…' : 'Analyze CV',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: isMobile ? 13 : 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryBlue,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
                   ),
                 ),
               ),
@@ -561,32 +535,34 @@ class _InputPanel extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       style: GoogleFonts.plusJakartaSans(
-        fontSize: isMobile ? 13 : 14,
+        fontSize: isMobile ? 14 : 15,
+        fontWeight: FontWeight.w600,
         color: kTextPrimary,
       ),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.plusJakartaSans(
-          color: kTextSecondary.withValues(alpha: 0.6),
-          fontSize: isMobile ? 12 : 14,
+          color: kTextSecondary.withValues(alpha: 0.7),
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
         ),
         filled: true,
         fillColor: kBackgroundGray,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: kBorderLight),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kBorderLight, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: kBorderLight),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kBorderLight, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: kAccentBlue, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: kPrimaryBlue, width: 1.6),
         ),
         contentPadding: EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: isMobile ? 10 : 12,
+          horizontal: 14,
+          vertical: isMobile ? 12 : 13,
         ),
       ),
     );

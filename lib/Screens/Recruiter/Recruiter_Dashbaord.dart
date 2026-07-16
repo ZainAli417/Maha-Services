@@ -10,22 +10,23 @@ import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'Recruiter_provider_Job_listing.dart';
+import '../../Constant/js_header.dart';
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
-const _navy = Color(0xFF0A1628);
-const _blue = Color(0xFF6366F1);
-const _blueLight = Color(0xFF818CF8);
-const _cyan = Color(0xFF06B6D4);
+// ─── Design Tokens (navy + teal brand) ──────────────────────────────────────
+const _navy = Color(0xFF0A2E4F);
+const _blue = Color(0xFF14507F);
+const _blueLight = Color(0xFF2EC4B6);
+const _cyan = Color(0xFF2178B5);
 const _emerald = Color(0xFF10B981);
 const _amber = Color(0xFFF59E0B);
 const _rose = Color(0xFFEF4444);
-const _violet = Color(0xFF002D73);
-const _slate50 = Color(0xFFFAFAFA);
+const _violet = Color(0xFF15A99C);
+const _slate50 = Color(0xFFF4F9FB);
 const _slate100 = Color(0xFFF1F5F9);
-const _slate200 = Color(0xFFE2E8F0);
-const _slate400 = Color(0xFF94A3B8);
-const _slate600 = Color(0xFF475569);
-const _slate900 = Color(0xFF0F172A);
+const _slate200 = Color(0xFFDCE7EF);
+const _slate400 = Color(0xFF8AA5B5);
+const _slate600 = Color(0xFF5E7A8E);
+const _slate900 = Color(0xFF0B2239);
 const _white = Color(0xFFFFFFFF);
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
@@ -73,7 +74,6 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
                 children: [
                   _RecruiterDashboardTopBar(
                     scaffoldKey: _scaffoldKey,
-                    isMobile: isMobile,
                   ),
                   Expanded(
                     child: Consumer<job_listing_provider>(
@@ -99,101 +99,52 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
 
 class _RecruiterDashboardTopBar extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
-  final bool isMobile;
 
-  const _RecruiterDashboardTopBar({
-    required this.scaffoldKey,
-    required this.isMobile,
-  });
+  const _RecruiterDashboardTopBar({required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: 56,
-        padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 20),
-        decoration: const BoxDecoration(color: _slate50),
-        child: Row(
-          children: [
-            if (isMobile) ...[
-              IconButton(
-                icon: const Icon(Icons.menu_rounded, size: 24),
-                onPressed: () => scaffoldKey.currentState?.openDrawer(),
+    return JobSeekerHeader(
+      icon: Icons.recent_actors_rounded,
+      title: 'Recruiter Dashboard',
+      subtitle: 'Hiring analytics & job status overview',
+      onMenu: () => scaffoldKey.currentState?.openDrawer(),
+      trailing: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go('/post-job'),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2EC4B6), Color(0xFF14507F)],
               ),
-              const SizedBox(width: 2),
-            ],
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.recent_actors_outlined,
-                size: 20,
-                color: Color(0xFF6366F1),
-              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2EC4B6).withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Recruiter Dashboard',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 14 : 16,
-                      fontWeight: FontWeight.w600,
-                      color: _slate900,
-                      height: 1.2,
-                    ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.add_rounded, color: Colors.white, size: 16),
+                const SizedBox(width: 5),
+                Text(
+                  'Post',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
-                  if (!isMobile)
-                    Text(
-                      'Hiring analytics and job status overview',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        color: _slate600,
-                        height: 1.2,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-            GestureDetector(
-              onTap: () => context.go('/post-job'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF818CF8)],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.add, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Post',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
+          ),
         ),
       ),
     );

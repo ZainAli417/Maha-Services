@@ -64,18 +64,20 @@ class _SkeletonBoxState extends State<SkeletonBox>
   }
 
   @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-        animation: _c,
-        builder: (_, _) => Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            color: Color.lerp(
-              AppColors.surfaceAlt,
-              AppColors.border,
-              _c.value,
+  Widget build(BuildContext context) => RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (_, _) => Container(
+            width: widget.width,
+            height: widget.height,
+            decoration: BoxDecoration(
+              color: Color.lerp(
+                AppColors.surfaceAlt,
+                AppColors.border,
+                _c.value,
+              ),
+              borderRadius: BorderRadius.circular(widget.radius),
             ),
-            borderRadius: BorderRadius.circular(widget.radius),
           ),
         ),
       );

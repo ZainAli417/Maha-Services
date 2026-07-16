@@ -258,7 +258,8 @@ class _FloatingCTAState extends State<_FloatingCTA>
     return MouseRegion(
       onEnter: (_) => _hoverController.forward(),
       onExit: (_) => _hoverController.reverse(),
-      child: AnimatedBuilder(
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
         animation: Listenable.merge([_hoverController, _pulseController]),
         builder: (context, child) {
           final hover = _hoverController.value;
@@ -328,6 +329,7 @@ class _FloatingCTAState extends State<_FloatingCTA>
             ),
           );
         },
+        ),
       ),
     );
   }

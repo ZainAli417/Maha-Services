@@ -8,18 +8,19 @@ import 'package:job_portal/Screens/Recruiter/R_Top_Bar.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../Job_Seeker/job_seeker_provider.dart';
+import '../../Constant/js_header.dart';
 import 'View_Shortlisted.dart';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 class _T {
-  static const primary = Color(0xFF6366F1);
-  static const primaryLight = Color(0xFFEEF2FF);
-  static const textPri = Color(0xFF0F172A);
-  static const textSec = Color(0xFF64748B);
-  static const textTert = Color(0xFF94A3B8);
-  static const bg = Color(0xFFFAFAFA);
+  static const primary = Color(0xFF14507F);
+  static const primaryLight = Color(0xFFE8F1F8);
+  static const textPri = Color(0xFF0B2239);
+  static const textSec = Color(0xFF5E7A8E);
+  static const textTert = Color(0xFF8AA5B5);
+  static const bg = Color(0xFFF4F9FB);
   static const white = Color(0xFFFFFFFF);
-  static const border = Color(0xFFD0D7DE);
+  static const border = Color(0xFFDCE7EF);
   static const success = Color(0xFF1A7F37);
   static const warning = Color(0xFFBF8700);
   static const red = Color(0xFFCF222E);
@@ -190,25 +191,11 @@ class _MobileTopBar extends StatelessWidget {
   const _MobileTopBar({required this.onMenu});
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    bottom: false,
-    child: Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: const BoxDecoration(color: _T.bg),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, size: 22, color: _T.textSec),
-            onPressed: onMenu,
-          ),
-          const SizedBox(width: 4),
-          const _HeaderIconBox(),
-          const SizedBox(width: 10),
-          Text('Shortlisting', style: _T.head(fs: 15)),
-        ],
-      ),
-    ),
+  Widget build(BuildContext context) => JobSeekerHeader(
+    icon: Icons.recent_actors_rounded,
+    title: 'Shortlisting',
+    subtitle: 'Review & manage shortlisted candidates',
+    onMenu: onMenu,
   );
 }
 
@@ -216,43 +203,10 @@ class _DesktopHeader extends StatelessWidget {
   const _DesktopHeader();
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-    color: _T.bg,
-    child: Row(
-      children: [
-        const _HeaderIconBox(size: 22),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Shortlisting Dashboard', style: _T.head(fs: 17)),
-              Text(
-                'Review & Manage Shortlisted Candidates',
-                style: _T.label(c: _T.textSec),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _HeaderIconBox extends StatelessWidget {
-  final double size;
-  const _HeaderIconBox({this.size = 18});
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(9),
-    decoration: BoxDecoration(
-      color: _T.primary.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(Icons.recent_actors_outlined, size: size, color: _T.primary),
+  Widget build(BuildContext context) => const JobSeekerHeader(
+    icon: Icons.recent_actors_rounded,
+    title: 'Shortlisting Dashboard',
+    subtitle: 'Review & manage shortlisted candidates',
   );
 }
 
