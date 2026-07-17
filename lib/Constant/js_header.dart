@@ -16,6 +16,7 @@ class JobSeekerHeader extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.eyebrow,
     this.onMenu,
     this.trailing,
   });
@@ -23,108 +24,120 @@ class JobSeekerHeader extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+
+  /// Optional tiny uppercase label shown above the title (brand eyebrow).
+  final String? eyebrow;
   final VoidCallback? onMenu;
   final Widget? trailing;
 
-  static const _heroDeep = Color(0xFF061C31);
-  static const _heroMid = Color(0xFF0A2E4F);
+  // Brand palette — navy + teal (matches Admin analytics modern header).
+  static const _canvas = Color(0xFFF4F9FB);
   static const _navy = Color(0xFF14507F);
-  static const _tealBright = Color(0xFF43E0D2);
+  static const _teal = Color(0xFF2EC4B6);
+  static const _tealDeep = Color(0xFF15A99C);
+  static const _t1 = Color(0xFF0B2239);
+  static const _t2 = Color(0xFF3E5C76);
+  static const _border = Color(0xFFDCE7EF);
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
+    final isMobile = MediaQuery.of(context).size.width < 768;
     return RepaintBoundary(
       child: SafeArea(
         bottom: false,
-        child: Padding(
+        child: Container(
+          decoration: const BoxDecoration(color: _canvas),
           padding: EdgeInsets.fromLTRB(
-            isMobile ? 10 : 20,
-            isMobile ? 8 : 18,
-            isMobile ? 10 : 20,
-            2,
+            isMobile ? 12 : 32,
+            isMobile ? 12 : 16,
+            isMobile ? 12 : 32,
+            isMobile ? 12 : 16,
           ),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 14 : 22,
-              vertical: isMobile ? 12 : 18,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_heroDeep, _heroMid, _navy],
-              ),
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: _navy.withValues(alpha: 0.28),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                if (isMobile && onMenu != null) ...[
-                  IconButton(
-                    icon: const Icon(Icons.menu_rounded,
-                        size: 24, color: Colors.white),
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 34, minHeight: 34),
-                    onPressed: onMenu,
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                Container(
-                  padding: EdgeInsets.all(isMobile ? 9 : 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _tealBright.withValues(alpha: 0.4),
+          child: Row(
+            children: [
+              if (isMobile && onMenu != null) ...[
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: onMenu,
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: _border),
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    child: const Icon(Icons.menu_rounded,
+                        size: 20, color: _t2),
                   ),
-                  child: Icon(icon,
-                      size: isMobile ? 18 : 24, color: _tealBright),
                 ),
-                SizedBox(width: isMobile ? 12 : 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                const SizedBox(width: 12),
+              ],
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [_teal, _navy],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _teal.withValues(alpha: 0.28),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: isMobile ? 20 : 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (eyebrow != null)
                       Text(
-                        title,
+                        eyebrow!.toUpperCase(),
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 17 : 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.15,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 11 : 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.75),
-                          height: 1.25,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                          color: _tealDeep,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
+                    Text(
+                      title,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isMobile ? 16 : 20,
+                        fontWeight: FontWeight.w800,
+                        color: _t1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _t2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 12),
-                  trailing!,
-                ],
+              ),
+              if (trailing != null) ...[
+                const SizedBox(width: 8),
+                trailing!,
               ],
-            ),
+            ],
           ),
         ),
       ),

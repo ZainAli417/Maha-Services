@@ -229,7 +229,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: _C.canvas,
+        backgroundColor: _C.bgSoft,
         drawer: isMobile
             ? Drawer(child: JobSeekerSidebar(activeIndex: 0, isDrawer: true))
             : null,
@@ -492,7 +492,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
       decoration: const BoxDecoration(
-        color: _C.surface,
+        color: _C.bgSoft, // match JobSeekerHeader canvas (0xFFF4F9FB)
         border: Border(bottom: BorderSide(color: _C.border)),
       ),
       child: isMobile
@@ -682,6 +682,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
         padding: EdgeInsets.symmetric(horizontal: hPad),
         sliver: SliverToBoxAdapter(
           child: Container(
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: _C.surface,
               borderRadius: BorderRadius.circular(16),
@@ -1074,14 +1075,10 @@ class _JobCardState extends State<_JobCard> {
           decoration: BoxDecoration(
             color: _C.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border(
-              top: const BorderSide(color: _C.border),
-              right: const BorderSide(color: _C.border),
-              bottom: const BorderSide(color: _C.border),
-              left: BorderSide(
-                color: _hover ? sCol : _C.border,
-                width: _hover ? 3 : 1,
-              ),
+            // Uniform border (non-uniform + borderRadius throws on paint).
+            border: Border.all(
+              color: _hover ? sCol : _C.border,
+              width: _hover ? 1.6 : 1,
             ),
             boxShadow: _hover ? _C.hoverShadow : _C.softShadow,
           ),
@@ -1246,66 +1243,91 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(compact ? 12 : 16);
     return RepaintBoundary(
       child: Container(
-        padding: EdgeInsets.fromLTRB(
-          compact ? 10 : 13,
-          compact ? 9 : 12,
-          compact ? 10 : 13,
-          compact ? 9 : 12,
-        ),
         decoration: BoxDecoration(
-          color: _C.surface,
-          borderRadius: BorderRadius.circular(compact ? 12 : 16),
-          border: Border(
-            top: BorderSide(color: _C.border),
-            right: BorderSide(color: _C.border),
-            bottom: BorderSide(color: _C.border),
-            left: BorderSide(color: d.accent, width: 3),
-          ),
+          color: d.bg, // soft tinted tile (was pure white → read as blank)
+          borderRadius: radius,
+          // Uniform border only — a non-uniform border with borderRadius throws
+          // "A borderRadius can only be given on borders with uniform colors".
+          border: Border.all(color: _C.border),
           boxShadow: _C.softShadow,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Tinted icon square
-            Container(
-              padding: EdgeInsets.all(compact ? 7 : 9),
-              decoration: BoxDecoration(
-                color: d.bg,
-                borderRadius: BorderRadius.circular(compact ? 9 : 11),
-              ),
-              child: Icon(d.icon, color: d.accent, size: compact ? 15 : 18),
-            ),
-            SizedBox(width: compact ? 9 : 11),
-            // Number + label stacked
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TweenAnimationBuilder<int>(
-                    tween: IntTween(begin: 0, end: d.value),
-                    duration: const Duration(milliseconds: 900),
-                    curve: Curves.easeOutExpo,
-                    builder: (_, v, _) => Text(
-                      '$v',
-                      style: _C.p(compact ? 18 : 23, fw: FontWeight.w800),
+        child: ClipRRect(
+          borderRadius: radius,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left accent stripe (flush to the rounded edge)
+                Container(width: 3, color: d.accent),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      compact ? 10 : 13,
+                      compact ? 9 : 12,
+                      compact ? 10 : 13,
+                      compact ? 9 : 12,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // White icon chip (contrasts against the tinted tile)
+                        Container(
+                          padding: EdgeInsets.all(compact ? 7 : 9),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(
+                              compact ? 9 : 11,
+                            ),
+                          ),
+                          child: Icon(
+                            d.icon,
+                            color: d.accent,
+                            size: compact ? 15 : 18,
+                          ),
+                        ),
+                        SizedBox(width: compact ? 9 : 11),
+                        // Number + label stacked
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TweenAnimationBuilder<int>(
+                                tween: IntTween(begin: 0, end: d.value),
+                                duration: const Duration(milliseconds: 900),
+                                curve: Curves.easeOutExpo,
+                                builder: (_, v, _) => Text(
+                                  '$v',
+                                  style: _C.p(
+                                    compact ? 18 : 23,
+                                    fw: FontWeight.w800,
+                                    color: d.accent,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                d.label,
+                                style: _C.p(
+                                  compact ? 9.5 : 10.5,
+                                  color: _C.t1,
+                                  fw: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    d.label,
-                    style: _C.p(
-                      compact ? 9.5 : 10.5,
-                      color: _C.t2,
-                      fw: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -1698,14 +1720,10 @@ class _TableRowState extends State<_TableRow> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
         decoration: BoxDecoration(
           color: _hover ? _C.tealLt.withValues(alpha: 0.5) : Colors.transparent,
-          borderRadius: isLast
-              ? const BorderRadius.vertical(bottom: Radius.circular(15))
-              : null,
+          // Bottom-only divider (no borderRadius here → avoids the
+          // "borderRadius on non-uniform border" paint crash). The last row's
+          // rounded corner is handled by the table shell's clip.
           border: Border(
-            left: BorderSide(
-              color: _hover ? _C.teal : Colors.transparent,
-              width: 3,
-            ),
             bottom: isLast
                 ? BorderSide.none
                 : const BorderSide(color: _C.bgSoft),
@@ -1985,8 +2003,17 @@ class _FilterToggleBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // White-glass styling so it reads clearly on the dark navy→teal header.
-    final accent = active ? const Color(0xFF43E0D2) : Colors.white;
+    final isActive = active;
+    final bgColor = isActive
+        ? const Color(0xFF2EC4B6)
+        : Colors.white;
+    final borderColor = isActive
+        ? const Color(0xFF2EC4B6)
+        : const Color(0xFF0B2239).withValues(alpha: 0.25);
+    final contentColor = isActive
+        ? Colors.white
+        : const Color(0xFF0B2239);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -1996,9 +2023,16 @@ class _FilterToggleBtn extends StatelessWidget {
           vertical: compact ? 6 : 7,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.14),
+          color: bgColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accent.withValues(alpha: 0.45)),
+          border: Border.all(color: borderColor, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0B2239).withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: compact
             ? Icon(
@@ -2006,7 +2040,7 @@ class _FilterToggleBtn extends StatelessWidget {
                     ? Icons.filter_list_rounded
                     : Icons.filter_list_off_rounded,
                 size: 16,
-                color: accent,
+                color: contentColor,
               )
             : Row(
                 children: [
@@ -2015,12 +2049,14 @@ class _FilterToggleBtn extends StatelessWidget {
                         ? Icons.filter_list_rounded
                         : Icons.filter_list_off_rounded,
                     size: 14,
-                    color: accent,
+                    color: contentColor,
                   ),
                   const SizedBox(width: 5),
                   Text(
                     active ? 'Hide' : 'Filters',
-                    style: _C.p(11, color: accent),
+                    style: _C.p(11, color: contentColor).copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),

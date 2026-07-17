@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Job_Seeker/JS_Initials_provider.dart';
 import 'package:provider/provider.dart';
+import '../../Constant/logout_dialog.dart';
 
 class JobSeekerSidebar extends StatefulWidget {
   final int activeIndex;
@@ -557,84 +558,22 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.logout_rounded,
-                color: Color(0xFFEF4444),
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Confirm Logout',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to logout from your account?',
-          style: GoogleFonts.plusJakartaSans(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.plusJakartaSans(color: Colors.grey.shade600),
-            ),
+  void _showLogoutDialog(BuildContext context) async {
+    final ok = await showLogoutConfirm(context);
+    if (!ok) return;
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      debugPrint('Logout error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error signing out. Please try again.'),
+            backgroundColor: Colors.red,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              try {
-                // Clear in-memory role cache
-                //RoleService.clear();
-
-                // Firebase sign out (router will redirect)
-                await FirebaseAuth.instance.signOut();
-              } catch (e) {
-                debugPrint('Logout error: $e');
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Error signing out. Please try again.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'Logout',
-              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 }
 

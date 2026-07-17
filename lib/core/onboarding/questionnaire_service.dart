@@ -152,6 +152,49 @@ class QuestionnaireService {
       stepIndex: stepIndex,
       completed: true,
     );
+    // Mirror the filled questionnaire into the candidate's profile document as a
+    // dedicated `QUESTIONERE` section (label-resolved, display-ready).
+    await writeProfileQuestionnaire(uid, roleId: roleId, answers: answers);
+  }
+
+  /// Resolves answer keys against the role's question labels and stores a
+  /// display-ready `QUESTIONERE` section on the Job_Seeker profile document.
+  Future<void> writeProfileQuestionnaire(
+    String uid, {
+    required String roleId,
+    required Map<String, dynamic> answers,
+  }) async {
+    try {
+      final role = await roleById(roleId);
+      final responses = <Map<String, dynamic>>[];
+      if (role != null) {
+        for (final q in role.questions) {
+          if (!answers.containsKey(q.id)) continue;
+          final v = answers[q.id];
+          if (v == null) continue;
+          if (v is String && v.trim().isEmpty) continue;
+          if (v is List && v.isEmpty) continue;
+          responses.add({
+            'id': q.id,
+            'group': q.group ?? 'General',
+            'question': q.label,
+            'answer': v,
+            if (q.unit != null) 'unit': q.unit,
+          });
+        }
+      }
+      await _firestore.collection('Job_Seeker').doc(uid).set({
+        'QUESTIONERE': {
+          'roleId': roleId,
+          'roleTitle': role?.title ?? '',
+          'category': role?.category ?? '',
+          'responses': responses,
+          'completedAt': FieldValue.serverTimestamp(),
+        },
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('⚠️ QuestionnaireService.writeProfileQuestionnaire: $e');
+    }
   }
 }
 

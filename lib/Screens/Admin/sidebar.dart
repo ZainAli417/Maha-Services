@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../Constant/logout_dialog.dart';
 
 /// ── Brand palette (navy + teal) — coherent with the job seeker / recruiter
 /// sidebars and the rest of the app. ──
@@ -372,50 +373,7 @@ class AdminSidebar extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: () async {
-                final shouldLogout = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    title: Text(
-                      'Confirm Logout',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700,
-                        color: _S.ink,
-                      ),
-                    ),
-                    content: Text(
-                      'Are you sure you want to logout?',
-                      style: GoogleFonts.plusJakartaSans(color: _S.slate),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: _S.muted,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        style: TextButton.styleFrom(
-                          backgroundColor: _S.error.withValues(alpha: 0.08),
-                        ),
-                        child: Text(
-                          'Logout',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: _S.error,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                final shouldLogout = await showLogoutConfirm(context);
                 if (shouldLogout == true) {
                   await FirebaseAuth.instance.signOut();
                 }

@@ -8,13 +8,11 @@ import 'package:provider/provider.dart';
 import 'JS_Top_Bar.dart';
 import 'Job_Detail_Dialog.dart';
 import 'saved_jobs_provider.dart';
+import '../../Constant/js_header.dart';
 
 // ── Brand palette ──────────────────────────────────────────────────────────
-const _kHero1 = Color(0xFF061C31);
-const _kHero2 = Color(0xFF0A2E4F);
 const _kNavy = Color(0xFF14507F);
 const _kTeal = Color(0xFF2EC4B6);
-const _kTealBright = Color(0xFF43E0D2);
 const _kInk = Color(0xFF0B2239);
 const _kSlate = Color(0xFF3E5C76);
 const _kMuted = Color(0xFF5E7A8E);
@@ -51,8 +49,10 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
           Expanded(
             child: Column(
               children: [
-                _SavedJobsBanner(
-                  isMobile: isMobile,
+                JobSeekerHeader(
+                  icon: Icons.bookmark_rounded,
+                  title: 'Saved Jobs',
+                  subtitle: 'Keep track of opportunities you want to revisit',
                   onMenu: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
                 Expanded(
@@ -92,165 +92,6 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ── Branded navy→teal banner ────────────────────────────────────────────────
-class _SavedJobsBanner extends StatelessWidget {
-  final bool isMobile;
-  final VoidCallback onMenu;
-
-  const _SavedJobsBanner({required this.isMobile, required this.onMenu});
-
-  @override
-  Widget build(BuildContext context) {
-    final hPad = isMobile ? 12.0 : 24.0;
-
-    return RepaintBoundary(
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(hPad, isMobile ? 10 : 16, hPad, 4),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 14 : 22,
-              vertical: isMobile ? 14 : 18,
-            ),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_kHero1, _kHero2, _kNavy],
-              ),
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: _kNavy.withValues(alpha: 0.28),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                if (isMobile) ...[
-                  _GlassButton(
-                    icon: Icons.menu_rounded,
-                    onTap: onMenu,
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Container(
-                  padding: EdgeInsets.all(isMobile ? 9 : 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _kTealBright.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.bookmark_rounded,
-                    size: isMobile ? 18 : 24,
-                    color: _kTealBright,
-                  ),
-                ),
-                SizedBox(width: isMobile ? 12 : 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Saved Jobs',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 17 : 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.15,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      Text(
-                        'Keep track of opportunities you want to revisit',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: isMobile ? 11 : 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.75),
-                          height: 1.25,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                if (!isMobile)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _kTeal.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: _kTealBright.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.bookmark_added_rounded,
-                          size: 14,
-                          color: _kTealBright,
-                        ),
-                        const SizedBox(width: 7),
-                        Text(
-                          'Your shortlist',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: _kTealBright,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  const _GlassButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onTap,
-        child: Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-          ),
-          child: Icon(icon, size: 20, color: Colors.white),
-        ),
       ),
     );
   }

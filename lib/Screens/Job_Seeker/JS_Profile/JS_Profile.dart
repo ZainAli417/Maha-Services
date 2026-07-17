@@ -303,6 +303,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     'Personal Info',
     'Education Info',
     'Professional Info',
+    'Questionnaire',
     'Experience',
     'Certifications',
     'Publications',
@@ -315,6 +316,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     Icons.supervised_user_circle_outlined,
     Icons.school_outlined,
     Icons.work_outline,
+    Icons.quiz_outlined,
     Icons.work_history_outlined,
     Icons.verified,
     Icons.file_copy_outlined,
@@ -487,7 +489,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   Widget _buildContent(BuildContext context) {
     final isMobile = _isMobile;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF4F9FB),
       body: Consumer<ProfileProvider_NEW>(
         builder: (context, prov, _) {
           if (prov.isLoading) {
@@ -649,8 +651,10 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       ),
       child: Column(
         children: [
+          // Capsule list + the content it reveals sit directly in the main
+          // area as ONE seamless container — no sub-card, same background.
           _buildStepIndicators(),
-          SizedBox(height: isMobile ? 8 : 24), // Reduced spacing
+          SizedBox(height: isMobile ? 8 : 24),
           Expanded(
             child: RepaintBoundary(
               child: Container(
@@ -714,16 +718,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                               : const Color(0xFFDCE7EF)),
                       width: isActive ? 1.4 : 1,
                     ),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFF14507F)
-                                  .withValues(alpha: 0.28),
-                              blurRadius: 12,
-                              offset: const Offset(0, 5),
-                            ),
-                          ]
-                        : null,
+                    boxShadow: null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -983,20 +978,200 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       case 2:
         return _buildProfessionalProfile(prov);
       case 3:
-        return _buildExperience(prov);
+        return _buildQuestionnaire(prov);
       case 4:
-        return _buildCertifications(prov);
+        return _buildExperience(prov);
       case 5:
-        return _buildPublications(prov);
+        return _buildCertifications(prov);
       case 6:
-        return _buildAwards(prov);
+        return _buildPublications(prov);
       case 7:
+        return _buildAwards(prov);
+      case 8:
         return _buildReferences(prov);
-      // case 8:
-      //   return _buildDocuments(prov);
       default:
         return const SizedBox();
     }
+  }
+
+  // ── Questionnaire (read-only, filled during signup onboarding) ────────────
+  Widget _buildQuestionnaire(ProfileProvider_NEW prov) {
+    final isMobile = _isMobile;
+    final responses = prov.questionnaireResponses;
+
+    if (responses.isEmpty) {
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _sectionHeader(
+              'Onboarding',
+              'Questionnaire',
+              icon: Icons.quiz_outlined,
+            ),
+            SizedBox(height: isMobile ? 20 : 28),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(isMobile ? 20 : 28),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F9FB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFDCE7EF)),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.assignment_late_outlined,
+                    color: Color(0xFF8AA5B5),
+                    size: 40,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No questionnaire responses yet',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 13 : 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3E5C76),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'The answers you provide during onboarding will appear here.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 11.5 : 13,
+                      color: const Color(0xFF5E7A8E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Group responses by their 'group' label, preserving first-seen order.
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    for (final r in responses) {
+      final g = (r['group'] ?? 'General').toString();
+      grouped.putIfAbsent(g, () => []).add(r);
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader(
+            prov.questionnaireRole.isEmpty
+                ? 'Onboarding'
+                : prov.questionnaireRole,
+            'Questionnaire',
+            icon: Icons.quiz_outlined,
+          ),
+          SizedBox(height: isMobile ? 16 : 22),
+          ...grouped.entries.map((entry) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    entry.key.toUpperCase(),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 10.5 : 11.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                      color: const Color(0xFF15A99C),
+                    ),
+                  ),
+                ),
+                ...entry.value.map((r) => _questionnaireCard(r)),
+                SizedBox(height: isMobile ? 8 : 12),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _questionnaireCard(Map<String, dynamic> r) {
+    final isMobile = _isMobile;
+    final question = (r['question'] ?? '').toString();
+    final unit = (r['unit'] ?? '').toString();
+    final raw = r['answer'];
+    String answer;
+    if (raw is List) {
+      answer = raw.map((e) => e.toString()).join(', ');
+    } else if (raw is bool) {
+      answer = raw ? 'Yes' : 'No';
+    } else {
+      answer = raw?.toString() ?? '';
+    }
+    if (unit.isNotEmpty && answer.isNotEmpty) answer = '$answer $unit';
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isMobile ? 10 : 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(isMobile ? 14 : 16),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            width: 4,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomLeft: Radius.circular(14),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    question,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 12 : 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF5E7A8E),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    answer.isEmpty ? '—' : answer,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: isMobile ? 13.5 : 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0B2239),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPersonalInfo(ProfileProvider_NEW prov) {
@@ -2971,18 +3146,21 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         isDirty = prov.professionalProfileDirty;
         break;
       case 3:
-        isDirty = prov.experienceDirty;
+        isDirty = false; // Questionnaire is read-only
         break;
       case 4:
-        isDirty = prov.certificationsDirty;
+        isDirty = prov.experienceDirty;
         break;
       case 5:
-        isDirty = prov.publicationsDirty;
+        isDirty = prov.certificationsDirty;
         break;
       case 6:
-        isDirty = prov.awardsDirty;
+        isDirty = prov.publicationsDirty;
         break;
       case 7:
+        isDirty = prov.awardsDirty;
+        break;
+      case 8:
         isDirty = prov.referencesDirty;
         break;
     }
@@ -3050,6 +3228,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               const SizedBox(),
             Row(
               children: [
+                if (_currentStep != 3)
                 Material(
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
@@ -3302,22 +3481,21 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         await prov.saveProfessionalProfileSection(context);
         break;
       case 3:
+        break; // Questionnaire is read-only — nothing to save
+      case 4:
         await prov.saveExperienceSection(context);
         break;
-      case 4:
+      case 5:
         await prov.saveCertificationsSection(context);
         break;
-      case 5:
+      case 6:
         await prov.savePublicationsSection(context);
         break;
-      case 6:
+      case 7:
         await prov.saveAwardsSection(context);
         break;
-      case 7:
-        await prov.saveReferencesSection(context);
-        break;
       case 8:
-        await prov.saveDocumentsSection(context);
+        await prov.saveReferencesSection(context);
         break;
     }
 

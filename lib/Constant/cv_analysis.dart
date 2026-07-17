@@ -140,7 +140,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
         create: (_) => CVAnalyzerBackendProvider(),
         child: Scaffold(
           key: _scaffoldKey,
-          backgroundColor: Colors.white,
+          backgroundColor: kBackgroundGray, // matches JobSeekerHeader canvas (0xFFF4F9FB)
           drawer: isMobile
               ? Drawer(child: JobSeekerSidebar(activeIndex: 2, isDrawer: true))
               : null,

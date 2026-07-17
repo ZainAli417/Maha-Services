@@ -101,7 +101,7 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF4F9FB),
         drawer: isMobile
             ? Drawer(child: JobSeekerSidebar(activeIndex: 3, isDrawer: true))
             : null,
@@ -294,115 +294,12 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
   }
 
   Widget _buildWelcomeSection() {
-    final w = MediaQuery.of(context).size.width;
-    final isMobile = w < 768;
-    final hPad = isMobile ? 12.0 : 24.0;
-
-    // Rich navy→teal branded banner. RepaintBoundary isolates it from the
-    // scrolling jobs list so it never repaints during scroll.
-    return RepaintBoundary(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(hPad, isMobile ? 10 : 16, hPad, 4),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 16 : 22, vertical: isMobile ? 14 : 18),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF061C31), Color(0xFF0A2E4F), Color(0xFF14507F)],
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF14507F).withValues(alpha: 0.28),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(isMobile ? 9 : 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: const Color(0xFF43E0D2).withValues(alpha: 0.4)),
-                ),
-                child: Icon(
-                  Icons.screen_search_desktop_outlined,
-                  size: isMobile ? 18 : 24,
-                  color: const Color(0xFF43E0D2),
-                ),
-              ),
-              SizedBox(width: isMobile ? 12 : 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Job Hub',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: isMobile ? 17 : 22,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        height: 1.15,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      'Explore jobs and become part of your dream company',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: isMobile ? 11 : 13,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.75),
-                        height: 1.25,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              if (!isMobile)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2EC4B6).withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                        color: const Color(0xFF43E0D2).withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF43E0D2),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 7),
-                      Text(
-                        'Live openings',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF43E0D2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+    // Unified header shared across Job Seeker screens (matches Dashboard &
+    // Saved Jobs) so every screen has one coherent banner + background.
+    return const JobSeekerHeader(
+      icon: Icons.screen_search_desktop_outlined,
+      title: 'Job Hub',
+      subtitle: 'Explore jobs and become part of your dream company',
     );
   }
 }

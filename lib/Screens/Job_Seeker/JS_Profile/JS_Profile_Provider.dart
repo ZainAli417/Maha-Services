@@ -93,6 +93,10 @@ class ProfileProvider_NEW extends ChangeNotifier {
   List<String> references = [];
   List<Map<String, dynamic>> documents = [];
 
+  // QUESTIONNAIRE (filled at signup onboarding, read-only in profile)
+  String questionnaireRole = '';
+  List<Map<String, dynamic>> questionnaireResponses = [];
+
   // ---------------- Controllers ----------------
   final TextEditingController skillController = TextEditingController();
 
@@ -283,6 +287,17 @@ class ProfileProvider_NEW extends ChangeNotifier {
     awards = _mapListStrings(data['awards']);
     references = _mapListStrings(data['references']);
     documents = _mapListOfMap(data['documents']);
+
+    // Questionnaire (onboarding) section
+    final questionnaire = data['QUESTIONERE'] ?? data['questionnaire'];
+    if (questionnaire is Map) {
+      final qm = Map<String, dynamic>.from(questionnaire);
+      questionnaireRole = _getString(qm, ['roleTitle', 'role', 'category']);
+      questionnaireResponses = _mapListOfMap(qm['responses']);
+    } else {
+      questionnaireRole = '';
+      questionnaireResponses = [];
+    }
   }
 
   // ---------------- Save Logic (Optimized) ----------------
@@ -1222,6 +1237,8 @@ class ProfileProvider_NEW extends ChangeNotifier {
     retirementDate = '';
     experienceDocuments = [];
     certificationDocuments = [];
+    questionnaireRole = '';
+    questionnaireResponses = [];
     _resetAllDirtyFlags();
   }
 

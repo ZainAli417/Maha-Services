@@ -361,13 +361,42 @@ class _MainContent extends StatelessWidget {
               ),
         const SizedBox(height: 28),
 
-        // GEOGRAPHICAL DISTRIBUTION — jobs by location
+        // GEOGRAPHICAL DISTRIBUTION — jobs + applicants by location
         _SectionHead(
           icon: Icons.public_rounded,
           title: 'Geographical Distribution',
         ),
         const SizedBox(height: 14),
-        _GeoCard(data: prov.jobsByLocation),
+        isMid
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _GeoCard(data: prov.jobsByLocation)),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _GeoCard(
+                      data: prov.applicantsByLocation,
+                      icon: Icons.groups_rounded,
+                      title: 'Applicants by Region',
+                      subtitle: 'Top applicant countries / regions',
+                      emptyLabel: 'No applicant region data yet',
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  _GeoCard(data: prov.jobsByLocation),
+                  const SizedBox(height: 20),
+                  _GeoCard(
+                    data: prov.applicantsByLocation,
+                    icon: Icons.groups_rounded,
+                    title: 'Applicants by Region',
+                    subtitle: 'Top applicant countries / regions',
+                    emptyLabel: 'No applicant region data yet',
+                  ),
+                ],
+              ),
         const SizedBox(height: 32),
       ],
     );
@@ -378,7 +407,17 @@ class _MainContent extends StatelessWidget {
 /// a no-data state. Lightweight (no chart lib) and RepaintBoundary-isolated.
 class _GeoCard extends StatelessWidget {
   final Map<String, int> data;
-  const _GeoCard({required this.data});
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String emptyLabel;
+  const _GeoCard({
+    required this.data,
+    this.icon = Icons.public_rounded,
+    this.title = 'Jobs by Location',
+    this.subtitle = 'Top hiring regions',
+    this.emptyLabel = 'No location data yet',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -415,8 +454,8 @@ class _GeoCard extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.public_rounded,
+                  child: Icon(
+                    icon,
                     color: Colors.white,
                     size: 18,
                   ),
@@ -426,9 +465,9 @@ class _GeoCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Jobs by Location',
+                      Text(title,
                           style: _C.p(15, fw: FontWeight.w800)),
-                      Text('Top hiring regions',
+                      Text(subtitle,
                           style:
                               _C.p(12, fw: FontWeight.w500, color: _C.t3)),
                     ],
@@ -453,11 +492,11 @@ class _GeoCard extends StatelessWidget {
                             color: _C.tealDeep, size: 26),
                       ),
                       const SizedBox(height: 12),
-                      Text('No location data yet',
+                      Text(emptyLabel,
                           style: _C.p(13, fw: FontWeight.w700)),
                       const SizedBox(height: 4),
                       Text(
-                        'Job locations appear here as jobs are posted.',
+                        'Data appears here as records are added.',
                         textAlign: TextAlign.center,
                         style: _C.p(12, fw: FontWeight.w500, color: _C.t3),
                       ),

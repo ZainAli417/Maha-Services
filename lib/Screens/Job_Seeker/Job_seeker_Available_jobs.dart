@@ -411,7 +411,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
       opacity: _fadeAnimation,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: const Color(0xFFF4F9FB),
         endDrawer: isMobile
             ? Drawer(width: 340, child: _buildExpandedSidebar(isDrawer: true))
             : null,

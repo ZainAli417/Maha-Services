@@ -33,6 +33,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
   };
   Map<String, int> topRecruiters = {};
   Map<String, int> jobsByLocation = {};
+  Map<String, int> applicantsByLocation = {};
   List<Map<String, dynamic>> recentRequests = [];
   List<Map<String, dynamic>> allJobs = [];
 
@@ -143,6 +144,7 @@ class AdminAnalyticsProvider extends ChangeNotifier {
         .listen((snap) {
           if (_disposed) return;
           _rawSkillFreqs.clear();
+          final Map<String, int> applicantLocCounts = {};
           for (var doc in snap.docs) {
             final data = doc.data();
             final userData = data['user_data'] as Map<String, dynamic>? ?? {};
@@ -150,6 +152,20 @@ class AdminAnalyticsProvider extends ChangeNotifier {
                 userData['personalProfile'] as Map<String, dynamic>? ?? {};
             final profProfile =
                 userData['professionalProfile'] as Map<String, dynamic>? ?? {};
+
+            // Geographical aggregation — count applicants per country/region.
+            final region = (personalProfile['nationality'] ??
+                    personalProfile['country'] ??
+                    personalProfile['location'] ??
+                    data['nationality'] ??
+                    data['country'] ??
+                    '')
+                .toString()
+                .trim();
+            if (region.isNotEmpty && region.toLowerCase() != 'not specified') {
+              final cap = region[0].toUpperCase() + region.substring(1);
+              applicantLocCounts[cap] = (applicantLocCounts[cap] ?? 0) + 1;
+            }
 
             List<dynamic> skills = [];
             if (data['skills'] is List) {
@@ -172,6 +188,15 @@ class AdminAnalyticsProvider extends ChangeNotifier {
               }
             }
           }
+
+          // Sort applicant regions descending by count and keep the top 8.
+          final sortedRegions = applicantLocCounts.keys.toList()
+            ..sort(
+              (a, b) => applicantLocCounts[b]!.compareTo(applicantLocCounts[a]!),
+            );
+          applicantsByLocation = {
+            for (var k in sortedRegions.take(8)) k: applicantLocCounts[k]!,
+          };
 
           _updateSkillFrequencies();
         });

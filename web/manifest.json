@@ -1,18 +1,18 @@
 {
-    "name": "job_portal",
-    "short_name": "job_portal",
+    "name": "Maha Services",
+    "short_name": "Maha Services",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#061C31",
+    "theme_color": "#14507F",
+    "description": "Maha Services — Smart End-To-End Hiring Platform. Connect job seekers with recruiters using AI-powered matching.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
-        { "src": "/favicon.ico", "type": "image/x-icon", "sizes": "16x16 32x32" },
-        { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
-        { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
-        { "src": "/icon-192-maskable.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
-        { "src": "/icon-512-maskable.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+        { "src": "icons/favicon.ico", "type": "image/x-icon", "sizes": "16x16 32x32" },
+        { "src": "icons/icon-192.png", "type": "image/png", "sizes": "192x192" },
+        { "src": "icons/icon-512.png", "type": "image/png", "sizes": "512x512" },
+        { "src": "icons/icon-192-maskable.png", "type": "image/png", "sizes": "192x192", "purpose": "maskable" },
+        { "src": "icons/icon-512-maskable.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
     ]
 }
