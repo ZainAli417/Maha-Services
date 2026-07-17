@@ -64,7 +64,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 700;
     final isWide = w >= 900;
 

@@ -31,13 +31,13 @@ class _ArchivedJobsScreenState extends State<ArchivedJobsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _bgWhite,
       drawer: isMobile
-          ? Drawer(child: RecruiterSidebar(activeIndex: 5, isDrawer: true))
+          ? const Drawer(child: RecruiterSidebar(activeIndex: 5, isDrawer: true))
           : null,
       body: Row(
         children: [
@@ -56,7 +56,7 @@ class _ArchivedJobsScreenState extends State<ArchivedJobsScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 height: 60,
                                 width: 60,
                                 child: CircularProgressIndicator(
@@ -144,7 +144,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
     final location = widget.job['location']?.toString() ?? 'Unknown location';
     final applications = widget.job['applicationCount'] ?? 0;
     final views = widget.job['viewCount'] ?? 0;
-    final isMobile = MediaQuery.of(context).size.width < 680;
+    final isMobile = MediaQuery.sizeOf(context).width < 680;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -163,7 +163,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
             BoxShadow(
               color: _isHovered
                   ? _primary.withValues(alpha: 0.12)
-                  : Color(0xFF000000).withValues(alpha: 0.05),
+                  : const Color(0xFF000000).withValues(alpha: 0.05),
               blurRadius: _isHovered ? 12 : 6,
               offset: Offset(0, _isHovered ? 6 : 2),
               spreadRadius: _isHovered ? 0 : 0,
@@ -220,7 +220,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.business_outlined,
                             size: 14,
                             color: _textSecondary,
@@ -243,7 +243,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.location_on_outlined,
                             size: 14,
                             color: _textSecondary,
@@ -267,7 +267,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
                   ),
                 ),
                 if (!isMobile) const SizedBox(width: 12),
-                if (!isMobile) _ArchivedBadge(),
+                if (!isMobile) const _ArchivedBadge(),
               ],
             ),
             const SizedBox(height: 16),
@@ -291,7 +291,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
                       lightColor: _info.withValues(alpha: 0.1),
                     ),
                   ),
-                  _MetricDivider(),
+                  const _MetricDivider(),
                   Expanded(
                     child: _MetricDisplay(
                       icon: Icons.visibility_outlined,
@@ -439,7 +439,7 @@ class _ArchivedJobCardState extends State<_ArchivedJobCard> {
           ),
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: error == null ? _success : Color(0xFFEF4444),
+        backgroundColor: error == null ? _success : const Color(0xFFEF4444),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         elevation: 4,
         margin: const EdgeInsets.all(16),
@@ -552,7 +552,7 @@ class _ArchivedBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.archive_rounded, size: 12, color: _warning),
+          const Icon(Icons.archive_rounded, size: 12, color: _warning),
           const SizedBox(width: 4),
           Text(
             'Archived',
@@ -640,7 +640,7 @@ class _EmptyArchivedJobs extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.info_outline, size: 18, color: _primary),
+                  const Icon(Icons.info_outline, size: 18, color: _primary),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(

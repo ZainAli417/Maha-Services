@@ -547,7 +547,7 @@ class _JSSettingsScreenState extends State<JSSettingsScreen>
       key: _scaffoldKey,
       backgroundColor: _Tokens.background,
       drawer: MediaQuery.sizeOf(context).width < _Tokens.mobile
-          ? Drawer(child: JobSeekerSidebar(activeIndex: 4, isDrawer: true))
+          ? const Drawer(child: JobSeekerSidebar(activeIndex: 4, isDrawer: true))
           : null,
       body: SafeArea(
         child: LayoutBuilder(
@@ -1352,13 +1352,13 @@ class _SkeletonLoader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SkeletonLine(width: 180, height: 24),
+          const _SkeletonLine(width: 180, height: 24),
           const SizedBox(height: 20),
           _SkeletonCard(),
           const SizedBox(height: 14),
           _SkeletonCard(),
           const SizedBox(height: 36),
-          _SkeletonLine(width: 160, height: 24),
+          const _SkeletonLine(width: 160, height: 24),
           const SizedBox(height: 20),
           _SkeletonCard(),
           const SizedBox(height: 14),

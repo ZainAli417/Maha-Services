@@ -103,7 +103,7 @@ class _HeroSectionState extends State<HeroSection>
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final isTablet = w >= 600 && w < 1024;
     final hPad = isMobile ? 0.0 : (isTablet ? 20.0 : 30.0);
@@ -142,7 +142,7 @@ class _HeroSectionState extends State<HeroSection>
   // ─── Left Content ─────────────────────────────────────────────────────────────
 
   Widget _buildLeftContent() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final s1 = isMobile ? 12.0 : 30.0;
     final s2 = isMobile ? 12.0 : 30.0;
@@ -170,7 +170,7 @@ class _HeroSectionState extends State<HeroSection>
   // ─── Right Panel ──────────────────────────────────────────────────────────────
 
   Widget _buildRightPanel() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final isTablet = w >= 600 && w < 1024;
     final panelHeight = isMobile ? 300.0 : (isTablet ? 500.0 : 700.0);
@@ -224,7 +224,7 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildAnimatedCapsule() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final hPad = isMobile ? 10.0 : 20.0;
     final vPad = isMobile ? 7.0 : 12.0;
@@ -289,7 +289,7 @@ class _HeroSectionState extends State<HeroSection>
   // ─── Animated components ──────────────────────────────────────────────────────
 
   Widget _buildAnimatedBadge() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final hPad = isMobile ? 10.0 : 20.0;
     final vPad = isMobile ? 6.0 : 10.0;
@@ -356,7 +356,7 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildAnimatedGradientHeadline() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final isTablet = w >= 600 && w < 1024;
 
@@ -391,7 +391,7 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildEnhancedDescription() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final verifiedIconSize = isMobile ? 14.0 : 20.0;
 
@@ -448,7 +448,7 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildFeatureHighlights() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
     final featureIconSize = isMobile ? 13.0 : 18.0;
     final featureHPad = isMobile ? 8.0 : 16.0;
@@ -527,7 +527,7 @@ class _HeroSectionState extends State<HeroSection>
   }
 
   Widget _buildEnhancedCTAButtons() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 600;
 
     final slideAnimation =

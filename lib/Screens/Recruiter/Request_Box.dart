@@ -152,9 +152,9 @@ class _RequestBoxScreenState extends State<RequestBoxScreen> {
       isMobile: isMobile,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Color(0xFFF4F9FB),
+        backgroundColor: const Color(0xFFF4F9FB),
         drawer: isMobile
-            ? Drawer(child: RecruiterSidebar(activeIndex: 4, isDrawer: true))
+            ? const Drawer(child: RecruiterSidebar(activeIndex: 4, isDrawer: true))
             : null,
         body: Row(
           children: [

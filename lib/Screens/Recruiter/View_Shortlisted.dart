@@ -447,7 +447,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   void _showProfile(ApplicantRecord a) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     if (isMobile) {
       showModalBottomSheet(
@@ -505,7 +505,7 @@ class _ControlsBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _FilterBtn(small: true),
+                    const _FilterBtn(small: true),
                   ],
                 ),
               ],
@@ -514,7 +514,7 @@ class _ControlsBar extends StatelessWidget {
               children: [
                 Expanded(child: _SearchField(ctrl: searchCtrl)),
                 const SizedBox(width: 10),
-                _FilterBtn(),
+                const _FilterBtn(),
                 const SizedBox(width: 10),
                 _RankButton(active: rankByScore, onTap: onToggleRank),
               ],
@@ -960,11 +960,11 @@ class _DesktopTable extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(flex: 3, child: _Hdr('CANDIDATE')),
-              Expanded(flex: 3, child: _Hdr('EXPERIENCE')),
-              Expanded(flex: 2, child: _Hdr('APPLIED ON')),
-              Expanded(flex: 2, child: _Hdr('AI SCORE')),
-              Expanded(flex: 1, child: _Hdr('STATUS')),
+              const Expanded(flex: 3, child: _Hdr('CANDIDATE')),
+              const Expanded(flex: 3, child: _Hdr('EXPERIENCE')),
+              const Expanded(flex: 2, child: _Hdr('APPLIED ON')),
+              const Expanded(flex: 2, child: _Hdr('AI SCORE')),
+              const Expanded(flex: 1, child: _Hdr('STATUS')),
               const SizedBox(width: 64),
             ],
           ),
@@ -1220,7 +1220,7 @@ class _SelectionIsland extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.check_circle_rounded,
                       size: 14,
                       color: _T.accent,

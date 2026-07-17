@@ -79,7 +79,7 @@ class _AdminAnalyticsDashboardScreenState
       backgroundColor: _C.canvas,
       body: Consumer<AdminAnalyticsProvider>(
         builder: (context, prov, _) {
-          final w = MediaQuery.of(context).size.width;
+          final w = MediaQuery.sizeOf(context).width;
           final isWide = w > 1180;
           final isMid = w > 760;
 
@@ -92,7 +92,7 @@ class _AdminAnalyticsDashboardScreenState
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(
+                            const CircularProgressIndicator(
                               color: _C.navy,
                               strokeWidth: 3,
                             ),
@@ -140,7 +140,7 @@ class _AdminAnalyticsDashboardScreenState
   }
 
   Widget _buildModernHeader(BuildContext context, AdminAnalyticsProvider prov) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Container(
       height: 72,
       decoration: const BoxDecoration(color: _C.canvas),
@@ -294,7 +294,7 @@ class _MainContent extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            _Chip(
+            const _Chip(
               label: 'Today',
               icon: Icons.calendar_today_rounded,
               color: _C.indigo,
@@ -309,13 +309,13 @@ class _MainContent extends StatelessWidget {
         const SizedBox(height: 28),
 
         // USER BREAKDOWN
-        _SectionHead(icon: Icons.people_alt_rounded, title: 'User Composition'),
+        const _SectionHead(icon: Icons.people_alt_rounded, title: 'User Composition'),
         const SizedBox(height: 14),
         _UserBreakdown(prov: prov, isMid: isMid),
         const SizedBox(height: 28),
 
         // SKILLS + RECRUITERS
-        _SectionHead(
+        const _SectionHead(
           icon: Icons.stacked_bar_chart_rounded,
           title: 'Demand Intelligence',
         ),
@@ -339,7 +339,7 @@ class _MainContent extends StatelessWidget {
         const SizedBox(height: 28),
 
         // STATUS BREAKDOWN  — line chart + bar chart
-        _SectionHead(icon: Icons.analytics_outlined, title: 'Status Breakdown'),
+        const _SectionHead(icon: Icons.analytics_outlined, title: 'Status Breakdown'),
         const SizedBox(height: 14),
         isMid
             ? Row(
@@ -362,7 +362,7 @@ class _MainContent extends StatelessWidget {
         const SizedBox(height: 28),
 
         // GEOGRAPHICAL DISTRIBUTION — jobs + applicants by location
-        _SectionHead(
+        const _SectionHead(
           icon: Icons.public_rounded,
           title: 'Geographical Distribution',
         ),
@@ -1571,7 +1571,7 @@ class _SkillsChart extends StatelessWidget {
           const SizedBox(height: 24),
           Expanded(
             child: skills.isEmpty
-                ? _Empty(
+                ? const _Empty(
                     icon: Icons.bar_chart_rounded,
                     label: 'No skill data yet',
                   )
@@ -1806,7 +1806,7 @@ class _RequestsLineCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (!hasData)
-            Expanded(
+            const Expanded(
               child: _Empty(icon: Icons.inbox_outlined, label: 'No data yet'),
             )
           else ...[
@@ -1978,7 +1978,7 @@ class _JobsBarCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (!hasData)
-            Expanded(
+            const Expanded(
               child: _Empty(
                 icon: Icons.work_outline_rounded,
                 label: 'No data yet',
@@ -2202,7 +2202,7 @@ class _RightPanel extends StatelessWidget {
           ),
           Expanded(
             child: prov.recentRequests.isEmpty
-                ? _Empty(
+                ? const _Empty(
                     icon: Icons.inbox_outlined,
                     label: 'No recent requests',
                   )

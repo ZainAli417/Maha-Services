@@ -90,7 +90,7 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
       return;
     }
 
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.sizeOf(context);
 
     // Decide whether floating version should be shown
     final shouldFloat = position.pixels > screenSize.height / 1.25;
@@ -126,7 +126,7 @@ class _ScrollAwareCTAButtonsState extends State<ScrollAwareCTAButtons>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 600;
     final bottomOffset =
         MediaQuery.of(context).viewPadding.bottom + (isMobile ? 120 : 120);

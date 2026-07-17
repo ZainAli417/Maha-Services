@@ -90,7 +90,7 @@ class _LandingPageState extends State<LandingPage>
 
     // Pause the looping hero backdrop once it's well off-screen so it stops
     // repainting a full-screen canvas every frame while reading lower sections.
-    final heroGone = off > MediaQuery.of(context).size.height;
+    final heroGone = off > MediaQuery.sizeOf(context).height;
     if (heroGone) {
       if (_bg.isAnimating) _bg.stop();
     } else if (!_bg.isAnimating) {
@@ -109,7 +109,7 @@ class _LandingPageState extends State<LandingPage>
   }
 
   // Breakpoints
-  double get _w => MediaQuery.of(context).size.width;
+  double get _w => MediaQuery.sizeOf(context).width;
   bool get _isMobile => _w < 700;
   bool get _isTablet => _w >= 700 && _w < 1080;
   double get _hPad => _isMobile ? 18 : (_isTablet ? 40 : 80);
@@ -202,7 +202,7 @@ class _LandingPageState extends State<LandingPage>
 
   // ═══ HERO ═════════════════════════════════════════════════════════════════
   Widget _hero() {
-    final screenH = MediaQuery.of(context).size.height;
+    final screenH = MediaQuery.sizeOf(context).height;
 
     return Container(
       decoration: const BoxDecoration(
@@ -351,7 +351,7 @@ class _LandingPageState extends State<LandingPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _PulsingDot(color: _B.tealBright),
+                const _PulsingDot(color: _B.tealBright),
                 const SizedBox(width: 9),
                 Flexible(
                   child: Text('AI-POWERED 4-STAGE HIRING ECOSYSTEM',
@@ -644,7 +644,7 @@ class _LandingPageState extends State<LandingPage>
 
   // ═══ HOW IT WORKS ═══════════════════════════════════════════════════════
   Widget _howItWorks() {
-    final steps = const [
+    const steps = [
       (
         '01',
         'Build Your Profile',
@@ -1211,7 +1211,7 @@ class _StepTheaterState extends State<_StepTheater>
   Widget build(BuildContext context) {
     final step = _steps[_index];
     final accent = step.$4;
-    final isMobile = MediaQuery.of(context).size.width < 700;
+    final isMobile = MediaQuery.sizeOf(context).width < 700;
     final pad = isMobile ? 14.0 : 20.0;
     final scale = CurvedAnimation(
         parent: widget.intro,
@@ -1275,7 +1275,7 @@ class _StepTheaterState extends State<_StepTheater>
                                         child: Container(
                                           height: 4,
                                           decoration: BoxDecoration(
-                                            gradient: LinearGradient(colors: [
+                                            gradient: const LinearGradient(colors: [
                                               _B.teal,
                                               _B.tealBright
                                             ]),
@@ -1632,7 +1632,7 @@ class _GlowButtonState extends State<_GlowButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
+    final isMobile = MediaQuery.sizeOf(context).width < 700;
     final hPad = widget.compact ? (isMobile ? 13.0 : 18.0) : 26.0;
     final vPad = widget.compact ? (isMobile ? 9.0 : 11.0) : 16.0;
     final fs = widget.compact ? (isMobile ? 12.0 : 14.0) : 15.0;
@@ -1888,7 +1888,7 @@ class _RevealState extends State<_Reveal>
     final box = context.findRenderObject() as RenderBox?;
     if (box == null || !box.attached) return;
     final top = box.localToGlobal(Offset.zero).dy;
-    final vh = _pos?.viewportDimension ?? MediaQuery.of(context).size.height;
+    final vh = _pos?.viewportDimension ?? MediaQuery.sizeOf(context).height;
     if (top < vh * 0.92) {
       _shown = true;
       _pos?.removeListener(_onScroll);

@@ -126,7 +126,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
   Widget leftPanel(BuildContext context) {
     return RepaintBoundary(
       child: Container(
-        height: MediaQuery.of(context).size.height,
+        height: MediaQuery.sizeOf(context).height,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -1096,7 +1096,7 @@ class _SignUp_ScreenState extends State<SignUp_Screen>
 
   @override
   Widget build(BuildContext context) {
-    return _SignUp_ScreenInner();
+    return const _SignUp_ScreenInner();
   }
 }
 
@@ -1109,7 +1109,7 @@ class _SignUp_ScreenInner extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.watch<SignupProvider>();
     final state = context.findAncestorStateOfType<_SignUp_ScreenState>()!;
-    final isWide = MediaQuery.of(context).size.width > 900;
+    final isWide = MediaQuery.sizeOf(context).width > 900;
 
     // Responsive paddings
     final double hPad = isWide ? 32 : 20;

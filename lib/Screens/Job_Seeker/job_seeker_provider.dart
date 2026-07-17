@@ -24,8 +24,7 @@ class JobSeekerProvider extends ChangeNotifier {
   Map<String, dynamic> _activeFilters = {};
   String _sortBy = 'newest';
 
-  StreamSubscription<QuerySnapshot>? _activeJobsSubscription;
-  StreamSubscription<QuerySnapshot>? _allJobsSubscription;
+  StreamSubscription<QuerySnapshot>? _jobsSubscription;
   StreamSubscription<User?>? _authSubscription;
 
   final BehaviorSubject<List<Map<String, dynamic>>> _activeJobsController =
@@ -43,8 +42,7 @@ class JobSeekerProvider extends ChangeNotifier {
   JobSeekerProvider() {
     _authSubscription = _auth.authStateChanges().listen((user) {
       if (user == null) {
-        _activeJobsSubscription?.cancel();
-        _allJobsSubscription?.cancel();
+        _jobsSubscription?.cancel();
         _activeJobs.clear();
         _allJobs.clear();
         _filteredJobs.clear();
@@ -70,8 +68,7 @@ class JobSeekerProvider extends ChangeNotifier {
   @override
   void dispose() {
     _authSubscription?.cancel();
-    _activeJobsSubscription?.cancel();
-    _allJobsSubscription?.cancel();
+    _jobsSubscription?.cancel();
     _activeDebounce?.cancel();
     _allDebounce?.cancel();
     _filterDebounce?.cancel();
@@ -92,39 +89,24 @@ class JobSeekerProvider extends ChangeNotifier {
   Map<String, dynamic> get activeFilters => Map.from(_activeFilters);
   String get sortBy => _sortBy;
 
+  // Both pipelines were fed by two identical Firestore queries; one shared
+  // listener delivers the same snapshots to both handlers (each keeps its
+  // own debounce window).
   void _initializeRealtimeListeners() {
-    _setupActiveJobsListener();
-    _setupAllJobsListener();
-  }
-
-  void _setupActiveJobsListener() {
-    _activeJobsSubscription?.cancel();
-    _activeJobsSubscription = _firestore
+    _jobsSubscription?.cancel();
+    _jobsSubscription = _firestore
         .collection('Posted_jobs_public')
         .where('status', isEqualTo: 'active')
         .orderBy('timestamp', descending: true)
         .snapshots(includeMetadataChanges: true)
         .listen(
-          _handleActiveJobsUpdate,
-          onError: (error) {
-            debugPrint('Error in active jobs listener: $error');
-            _isLoadingActiveJobs = false;
-            notifyListeners();
+          (snapshot) {
+            _handleActiveJobsUpdate(snapshot);
+            _handleAllJobsUpdate(snapshot);
           },
-        );
-  }
-
-  void _setupAllJobsListener() {
-    _allJobsSubscription?.cancel();
-    _allJobsSubscription = _firestore
-        .collection('Posted_jobs_public')
-        .where('status', isEqualTo: 'active')
-        .orderBy('timestamp', descending: true)
-        .snapshots(includeMetadataChanges: true)
-        .listen(
-          _handleAllJobsUpdate,
           onError: (error) {
-            debugPrint('Error in all jobs listener: $error');
+            debugPrint('Error in jobs listener: $error');
+            _isLoadingActiveJobs = false;
             _isLoadingAllJobs = false;
             notifyListeners();
           },
@@ -411,8 +393,7 @@ class JobSeekerProvider extends ChangeNotifier {
     _salaryCache.clear();
     notifyListeners();
 
-    await _activeJobsSubscription?.cancel();
-    await _allJobsSubscription?.cancel();
+    await _jobsSubscription?.cancel();
 
     _initializeRealtimeListeners();
   }

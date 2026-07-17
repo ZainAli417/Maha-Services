@@ -35,13 +35,13 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _kBgSoft,
       drawer: isMobile
-          ? Drawer(child: JobSeekerSidebar(activeIndex: 5, isDrawer: true))
+          ? const Drawer(child: JobSeekerSidebar(activeIndex: 5, isDrawer: true))
           : null,
       body: Row(
         children: [

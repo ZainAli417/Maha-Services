@@ -150,6 +150,27 @@ class ListAppliedJobsProvider with ChangeNotifier {
     _rebuildRecords();
   }
 
+  // parse dates robustly
+  static DateTime _parseDate(String s) {
+    try {
+      return DateTime.parse(s);
+    } catch (_) {}
+    try {
+      return DateFormat('MM/dd/yy').parse(s);
+    } catch (_) {}
+    try {
+      return DateFormat('MM/dd/yyyy').parse(s);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
+  static DateTime _parseAppliedAt(dynamic v) {
+    if (v is Timestamp) return v.toDate();
+    if (v is String) return DateTime.parse(v);
+    throw Exception('Invalid appliedAt type');
+  }
+
   void _rebuildRecords() {
     final List<AppRecord> recs = [];
 
@@ -158,27 +179,6 @@ class ListAppliedJobsProvider with ChangeNotifier {
       final jid = data['jobId'] as String;
       final jobData = _jobDataMap[jid];
       if (jobData == null) continue;
-
-      // parse dates robustly
-      DateTime parseDate(String s) {
-        try {
-          return DateTime.parse(s);
-        } catch (_) {}
-        try {
-          return DateFormat('MM/dd/yy').parse(s);
-        } catch (_) {}
-        try {
-          return DateFormat('MM/dd/yyyy').parse(s);
-        } catch (_) {
-          return DateTime.now();
-        }
-      }
-
-      DateTime parseAppliedAt(dynamic v) {
-        if (v is Timestamp) return v.toDate();
-        if (v is String) return DateTime.parse(v);
-        throw Exception('Invalid appliedAt type');
-      }
 
       // Parse responseDate if available
       DateTime? responseDate;
@@ -199,9 +199,9 @@ class ListAppliedJobsProvider with ChangeNotifier {
           company: jobData['company'] ?? '—',
           contactEmail: jobData['contactEmail'] ?? '—',
           department: jobData['department'] ?? 'General',
-          createdAt: parseDate(jobData['createdAt'] ?? ''),
-          deadline: parseDate(jobData['deadline'] ?? ''),
-          appliedAt: parseAppliedAt(data['appliedAt']),
+          createdAt: _parseDate(jobData['createdAt'] ?? ''),
+          deadline: _parseDate(jobData['deadline'] ?? ''),
+          appliedAt: _parseAppliedAt(data['appliedAt']),
           status: data['status'] ?? 'pending',
           responseDate: responseDate,
         ),

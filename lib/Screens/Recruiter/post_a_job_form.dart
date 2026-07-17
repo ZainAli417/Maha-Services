@@ -22,13 +22,7 @@ const Color _textDark = Color(0xFF0B2239);
 const Color _textMid = Color(0xFF5E7A8E);
 const Color _border = Color(0xFFDCE7EF);
 const Color _success = Color(0xFF10B981);
-const Color _successLight = Color(0xFFF0FDF4);
-const Color _warning = Color(0xFFFB923C);
-const Color _info = Color(0xFF0EA5E9);
 const Color _secondary = Color(0xFF4A90A4);
-const Color _surfaceDark = Color(0xFF2C3E50);
-const Color _paleBlue = Color(0xFFEFF6FF);
-const Color _paleWhite = Color(0xFFF0F4F8);
 
 class PostJobScreen extends StatefulWidget {
   const PostJobScreen({super.key});
@@ -138,6 +132,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     'Per Diem',
     'Contract Rate',
   ];
+  static final _emailRegExp = RegExp(r'^[^@]+@[^@]+\.[^@]+');
 
   // ─── lifecycle ────────────────────────────────────────────────────────────
   @override
@@ -174,13 +169,13 @@ class _PostJobScreenState extends State<PostJobScreen>
   // ─── build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    _isMobile = MediaQuery.of(context).size.width < 768;
+    _isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _bgWhite,
       drawer: _isMobile
-          ? Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
+          ? const Drawer(child: RecruiterSidebar(activeIndex: 1, isDrawer: true))
           : null,
       body: Stack(
         children: [
@@ -402,7 +397,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               if (v == null || v.trim().isEmpty) {
                 return 'Required';
               }
-              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
+              if (!_emailRegExp.hasMatch(v.trim())) {
                 return 'Invalid email';
               }
               return null;
@@ -607,7 +602,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             if (v == null || v.trim().isEmpty) {
               return 'Required';
             }
-            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v.trim())) {
+            if (!_emailRegExp.hasMatch(v.trim())) {
               return 'Invalid email';
             }
             return null;
@@ -716,7 +711,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.add_photo_alternate_rounded,
                       size: 28,
                       color: _primary,
@@ -850,7 +845,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     TextInputType? keyboard,
     FocusNode? fn,
   }) {
-    final radius = 12.0;
+    const radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -909,7 +904,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
-          color: Color(0xFFEF4444),
+          color: const Color(0xFFEF4444),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -925,7 +920,7 @@ class _PostJobScreenState extends State<PostJobScreen>
     IconData? icon,
   }) {
     final valid = items.contains(value) ? value : items.first;
-    final radius = 12.0;
+    const radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -996,7 +991,7 @@ class _PostJobScreenState extends State<PostJobScreen>
   // ─── DATE PICKER ──────────────────────────────────────────────────────────
   Widget _datePicker(job_listing_provider provider) {
     final display = _fmtDate(provider.tempDeadline);
-    final radius = 12.0;
+    const radius = 12.0;
     final fs = _isMobile ? 13.0 : 14.0;
     final ls = _isMobile ? 12.0 : 13.0;
 
@@ -1082,7 +1077,7 @@ class _PostJobScreenState extends State<PostJobScreen>
         ),
         errorStyle: GoogleFonts.plusJakartaSans(
           fontSize: 11,
-          color: Color(0xFFEF4444),
+          color: const Color(0xFFEF4444),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -1133,7 +1128,7 @@ class _PostJobScreenState extends State<PostJobScreen>
               onTap: () => Future.microtask(() => onToggle(item)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
                   color: on ? color.withValues(alpha: 0.15) : _bgLight,
                   borderRadius: BorderRadius.circular(10),
@@ -1310,7 +1305,7 @@ class _PostJobScreenState extends State<PostJobScreen>
             ),
           ],
         ),
-        backgroundColor: isError ? Color(0xFFEF4444) : _success,
+        backgroundColor: isError ? const Color(0xFFEF4444) : _success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),

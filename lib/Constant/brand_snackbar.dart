@@ -138,7 +138,7 @@ class _BrandSnackBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     final isMobile = width < 700;
     return Container(
       constraints: BoxConstraints(maxWidth: isMobile ? width : 460),

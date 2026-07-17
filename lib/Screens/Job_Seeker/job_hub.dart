@@ -96,18 +96,18 @@ class _job_hubState extends State<job_hub> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return ScrollConfiguration(
       behavior: SmoothScrollBehavior(),
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: const Color(0xFFF4F9FB),
         drawer: isMobile
-            ? Drawer(child: JobSeekerSidebar(activeIndex: 3, isDrawer: true))
+            ? const Drawer(child: JobSeekerSidebar(activeIndex: 3, isDrawer: true))
             : null,
         body: Row(
           children: [
-            if (!isMobile) JobSeekerSidebar(activeIndex: 3),
+            if (!isMobile) const JobSeekerSidebar(activeIndex: 3),
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnimation,

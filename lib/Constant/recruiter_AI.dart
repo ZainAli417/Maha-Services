@@ -13,7 +13,6 @@ import 'package:job_portal/main.dart';
 class AppTheme {
   static const Color primary = Color(0xFF14507F);
   static const Color primaryDark = Color(0xFF0A2E4F);
-  static const Color primaryLight = Color(0xFFE0EFF7);
   static const Color accent = Color(0xFF2EC4B6);
   static const Color background = Color(0xFFF4F9FB);
   static const Color surface = Colors.white;
@@ -21,7 +20,6 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF5E7A8E);
   static const Color textTertiary = Color(0xFF8AA5B5);
   static const Color border = Color(0xFFDCE7EF);
-  static const Color success = Color(0xFF10B981);
 }
 
 class ChatMessage {
@@ -449,7 +447,7 @@ class _MessageBubbleState extends State<_MessageBubble> {
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(14),
                   constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    maxWidth: MediaQuery.sizeOf(context).width * 0.65,
                   ),
                   decoration: BoxDecoration(
                     gradient: isUser
@@ -588,11 +586,12 @@ class _RichTextRenderer extends StatelessWidget {
     // Split by lines to handle line breaks properly
     final lines = cleanContent.split('\n');
 
+    // Parse bold text (**text**)
+    final RegExp boldExp = RegExp(r'\*\*(.+?)\*\*');
+
     for (int i = 0; i < lines.length; i++) {
       String line = lines[i];
 
-      // Parse bold text (**text**)
-      final RegExp boldExp = RegExp(r'\*\*(.+?)\*\*');
       int lastIndex = 0;
 
       for (final match in boldExp.allMatches(line)) {

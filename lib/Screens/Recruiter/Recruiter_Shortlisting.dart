@@ -21,8 +21,6 @@ class _T {
   static const bg = Color(0xFFF4F9FB);
   static const white = Color(0xFFFFFFFF);
   static const border = Color(0xFFDCE7EF);
-  static const success = Color(0xFF1A7F37);
-  static const warning = Color(0xFFBF8700);
   static const red = Color(0xFFCF222E);
 
   static TextStyle label({
@@ -53,13 +51,11 @@ enum _Layout { mobile, tablet, desktop }
 
 class _LD extends InheritedWidget {
   final _Layout layout;
-  final double width;
-  const _LD({required this.layout, required this.width, required super.child});
+  const _LD({required this.layout, required super.child});
 
   static _LD of(BuildContext ctx) =>
       ctx.dependOnInheritedWidgetOfExactType<_LD>()!;
   static bool isMobile(BuildContext ctx) => of(ctx).layout == _Layout.mobile;
-  static bool isDesktop(BuildContext ctx) => of(ctx).layout == _Layout.desktop;
 
   @override
   bool updateShouldNotify(_LD old) => old.layout != layout;
@@ -113,12 +109,11 @@ class _ShortlistingState extends State<Shortlisting>
 
         return _LD(
           layout: layout,
-          width: w,
           child: Scaffold(
             key: _scaffoldKey,
             backgroundColor: _T.bg,
             drawer: layout == _Layout.mobile
-                ? Drawer(
+                ? const Drawer(
                     child: RecruiterSidebar(activeIndex: 3, isDrawer: true),
                   )
                 : null,
@@ -330,7 +325,7 @@ class _ShortlistingDashboardState extends State<_ShortlistingDashboard> {
         useSafeArea: true,
         backgroundColor: Colors.transparent,
         builder: (_) => Container(
-          height: MediaQuery.of(context).size.height * 0.92,
+          height: MediaQuery.sizeOf(context).height * 0.92,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -1092,7 +1087,7 @@ class _EmptyApplicantsState extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: _T.primaryLight,
             shape: BoxShape.circle,
           ),
@@ -1161,7 +1156,7 @@ class _EmptyJobsState extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: _T.bg, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: _T.bg, shape: BoxShape.circle),
           child: const Icon(
             Icons.work_outline_rounded,
             size: 56,

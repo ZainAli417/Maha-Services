@@ -94,7 +94,7 @@ class RoleManagementService {
         targetLabel: email.trim(),
         details: {'role': role.toFirestore()},
       );
-      return RoleOpResult(true, 'User created');
+      return const RoleOpResult(true, 'User created');
     } catch (e) {
       debugPrint('❌ RoleManagementService.createUser: $e');
       return RoleOpResult(false, 'Error: $e');
@@ -212,7 +212,7 @@ class RoleManagementService {
         targetId: uid,
         targetLabel: label,
       );
-      return RoleOpResult(true, 'User deleted');
+      return const RoleOpResult(true, 'User deleted');
     } catch (e) {
       debugPrint('❌ RoleManagementService.softDelete: $e');
       return RoleOpResult(false, 'Error: $e');
@@ -232,7 +232,7 @@ class RoleManagementService {
         targetId: uid,
         targetLabel: label,
       );
-      return RoleOpResult(true, 'User restored');
+      return const RoleOpResult(true, 'User restored');
     } catch (e) {
       debugPrint('❌ RoleManagementService.restore: $e');
       return RoleOpResult(false, 'Error: $e');
@@ -255,7 +255,7 @@ class RoleManagementService {
         targetId: uid,
         targetLabel: label,
       );
-      return RoleOpResult(true, 'Profile status reset');
+      return const RoleOpResult(true, 'Profile status reset');
     } catch (e) {
       debugPrint('❌ RoleManagementService.resetProfileStatus: $e');
       return RoleOpResult(false, 'Error: $e');

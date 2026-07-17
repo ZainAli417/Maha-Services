@@ -181,7 +181,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
 
   Widget _leftPanel(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
+      height: MediaQuery.sizeOf(context).height,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -427,7 +427,7 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
   }
 
   Widget _buildCompactStats() {
-    return Row(
+    return const Row(
       children: [
         Expanded(
           child: _CompactMetric(
@@ -437,16 +437,16 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
             icon: Icons.work_outline_rounded,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _CompactMetric(
             value: '342',
             label: 'Online',
-            color: const Color(0xFF4ade80),
+            color: Color(0xFF4ade80),
             icon: Icons.people_outline_rounded,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: _CompactMetric(
             value: '5.4K',

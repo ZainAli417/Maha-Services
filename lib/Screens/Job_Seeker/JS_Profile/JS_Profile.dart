@@ -404,8 +404,8 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   void _scrollToCurrentStep() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_stepScrollController.hasClients) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        final itemWidth = 180.0;
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        const itemWidth = 180.0;
         final targetOffset = (_currentStep * itemWidth) - (screenWidth / 4);
         _stepScrollController.animateTo(
           targetOffset.clamp(
@@ -419,7 +419,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     });
   }
 
-  bool get _isMobile => MediaQuery.of(context).size.width < 768;
+  bool get _isMobile => MediaQuery.sizeOf(context).width < 768;
 
   @override
   Widget build(BuildContext context) {
@@ -429,11 +429,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
       child: Scaffold(
         key: _scaffoldKey,
         drawer: isMobile
-            ? Drawer(child: JobSeekerSidebar(activeIndex: 1, isDrawer: true))
+            ? const Drawer(child: JobSeekerSidebar(activeIndex: 1, isDrawer: true))
             : null,
         body: Row(
           children: [
-            if (!isMobile) JobSeekerSidebar(activeIndex: 1),
+            if (!isMobile) const JobSeekerSidebar(activeIndex: 1),
             Expanded(
               child: FadeTransition(
                 opacity: _animController,
@@ -3000,9 +3000,9 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.folder_outlined,
-                color: const Color(0xFF14507F),
+                color: Color(0xFF14507F),
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -3744,7 +3744,7 @@ void showTopNotification(
 }) {
   final overlay = Overlay.of(context);
 
-  final isMobile = MediaQuery.of(context).size.width < 768;
+  final isMobile = MediaQuery.sizeOf(context).width < 768;
 
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(

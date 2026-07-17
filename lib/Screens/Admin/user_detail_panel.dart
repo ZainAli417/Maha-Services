@@ -37,7 +37,7 @@ class UserDetailPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final role = UserRole.fromFirestore(userData['role']?.toString());
     final name = (userData['name'] ?? '').toString();
     final email = (userData['email'] ?? '').toString();

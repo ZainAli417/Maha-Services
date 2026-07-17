@@ -22,7 +22,7 @@ class SiteStatsBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 700;
     final hPad = isMobile ? 18.0 : (w < 1080 ? 40.0 : 80.0);
 
@@ -139,7 +139,7 @@ class SiteFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 700;
     final hPad = isMobile ? 18.0 : (w < 1080 ? 40.0 : 80.0);
 

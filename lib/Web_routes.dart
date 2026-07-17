@@ -427,9 +427,9 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/ai-tools',
-      pageBuilder: (c, s) => _fadePage(CVAnalysisScreen(), s),
+      pageBuilder: (c, s) => _fadePage(const CVAnalysisScreen(), s),
     ),
-    GoRoute(path: '/job-hub', pageBuilder: (c, s) => _fadePage(job_hub(), s)),
+    GoRoute(path: '/job-hub', pageBuilder: (c, s) => _fadePage(const job_hub(), s)),
     GoRoute(
       path: '/saved-jobs',
       pageBuilder: (c, s) => _fadePage(const SavedJobsScreen(), s),

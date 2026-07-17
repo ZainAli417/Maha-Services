@@ -366,12 +366,12 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
+            const SizedBox(
               width: 14,
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: const AlwaysStoppedAnimation(Color(0xFF14507F)),
+                valueColor: AlwaysStoppedAnimation(Color(0xFF14507F)),
               ),
             ),
             const SizedBox(width: 10),
@@ -415,14 +415,14 @@ class _AIMatchScoreScreenState extends State<AIMatchScoreScreen> {
           Container(
             width: 72,
             height: 72,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF2F2),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF2F2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.error_outline_rounded,
               size: 40,
-              color: const Color(0xFFEF4444),
+              color: Color(0xFFEF4444),
             ),
           ),
           const SizedBox(height: 20),

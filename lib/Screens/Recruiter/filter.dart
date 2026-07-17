@@ -26,7 +26,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
   String _tempProfessionalStatusFilter = 'All';
   List<String> _tempSkillsFilter = [];
   DateTimeRange? _tempDateRange;
-  RangeValues _tempExperienceYearsRange = RangeValues(0, 30);
+  RangeValues _tempExperienceYearsRange = const RangeValues(0, 30);
   bool _tempHasCertifications = false;
   bool _tempHasPublications = false;
   bool _tempHasAwards = false;
@@ -111,7 +111,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
       _tempProfessionalStatusFilter = 'All';
       _tempSkillsFilter.clear();
       _tempDateRange = null;
-      _tempExperienceYearsRange = RangeValues(0, 30);
+      _tempExperienceYearsRange = const RangeValues(0, 30);
       _tempHasCertifications = false;
       _tempHasPublications = false;
       _tempHasAwards = false;
@@ -124,8 +124,8 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
+      height: MediaQuery.sizeOf(context).height * 0.85,
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -136,7 +136,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
             child: Consumer<ApplicantsProvider>(
               builder: (context, provider, _) {
                 return SingleChildScrollView(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -204,7 +204,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                           min: 0,
                           max: 30,
                           divisions: 30,
-                          activeColor: Color(0xFF15A99C),
+                          activeColor: const Color(0xFF15A99C),
                           labels: RangeLabels(
                             _tempExperienceYearsRange.start.round().toString(),
                             _tempExperienceYearsRange.end.round().toString(),
@@ -309,7 +309,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasCertifications,
-                          activeColor: Color(0xFF15A99C),
+                          activeColor: const Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasCertifications = val ?? false;
                             _calculateActiveFilters();
@@ -328,7 +328,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasPublications,
-                          activeColor: Color(0xFF15A99C),
+                          activeColor: const Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasPublications = val ?? false;
                             _calculateActiveFilters();
@@ -347,7 +347,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                             style: GoogleFonts.plusJakartaSans(fontSize: 14),
                           ),
                           value: _tempHasAwards,
-                          activeColor: Color(0xFF15A99C),
+                          activeColor: const Color(0xFF15A99C),
                           onChanged: (val) => setState(() {
                             _tempHasAwards = val ?? false;
                             _calculateActiveFilters();
@@ -403,22 +403,22 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFDCE7EF))),
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(0xFF15A99C).withValues(alpha: 0.1),
+              color: const Color(0xFF15A99C).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.filter_list, color: Color(0xFF15A99C), size: 24),
+            child: const Icon(Icons.filter_list, color: Color(0xFF15A99C), size: 24),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,14 +428,14 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0B2239),
+                    color: const Color(0xFF0B2239),
                   ),
                 ),
                 Text(
                   '$_activeFiltersCount filters active',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: Color(0xFF5E7A8E),
+                    color: const Color(0xFF5E7A8E),
                   ),
                 ),
               ],
@@ -443,8 +443,8 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           ),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.close),
-            color: Color(0xFF5E7A8E),
+            icon: const Icon(Icons.close),
+            color: const Color(0xFF5E7A8E),
           ),
         ],
       ),
@@ -453,25 +453,25 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
 
   Widget _buildFilterSection(String title, IconData icon, Widget content) {
     return Container(
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: Color(0xFF15A99C)),
-              SizedBox(width: 8),
+              Icon(icon, size: 18, color: const Color(0xFF15A99C)),
+              const SizedBox(width: 8),
               Text(
                 title,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF0B2239),
+                  color: const Color(0xFF0B2239),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           content,
         ],
       ),
@@ -485,20 +485,20 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Color(0xFFF4F9FB),
+        color: const Color(0xFFF4F9FB),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xFFDCE7EF)),
+        border: Border.all(color: const Color(0xFFDCE7EF)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down, color: Color(0xFF5E7A8E)),
+          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF5E7A8E)),
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
-            color: Color(0xFF0B2239),
+            color: const Color(0xFF0B2239),
           ),
           items: items.map((item) {
             return DropdownMenuItem(
@@ -531,16 +531,16 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
               _calculateActiveFilters();
             });
           },
-          backgroundColor: Color(0xFFF4F9FB),
-          selectedColor: Color(0xFF15A99C).withValues(alpha: 0.2),
-          checkmarkColor: Color(0xFF15A99C),
+          backgroundColor: const Color(0xFFF4F9FB),
+          selectedColor: const Color(0xFF15A99C).withValues(alpha: 0.2),
+          checkmarkColor: const Color(0xFF15A99C),
           labelStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
-            color: isSelected ? Color(0xFF15A99C) : Color(0xFF5E7A8E),
+            color: isSelected ? const Color(0xFF15A99C) : const Color(0xFF5E7A8E),
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
           side: BorderSide(
-            color: isSelected ? Color(0xFF15A99C) : Color(0xFFDCE7EF),
+            color: isSelected ? const Color(0xFF15A99C) : const Color(0xFFDCE7EF),
           ),
         );
       }).toList(),
@@ -558,7 +558,7 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
           builder: (context, child) {
             return Theme(
               data: Theme.of(context).copyWith(
-                colorScheme: ColorScheme.light(primary: Color(0xFF15A99C)),
+                colorScheme: const ColorScheme.light(primary: Color(0xFF15A99C)),
               ),
               child: child!,
             );
@@ -572,36 +572,36 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
         }
       },
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Color(0xFFF4F9FB),
+          color: const Color(0xFFF4F9FB),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Color(0xFFDCE7EF)),
+          border: Border.all(color: const Color(0xFFDCE7EF)),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, size: 18, color: Color(0xFF5E7A8E)),
-            SizedBox(width: 12),
+            const Icon(Icons.calendar_today, size: 18, color: Color(0xFF5E7A8E)),
+            const SizedBox(width: 12),
             Text(
               _tempDateRange == null
                   ? 'Select date range'
                   : '${_tempDateRange!.start.toString().split(' ')[0]} - ${_tempDateRange!.end.toString().split(' ')[0]}',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: Color(0xFF0B2239),
+                color: const Color(0xFF0B2239),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             if (_tempDateRange != null)
               IconButton(
-                icon: Icon(Icons.clear, size: 18),
+                icon: const Icon(Icons.clear, size: 18),
                 onPressed: () => setState(() {
                   _tempDateRange = null;
                   _calculateActiveFilters();
                 }),
-                color: Color(0xFF5E7A8E),
+                color: const Color(0xFF5E7A8E),
                 padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
+                constraints: const BoxConstraints(),
               ),
           ],
         ),
@@ -611,15 +611,15 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
 
   Widget _buildFooter() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFDCE7EF))),
+        border: const Border(top: BorderSide(color: Color(0xFFDCE7EF))),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
-            offset: Offset(0, -5),
+            offset: const Offset(0, -5),
           ),
         ],
       ),
@@ -629,8 +629,8 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
             child: OutlinedButton(
               onPressed: _resetFilters,
               style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(color: Color(0xFFDCE7EF)),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                side: const BorderSide(color: Color(0xFFDCE7EF)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -640,19 +640,19 @@ class _ApplicantFilterWidgetState extends State<ApplicantFilterWidget> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF5E7A8E),
+                  color: const Color(0xFF5E7A8E),
                 ),
               ),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             flex: 2,
             child: ElevatedButton(
               onPressed: _applyFilters,
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Color(0xFF15A99C),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: const Color(0xFF15A99C),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

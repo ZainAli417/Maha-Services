@@ -92,7 +92,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Container(
       color: const Color(0xFFF4F9FB),
       child: ListView(
@@ -121,7 +121,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
           const SizedBox(height: 16),
           Container(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height * 0.45,
+              minHeight: MediaQuery.sizeOf(context).height * 0.45,
             ),
             decoration: BoxDecoration(
               color: Colors.white,

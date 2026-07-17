@@ -75,7 +75,7 @@ class _ForgotPasswordDialogContentState
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 600;
     final dialogWidth = isMobile ? screenWidth * 0.92 : 460.0;
 

@@ -150,7 +150,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Consumer<AdminProvider>(
       builder: (context, provider, child) {
         return FadeTransition(
@@ -198,7 +198,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildFilters() {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 32),
       child: isMobile
@@ -429,7 +429,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
   }
 
   Widget _buildUsersTable(AdminProvider provider) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Center(
       child: Container(
@@ -1752,15 +1752,15 @@ class _UserManagementSectionState extends State<UserManagementSection>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 48,
             height: 48,
             child: CircularProgressIndicator(
-              valueColor: const AlwaysStoppedAnimation<Color>(
+              valueColor: AlwaysStoppedAnimation<Color>(
                 Color(0xFF14507F),
               ),
               strokeWidth: 3,
-              backgroundColor: const Color(0xFFE0E7FF),
+              backgroundColor: Color(0xFFE0E7FF),
             ),
           ),
           const SizedBox(height: 20),
@@ -1852,10 +1852,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.people_outline_rounded,
               size: 56,
-              color: const Color(0xFF94A3B8),
+              color: Color(0xFF94A3B8),
             ),
           ),
           const SizedBox(height: 24),
@@ -1922,7 +1922,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     bool isEdit,
     Map<String, dynamic>? existingData,
   ) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final isMobile = size.width < 600;
 
     showDialog(
@@ -1971,13 +1971,13 @@ class _UserManagementSectionState extends State<UserManagementSection>
                     // Modern Header with Gradient
                     Container(
                       padding: EdgeInsets.all(isMobile ? 20 : 28),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
                           colors: [Color(0xFF14507F), Color(0xFF0A2E4F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: const BorderRadius.only(
+                        borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(24),
                           topRight: Radius.circular(24),
                         ),
@@ -2510,7 +2510,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
     AdminProvider provider,
     String email,
   ) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final isMobile = size.width < 600;
 
     showDialog(
@@ -2542,8 +2542,8 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   children: [
                     Container(
                       padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F3FF),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF5F3FF),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

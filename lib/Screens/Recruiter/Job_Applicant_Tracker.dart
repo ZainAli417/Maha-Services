@@ -58,13 +58,13 @@ class _Job_Applicant_TrackerState extends State<Job_Applicant_Tracker>
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _kBg,
       drawer: isMobile
-          ? Drawer(child: RecruiterSidebar(activeIndex: 2, isDrawer: true))
+          ? const Drawer(child: RecruiterSidebar(activeIndex: 2, isDrawer: true))
           : null,
       body: Row(
         children: [
@@ -356,11 +356,11 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 768;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF4F9FB),
+      backgroundColor: const Color(0xFFF4F9FB),
       body: CustomScrollView(
         controller: _scrollCtrl,
         physics: const BouncingScrollPhysics(),
@@ -375,7 +375,7 @@ class _Job_Applicant_WrapperState extends State<Job_Applicant_Wrapper>
   // ── Command bar ─────────────────────────────────────────────────────────────
   Widget _buildCommandBar(bool isMobile) {
     return Container(
-      color: Color(0xFFF4F9FB),
+      color: const Color(0xFFF4F9FB),
       padding: EdgeInsets.fromLTRB(
         isMobile ? 12 : 24,
         isMobile ? 12 : 16,
@@ -1233,7 +1233,7 @@ class _Job_CardsState extends State<Job_Cards>
   }
 
   void _applicants() {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     if (isMobile) {
       showModalBottomSheet(
@@ -1254,7 +1254,7 @@ class _Job_CardsState extends State<Job_Cards>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Color(0xFFF4F9FB),
+                  color: const Color(0xFFF4F9FB),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1580,7 +1580,7 @@ class _Job_CardsState extends State<Job_Cards>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.schedule_rounded,
                                       size: 10,
                                       color: _kSuccess,

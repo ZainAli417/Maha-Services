@@ -133,9 +133,9 @@ class _Admin_Recruiter_Request_screenState
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => const Scaffold(
     backgroundColor: _C.bg,
-    body: SafeArea(top: false, child: const _DashboardBody()),
+    body: SafeArea(top: false, child: _DashboardBody()),
   );
 }
 
@@ -865,9 +865,9 @@ class _DashboardBodyState extends State<_DashboardBody> {
         child: Consumer<AdminProvider>(
           builder: (ctx2, snap, _) {
             if (snap.loading && snap.selectedRequestDetails == null) {
-              return _Shell(
+              return const _Shell(
                 height: 220,
-                child: const Center(
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: _C.primary,
@@ -1317,7 +1317,7 @@ class _Placeholder extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: _C.primaryLight,
               shape: BoxShape.circle,
             ),
@@ -2410,7 +2410,7 @@ class _ActionButton extends StatelessWidget {
     // Fallback: overflow menu
     return PopupMenuButton<String>(
       padding: EdgeInsets.zero,
-      icon: Icon(Icons.more_horiz_rounded, size: 18, color: _T.txt3),
+      icon: const Icon(Icons.more_horiz_rounded, size: 18, color: _T.txt3),
       elevation: 4,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -2788,9 +2788,9 @@ class _CVSheet extends StatelessWidget {
                               const SizedBox(height: 22),
                               Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.analytics_outlined,
-                                    color: const Color(0xFF2178B5),
+                                    color: Color(0xFF2178B5),
                                     size: 17,
                                   ),
                                   const SizedBox(width: 10),

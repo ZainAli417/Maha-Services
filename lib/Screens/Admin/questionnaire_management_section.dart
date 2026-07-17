@@ -138,7 +138,7 @@ class _QuestionnaireManagementSectionState
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     if (_loading) {
       return const LoadingView(message: 'Loading questionnaire config…');
     }
@@ -436,7 +436,7 @@ class _QuestionnaireManagementSectionState
   }
 
   Widget _questionsPanel() {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     final role = _selected;
     if (role == null) {
       return Container(
@@ -854,7 +854,7 @@ class _QuestionnaireManagementSectionState
                   icon: Icons.short_text_rounded,
                 ),
                 const SizedBox(height: 16),
-                _FieldLabel(text: 'Question type'),
+                const _FieldLabel(text: 'Question type'),
                 const SizedBox(height: 8),
                 _TypeSelector(
                   selected: type,
@@ -1039,7 +1039,7 @@ class _DialogScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     final isMobile = size.width < 700;
     return Dialog(
       backgroundColor: Colors.white,

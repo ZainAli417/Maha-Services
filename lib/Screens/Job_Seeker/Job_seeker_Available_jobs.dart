@@ -98,7 +98,7 @@ class _SideToastState extends State<_SideToast>
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.sizeOf(context).width;
     return SlideTransition(
       position: _slide,
       child: FadeTransition(
@@ -404,7 +404,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 1000;
 
     return FadeTransition(
@@ -812,7 +812,7 @@ class _LiveJobsForSeekerState extends State<LiveJobsForSeeker>
   }
 
   Widget _buildJobsList() {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 1000;
     final hPad = isMobile ? 12.0 : 24.0;
     final vPad = isMobile ? 12.0 : 24.0;
@@ -1363,7 +1363,7 @@ class _CompactJobCardState extends State<CompactJobCard>
     final salary = job['salary'] as String? ?? '';
     final experience = job['experience'] as String? ?? '';
     final postedAgo = _getRelativeTime(job['timestamp'] as Timestamp?);
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = w < 1000;
     final cardPad = isMobile ? 10.0 : 16.0;
     final titleSize = isMobile ? 15.0 : 17.0;

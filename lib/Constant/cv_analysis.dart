@@ -25,8 +25,6 @@ const Color kBackgroundGray = Color(0xFFF4F9FB); // bgSoft
 const Color kSuccessGreen = Color(0xFF10B981);
 const Color kWarningOrange = Color(0xFFF59E0B);
 const Color kErrorRed = Color(0xFFEF4444);
-const Color kNavyDeep = Color(0xFF0A2E4F);
-const Color kTealDeep = Color(0xFF15A99C);
 
 // Brand gradient (teal → navy) for icon badges & the primary action.
 const LinearGradient kBrandGradient = LinearGradient(
@@ -42,15 +40,6 @@ class _BP {
 
   static bool isMobile(double w) => w < mobile;
   static bool isDesktop(double w) => w >= desktop;
-
-  static EdgeInsets hPad(double w) => EdgeInsets.symmetric(
-    horizontal: w < mobile
-        ? 12
-        : w < desktop
-        ? 20
-        : 28,
-    vertical: w < mobile ? 10 : 14,
-  );
 
   static double contentPad(double w) => w < mobile ? 14 : 20;
 }
@@ -131,7 +120,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = _BP.isMobile(w);
 
     return ScrollConfiguration(
@@ -142,11 +131,11 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen>
           key: _scaffoldKey,
           backgroundColor: kBackgroundGray, // matches JobSeekerHeader canvas (0xFFF4F9FB)
           drawer: isMobile
-              ? Drawer(child: JobSeekerSidebar(activeIndex: 2, isDrawer: true))
+              ? const Drawer(child: JobSeekerSidebar(activeIndex: 2, isDrawer: true))
               : null,
           body: Row(
             children: [
-              if (!isMobile) JobSeekerSidebar(activeIndex: 2),
+              if (!isMobile) const JobSeekerSidebar(activeIndex: 2),
               Expanded(
                 child: FadeTransition(
                   opacity: _animController,
@@ -386,7 +375,7 @@ class _InputPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = _BP.isMobile(w);
     final pad = isMobile ? 14.0 : 20.0;
 
@@ -397,12 +386,12 @@ class _InputPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _SectionLabel(text: 'Upload CV', icon: Icons.upload_file),
+          const _SectionLabel(text: 'Upload CV', icon: Icons.upload_file),
           SizedBox(height: isMobile ? 8 : 12),
           _FileUploadZone(pickedFile: pickedFile, onPickFile: onPickFile),
 
           SizedBox(height: isMobile ? 16 : 22),
-          _SectionLabel(
+          const _SectionLabel(
             text: 'Select Job from Hub (Optional)',
             icon: Icons.hub_outlined,
           ),
@@ -417,7 +406,7 @@ class _InputPanel extends StatelessWidget {
           ),
 
           SizedBox(height: isMobile ? 16 : 22),
-          _SectionLabel(text: 'Target Role', icon: Icons.work_outline),
+          const _SectionLabel(text: 'Target Role', icon: Icons.work_outline),
           SizedBox(height: isMobile ? 8 : 10),
           _buildTextField(
             roleController,
@@ -426,7 +415,7 @@ class _InputPanel extends StatelessWidget {
           ),
 
           SizedBox(height: isMobile ? 14 : 20),
-          _SectionLabel(
+          const _SectionLabel(
             text: 'Job Description (Optional)',
             icon: Icons.description_outlined,
           ),
@@ -691,7 +680,7 @@ class _FileUploadZone extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_upload_outlined, size: 34, color: kAccentBlue),
+            const Icon(Icons.cloud_upload_outlined, size: 34, color: kAccentBlue),
             const SizedBox(height: 8),
             Text(
               'Tap to browse CVs/Resumes',
@@ -817,7 +806,7 @@ class _ResultsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = _BP.isMobile(w);
     final pad = isMobile ? 14.0 : 20.0;
 
@@ -866,7 +855,7 @@ class _ResultsPanel extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-          Divider(color: kBorderLight, height: 1),
+          const Divider(color: kBorderLight, height: 1),
           const SizedBox(height: 16),
 
           if (provider.advisory != null) ...[
@@ -960,7 +949,7 @@ class _InsightsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.lightbulb_outline, size: 16, color: kAccentBlue),
+            const Icon(Icons.lightbulb_outline, size: 16, color: kAccentBlue),
             const SizedBox(width: 7),
             Text(
               'AI Insights',
@@ -1022,7 +1011,7 @@ class _HighlightsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.stars_outlined, size: 16, color: kWarningOrange),
+            const Icon(Icons.stars_outlined, size: 16, color: kWarningOrange),
             const SizedBox(width: 7),
             Text(
               'Key Highlights',
@@ -1154,7 +1143,7 @@ class _HighlightRow extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isMobile = _BP.isMobile(MediaQuery.of(context).size.width);
+    final isMobile = _BP.isMobile(MediaQuery.sizeOf(context).width);
     return Container(
       padding: EdgeInsets.all(isMobile ? 28 : 48),
       decoration: BoxDecoration(
@@ -1204,7 +1193,7 @@ class _ErrorDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = _BP.isMobile(MediaQuery.of(context).size.width);
+    final isMobile = _BP.isMobile(MediaQuery.sizeOf(context).width);
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
@@ -1215,7 +1204,7 @@ class _ErrorDisplay extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.error_outline, color: kErrorRed, size: 20),
+          const Icon(Icons.error_outline, color: kErrorRed, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1255,7 +1244,7 @@ class _AIProcessingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = _BP.isMobile(w);
 
     return AnimatedBuilder(
@@ -1299,7 +1288,7 @@ class _AIProcessingDialog extends StatelessWidget {
                           color: kPrimaryBlue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.auto_awesome_outlined,
                           size: 32,
                           color: kPrimaryBlue,
@@ -1322,7 +1311,7 @@ class _AIProcessingDialog extends StatelessWidget {
                           value: progress,
                           minHeight: 6,
                           backgroundColor: kBackgroundGray,
-                          valueColor: AlwaysStoppedAnimation(kPrimaryBlue),
+                          valueColor: const AlwaysStoppedAnimation(kPrimaryBlue),
                         ),
                       ),
                       const SizedBox(height: 10),

@@ -25,7 +25,7 @@ class HeaderNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isDesktop = w > 900;
     final isMobile = w <= 600;
 

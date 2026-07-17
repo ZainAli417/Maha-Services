@@ -93,6 +93,8 @@ class _C {
 //  SCROLL BEHAVIOUR
 // ═══════════════════════════════════════════════════════════════════════════
 class SmoothScrollBehavior extends MaterialScrollBehavior {
+  const SmoothScrollBehavior();
+
   @override
   Set<PointerDeviceKind> get dragDevices => {
     PointerDeviceKind.touch,
@@ -223,22 +225,22 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
+    final w = MediaQuery.sizeOf(context).width;
     final isMobile = _BP.isMobile(w);
     return ScrollConfiguration(
-      behavior: SmoothScrollBehavior(),
+      behavior: const SmoothScrollBehavior(),
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: _C.bgSoft,
         drawer: isMobile
-            ? Drawer(child: JobSeekerSidebar(activeIndex: 0, isDrawer: true))
+            ? const Drawer(child: JobSeekerSidebar(activeIndex: 0, isDrawer: true))
             : null,
         body: SafeArea(
           top: isMobile,
           bottom: false,
           child: Row(
             children: [
-              if (!isMobile) JobSeekerSidebar(activeIndex: 0),
+              if (!isMobile) const JobSeekerSidebar(activeIndex: 0),
               Expanded(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -277,7 +279,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   Widget _buildContent(BuildContext context) {
     return ChangeNotifierProvider<ListAppliedJobsProvider>(
-      create: (_) => ListAppliedJobsProvider()..refresh(),
+      // The constructor already starts the Firestore listeners.
+      create: (_) => ListAppliedJobsProvider(),
       child: Consumer<ListAppliedJobsProvider>(
         builder: (ctx, prov, _) {
           if (prov.isLoading) {
@@ -371,8 +374,8 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
               return Column(
                 children: [
                   // Fixed top bar — hide on mobile
-                  if (!isMobile) _buildTopBar(analytics, sorted.length, w),
-                  if (_showFilters) _buildFilterBar(prov, isMobile, w),
+                  if (!isMobile) _buildTopBar(),
+                  if (_showFilters) _buildFilterBar(isMobile, w),
 
                   Expanded(
                     child: Row(
@@ -417,14 +420,14 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                                             screenWidth: w,
                                           ),
                                           SizedBox(height: isMobile ? 14 : 18),
-                                          _SectionHead(
+                                          const _SectionHead(
                                             icon: Icons.analytics_outlined,
                                             title: 'Analytics Overview',
                                           ),
                                           SizedBox(height: isMobile ? 10 : 14),
                                           _AnalyticsCharts(analytics: analytics),
                                           SizedBox(height: isMobile ? 14 : 18),
-                                          _SectionHead(
+                                          const _SectionHead(
                                             icon: Icons.list_alt_rounded,
                                             title: 'Applications',
                                           ),
@@ -464,11 +467,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   //  TOP BAR
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildTopBar(
-    Map<String, dynamic> analytics,
-    int filteredCount,
-    double w,
-  ) {
+  Widget _buildTopBar() {
     return JobSeekerHeader(
       icon: Icons.work_history_rounded,
       title: 'My Applications',
@@ -483,11 +482,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
   // ─────────────────────────────────────────────────────────────────────────
   //  FILTER BAR
   // ─────────────────────────────────────────────────────────────────────────
-  Widget _buildFilterBar(
-    ListAppliedJobsProvider prov,
-    bool isMobile,
-    double w,
-  ) {
+  Widget _buildFilterBar(bool isMobile, double w) {
     final hPad = _BP.hPad(w);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8),
@@ -691,7 +686,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
             ),
             child: Column(
               children: [
-                _TableHeader(),
+                const _TableHeader(),
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -813,7 +808,7 @@ class _RightPanel extends StatelessWidget {
       width: 340,
       child: Column(
         children: [
-          _PanelHdr(
+          const _PanelHdr(
             icon: Icons.bar_chart_rounded,
             iconBg: _C.indigoLt,
             iconColor: _C.indigo,
@@ -828,7 +823,7 @@ class _RightPanel extends StatelessWidget {
           const Divider(height: 1, thickness: 1, color: _C.border),
 
           if (topCompanies.isNotEmpty) ...[
-            _PanelHdr(
+            const _PanelHdr(
               icon: Icons.business_rounded,
               iconBg: _C.tealLt,
               iconColor: _C.teal,
@@ -1433,7 +1428,7 @@ class _TrendChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardHead(
+          const _CardHead(
             icon: Icons.show_chart_rounded,
             title: '30-Day Trend',
             sub: 'Application activity',
@@ -1594,7 +1589,7 @@ class _DeptCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          _CardHead(
+          const _CardHead(
             icon: Icons.donut_small_rounded,
             title: 'Success Rate',
             sub: 'Acceptance by Unit/Bases',
@@ -1672,7 +1667,7 @@ class _TableHeader extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
         border: Border(bottom: BorderSide(color: _C.border)),
       ),
-      child: Row(
+      child: const Row(
         children: [
           Expanded(flex: 3, child: _ColLabel('JOB POSITION')),
           Expanded(flex: 3, child: _ColLabel('UNIT / BASE')),
@@ -2548,11 +2543,4 @@ class _EmptyState extends StatelessWidget {
       ),
     );
   }
-}
-
-class ChartData {
-  final String status;
-  final int count;
-  final Color color;
-  ChartData(this.status, this.count, this.color);
 }

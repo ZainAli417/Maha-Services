@@ -22,13 +22,20 @@ class JobSeekerSidebar extends StatefulWidget {
 }
 
 class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
+  // Cached so rebuilds don't re-trigger a Firestore read on every parent
+  // setState (the sidebar rebuilds with each dashboard keystroke).
+  late final Future<DocumentSnapshot> _roleFuture = FirebaseFirestore.instance
+      .collection('users')
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .get();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<JS_TopNavProvider>(
       builder: (context, provider, child) {
         final initials = provider.initials;
         final sidebarWidth = widget.isDrawer
-            ? (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 280.0)
+            ? (MediaQuery.sizeOf(context).width * 0.75).clamp(240.0, 280.0)
             : 260.0;
         return Container(
           width: sidebarWidth,
@@ -140,10 +147,7 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
 
                       const SizedBox(height: 20),
                       FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(FirebaseAuth.instance.currentUser?.uid)
-                            .get(),
+                        future: _roleFuture,
                         builder: (context, snapshot) {
                           final role =
                               (snapshot.data?.data()
@@ -267,9 +271,9 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
               ),
             ),
@@ -304,10 +308,10 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
+                    const Icon(
                       Icons.verified,
                       size: 14,
-                      color: const Color(0xFF10B981),
+                      color: Color(0xFF10B981),
                     ),
                   ],
                 ),

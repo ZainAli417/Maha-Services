@@ -132,24 +132,6 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     throw Exception('Unable to read file content');
   }
 
-  String _getMimeType(String fileName) {
-    final extension = fileName.toLowerCase().split('.').last;
-    switch (extension) {
-      case 'pdf':
-        return 'application/pdf';
-      case 'doc':
-        return 'application/msword';
-      case 'docx':
-        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      case 'txt':
-        return 'text/plain';
-      case 'rtf':
-        return 'application/rtf';
-      default:
-        return 'application/octet-stream';
-    }
-  }
-
   Future<void> analyzeCV({
     required PlatformFile file,
     required String roleName,

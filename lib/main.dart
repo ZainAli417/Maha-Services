@@ -40,7 +40,7 @@ void main() async {
 
   // If targeting web, make pretty URLs
   if (kIsWeb) {
-    setUrlStrategy(PathUrlStrategy());
+    setUrlStrategy(const PathUrlStrategy());
   }
 
   // ── Pre-load Google Fonts BEFORE runApp to avoid lazy_path.dart crash ──

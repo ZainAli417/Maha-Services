@@ -410,7 +410,7 @@ class _MobileTabletBodyState extends State<_MobileTabletBody>
                     children: [
                       _SideContent(applicant: widget.applicant),
                       const SizedBox(height: 24),
-                      _SecHead('Executive Summary', Icons.dashboard_outlined),
+                      const _SecHead('Executive Summary', Icons.dashboard_outlined),
                       const SizedBox(height: 10),
                       Text(
                         widget.applicant.summary.isNotEmpty
@@ -419,7 +419,7 @@ class _MobileTabletBodyState extends State<_MobileTabletBody>
                         style: _T.body(fs: ld.bodyFs),
                       ),
                       const SizedBox(height: 22),
-                      _SecHead('Education', Icons.school_outlined),
+                      const _SecHead('Education', Icons.school_outlined),
                       const SizedBox(height: 10),
                       widget.applicant.educations.isEmpty
                           ? const _EmptyState('No education listed')
@@ -460,7 +460,7 @@ class _SideContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Contact
-        _CatLabel('Contact'),
+        const _CatLabel('Contact'),
         const SizedBox(height: 8),
         _ContactRow(
           Icons.email_outlined,
@@ -473,7 +473,7 @@ class _SideContent extends StatelessWidget {
         const SizedBox(height: 20),
 
         // ── Stats
-        _CatLabel('Quick Stats'),
+        const _CatLabel('Quick Stats'),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -502,7 +502,7 @@ class _SideContent extends StatelessWidget {
         const SizedBox(height: 20),
 
         // ── Skills
-        _CatLabel('Skills'),
+        const _CatLabel('Skills'),
         const SizedBox(height: 8),
         applicant.skills.isEmpty
             ? const _EmptyState('No skills listed')
@@ -515,7 +515,7 @@ class _SideContent extends StatelessWidget {
         // ── Social
         if (applicant.socialLinks.isNotEmpty) ...[
           const SizedBox(height: 20),
-          _CatLabel('Social Links'),
+          const _CatLabel('Social Links'),
           const SizedBox(height: 8),
           for (final _ in applicant.socialLinks)
             Padding(
@@ -560,7 +560,7 @@ class _MainContent extends StatelessWidget {
       children: [
         // Summary + Education (desktop only)
         if (includeSummaryEdu) ...[
-          _SecHead('Executive Summary', Icons.dashboard_outlined),
+          const _SecHead('Executive Summary', Icons.dashboard_outlined),
           const SizedBox(height: 10),
           Text(
             applicant.summary.isNotEmpty
@@ -569,7 +569,7 @@ class _MainContent extends StatelessWidget {
             style: _T.body(),
           ),
           const SizedBox(height: 26),
-          _SecHead('Education', Icons.school_outlined),
+          const _SecHead('Education', Icons.school_outlined),
           const SizedBox(height: 10),
           applicant.educations.isEmpty
               ? const _EmptyState('No education listed')
@@ -578,7 +578,7 @@ class _MainContent extends StatelessWidget {
         ],
 
         // Professional Experience
-        _SecHead('Professional Experience', Icons.work_history_outlined),
+        const _SecHead('Professional Experience', Icons.work_history_outlined),
         SizedBox(height: ld.isMobile ? 10 : 14),
         applicant.experiences.isEmpty
             ? const _EmptyState('No experience listed')
@@ -586,7 +586,7 @@ class _MainContent extends StatelessWidget {
         gap,
 
         // Experience Documents
-        _SecHead('Experience Documents', Icons.folder_outlined),
+        const _SecHead('Experience Documents', Icons.folder_outlined),
         const SizedBox(height: 10),
         applicant.experienceDocuments.isEmpty
             ? const _EmptyState('No experience documents provided')
@@ -594,7 +594,7 @@ class _MainContent extends StatelessWidget {
         gap,
 
         // Certifications
-        _SecHead('Certifications & Licenses', Icons.verified_user_outlined),
+        const _SecHead('Certifications & Licenses', Icons.verified_user_outlined),
         const SizedBox(height: 10),
         applicant.certifications.isEmpty
             ? const _EmptyState('No certifications provided')
@@ -602,7 +602,7 @@ class _MainContent extends StatelessWidget {
         gap,
 
         // Certification Documents
-        _SecHead('Certification Documents', Icons.attach_file_rounded),
+        const _SecHead('Certification Documents', Icons.attach_file_rounded),
         const SizedBox(height: 10),
         applicant.certificationDocuments.isEmpty
             ? const _EmptyState('No certification documents provided')
@@ -610,7 +610,7 @@ class _MainContent extends StatelessWidget {
         gap,
 
         // Publications
-        _SecHead('Publications', Icons.article_outlined),
+        const _SecHead('Publications', Icons.article_outlined),
         const SizedBox(height: 10),
         applicant.publications.isEmpty
             ? const _EmptyState('No publications provided')
@@ -618,7 +618,7 @@ class _MainContent extends StatelessWidget {
         gap,
 
         // Awards
-        _SecHead('Awards', Icons.emoji_events_outlined),
+        const _SecHead('Awards', Icons.emoji_events_outlined),
         const SizedBox(height: 10),
         applicant.awards.isEmpty
             ? const _EmptyState('No awards provided')
@@ -832,7 +832,7 @@ class _EduTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _IconBox(Icons.school_outlined, _T.cSec),
+          const _IconBox(Icons.school_outlined, _T.cSec),
           SizedBox(width: ld.isMobile ? 10 : 12),
           Expanded(
             child: Column(
@@ -906,7 +906,7 @@ class _CertCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _IconBox(Icons.verified_outlined, _T.cAcc, small: true),
+          const _IconBox(Icons.verified_outlined, _T.cAcc, small: true),
           SizedBox(width: ld.isMobile ? 7 : 9),
           Expanded(
             child: Column(

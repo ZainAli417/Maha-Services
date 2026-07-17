@@ -551,7 +551,7 @@ class _StepMethod extends StatelessWidget {
         SizedBox(height: vGap),
         Container(
           padding: EdgeInsets.all(isMob ? 12 : 16),
-          decoration: BoxDecoration(color: _T.indigo10, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: _T.indigo10, shape: BoxShape.circle),
           child: Icon(
             Icons.account_circle_outlined,
             size: isMob ? 36 : 48,
@@ -564,7 +564,7 @@ class _StepMethod extends StatelessWidget {
           style: _T.head(fs: isMob ? 20 : 28),
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         Text(
           'Choose how to build your profile',
           style: _T.label(fs: isMob ? 12 : 14),
@@ -766,7 +766,7 @@ class _StepPersonal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(
+          const _SectionTitle(
             icon: Icons.person_outline,
             title: 'Personal Info',
             subtitle: 'Tell us about yourself',
@@ -928,7 +928,7 @@ class _StepPersonal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CardHeader(
+                const _CardHeader(
                   icon: Icons.description_outlined,
                   title: 'Professional Summary',
                 ),
@@ -953,7 +953,7 @@ class _StepPersonal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _CardHeader(
@@ -1041,7 +1041,7 @@ class _StepPersonal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CardHeader(
+                const _CardHeader(
                   icon: Icons.flag_outlined,
                   title: 'Career Objectives',
                 ),
@@ -1114,7 +1114,7 @@ class _StepEducation extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(
+        const _SectionTitle(
           icon: Icons.school_outlined,
           title: 'Education',
           subtitle: 'Add your qualifications',
@@ -1271,7 +1271,7 @@ class _StepEducation extends StatelessWidget {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            inputFormatters: [DecimalTextInputFormatter()],
+                            inputFormatters: const [DecimalTextInputFormatter()],
                             style: _T.body(fs: 14),
                             decoration: _inputDec(
                               hint: 'e.g. 3.5 or 85%',
@@ -1349,7 +1349,7 @@ class _StepReview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(
+        const _SectionTitle(
           icon: Icons.preview_outlined,
           title: 'Review Profile',
           subtitle: 'Verify before submitting',

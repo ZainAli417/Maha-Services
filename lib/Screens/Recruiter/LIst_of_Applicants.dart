@@ -267,9 +267,9 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   // ─── Build ──────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Scaffold(
-      backgroundColor: Color(0xFFF4F9FB),
+      backgroundColor: const Color(0xFFF4F9FB),
       body: Consumer<ApplicantsProvider>(
         builder: (ctx, provider, _) {
           if (provider.isLoading) {
@@ -550,7 +550,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       _ScoreRow(label: 'Education', score: r.educationMatch),
                       if (r.strengths.isNotEmpty) ...[
                         const SizedBox(height: 20),
-                        _SectionHead(
+                        const _SectionHead(
                           'Key Strengths',
                           Icons.check_circle,
                           _cGreen,
@@ -560,7 +560,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                       ],
                       if (r.weaknesses.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        _SectionHead(
+                        const _SectionHead(
                           'Areas for Improvement',
                           Icons.warning_amber_rounded,
                           _cAmber,

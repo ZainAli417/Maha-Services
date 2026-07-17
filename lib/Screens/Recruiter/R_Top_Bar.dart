@@ -29,7 +29,7 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
 
         final sidebarWidth = widget.isDrawer
             // Mobile: Wider drawer for better spacing
-            ? (MediaQuery.of(context).size.width * 0.42).clamp(220.0, 280.0)
+            ? (MediaQuery.sizeOf(context).width * 0.42).clamp(220.0, 280.0)
             : 280.0; // Desktop: increased width for a more comfortable sidebar
         return Container(
           width: sidebarWidth,
@@ -245,9 +245,9 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
               ),
             ),
@@ -282,10 +282,10 @@ class _RecruiterSidebarState extends State<RecruiterSidebar> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
+                    const Icon(
                       Icons.verified,
                       size: 14,
-                      color: const Color(0xFF10B981),
+                      color: Color(0xFF10B981),
                     ),
                   ],
                 ),

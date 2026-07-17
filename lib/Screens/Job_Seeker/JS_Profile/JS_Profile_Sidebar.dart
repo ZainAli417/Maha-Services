@@ -76,7 +76,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget build(BuildContext context) {
     final totalScore = computeTotalScore();
     final scoreColor = _getScoreColor(totalScore);
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Container(
       color: const Color(0xFFFAFAFA),
@@ -126,7 +126,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Widget _buildCompletionCard(int totalScore, Color scoreColor) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     final provider = widget.provider;
     final avatarSize = isMobile ? 46.0 : 56.0;
     return Container(
@@ -273,7 +273,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Widget _buildGridStats() {
     final provider = widget.provider;
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     final stats = [
       {
@@ -390,7 +390,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Widget _buildSectionBreakdown() {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
       decoration: BoxDecoration(
@@ -465,7 +465,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget _buildProgressRow(String label, int got, int max, Color color) {
     final percent = max == 0 ? 0.0 : (got / max);
     final isComplete = got == max && max > 0;
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Padding(
       padding: EdgeInsets.only(bottom: isMobile ? 10 : 16),
@@ -539,7 +539,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   Widget _buildSkillsOverview() {
     final provider = widget.provider;
     if (provider.skillsList.isEmpty) return const SizedBox();
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
@@ -623,7 +623,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
 
   Widget _buildPersonalDetailsCard() {
     final provider = widget.provider;
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     return Container(
       padding: EdgeInsets.all(isMobile ? 14 : 20),
@@ -753,7 +753,7 @@ class _JSProfileSidebarState extends State<JSProfileSidebar> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Padding(
       padding: EdgeInsets.only(bottom: isMobile ? 10 : 14),
       child: Row(

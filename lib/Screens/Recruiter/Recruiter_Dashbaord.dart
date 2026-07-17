@@ -57,16 +57,16 @@ class _Dashboard_RecruiterState extends State<Dashboard_Recruiter>
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _slate50,
       drawer: isMobile
-          ? Drawer(child: RecruiterSidebar(activeIndex: 0, isDrawer: true))
+          ? const Drawer(child: RecruiterSidebar(activeIndex: 0, isDrawer: true))
           : null,
       body: Row(
         children: [
-          if (!isMobile) RecruiterSidebar(activeIndex: 0),
+          if (!isMobile) const RecruiterSidebar(activeIndex: 0),
           Expanded(
             child: FadeTransition(
               opacity: _fadeCtrl,
@@ -308,7 +308,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = MediaQuery.sizeOf(context).width < 768;
 
     Widget scrollView = FutureBuilder<Map<String, dynamic>>(
       future: _dataFuture,
@@ -636,16 +636,16 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     return Padding(
       padding: EdgeInsets.all(isMobile ? 14 : 32),
       child: isMobile
-          ? Column(
+          ? const Column(
               children: [
                 Row(
                   children: [
                     Expanded(child: _ShimmerBox(height: 78, radius: 16)),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(child: _ShimmerBox(height: 78, radius: 16)),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 _ShimmerBox(height: 78, radius: 16),
               ],
             )
@@ -655,7 +655,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                 (i) => Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(right: i < 5 ? 14 : 0),
-                    child: _ShimmerBox(height: 110, radius: 18),
+                    child: const _ShimmerBox(height: 110, radius: 18),
                   ),
                 ),
               ),
@@ -670,7 +670,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
         children: [
           _ShimmerBox(height: isMobile ? 260 : 300, radius: 18),
           const SizedBox(height: 14),
-          _ShimmerBox(height: 240, radius: 18),
+          const _ShimmerBox(height: 240, radius: 18),
         ],
       ),
     );
@@ -1086,7 +1086,7 @@ class _TrendChart extends StatelessWidget {
         drawVerticalLine: false,
         horizontalInterval: maxY / 4,
         getDrawingHorizontalLine: (_) =>
-            FlLine(color: _slate200, strokeWidth: 1, dashArray: [4, 4]),
+            const FlLine(color: _slate200, strokeWidth: 1, dashArray: [4, 4]),
       ),
       borderData: FlBorderData(show: false),
       titlesData: FlTitlesData(

@@ -52,8 +52,8 @@ class JobDetailModal_recruiter extends StatelessWidget {
   // ─── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    final screenH = MediaQuery.of(context).size.height;
+    final screenW = MediaQuery.sizeOf(context).width;
+    final screenH = MediaQuery.sizeOf(context).height;
     final isMobile = screenW < 600;
 
     return StreamBuilder<Map<String, dynamic>?>(
@@ -274,7 +274,7 @@ class JobDetailModal_recruiter extends StatelessWidget {
                   horizontal: isMobile ? 14 : 20,
                   vertical: isMobile ? 10 : 16,
                 ),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(bottom: BorderSide(color: _borderColor)),
                 ),

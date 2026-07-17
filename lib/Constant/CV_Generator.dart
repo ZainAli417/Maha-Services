@@ -137,9 +137,7 @@ class _CVGeneratorButtonState extends State<CVGeneratorButton> {
 }
 
 class ProfessionalCVGenerator {
-  static const PdfColor primaryColor = PdfColor.fromInt(0xFF6366F1);
   static const PdfColor accentColor = PdfColor.fromInt(0xFF868AF2);
-  static const PdfColor textColor = PdfColor.fromInt(0xFF1F2937);
   static const PdfColor lightGray = PdfColor.fromInt(0xFFF3F4F6);
   static const PdfColor darkGray = PdfColor.fromInt(0xFF6B7280);
   static const PdfColor primaryText = PdfColor.fromInt(0xFF1a1a1a);
@@ -148,20 +146,6 @@ class ProfessionalCVGenerator {
   static const PdfColor lightAccent = PdfColor.fromInt(0xFFe0e7ff);
   static const PdfColor borderColor = PdfColor.fromInt(0xFFd1d5db);
   static const PdfColor sectionBg = PdfColor.fromInt(0xFFf8fafc);
-
-  static String _maskContact(String contact) {
-    if (contact.isEmpty || contact.length < 4) return '***-***-****';
-    final len = contact.length;
-    if (len <= 6) return '***-***';
-    return '${contact.substring(0, 3)}${'*' * (len - 6)}${contact.substring(len - 3)}';
-  }
-
-  static String _maskEmail(String email) {
-    if (email.isEmpty || !email.contains('@')) return '***@***.***';
-    final parts = email.split('@');
-    if (parts[0].length <= 2) return '***@${parts[1]}';
-    return '${parts[0].substring(0, 2)}${'*' * (parts[0].length - 2)}@${parts[1]}';
-  }
 
   static Future<Uint8List> generateCVBytes({
     required String name,
@@ -959,7 +943,7 @@ class ProfessionalCVGenerator {
     pw.Font reg,
   ) {
     return pw.Container(
-      padding: pw.EdgeInsets.all(14),
+      padding: const pw.EdgeInsets.all(14),
       margin: const pw.EdgeInsets.only(top: 12),
       decoration: pw.BoxDecoration(
         color: lightAccent,

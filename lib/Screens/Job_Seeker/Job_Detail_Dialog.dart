@@ -95,7 +95,7 @@ class JobDetailModal extends StatelessWidget {
   // ── Build ──────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
+    final screenW = MediaQuery.sizeOf(context).width;
     final isMobile = screenW < 700;
 
     return StreamBuilder<Map<String, dynamic>?>(
@@ -125,12 +125,12 @@ class JobDetailModal extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
+          const SizedBox(
             width: 40,
             height: 40,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: const AlwaysStoppedAnimation(_indigo),
+              valueColor: AlwaysStoppedAnimation(_indigo),
               backgroundColor: _slate200,
             ),
           ),
@@ -173,8 +173,8 @@ class JobDetailModal extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF2F2),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF2F2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -378,7 +378,7 @@ class JobDetailModal extends StatelessWidget {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.business_rounded,
                                 size: 14,
                                 color: _slate400,
@@ -909,7 +909,7 @@ class JobDetailModal extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.laptop_mac_rounded, size: 13, color: _amber),
+          const Icon(Icons.laptop_mac_rounded, size: 13, color: _amber),
           const SizedBox(width: 5),
           Text(
             label,

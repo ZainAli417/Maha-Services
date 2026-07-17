@@ -588,11 +588,11 @@ class _CvUploadSectionState extends State<CvUploadSection>
               ),
               SizedBox(height: isMob ? 14 : 18),
               // Supported-format chips
-              Wrap(
+              const Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 8,
                 runSpacing: 8,
-                children: const [
+                children: [
                   _FormatChip(label: 'PDF'),
                   _FormatChip(label: 'DOCX'),
                   _FormatChip(label: 'TXT'),
