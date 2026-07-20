@@ -4,8 +4,26 @@
   functions = "netlify/functions"
   publish = "build/web"
 
+# ── Asset Rewrite Rules ──
+# Ensure assets are served directly without SPA redirect
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/icons/*"
+  to = "/icons/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/canvaskit/*"
+  to = "/canvaskit/:splat"
+  status = 200
+
 # ── SPA Routing ──
 # All deep-links must resolve to index.html so GoRouter handles them client-side
+# This rule should be last to catch routes that don't match files
 [[redirects]]
   from = "/*"
   to = "/index.html"
