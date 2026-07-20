@@ -1140,6 +1140,14 @@ class _Job_CardsState extends State<Job_Cards>
   late AnimationController _scaleCtrl;
   late Animation<double> _scaleAnim;
 
+  // Cached once — jobId is fixed for this card's lifetime. Building the
+  // snapshot stream inside build() re-subscribed a fresh Firestore doc
+  // listener on every hover/press setState.
+  late final Stream<DocumentSnapshot> _jobStream = FirebaseFirestore.instance
+      .collection('Posted_jobs_public')
+      .doc(widget.jobId)
+      .snapshots();
+
   Map<String, dynamic>? _cachedJob;
   String? _cachedKey;
 
@@ -1357,10 +1365,7 @@ class _Job_CardsState extends State<Job_Cards>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('Posted_jobs_public')
-          .doc(widget.jobId)
-          .snapshots(),
+      stream: _jobStream,
       builder: (ctx, snap) {
         if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
           return _loadingCard();

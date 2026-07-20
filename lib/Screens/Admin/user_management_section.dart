@@ -78,6 +78,14 @@ class _UserManagementSectionState extends State<UserManagementSection>
   // silent drop. Client-side search/filter operate within this window.
   static const int _fetchCap = 300;
 
+  // Cached once — the query is constant (_fetchCap is static const), so
+  // building it inside build() re-subscribed a fresh Firestore listener on
+  // every setState (paging/filter/search), causing a re-read + flicker.
+  final Stream<QuerySnapshot> _usersStream = FirebaseFirestore.instance
+      .collection('users')
+      .limit(_fetchCap)
+      .snapshots();
+
   // Bulk selection.
   final Set<String> _selected = {};
   bool _bulkBusy = false;
@@ -449,10 +457,7 @@ class _UserManagementSectionState extends State<UserManagementSection>
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .limit(_fetchCap)
-                .snapshots(),
+            stream: _usersStream,
             builder: (context, snapshot) {
               if (!mounted) return const SizedBox.shrink();
 

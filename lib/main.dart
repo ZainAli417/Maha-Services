@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,7 +41,7 @@ void main() async {
 
   // If targeting web, make pretty URLs
   if (kIsWeb) {
-    setUrlStrategy(const PathUrlStrategy());
+    setUrlStrategy(PathUrlStrategy());
   }
 
   // ── Pre-load Google Fonts BEFORE runApp to avoid lazy_path.dart crash ──
@@ -55,12 +56,29 @@ void main() async {
 
   if (kIsWeb) {
     FlutterError.onError = (FlutterErrorDetails details) {
-      debugPrint('═══ Flutter Error ═══');
-      debugPrint('${details.exception}');
+      // TEMP DEBUG: print the FULL stack to locate the recursion.
+      // ignore: avoid_print
+      print('═══ Flutter Error ═══ ${details.exception}');
       if (details.stack != null) {
-        debugPrint(details.stack.toString().split('\n').take(8).join('\n'));
+        for (final line
+            in details.stack.toString().split('\n').take(60)) {
+          // ignore: avoid_print
+          print('FE| $line');
+        }
       }
-      debugPrint('═══════════════════');
+      // ignore: avoid_print
+      print('═══════════════════');
+    };
+    ui.PlatformDispatcher.instance.onError = (error, stack) {
+      // ignore: avoid_print
+      print('═══ Uncaught ($error) ═══');
+      for (final line in stack.toString().split('\n').take(60)) {
+        // ignore: avoid_print
+        print('PD| $line');
+      }
+      // ignore: avoid_print
+      print('═══════════════════');
+      return true;
     };
   }
 
