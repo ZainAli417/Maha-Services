@@ -356,6 +356,7 @@ class SignupProvider extends ChangeNotifier {
         'role': role,
         'isNew': 'no',
         'account_status': 'active',
+        'is_verified': false,
         'job_alerts_enabled': jobAlertsEnabled,
         'created_at': FieldValue.serverTimestamp(),
       });

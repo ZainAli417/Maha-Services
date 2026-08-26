@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../Web_routes.dart' show authProvider;
 import '../../core/rbac/user_role.dart';
 
 /// Optimized Admin Authentication Provider with improved state management,
@@ -234,6 +235,16 @@ class AdminAuthProvider extends ChangeNotifier {
     _errorMessage = null;
     _notifySafe();
 
+    // Hold the router until this sign-in has a verdict.
+    //
+    // signInWithEmailAndPassword() below fires authStateChanges the moment it
+    // resolves, and AuthNotifier will route on it — but the session is not yet
+    // approved: _checkIsAdmin() still has to confirm the account actually has
+    // administrator privileges. That read needs an authenticated user, so it
+    // cannot run before sign-in; without this gate a non-admin credential
+    // briefly lands on a real dashboard before signOut() bounces it back.
+    authProvider.beginLoginGate();
+
     try {
       // Attempt sign-in with timeout
       final signInFuture = _auth.signInWithEmailAndPassword(
@@ -259,10 +270,12 @@ class AdminAuthProvider extends ChangeNotifier {
       final isAdmin = await _checkIsAdmin(uid);
 
       if (!isAdmin) {
-        // Sign out immediately if not admin
-        await _auth.signOut();
         _errorMessage =
             'Access denied. This account does not have administrator privileges.';
+        // Clears AuthNotifier's state synchronously as well as signing out, so
+        // the redirect that endLoginGate() triggers below cannot act on the
+        // session that was just revoked.
+        authProvider.rejectSession(_errorMessage!);
         return false;
       }
 
@@ -303,6 +316,9 @@ class AdminAuthProvider extends ChangeNotifier {
       // Always reset loading state
       _isLoading = false;
       _notifySafe();
+      // Release the router on every exit path, including the early `return
+      // false`s above — otherwise the app freezes on the current route.
+      authProvider.endLoginGate();
     }
   }
 

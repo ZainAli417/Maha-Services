@@ -1,0 +1,142 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Flutter web (CanvasKit) on Apache — mahaservices.org
+#
+# This file must sit in the SAME directory as index.html and main.dart.js.
+# It lives in web/ so `flutter build web` copies it into build/web/ on every
+# build; upload the *contents* of build/web/ into public_html/, not the folder
+# itself. If public_html/index.html does not exist, nothing below can work.
+# ═══════════════════════════════════════════════════════════════════════════
+
+DirectoryIndex index.html
+
+# Content negotiation has to be off. With MultiViews on, a request for /login
+# makes Apache hunt for login.* and answer (or 404) before mod_rewrite runs.
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
+
+
+# ── SPA deep links — this is the fix for your 404 ──────────────────────────
+#
+# lib/main.dart uses PathUrlStrategy(), so /login, /recruiter-dashboard and
+# /admin_dashboard are routes GoRouter resolves in the browser. No such file
+# exists on disk, so Apache must hand back index.html and let the app read the
+# path. Without this, every deep link, reload and bookmark returns
+# "The requested URL was not found on this server."
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Anything that genuinely exists on disk is served as-is.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 2. A *missing* asset must stay a 404. Without this rule a typo'd script or
+  #    image path would return a page of HTML with a 200, which surfaces later
+  #    as a baffling "Uncaught SyntaxError: Unexpected token '<'".
+  RewriteRule \.(js|mjs|css|wasm|json|map|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf|bin|symbols|txt|xml)$ - [L]
+
+  # 3. Everything else is a client-side route.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# If your host has mod_rewrite disabled, delete the block above and use this
+# single directive instead (Apache 2.2.16+). It is simpler but cruder: missing
+# assets also come back as index.html.
+#   FallbackResource /index.html
+
+
+# ── MIME types ─────────────────────────────────────────────────────────────
+#
+# canvaskit.wasm MUST be served as application/wasm or the renderer fails to
+# start: WebAssembly.instantiateStreaming() rejects any other Content-Type and
+# you get a blank page with a console error rather than a 404.
+<IfModule mod_mime.c>
+  AddType application/wasm             wasm
+  AddType text/javascript              js mjs
+  AddType application/json             json map
+  AddType application/manifest+json    webmanifest
+  AddType font/woff2                   woff2
+  AddType font/woff                    woff
+  AddType font/ttf                     ttf
+  AddType font/otf                     otf
+  AddType image/svg+xml                svg
+  AddType image/webp                   webp
+</IfModule>
+
+
+# ── Compression ────────────────────────────────────────────────────────────
+#
+# main.dart.js is several MB uncompressed and is the single biggest cost of
+# first load. gzip typically takes it down by ~75%.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE text/javascript application/javascript
+  AddOutputFilterByType DEFLATE application/json application/manifest+json
+  AddOutputFilterByType DEFLATE application/wasm
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE font/ttf font/otf
+  # woff2/woff and png/jpg/webp are already compressed — recompressing wastes CPU.
+</IfModule>
+
+
+# ── Caching ────────────────────────────────────────────────────────────────
+#
+# IMPORTANT: Flutter does NOT content-hash its output. main.dart.js,
+# flutter_bootstrap.js, index.html and everything under assets/ keep the same
+# filename across builds. So a long immutable max-age pins returning visitors
+# to a stale app with no way to recover but a hard refresh.
+#
+# (Your netlify.toml currently sets `max-age=31536000, immutable` for /*.js,
+#  which does exactly that to main.dart.js. Worth fixing there too.)
+#
+# "no-cache" below does not mean "don't cache" — it means "revalidate before
+# reusing". The browser still keeps the file and Apache still answers 304 Not
+# Modified, so repeat loads stay fast while deploys take effect immediately.
+<IfModule mod_headers.c>
+  # App shell and code — revalidate every time.
+  <FilesMatch "\.(html|js|mjs|json|wasm|map|symbols)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # The service worker especially: cache it and it will keep resurrecting the
+  # old build from its own cache.
+  <FilesMatch "^(flutter_service_worker\.js|version\.json)$">
+    Header set Cache-Control "no-store, must-revalidate"
+  </FilesMatch>
+
+  # Fonts and images — safe to hold for a week; swap the filename to bust.
+  <FilesMatch "\.(png|jpe?g|gif|svg|webp|ico|woff2?|ttf|otf)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+
+  # ── Security headers ──
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # ── COOP / COEP — intentionally NOT enabled ──
+  #
+  # Your netlify.toml sets Cross-Origin-Opener-Policy: same-origin and
+  # Cross-Origin-Embedder-Policy: credentialless. These are only needed for
+  # SharedArrayBuffer with `flutter build web --wasm`; this is a CanvasKit JS
+  # build, so they buy nothing here — and COOP: same-origin severs the
+  # window handle Firebase's signInWithPopup() needs, so Google/social sign-in
+  # would hang on a popup that never reports back. Email/password is unaffected.
+  # Only uncomment if you move to --wasm, and re-test sign-in afterwards.
+  #
+  #   Header always set Cross-Origin-Opener-Policy "same-origin"
+  #   Header always set Cross-Origin-Embedder-Policy "credentialless"
+</IfModule>
+
+
+# ── Optional: force HTTPS ──────────────────────────────────────────────────
+# You are already on 443. Uncomment to redirect any plain-HTTP hit. Skip this
+# if your host terminates TLS at a proxy — it can cause a redirect loop, in
+# which case match on %{HTTP:X-Forwarded-Proto} instead.
+#
+# <IfModule mod_rewrite.c>
+#   RewriteCond %{HTTPS} !=on
+#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>

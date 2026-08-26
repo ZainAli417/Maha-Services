@@ -696,10 +696,9 @@ packages:
   lottie:
     dependency: "direct main"
     description:
-      name: lottie
-      sha256: "8b6359a7422167014aa73ce763fa133fb832065dcc0ac4d1dec1f603a5cef7d0"
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/lottie"
+      relative: true
+    source: path
     version: "3.3.3"
   markdown:
     dependency: transitive

@@ -46,6 +46,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'Web_routes.dart' show authProvider;
 import 'core/rbac/user_role.dart';
 
 class LoginProvider with ChangeNotifier {
@@ -124,6 +125,20 @@ class LoginProvider with ChangeNotifier {
     _setLoading(true);
     clearError();
 
+    // ── FIX 6: hold the router until this login has a verdict ────────────────
+    //
+    // signInWithEmailAndPassword() below fires authStateChanges the instant it
+    // resolves. AuthNotifier picks that up, loads the role and notifies the
+    // router — which happily redirects a recruiter to /recruiter-dashboard
+    // while the checks in Step 2 are still in flight. When those checks then
+    // fail, signOut() bounces the user back to /login. On a fast link the
+    // checks win and nothing is visible; on a slow one the dashboard flashes.
+    //
+    // The checks cannot run *before* sign-in — reading account_status and
+    // is_verified out of Firestore requires an authenticated user — so instead
+    // the router is told to stand still until the verdict is in.
+    authProvider.beginLoginGate();
+
     try {
       // ── Step 1: Firebase Auth sign-in ──────────────────────────────────────
       final cred = await _auth.signInWithEmailAndPassword(
@@ -157,21 +172,48 @@ class LoginProvider with ChangeNotifier {
       // FIX 5: both calls use the same uid — run them concurrently to halve
       // network latency on slow connections.
       final isJobSeeker = _normalizeRole(expectedRole) == 'Job Seeker';
+      final isRecruiter = _normalizeRole(expectedRole) == 'recruiter';
 
-      final results = await Future.wait([
-        _verifyUserRole(user.uid, expectedRole),
-        if (isJobSeeker) _isNewUser(user.uid),
-        _isAccountActive(user.uid),
-      ]);
+      // The recruiter verification read used to run *after* this batch, adding
+      // a whole extra round-trip to every recruiter login and widening the
+      // window in which the router could reach the dashboard. It only needs the
+      // uid, so it belongs in the same batch as the others.
+      final roleFuture = _verifyUserRole(user.uid, expectedRole);
+      final activeFuture = _isAccountActive(user.uid);
+      final newFuture = isJobSeeker
+          ? _isNewUser(user.uid)
+          : Future.value(false);
+      final verifiedFuture = isRecruiter
+          ? _isRecruiterVerified(user.uid)
+          : Future.value(true);
 
-      final roleVerified = results[0];
-      final isNew = isJobSeeker ? results[1] : false;
-      final isAccountActive = results.last;
+      await Future.wait([roleFuture, activeFuture, newFuture, verifiedFuture]);
+
+      final roleVerified = await roleFuture;
+      final isAccountActive = await activeFuture;
+      final isNew = await newFuture;
+      final isRecruiterVerified = await verifiedFuture;
 
       // ── Step 2.1: Check Account Status ────────────────────────────────────
       if (!isAccountActive) {
-        _setError('Your account is suspended. Contact Customer support.');
-        _auth.signOut().ignore();
+        const msg = 'Your account is suspended. Contact Customer support.';
+        _setError(msg);
+        authProvider.rejectSession(msg);
+        return null;
+      }
+
+      // ── Step 2.2: Check Recruiter Verification Status ─────────────────────
+      //
+      // Recruiters must be admin-verified before they can log in.
+      // The is_verified flag is set to false on signup and only changed to
+      // true from the admin verification portal.
+      if (isRecruiter && !isRecruiterVerified) {
+        const msg =
+            'Your verification process has been started. '
+            'Once verified by our admin team, you will be able to '
+            'log in and use the system.';
+        _setError(msg);
+        authProvider.rejectSession(msg);
         return null;
       }
 
@@ -179,12 +221,12 @@ class LoginProvider with ChangeNotifier {
       //
       // Previously signOut() was called on verification failure, which fired
       // authStateChanges and rebuilt the UI mid-request — causing the "user
-      // not found" error on a rapid retry. We now sign out after setting the
-      // error, and unawaited, so the current call stack completes cleanly.
+      // not found" error on a rapid retry. rejectSession() sets the error and
+      // clears the session without blocking this call stack.
       if (!roleVerified) {
-        _setError('This account is not registered as "$expectedRole".');
-        // Sign out without blocking — fire and forget
-        _auth.signOut().ignore();
+        final msg = 'This account is not registered as "$expectedRole".';
+        _setError(msg);
+        authProvider.rejectSession(msg);
         return null;
       }
 
@@ -212,6 +254,9 @@ class LoginProvider with ChangeNotifier {
       return null;
     } finally {
       _setLoading(false);
+      // Release the router. Must run on every exit path, including the early
+      // `return null`s above — otherwise the app freezes on the current route.
+      authProvider.endLoginGate();
     }
   }
 
@@ -336,6 +381,32 @@ class LoginProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('⚠️ _isAccountActive error (assuming active): $e');
       return true;
+    }
+  }
+
+  // ── Recruiter verification check ──────────────────────────────────────────
+  /// Returns true ONLY if the recruiter has been explicitly verified by admin.
+  /// Missing field or false → unverified → blocked from login.
+  Future<bool> _isRecruiterVerified(String uid) async {
+    try {
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      if (!userDoc.exists) return false; // No record — block
+
+      final data = userDoc.data() as Map<String, dynamic>;
+      // No flag or flag is false → treat as unverified
+      final isVerified = data['is_verified'];
+      if (isVerified == true) return true;
+      if (isVerified is String && isVerified.toLowerCase() == 'true') {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('⚠️ _isRecruiterVerified error (blocking login): $e');
+      return false; // Block on error — safety first
     }
   }
 

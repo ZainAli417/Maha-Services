@@ -21,6 +21,7 @@ import 'core/widgets/custom_snackbars.dart';
 import 'Constant/Header_Nav.dart';
 import 'Constant/Forget Password.dart';
 import 'login_provider.dart';
+import 'Web_routes.dart' show authProvider;
 import 'Constant/brand.dart';
 
 class JobSeekerLoginScreen extends StatefulWidget {
@@ -49,6 +50,17 @@ class _JobSeekerLoginScreenState extends State<JobSeekerLoginScreen>
   @override
   void initState() {
     super.initState();
+
+    // Explain a sign-out this screen did not initiate — an unverified recruiter
+    // (or suspended account) whose persisted session AuthNotifier rejected on
+    // reload lands here with no other clue as to why.
+    final reason = authProvider.blockedReason;
+    if (reason != null) {
+      authProvider.blockedReason = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _snack(reason, error: true);
+      });
+    }
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),

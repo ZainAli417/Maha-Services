@@ -691,6 +691,37 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   const SizedBox(width: 8),
                   Flexible(child: _buildLevelBadge(userLevel)),
                   const Spacer(),
+                  // Verify button for recruiters
+                  if (role.toLowerCase().trim() == 'recruiter') ...[
+                    _buildActionButton(
+                      data['is_verified'] == true
+                          ? Icons.remove_circle_outline_rounded
+                          : Icons.verified_rounded,
+                      data['is_verified'] == true ? 'Revoke' : 'Verify',
+                      data['is_verified'] == true ? _C.warning : _C.success,
+                      () async {
+                        final ok = await provider.verifyRecruiter(
+                          uid: docId,
+                          verified: !(data['is_verified'] == true),
+                        );
+                        if (!mounted) return;
+                        if (ok) {
+                          BrandSnack.success(
+                            context,
+                            data['is_verified'] == true
+                                ? 'Verification revoked'
+                                : 'Recruiter verified ✓',
+                          );
+                        } else {
+                          BrandSnack.error(
+                            context,
+                            'Verification update failed',
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                  ],
                   // Compact actions
                   _buildActionButton(
                     Icons.edit_note_rounded,
@@ -890,7 +921,22 @@ class _UserManagementSectionState extends State<UserManagementSection>
                   Expanded(flex: 3, child: _buildUserInfo(displayName, email)),
                   Expanded(flex: 2, child: _buildRoleBadge(role)),
                   Expanded(flex: 2, child: _buildLevelBadge(userLevel)),
-                  Expanded(flex: 2, child: _buildStatusBadge(status)),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildStatusBadge(status),
+                        if (role.toLowerCase().trim() == 'recruiter') ...[
+                          const SizedBox(height: 4),
+                          _buildVerificationIndicator(
+                            data['is_verified'] == true,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   Expanded(
                     flex: 2,
                     child: _buildActions(
@@ -1150,6 +1196,29 @@ class _UserManagementSectionState extends State<UserManagementSection>
     );
   }
 
+  Widget _buildVerificationIndicator(bool isVerified) {
+    final color = isVerified ? _C.success : _C.warning;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isVerified ? Icons.verified_rounded : Icons.hourglass_top_rounded,
+          size: 11,
+          color: color,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          isVerified ? 'Verified' : 'Unverified',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
   // ── C6: capped notice + bulk-action bar ───────────────────────────────────
 
   Widget _buildCappedNotice() {
@@ -1361,6 +1430,10 @@ class _UserManagementSectionState extends State<UserManagementSection>
     String? name,
     bool isDeleted,
   ) {
+    final role = (data['role'] ?? '').toString().toLowerCase().trim();
+    final isRecruiter = role == 'recruiter';
+    final isVerified = data['is_verified'] == true;
+
     return PopupMenuButton<String>(
       tooltip: 'More actions',
       icon: Container(
@@ -1382,6 +1455,25 @@ class _UserManagementSectionState extends State<UserManagementSection>
       ),
       onSelected: (value) async {
         switch (value) {
+          case 'verify':
+            final ok = await provider.verifyRecruiter(
+              uid: docId,
+              verified: !isVerified,
+            );
+            if (!mounted) return;
+            if (ok) {
+              BrandSnack.success(
+                context,
+                isVerified
+                    ? 'Recruiter verification revoked'
+                    : 'Recruiter verified successfully ✓',
+              );
+            } else {
+              BrandSnack.error(
+                context,
+                'Failed to update verification status',
+              );
+            }
           case 'convert':
             _showConvertRoleDialog(context, provider, docId, data, name);
           case 'toggle':
@@ -1395,6 +1487,15 @@ class _UserManagementSectionState extends State<UserManagementSection>
         }
       },
       itemBuilder: (_) => [
+        if (isRecruiter)
+          _menuItem(
+            'verify',
+            isVerified
+                ? Icons.remove_circle_outline_rounded
+                : Icons.verified_rounded,
+            isVerified ? 'Revoke verification' : 'Verify recruiter',
+            isVerified ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+          ),
         _menuItem('convert', Icons.swap_horiz_rounded, 'Convert role',
             const Color(0xFF2178B5)),
         if (!isDeleted)

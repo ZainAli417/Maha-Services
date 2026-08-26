@@ -1216,6 +1216,38 @@ class AdminProvider extends ChangeNotifier {
   }
 
   // =========================================================================
+  // RECRUITER VERIFICATION
+  // =========================================================================
+
+  /// Toggles the `is_verified` flag for a recruiter in the `users` collection.
+  /// Called from the admin User Management panel to approve/revoke recruiter
+  /// access. Returns true on success.
+  Future<bool> verifyRecruiter({
+    required String uid,
+    required bool verified,
+  }) async {
+    if (_disposed) return false;
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'is_verified': verified,
+        'verified_at': verified ? FieldValue.serverTimestamp() : null,
+        'verified_by': verified ? 'admin_dashboard' : null,
+      });
+      _recruiterCache.remove(uid);
+      _safeNotify();
+      debugPrint(
+        verified
+            ? '✅ Recruiter $uid verified'
+            : '⛔ Recruiter $uid verification revoked',
+      );
+      return true;
+    } catch (e) {
+      debugPrint('❌ verifyRecruiter error: $e');
+      return false;
+    }
+  }
+
+  // =========================================================================
   // UPDATE REQUEST STATUS
   // =========================================================================
 

@@ -33,6 +33,15 @@ import 'Screens/Job_Seeker/js_settings_screen.dart';
 class RoleService {
   static final _firestore = FirebaseFirestore.instance;
 
+  /// Parses the `users/{uid}.is_verified` flag, which historically has been
+  /// written as both a bool and the string "true". Anything else — including a
+  /// missing flag — counts as unverified.
+  static bool parseVerified(dynamic raw) {
+    if (raw is bool) return raw;
+    if (raw is String) return raw.toLowerCase().trim() == 'true';
+    return false;
+  }
+
   static Future<Map<String, dynamic>> fetchUserData(String uid) async {
     try {
       // OPTIMIZATION: Run all 4 collection lookups in parallel instead of
@@ -52,6 +61,9 @@ class RoleService {
       bool isNew = false;
       String? rawRole; // exact users.role string, for precise UserRole parsing
       String? status;
+      // Admin verification flag. Only meaningful for recruiters; everyone else
+      // is implicitly verified. Absent flag ⇒ unverified (fail closed).
+      bool isVerified = false;
 
       // Role derived from the master users.role field (authoritative).
       String? roleFromUsers;
@@ -63,6 +75,7 @@ class RoleService {
             .toString()
             .toLowerCase()
             .trim();
+        isVerified = parseVerified(userData['is_verified']);
 
         // Resolve isNew status
         final rawIsNew = userData['isNew'];
@@ -108,10 +121,25 @@ class RoleService {
       debugPrint(
         '✅ RoleService: UID=$uid, Role=$role, isNew=$isNew, Status=$status',
       );
-      return {'role': role, 'rawRole': rawRole, 'isNew': isNew, 'status': status};
+      return {
+        'role': role,
+        'rawRole': rawRole,
+        'isNew': isNew,
+        'status': status,
+        // Only recruiters are gated on admin verification.
+        'isVerified': role == 'recruiter' ? isVerified : true,
+      };
     } catch (e) {
       debugPrint('❌ RoleService Error: $e');
-      return {'role': null, 'rawRole': null, 'isNew': false, 'status': 'error'};
+      // status 'error' is treated as non-blocking below, so don't let a failed
+      // read masquerade as "unverified" and lock the user out of a live session.
+      return {
+        'role': null,
+        'rawRole': null,
+        'isNew': false,
+        'status': 'error',
+        'isVerified': true,
+      };
     }
   }
 
@@ -139,6 +167,64 @@ class AuthNotifier extends ChangeNotifier {
   /// string for RBAC/permission checks.
   UserRole? get roleEnum => UserRole.fromFirestore(_rawRole);
   bool _isFetching = false;
+
+  /// Why the last session was rejected (suspended / unverified recruiter).
+  /// The login screen reads this to explain a sign-out it did not initiate —
+  /// e.g. an unverified recruiter restoring a persisted session on reload.
+  String? blockedReason;
+
+  // ── Interactive-login gate ────────────────────────────────────────────────
+  //
+  // signInWithEmailAndPassword() fires authStateChanges immediately, but the
+  // session is not yet *approved*: LoginProvider still has to read the role,
+  // account_status and is_verified flags out of Firestore before it knows
+  // whether to keep the session or sign it back out. Those reads require an
+  // authenticated user, so they cannot happen before sign-in.
+  //
+  // While that gate is open the router must not act on the half-formed session,
+  // otherwise a slow connection lets the redirect reach the dashboard before
+  // the checks finish — which is what produced the "dashboard flashes, then
+  // logs out" behaviour.
+  int _loginGateDepth = 0;
+  bool get isLoginGatePending => _loginGateDepth > 0;
+
+  void beginLoginGate() {
+    _loginGateDepth++;
+  }
+
+  void endLoginGate() {
+    if (_loginGateDepth == 0) return;
+    _loginGateDepth--;
+    // Re-run the redirect now that the session's verdict is known: any
+    // notifyListeners() that fired while the gate was open was ignored.
+    if (_loginGateDepth == 0) notifyListeners();
+  }
+
+  /// Revokes a session that failed its post-sign-in checks.
+  ///
+  /// Login providers must call this rather than `signOut()` alone. `signOut()`
+  /// clears the session asynchronously — authStateChanges(null) is delivered on
+  /// a later turn of the event loop — but [endLoginGate] notifies the router
+  /// immediately afterwards in the same `finally`. Without clearing the local
+  /// state here and now, that redirect would run against a session that is
+  /// already revoked and hand the user the dashboard anyway.
+  void rejectSession(String reason) {
+    debugPrint('🚫 Session rejected: $reason');
+    // Not surfaced via [blockedReason]: the caller is a login screen that is
+    // already showing this message itself. Setting it here would leave a stale
+    // reason behind to be replayed the next time a login screen is built.
+    blockedReason = null;
+    user = null;
+    role = null;
+    _rawRole = null;
+    isNewUser = false;
+    isInitialized = true;
+    _isFetching = false;
+    _auth.signOut().ignore();
+    // Deliberately no notifyListeners(): endLoginGate() fires it once the
+    // caller's finally block runs, so the router sees a single settled state.
+  }
+
   StreamSubscription<User?>? _authSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _userDocSub;
   int _authVersion = 0;
@@ -192,6 +278,10 @@ class AuthNotifier extends ChangeNotifier {
                     .toString()
                     .toLowerCase()
                     .trim(),
+                // Must be supplied here too: _applyUserData treats a missing
+                // flag as unverified, so omitting it would sign out every
+                // verified recruiter on the next users/{uid} write.
+                'isVerified': RoleService.parseVerified(userData['is_verified']),
               });
             },
             onError: (e) {
@@ -210,10 +300,25 @@ class AuthNotifier extends ChangeNotifier {
 
   void _applyUserData(User newUser, Map<String, dynamic> data) {
     final status = data['status']?.toString().toLowerCase() ?? 'active';
+    final isSuspended = status != 'active' && status != 'error';
 
-    if (status != 'active' && status != 'error') {
+    // A recruiter is only allowed a session once an admin has verified them.
+    // LoginProvider enforces this at sign-in; enforcing it here as well covers
+    // the paths it never sees — a persisted session restored on page reload,
+    // and verification being revoked while the user is signed in (the live
+    // users/{uid} listener re-runs this).
+    final isUnverifiedRecruiter =
+        data['role'] == 'recruiter' && data['isVerified'] != true;
+
+    if (isSuspended || isUnverifiedRecruiter) {
+      blockedReason = isSuspended
+          ? 'Your account is suspended. Contact Customer support.'
+          : 'Your verification process has been started. Once verified by '
+                'our admin team, you will be able to log in and use the system.';
       debugPrint(
-        '🚫 Suspended account detected in AuthNotifier, signing out...',
+        isSuspended
+            ? '🚫 Suspended account detected in AuthNotifier, signing out...'
+            : '🚫 Unverified recruiter detected in AuthNotifier, signing out...',
       );
       user = null;
       role = null;
@@ -223,6 +328,7 @@ class AuthNotifier extends ChangeNotifier {
       _isFetching = false;
       _auth.signOut().ignore();
     } else {
+      blockedReason = null;
       user = newUser;
       role = data['role'];
       _rawRole = data['rawRole'] as String? ?? data['role'] as String?;
@@ -235,7 +341,9 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   // ✅ NEW: Helper to check if we should wait
-  bool get shouldWait => _isFetching || !isInitialized;
+  // Also holds while an interactive login is still deciding whether to keep
+  // the session it just created — see [beginLoginGate].
+  bool get shouldWait => _isFetching || !isInitialized || isLoginGatePending;
 
   @override
   void dispose() {
@@ -385,7 +493,9 @@ final GoRouter router = GoRouter(
         // Role is chosen by navigation context via ?role=recruiter|candidate.
         // Anything else (including a direct visit) defaults to Job Seeker.
         final roleParam = s.uri.queryParameters['role']?.toLowerCase();
-        final initialRole = roleParam == 'recruiter' ? 'Recruiter' : 'Job Seeker';
+        final initialRole = roleParam == 'recruiter'
+            ? 'Recruiter'
+            : 'Job Seeker';
         return _fadePage(SignUp_Screen(initialRole: initialRole), s);
       },
     ),

@@ -50,6 +50,17 @@ dependencies:
   xml: any
   rxdart: any
   http_parser: any
+# Temporary: lottie <= 3.5.1 crashes Flutter web (CanvasKit) with "Stack Overflow"
+# when an animation uses animated Trim Paths (images/1.json on the landing page).
+# It calls `path.set(pathMetric.extractPath(...))`, and on web the extracted path
+# lazily references the path it was just assigned back into, so LazyPath.builtPath
+# recurses forever. third_party/lottie is lottie 3.3.3 with the upstream fix
+# (xvrh/lottie-flutter#428) applied; see third_party/lottie/PATCH.md.
+# Delete third_party/lottie and this override once lottie >= 3.5.2 is on pub.dev.
+dependency_overrides:
+  lottie:
+    path: third_party/lottie
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
