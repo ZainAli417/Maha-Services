@@ -158,11 +158,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Admin-managed onboarding questionnaire config. Any authenticated user may
-    // read it (the onboarding engine loads it); only admins may write.
-    match /questionnaire_config/{docId} {
+    // Admin-managed role templates — the section/field definitions that drive
+    // candidate onboarding. Any authenticated user may read them (the
+    // onboarding engine loads the active doc); only admins may write.
+    match /role_templates/{docId} {
       allow read: if isAuth();
       allow write: if isAdmin();
+    }
+
+    // Superseded by role_templates/. Kept readable so an admin can recover a
+    // previously published catalogue; no longer written to. Safe to delete
+    // once every environment has re-seeded.
+    match /questionnaire_config/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     match /users/{userId} {
@@ -232,8 +241,17 @@ service cloud.firestore {
       }
     }
 
+    // The candidate's own document, and the only place their contact details
+    // live. Recruiters are deliberately NOT granted read access: they screen
+    // and shortlist from the redacted snapshot embedded in each application,
+    // and it is the admin who arranges interviews and travel. Without this the
+    // UI-level redaction would be cosmetic — a recruiter could read the raw
+    // document straight from the client.
+    //
+    // Admins retain access through the blanket isAdmin() rule above.
+    // The applied_jobs subcollection keeps its own recruiter grant below.
     match /Job_Seeker/{jobSeekerId} {
-      allow read: if isUser(jobSeekerId) || isRecruiter();
+      allow read: if isUser(jobSeekerId);
       allow create, update: if isUser(jobSeekerId);
       allow delete: if false;
 

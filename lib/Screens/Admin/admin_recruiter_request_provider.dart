@@ -602,8 +602,27 @@ class AdminProvider extends ChangeNotifier {
           // Ensure 'uid' key is present for downstream widgets
           final card = {...m, 'uid': uid};
           candidateDetails.add(card);
+        }
+
+        // The recruiter's payload deliberately carries no contact details —
+        // their client never receives them. Read them here, as admin, straight
+        // from the candidate's own document.
+        final contacts = await _fetchContactDetails(
+          candidateDetails.map((c) => c['uid'].toString()).toList(),
+        );
+        if (_disposed) {
+          completer.complete(null);
+          return null;
+        }
+        for (var i = 0; i < candidateDetails.length; i++) {
+          final uid = candidateDetails[i]['uid'].toString();
+          final contact = contacts[uid.toLowerCase()];
+          if (contact != null) {
+            candidateDetails[i] = {...candidateDetails[i], ...contact};
+          }
           // Cache so _batchFetchCandidates can reuse if needed later
-          _candidateCache[uid] = _CacheEntry(card, DateTime.now());
+          _candidateCache[uid] =
+              _CacheEntry(candidateDetails[i], DateTime.now());
         }
       } else {
         candidateDetails = await _batchFetchCandidates(
@@ -864,6 +883,85 @@ class AdminProvider extends ChangeNotifier {
     return all;
   }
   // ── Parse helpers ─────────────────────────────────────────────────────────
+
+  /// Reads the contact details the recruiter never receives.
+  ///
+  /// `recruiter_requests/{id}.candidates[]` is written by a recruiter, whose
+  /// client is not given the candidate's email, phone, date of birth or social
+  /// links. Admins are the ones who arrange interviews and travel, so they read
+  /// those fields directly from `Job_Seeker/{uid}` — a document Firestore rules
+  /// keep out of recruiter reach entirely.
+  ///
+  /// Returns a map keyed by lowercased uid. A candidate whose document cannot
+  /// be read is simply absent, and their card renders without contact rows
+  /// rather than failing the whole request.
+  Future<Map<String, Map<String, dynamic>>> _fetchContactDetails(
+    List<String> uids,
+  ) async {
+    final out = <String, Map<String, dynamic>>{};
+    final ids = uids.where((u) => u.trim().isNotEmpty).toSet().toList();
+    if (ids.isEmpty) return out;
+
+    // whereIn caps at 30 values per query.
+    for (var i = 0; i < ids.length; i += 30) {
+      final batch = ids.sublist(i, (i + 30).clamp(0, ids.length));
+      try {
+        final snap = await _firestore
+            .collection('Job_Seeker')
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+        for (final doc in snap.docs) {
+          final data = _normalizeMap(doc.data());
+          final userData = _normalizeMap(data['user_data'] ?? {});
+          final personal = _normalizeMap(
+            data['personalProfile'] ??
+                data['personal_profile'] ??
+                userData['personalProfile'] ??
+                userData['personal_profile'] ??
+                {},
+          );
+          final candidateProfile = _normalizeMap(data['candidateProfile'] ?? {});
+          final personalInfo =
+              _normalizeMap(candidateProfile['personalInfo'] ?? {});
+
+          String pick(List<String> keys) {
+            for (final k in keys) {
+              final v = personalInfo[k]?.toString().trim() ?? '';
+              if (v.isNotEmpty && v != 'null') return v;
+            }
+            for (final k in keys) {
+              final v = personal[k]?.toString().trim() ?? '';
+              if (v.isNotEmpty && v != 'null') return v;
+            }
+            return '';
+          }
+
+          List<String> pickList(List<String> keys) {
+            for (final src in [personalInfo, personal]) {
+              for (final k in keys) {
+                final v = src[k];
+                if (v is List && v.isNotEmpty) {
+                  return v.map((e) => e.toString()).toList();
+                }
+              }
+            }
+            return const [];
+          }
+
+          out[doc.id.toLowerCase()] = {
+            'email': pick(['email']),
+            'secondary_email': pick(['secondaryEmail', 'secondary_email']),
+            'phone': pick(['phone', 'contactNumber', 'contact_number']),
+            'dob': pick(['dateOfBirth', 'dob']),
+            'social_links': pickList(['socialLinks', 'social_links']),
+          }..removeWhere((_, v) => v is String ? v.isEmpty : (v as List).isEmpty);
+        }
+      } catch (e) {
+        debugPrint('⚠️ contact hydration batch failed: $e');
+      }
+    }
+    return out;
+  }
 
   List<Map<String, dynamic>> _parseJobSeekerDocs(
     List<QueryDocumentSnapshot> docs,

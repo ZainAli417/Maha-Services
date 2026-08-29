@@ -4,7 +4,8 @@ import 'package:job_portal/Constant/brand_snackbar.dart';
 
 import '../../core/onboarding/models/aviation_role.dart';
 import '../../core/onboarding/models/question.dart';
-import '../../core/onboarding/questionnaire_service.dart';
+import '../../core/onboarding/role_template_service.dart';
+import '../../core/onboarding/role_templates.dart';
 import '../../core/widgets/confirm_dialog.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/error_view.dart';
@@ -34,19 +35,20 @@ class _C {
   static const error = Color(0xFFEF4444);
 }
 
-/// Admin manager for the onboarding questionnaire: seed defaults, add/edit/
+/// Admin manager for the role templates that drive onboarding: seed
+/// defaults, add/edit/
 /// delete aviation roles and their questions, then publish to Firestore.
-class QuestionnaireManagementSection extends StatefulWidget {
-  const QuestionnaireManagementSection({super.key});
+class RoleTemplateManagementSection extends StatefulWidget {
+  const RoleTemplateManagementSection({super.key});
 
   @override
-  State<QuestionnaireManagementSection> createState() =>
-      _QuestionnaireManagementSectionState();
+  State<RoleTemplateManagementSection> createState() =>
+      _RoleTemplateManagementSectionState();
 }
 
-class _QuestionnaireManagementSectionState
-    extends State<QuestionnaireManagementSection> {
-  final _service = QuestionnaireService();
+class _RoleTemplateManagementSectionState
+    extends State<RoleTemplateManagementSection> {
+  final _service = RoleTemplateService();
 
   bool _loading = true;
   bool _saving = false;
@@ -69,10 +71,12 @@ class _QuestionnaireManagementSectionState
     });
     try {
       final roles = await _service.loadRoles(forceRefresh: true);
+      final version = await _service.seededVersion();
       // Work on a mutable copy.
       setState(() {
         _roles = roles.map((r) => r.copyWith(questions: [...r.questions])).toList();
         _selectedRoleId = _roles.isNotEmpty ? _roles.first.id : null;
+        _seededVersion = version;
         _loading = false;
         _dirty = false;
       });
@@ -99,13 +103,23 @@ class _QuestionnaireManagementSectionState
     });
   }
 
+  /// Seed version already persisted, so the header can tell an admin their
+  /// config predates the current built-in templates.
+  int? _seededVersion;
+
   Future<void> _seed() async {
+    final stale = _seededVersion != null &&
+        _seededVersion! < RoleTemplateCatalogue.seedVersion;
     final ok = await ConfirmDialog.show(
       context,
       title: 'Seed default catalogue?',
-      message:
-          'This overwrites the current questionnaire config with the built-in '
-          'default aviation roles and questions.',
+      message: stale
+          ? 'Your saved config is at version $_seededVersion; the built-in '
+              'templates are at version ${RoleTemplateCatalogue.seedVersion}. '
+              'Seeding replaces the current config — including any edits you '
+              'have published — with the built-in role templates.'
+          : 'This overwrites the current questionnaire config with the '
+              'built-in default role templates and questions.',
       confirmLabel: 'Seed defaults',
       danger: true,
     );
@@ -173,6 +187,11 @@ class _QuestionnaireManagementSectionState
                 if (_dirty)
                   const AdminHeaderStat('unpublished', '•',
                       icon: Icons.edit_rounded),
+                if (_seededVersion != null &&
+                    _seededVersion! < RoleTemplateCatalogue.seedVersion)
+                  AdminHeaderStat('seed v$_seededVersion — update available',
+                      'v${RoleTemplateCatalogue.seedVersion}',
+                      icon: Icons.system_update_alt_rounded),
               ],
               actions: [
                 AdminHeaderButton(
@@ -682,6 +701,20 @@ class _QuestionnaireManagementSectionState
         return 'Yes / No';
       case QuestionType.date:
         return 'Date';
+      case QuestionType.searchSelect:
+        return 'Searchable select';
+      case QuestionType.searchMultiSelect:
+        return 'Searchable multi-select';
+      case QuestionType.tags:
+        return 'Tags';
+      case QuestionType.monthYear:
+        return 'Month / year';
+      case QuestionType.yesNoDetail:
+        return 'Yes / No + details';
+      case QuestionType.file:
+        return 'File upload';
+      case QuestionType.phone:
+        return 'Phone (country code + number)';
     }
   }
 
@@ -823,8 +856,7 @@ class _QuestionnaireManagementSectionState
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
-          final needsOptions = type == QuestionType.singleSelect ||
-              type == QuestionType.multiSelect;
+          final needsOptions = type.isSelect;
           return _DialogScaffold(
             icon: existing == null
                 ? Icons.add_circle_outline_rounded

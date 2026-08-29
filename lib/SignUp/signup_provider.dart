@@ -411,7 +411,8 @@ class SignupProvider extends ChangeNotifier {
         await _saveUserData(uid, _buildManualUserData(uid));
       }
 
-      targetRoute = '/profile-builder';
+      // The dynamic role-template onboarding owns profile creation now.
+      targetRoute = '/onboarding';
       return true;
     });
 

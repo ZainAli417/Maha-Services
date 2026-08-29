@@ -13,6 +13,7 @@ analyzer:
     deprecated_member_use: ignore
     file_names: ignore
     invalid_use_of_visible_for_testing_member: ignore
+    unnecessary_this: ignore
     unnecessary_type_check: ignore
     unused_element: ignore
     unused_element_parameter: ignore

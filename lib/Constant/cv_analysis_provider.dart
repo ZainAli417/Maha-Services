@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:file_picker/file_picker.dart';
 import 'dart:io' as io;
 
@@ -252,24 +252,25 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
   }) async {
     final uri = Uri.parse('${Env.backendUrl}/cv-analysis');
 
-    // Determine MIME type from extension
-    final ext = fileName.toLowerCase().split('.').last;
-    final mimeType = ext == 'pdf'
-        ? 'application/pdf'
-        : 'application/octet-stream';
+    // Advisory only — the server identifies the file from its magic bytes and
+    // ignores what we claim here, since a client-supplied content type can be
+    // anything. _getMimeType still beats the old pdf-or-octet-stream guess for
+    // proxies and logs in between.
+    final mimeType = _getMimeType(fileName);
 
-    // Build a multipart request (no base64 bloat)
+    // multipart/form-data: the bytes travel as bytes rather than as a base64
+    // string inside JSON. That drops the 33% encoding tax, keeps the server
+    // from parsing a multi-megabyte string, and puts the upload outside
+    // express.json()'s body limit. Identical on Flutter web and Android.
     final request = http.MultipartRequest('POST', uri)
+      ..files.add(http.MultipartFile.fromBytes(
+        'file',
+        fileBytes,
+        filename: fileName,
+        contentType: MediaType.parse(mimeType),
+      ))
       ..fields['roleName'] = roleName
-      ..fields['jobDescription'] = jobDescription
-      ..files.add(
-        http.MultipartFile.fromBytes(
-          'file',
-          fileBytes,
-          filename: fileName,
-          contentType: MediaType.parse(mimeType),
-        ),
-      );
+      ..fields['jobDescription'] = jobDescription;
 
     final streamed = await request.send().timeout(requestTimeout);
     final response = await http.Response.fromStream(streamed);

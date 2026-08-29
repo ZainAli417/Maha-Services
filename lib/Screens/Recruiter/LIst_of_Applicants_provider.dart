@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/onboarding/role_profile_snapshot.dart';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ class ApplicantRecord {
     required this.documents,
     required this.experienceDocuments,
     required this.certificationDocuments,
+    required this.roleProfile,
   });
 
   // Identity
@@ -145,7 +147,27 @@ class ApplicantRecord {
       certificationDocuments;
   final List<Map<String, String>> certifications;
 
+  /// Role-template answers captured when the candidate applied. Empty for
+  /// applications made before the template engine shipped.
+  final RoleProfileSnapshot roleProfile;
+
   String get professionalSummary => summary;
+
+  /// The role the candidate applied as, for list rows and filters.
+  String get targetRole => roleProfile.roleTitle;
+
+  /// Headline metric for the list row — total flight hours for aircrew, years
+  /// of experience otherwise.
+  ({String label, String value})? get headlineMetric {
+    final metrics = roleProfile.metrics;
+    for (final key in MetricLabels.priority) {
+      final v = metrics[key];
+      if (v != null) {
+        return (label: MetricLabels.of(key), value: MetricLabels.format(v));
+      }
+    }
+    return null;
+  }
 
   factory ApplicantRecord.fromSnapshot(
     DocumentSnapshot doc,
@@ -261,6 +283,12 @@ class ApplicantRecord {
       _digVal(professional, ['expectedRetirementDate', 'retirementDate']),
     );
 
+    final roleProfile = RoleProfileSnapshot.fromJson(
+      ps['role_profile'] is Map
+          ? Map<String, dynamic>.from(ps['role_profile'] as Map)
+          : null,
+    );
+
     return ApplicantRecord._(
       userId: userId,
       jobId: _str(data['jobId']),
@@ -303,10 +331,16 @@ class ApplicantRecord {
       documents: ud['documents'] is List ? ud['documents'] as List : const [],
       experienceDocuments: parseDocs(ud['experienceDocuments']),
       certificationDocuments: parseDocs(ud['certificationDocuments']),
+      roleProfile: roleProfile,
+      // Role title, aircraft types and licences join the search index so a
+      // recruiter can find "A320" or "ATPL" from the applicant list.
       searchIndex:
           '$name $email $phone ${_str(personal['location'])} '
                   '${skills.join(' ')} ${firstExp['organization'] ?? ''} '
-                  '${firstExp['role'] ?? ''}'
+                  '${firstExp['role'] ?? ''} ${roleProfile.roleTitle} '
+                  '${roleProfile.aircraftTypes.join(' ')} '
+                  '${roleProfile.licences.map((l) => l.title).join(' ')} '
+                  '${roleProfile.competencies.join(' ')}'
               .toLowerCase(),
     );
   }
@@ -355,6 +389,7 @@ class ApplicantRecord {
     documents: documents,
     experienceDocuments: experienceDocuments,
     certificationDocuments: certificationDocuments,
+    roleProfile: roleProfile,
   );
 }
 
@@ -891,15 +926,17 @@ class ApplicantsProvider with ChangeNotifier {
     final candidateMaps = selected
         .map(
           (a) => {
+            // No contact details here by design: the recruiter's client never
+            // receives them (they are stripped when the application snapshot is
+            // written), and the admin reads them straight from Job_Seeker/{uid}
+            // using this uid. Sending them through the recruiter would put a
+            // second, staler copy of the candidate's PII in a document the
+            // recruiter can write.
             'uid': a.userId,
             'name': a.name,
-            'email': a.email,
-            'phone': a.phone,
             'nationality': a.nationality,
             'picture_url': a.pictureUrl,
             'location': a.location,
-            'dob': a.dob,
-            'secondary_email': a.secondaryEmail,
             'job_id': a.jobId,
             'job_title': a.jobData?.title ?? '',
             'applied_at': a.appliedAt.toIso8601String(),
@@ -917,7 +954,6 @@ class ApplicantsProvider with ChangeNotifier {
             'education_duration': a.educationDuration,
             'cgpa': a.cgpa,
             'skills': a.skills,
-            'social_links': a.socialLinks,
             'certifications': a.certifications,
             'publications': a.publications,
             'awards': a.awards,
@@ -926,6 +962,10 @@ class ApplicantsProvider with ChangeNotifier {
             'documents': a.documents,
             'experienceDocuments': a.experienceDocuments,
             'certificationDocuments': a.certificationDocuments,
+            // Carried through verbatim so the admin sheet renders exactly what
+            // the recruiter reviewed — same keys, same values.
+            'role_profile': a.roleProfile.toJson(),
+            'target_role': a.roleProfile.roleTitle,
           },
         )
         .toList();

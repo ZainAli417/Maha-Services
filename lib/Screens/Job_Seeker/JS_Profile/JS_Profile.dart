@@ -14,6 +14,7 @@ import '../JS_Top_Bar.dart';
 import '../../../Constant/js_header.dart';
 import 'JS_Profile_Provider.dart';
 import 'JS_Profile_Sidebar.dart';
+import 'role_profile_section.dart';
 
 class ProfileScreen_NEW extends StatefulWidget {
   const ProfileScreen_NEW({super.key});
@@ -29,6 +30,11 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
   final ScrollController _stepScrollController = ScrollController();
+
+  /// One key per chip so [_scrollToCurrentStep] can measure where a chip
+  /// actually landed instead of estimating. Keyed by index and kept across
+  /// rebuilds; the map is cleared when the step list itself changes.
+  final Map<int, GlobalKey> _stepKeys = {};
   final TextEditingController _profSummaryCtrl = TextEditingController();
 
   bool _didLoad = false;
@@ -299,31 +305,143 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     return months[month - 1];
   }
 
-  final List<String> _stepTitles = [
-    'Personal Info',
-    'Education Info',
-    'Professional Info',
-    'Questionnaire',
-    'Experience',
-    'Certifications',
-    'Publications',
-    'Awards',
-    'References',
-    // 'Documents'
+  /// What one tab across the top of the profile renders.
+  ///
+  /// Previously the tabs were a fixed list and one of them, "Role Profile",
+  /// contained a second set of nine sections — so Personal Info, Education and
+  /// Experience each appeared twice, once as a legacy tab and once inside the
+  /// role. The role template is now the single source: its sections *are* the
+  /// tabs, and the legacy duplicates are gone.
+  List<_ProfileStep> get _steps => _buildSteps(
+        context.read<ProfileProvider_NEW>(),
+      );
+
+  /// Cheap enough to rebuild, but the tab strip and the body must agree within
+  /// a frame, so both read this one method.
+  static List<_ProfileStep> _buildSteps(ProfileProvider_NEW prov) {
+    final sections = prov.roleSections;
+
+    // A candidate who has not been through the new onboarding has no template
+    // to drive tabs from. Falling back to the legacy set keeps their profile
+    // editable instead of showing them an empty screen.
+    if (!prov.hasRoleProfile || sections.isEmpty) return _legacySteps;
+
+    const docs = 'Documents';
+    return [
+      for (final section in sections)
+        if (section != docs)
+          _ProfileStep(
+            title: section,
+            icon: _iconForSection(section),
+            kind: _StepKind.roleSection,
+            section: section,
+          ),
+      // Same order the onboarding form uses, so the profile reads as the form
+      // the candidate already filled rather than a different arrangement.
+      //
+      // No Experience tab: the role template already captures employment —
+      // employer, operator, aircraft, hours, recency — so a separate job list
+      // asked for the same career a second time. Legacy candidates keep theirs
+      // in [_legacySteps] below, because they have no template capturing it.
+      const _ProfileStep(
+          title: 'Education',
+          icon: Icons.school_outlined,
+          kind: _StepKind.education),
+      const _ProfileStep(
+          title: 'Certifications',
+          icon: Icons.verified_outlined,
+          kind: _StepKind.certifications),
+      if (sections.contains(docs))
+        const _ProfileStep(
+            title: docs,
+            icon: Icons.folder_outlined,
+            kind: _StepKind.roleSection,
+            section: docs),
+      // Not part of any role template, and nothing else writes them — but the
+      // recruiter and admin profile views both render them, so dropping the
+      // editor would leave those panels permanently empty.
+      const _ProfileStep(
+          title: 'Publications',
+          icon: Icons.file_copy_outlined,
+          kind: _StepKind.publications),
+      const _ProfileStep(
+          title: 'Awards',
+          icon: Icons.emoji_events_outlined,
+          kind: _StepKind.awards),
+      const _ProfileStep(
+          title: 'References',
+          icon: Icons.group_add_outlined,
+          kind: _StepKind.references),
+    ];
+  }
+
+  static const List<_ProfileStep> _legacySteps = [
+    _ProfileStep(
+        title: 'Personal Info',
+        icon: Icons.supervised_user_circle_outlined,
+        kind: _StepKind.personal),
+    _ProfileStep(
+        title: 'Education Info',
+        icon: Icons.school_outlined,
+        kind: _StepKind.education),
+    _ProfileStep(
+        title: 'Professional Info',
+        icon: Icons.work_outline,
+        kind: _StepKind.professional),
+    _ProfileStep(
+        title: 'Experience',
+        icon: Icons.work_history_outlined,
+        kind: _StepKind.experience),
+    _ProfileStep(
+        title: 'Certifications',
+        icon: Icons.verified_outlined,
+        kind: _StepKind.certifications),
+    _ProfileStep(
+        title: 'Publications',
+        icon: Icons.file_copy_outlined,
+        kind: _StepKind.publications),
+    _ProfileStep(
+        title: 'Awards',
+        icon: Icons.emoji_events_outlined,
+        kind: _StepKind.awards),
+    _ProfileStep(
+        title: 'References',
+        icon: Icons.group_add_outlined,
+        kind: _StepKind.references),
   ];
 
-  final List<IconData> _stepIcons = [
-    Icons.supervised_user_circle_outlined,
-    Icons.school_outlined,
-    Icons.work_outline,
-    Icons.quiz_outlined,
-    Icons.work_history_outlined,
-    Icons.verified,
-    Icons.file_copy_outlined,
-    Icons.video_file_outlined,
-    Icons.assured_workload_outlined,
-    Icons.group_add_outlined, // FontAwesomeIcons.folder,
-  ];
+  /// Best-effort icon for a template section. Sections are authored per role
+  /// and can be named anything, so this matches on keywords and falls back to
+  /// a neutral glyph rather than pretending to know every possible name.
+  static IconData _iconForSection(String section) {
+    final s = section.toLowerCase();
+    if (s.contains('personal')) return Icons.supervised_user_circle_outlined;
+    if (s.contains('location') || s.contains('mobility')) {
+      return Icons.public_outlined;
+    }
+    if (s.contains('licen') || s.contains('rating')) return Icons.badge_outlined;
+    if (s.contains('aircraft') || s.contains('flight')) {
+      return Icons.flight_takeoff_outlined;
+    }
+    if (s.contains('employer') || s.contains('organization')) {
+      return Icons.apartment_outlined;
+    }
+    if (s.contains('safety')) return Icons.health_and_safety_outlined;
+    if (s.contains('maintenance') || s.contains('technical')) {
+      return Icons.build_outlined;
+    }
+    if (s.contains('document')) return Icons.folder_outlined;
+    if (s.contains('declaration') || s.contains('legal')) {
+      return Icons.gavel_outlined;
+    }
+    if (s.contains('skill') || s.contains('competenc')) {
+      return Icons.psychology_outlined;
+    }
+    if (s.contains('education') || s.contains('training')) {
+      return Icons.school_outlined;
+    }
+    return Icons.article_outlined;
+  }
 
   @override
   void initState() {
@@ -356,7 +474,17 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         _personalSummaryCtrl.text = prov.personalSummary;
         _dobCtrl.text = prov.dob;
         _profSummaryCtrl.text = prov.professionalProfileSummary;
+        // The tab list is derived from the role template, which only resolves
+        // once the load finishes — so the step count can shrink under a
+        // selection made against the legacy fallback. Clamp rather than let a
+        // stale index drive the strip and the body out of agreement.
+        final stepCount = _buildSteps(prov).length;
+        if (_currentStep >= stepCount) _currentStep = stepCount - 1;
+        if (_currentStep < 0) _currentStep = 0;
         setState(() {});
+        // The strip is built from the template, so on first paint the selected
+        // chip can already be off-screen. Bring it into view.
+        _scrollToCurrentStep();
       });
     });
   }
@@ -401,21 +529,27 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     super.dispose();
   }
 
+  /// Brings the selected chip into view, centred.
+  ///
+  /// This used to multiply the step index by a hardcoded 180px. Chip widths are
+  /// driven by their labels — "Documents" against "Aircraft Flown & Ratings" —
+  /// so the estimate drifted further out with every chip, and picking a late
+  /// one scrolled to roughly where the 180px model thought it was: backwards,
+  /// short of the actual chip. Measuring the real laid-out chip removes the
+  /// guess entirely.
   void _scrollToCurrentStep() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_stepScrollController.hasClients) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        final itemWidth = 180.0;
-        final targetOffset = (_currentStep * itemWidth) - (screenWidth / 4);
-        _stepScrollController.animateTo(
-          targetOffset.clamp(
-            0.0,
-            _stepScrollController.position.maxScrollExtent,
-          ),
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      }
+      final key = _stepKeys[_currentStep];
+      final ctx = key?.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        // 0.5 centres it, so the neighbouring chips stay visible and the strip
+        // reads as a position rather than a jump.
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeOutCubic,
+      );
     });
   }
 
@@ -605,7 +739,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Step ${_currentStep + 1} of ${_stepTitles.length}',
+            'Step ${_currentStep + 1} of ${_steps.length}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: isMobile ? 11 : 13,
               fontWeight: FontWeight.w700,
@@ -623,7 +757,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor: (_currentStep + 1) / _stepTitles.length,
+                widthFactor: (_currentStep + 1) / _steps.length,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -673,16 +807,23 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     final isMobile = _isMobile;
     return SizedBox(
       height: isMobile ? 40 : 54,
-      child: ListView.builder(
+      // A Row rather than a ListView.builder: there are at most ~15 chips, so
+      // building them all costs nothing, and it means every chip is laid out
+      // and measurable even when it is far off-screen. ensureVisible cannot
+      // scroll to an item a builder has not created yet, which is why the
+      // previous version had to estimate positions at all.
+      child: SingleChildScrollView(
         controller: _stepScrollController,
         scrollDirection: Axis.horizontal,
-        itemCount: _stepTitles.length,
-        cacheExtent: 700,
-        itemBuilder: (context, index) {
-          final isActive = index == _currentStep;
-          final isCompleted = index < _currentStep;
-          return Row(
-            children: [
+        child: Row(
+          children: [
+            for (var index = 0; index < _steps.length; index++)
+              Builder(builder: (context) {
+                final isActive = index == _currentStep;
+                final isCompleted = index < _currentStep;
+                return Row(
+                  key: _stepKeys.putIfAbsent(index, () => GlobalKey()),
+                  children: [
               InkWell(
                 onTap: () {
                   setState(() => _currentStep = index);
@@ -724,7 +865,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isCompleted ? Icons.check_circle : _stepIcons[index],
+                        isCompleted ? Icons.check_circle : _steps[index].icon,
                         color: isActive
                             ? const Color(0xFF43E0D2)
                             : (isCompleted
@@ -734,7 +875,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                       ),
                       SizedBox(width: isMobile ? 5 : 8),
                       Text(
-                        _stepTitles[index],
+                        _steps[index].title,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: isMobile ? 11.5 : 13.5,
                           fontWeight: isActive
@@ -751,21 +892,24 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                   ),
                 ),
               ),
-              if (index < _stepTitles.length - 1)
-                Container(
-                  width: isMobile ? 12 : 22,
-                  height: 2,
-                  margin: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 7),
-                  decoration: BoxDecoration(
-                    color: index < _currentStep
-                        ? const Color(0xFF2EC4B6)
-                        : const Color(0xFFDCE7EF),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-            ],
-          );
-        },
+                    if (index < _steps.length - 1)
+                      Container(
+                        width: isMobile ? 12 : 22,
+                        height: 2,
+                        margin:
+                            EdgeInsets.symmetric(horizontal: isMobile ? 3 : 7),
+                        decoration: BoxDecoration(
+                          color: index < _currentStep
+                              ? const Color(0xFF2EC4B6)
+                              : const Color(0xFFDCE7EF),
+                          borderRadius: BorderRadius.circular(1),
+                        ),
+                      ),
+                  ],
+                );
+              }),
+          ],
+        ),
       ),
     );
   }
@@ -970,204 +1114,57 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
   }
 
   Widget _buildCurrentStepContent(ProfileProvider_NEW prov) {
-    switch (_currentStep) {
-      case 0:
-        return _buildPersonalInfo(prov);
-      case 1:
-        return _buildEducation(prov);
-      case 2:
-        return _buildProfessionalProfile(prov);
-      case 3:
-        return _buildQuestionnaire(prov);
-      case 4:
+    final steps = _buildSteps(prov);
+    if (_currentStep >= steps.length) return const SizedBox();
+    final step = steps[_currentStep];
+    switch (step.kind) {
+      case _StepKind.roleSection:
+        return _buildRoleSection(prov, step.section!);
+      case _StepKind.experience:
         return _buildExperience(prov);
-      case 5:
+      case _StepKind.education:
+        return _buildEducation(prov);
+      case _StepKind.certifications:
         return _buildCertifications(prov);
-      case 6:
+      case _StepKind.publications:
         return _buildPublications(prov);
-      case 7:
+      case _StepKind.awards:
         return _buildAwards(prov);
-      case 8:
+      case _StepKind.references:
         return _buildReferences(prov);
-      default:
-        return const SizedBox();
+      case _StepKind.personal:
+        return _buildPersonalInfo(prov);
+      case _StepKind.professional:
+        return _buildProfessionalProfile(prov);
     }
   }
 
-  // ── Questionnaire (read-only, filled during signup onboarding) ────────────
-  Widget _buildQuestionnaire(ProfileProvider_NEW prov) {
+  // ── Role profile ──────────────────────────────────────────────────────────
+  //
+  // Rendered from the candidate's active role template: one editable card per
+  // template section. The template is the questionnaire — there is no separate
+  // question list to keep in sync.
+  /// One template section, now that each section is its own tab. The role
+  /// banner is drawn here rather than inside the section list so it appears
+  /// once at the top of whichever section is open.
+  Widget _buildRoleSection(ProfileProvider_NEW prov, String section) {
     final isMobile = _isMobile;
-    final responses = prov.questionnaireResponses;
-
-    if (responses.isEmpty) {
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionHeader(
-              'Onboarding',
-              'Questionnaire',
-              icon: Icons.quiz_outlined,
-            ),
-            SizedBox(height: isMobile ? 20 : 28),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(isMobile ? 20 : 28),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F9FB),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFDCE7EF)),
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.assignment_late_outlined,
-                    color: Color(0xFF8AA5B5),
-                    size: 40,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No questionnaire responses yet',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 13 : 15,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF3E5C76),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'The answers you provide during onboarding will appear here.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 11.5 : 13,
-                      color: const Color(0xFF5E7A8E),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Group responses by their 'group' label, preserving first-seen order.
-    final grouped = <String, List<Map<String, dynamic>>>{};
-    for (final r in responses) {
-      final g = (r['group'] ?? 'General').toString();
-      grouped.putIfAbsent(g, () => []).add(r);
-    }
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(
-            prov.questionnaireRole.isEmpty
-                ? 'Onboarding'
-                : prov.questionnaireRole,
-            'Questionnaire',
-            icon: Icons.quiz_outlined,
+            section,
+            prov.candidateProfile?.targetRole.roleTitle.isNotEmpty == true
+                ? prov.candidateProfile!.targetRole.roleTitle
+                : 'Role profile',
+            icon: _iconForSection(section),
           ),
           SizedBox(height: isMobile ? 16 : 22),
-          ...grouped.entries.map((entry) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    entry.key.toUpperCase(),
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 10.5 : 11.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.1,
-                      color: const Color(0xFF15A99C),
-                    ),
-                  ),
-                ),
-                ...entry.value.map((r) => _questionnaireCard(r)),
-                SizedBox(height: isMobile ? 8 : 12),
-              ],
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _questionnaireCard(Map<String, dynamic> r) {
-    final isMobile = _isMobile;
-    final question = (r['question'] ?? '').toString();
-    final unit = (r['unit'] ?? '').toString();
-    final raw = r['answer'];
-    String answer;
-    if (raw is List) {
-      answer = raw.map((e) => e.toString()).join(', ');
-    } else if (raw is bool) {
-      answer = raw ? 'Yes' : 'No';
-    } else {
-      answer = raw?.toString() ?? '';
-    }
-    if (unit.isNotEmpty && answer.isNotEmpty) answer = '$answer $unit';
-
-    return Container(
-      margin: EdgeInsets.only(bottom: isMobile ? 10 : 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(isMobile ? 14 : 16),
-        border: Border.all(color: const Color(0xFFDCE7EF)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0B2239).withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: 4,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF14507F), Color(0xFF2EC4B6)],
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(14),
-                bottomLeft: Radius.circular(14),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(isMobile ? 12 : 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    question,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 12 : 13,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF5E7A8E),
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    answer.isEmpty ? '—' : answer,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: isMobile ? 13.5 : 15,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0B2239),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          RoleProfileSections(
+            provider: prov,
+            only: section,
+            showHeader: false,
           ),
         ],
       ),
@@ -3134,35 +3131,31 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
 
   Widget _buildNavigationButtons(ProfileProvider_NEW prov) {
     // ✅ NEW: Check if current section has unsaved changes
+    final steps = _buildSteps(prov);
+    final step = _currentStep < steps.length ? steps[_currentStep] : null;
     bool isDirty = false;
-    switch (_currentStep) {
-      case 0:
+    switch (step?.kind) {
+      // Role sections save from their own edit sheet, so the screen-level Save
+      // button has nothing pending for them.
+      case _StepKind.roleSection:
+      case null:
+        isDirty = false;
+      case _StepKind.personal:
         isDirty = prov.personalDirty;
-        break;
-      case 1:
+      case _StepKind.education:
         isDirty = prov.educationDirty;
-        break;
-      case 2:
+      case _StepKind.professional:
         isDirty = prov.professionalProfileDirty;
-        break;
-      case 3:
-        isDirty = false; // Questionnaire is read-only
-        break;
-      case 4:
+      case _StepKind.experience:
         isDirty = prov.experienceDirty;
-        break;
-      case 5:
+      case _StepKind.certifications:
         isDirty = prov.certificationsDirty;
-        break;
-      case 6:
+      case _StepKind.publications:
         isDirty = prov.publicationsDirty;
-        break;
-      case 7:
+      case _StepKind.awards:
         isDirty = prov.awardsDirty;
-        break;
-      case 8:
+      case _StepKind.references:
         isDirty = prov.referencesDirty;
-        break;
     }
 
     final isMobile = _isMobile;
@@ -3228,7 +3221,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
               const SizedBox(),
             Row(
               children: [
-                if (_currentStep != 3)
+                if (!_currentStepIsRoleSection(prov))
                 Material(
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
@@ -3287,7 +3280,7 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
                     ),
                   ),
                 ),
-                if (_currentStep < _stepTitles.length - 1) ...[
+                if (_currentStep < _steps.length - 1) ...[
                   const SizedBox(width: 12),
                   Material(
                     color: Colors.transparent,
@@ -3469,34 +3462,39 @@ class _JSProfileScreenState extends State<ProfileScreen_NEW>
     );
   }
 
+  /// Role sections own their Save inside the edit sheet, so the screen-level
+  /// Save button is hidden for them rather than showing a control that does
+  /// nothing.
+  bool _currentStepIsRoleSection(ProfileProvider_NEW prov) {
+    final steps = _buildSteps(prov);
+    if (_currentStep >= steps.length) return false;
+    return steps[_currentStep].kind == _StepKind.roleSection;
+  }
+
   Future<void> _saveCurrentSection(ProfileProvider_NEW prov) async {
-    switch (_currentStep) {
-      case 0:
+    final steps = _buildSteps(prov);
+    final step = _currentStep < steps.length ? steps[_currentStep] : null;
+    switch (step?.kind) {
+      // Role sections persist from their own edit sheet — nothing to flush.
+      case _StepKind.roleSection:
+      case null:
+        break;
+      case _StepKind.personal:
         await prov.savePersonalSection(context);
-        break;
-      case 1:
+      case _StepKind.education:
         await prov.saveEducationSection(context);
-        break;
-      case 2:
+      case _StepKind.professional:
         await prov.saveProfessionalProfileSection(context);
-        break;
-      case 3:
-        break; // Questionnaire is read-only — nothing to save
-      case 4:
+      case _StepKind.experience:
         await prov.saveExperienceSection(context);
-        break;
-      case 5:
+      case _StepKind.certifications:
         await prov.saveCertificationsSection(context);
-        break;
-      case 6:
+      case _StepKind.publications:
         await prov.savePublicationsSection(context);
-        break;
-      case 7:
+      case _StepKind.awards:
         await prov.saveAwardsSection(context);
-        break;
-      case 8:
+      case _StepKind.references:
         await prov.saveReferencesSection(context);
-        break;
     }
 
     // ✅ Force UI update after save
@@ -3810,4 +3808,35 @@ void showErrorTop(BuildContext context, String message) {
     backgroundColor: const Color(0xFF7F1D1D),
     icon: Icons.error,
   );
+}
+
+enum _StepKind {
+  /// One section of the active role template, rendered by [RoleProfileSections].
+  roleSection,
+  experience,
+  education,
+  certifications,
+  publications,
+  awards,
+  references,
+
+  /// Legacy-only tabs, reachable when the candidate has no role template.
+  personal,
+  professional,
+}
+
+class _ProfileStep {
+  const _ProfileStep({
+    required this.title,
+    required this.icon,
+    required this.kind,
+    this.section,
+  });
+
+  final String title;
+  final IconData icon;
+  final _StepKind kind;
+
+  /// Template section name — set only when [kind] is [_StepKind.roleSection].
+  final String? section;
 }

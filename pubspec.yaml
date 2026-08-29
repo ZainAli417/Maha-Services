@@ -69,22 +69,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Every file under images/ is bundled by the directory entry below, so each
+  # asset needs listing only once. Keep this list to what the code loads —
+  # anything else ships dead weight to every user.
   assets:
-    - images/ai.json
-    - images/
-    - images/anim.json
-    - images/logo.png
-    - images/logo_new.jpeg
-    - images/splash.webp
-    - images/signup_recruiter.svg
-    - images/signup_jobseeker.svg
-    - images/login_recruiter.svg
-    - images/login_jobseeker.svg
-    - images/forgot.svg
-    - images/recruiter_2.svg
-    - images/success.json
-    - images/MaterialIcons-Regular.ttf
-    - images/1.json
-    - images/2.json
-    - images/3.json
-    - images/4.json
+    - images/          # logo_new.jpeg, applied.svg, ai.json, 1-4.json,
+                       # MaterialIcons-Regular.ttf

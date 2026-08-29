@@ -32,7 +32,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
     'Deleted': AuditAction.userSoftDeleted,
     'Restored': AuditAction.userRestored,
     'Profile reset': AuditAction.userProfileReset,
-    'Questionnaire': AuditAction.questionnairePublished,
+    'Role Templates': AuditAction.questionnairePublished,
   };
 
   String _selectedFilter = 'All actions';
@@ -395,7 +395,7 @@ class _AuditLogsSectionState extends State<AuditLogsSection> {
       case AuditAction.userProfileReset:
         return 'Profile reset';
       case AuditAction.questionnairePublished:
-        return 'Questionnaire published';
+        return 'Role templates published';
       default:
         return action;
     }

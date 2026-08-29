@@ -20,6 +20,31 @@ service firebase.storage {
         request.resource.size < 5 * 1024 * 1024;
     }
 
+    function underTenMb() {
+      return request.resource != null &&
+        request.resource.size < 10 * 1024 * 1024;
+    }
+
+    function isOnboardingDocument() {
+      return request.resource != null && (
+        request.resource.contentType.matches('image/.*') ||
+        request.resource.contentType == 'application/pdf' ||
+        request.resource.contentType == 'application/msword' ||
+        request.resource.contentType ==
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        request.resource.contentType == 'application/zip' ||
+        request.resource.contentType == 'text/plain' ||
+        request.resource.contentType == 'text/csv'
+      );
+    }
+
+    // Onboarding attachments — licences, medicals, logbook exports, CVs.
+    // Documents, not just images, and up to the 10MB the form advertises.
+    match /Job_Seeker/{uid}/onboarding_documents/{fileName=**} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid) && isOnboardingDocument() && underTenMb();
+    }
+
     match /Job_Seeker/{uid}/{fileName=**} {
       allow read: if isAuth();
       allow write: if isOwner(uid) && isImage() && underFiveMb();

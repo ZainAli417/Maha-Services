@@ -7,6 +7,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/onboarding/candidate_profile_service.dart';
+import '../../../core/onboarding/models/aviation_role.dart';
+import '../../../core/onboarding/models/candidate_profile.dart';
+import '../../../core/onboarding/models/question.dart';
+import '../../../core/onboarding/profile_projector.dart';
+import '../../../core/onboarding/role_template_service.dart';
+
 class ProfileProvider_NEW extends ChangeNotifier {
   // ---------------- Configuration ----------------
   final String role = 'Job_Seeker';
@@ -93,9 +100,25 @@ class ProfileProvider_NEW extends ChangeNotifier {
   List<String> references = [];
   List<Map<String, dynamic>> documents = [];
 
-  // QUESTIONNAIRE (filled at signup onboarding, read-only in profile)
-  String questionnaireRole = '';
-  List<Map<String, dynamic>> questionnaireResponses = [];
+  // ── Role-template profile (the schema onboarding writes) ─────────────────
+  /// The structured profile written by onboarding. Null for accounts created
+  /// before the role-template engine, which still render from `user_data`.
+  CandidateProfile? candidateProfile;
+
+  /// The template [candidateProfile.targetRole] points at, resolved from the
+  /// live role-template config so admin edits show up without a release.
+  RoleTemplate? roleTemplate;
+
+  bool roleProfileSaving = false;
+
+  final _templates = RoleTemplateService();
+  final _candidateProfiles = CandidateProfileService();
+
+  /// Section names of the active role template, in template order.
+  List<String> get roleSections => roleTemplate?.sections ?? const [];
+
+  bool get hasRoleProfile =>
+      roleTemplate != null && candidateProfile != null;
 
   // ---------------- Controllers ----------------
   final TextEditingController skillController = TextEditingController();
@@ -226,7 +249,112 @@ class ProfileProvider_NEW extends ChangeNotifier {
       _usesNestedUserData = false;
     }
 
+    // `candidateProfile` sits at the document root, not inside `user_data` —
+    // read it from the raw snapshot so the nested schema does not hide it.
+    _parseRoleProfile(rawData);
+
     _parseAndSetData(data);
+  }
+
+  void _parseRoleProfile(Map<String, dynamic> rawData) {
+    final raw = rawData['candidateProfile'];
+    if (raw is! Map) {
+      candidateProfile = null;
+      roleTemplate = null;
+      return;
+    }
+    candidateProfile =
+        CandidateProfile.fromJson(uid, Map<String, dynamic>.from(raw));
+    // Resolving the template is a network read; do it without blocking the
+    // rest of the parse and notify when it lands.
+    unawaited(_resolveRoleTemplate());
+  }
+
+  Future<void> _resolveRoleTemplate() async {
+    final roleId = candidateProfile?.targetRole.roleId;
+    if (roleId == null || roleId.isEmpty) {
+      roleTemplate = null;
+      return;
+    }
+    try {
+      roleTemplate = await _templates.roleById(roleId);
+    } catch (e) {
+      debugPrint('⚠️ ProfileProvider: could not resolve role template: $e');
+      roleTemplate = null;
+    }
+    _safeNotifyListeners();
+  }
+
+  /// Visible questions in [section] for the active template, honouring the
+  /// same conditional rules the onboarding form applies.
+  List<OnboardingQuestion> visibleQuestionsIn(String section) {
+    final template = roleTemplate;
+    if (template == null) return const [];
+    final answers = candidateProfile?.answers ?? const <String, dynamic>{};
+    return template
+        .questionsIn(section)
+        .where((q) => _isVisible(q, answers))
+        .toList();
+  }
+
+  static bool _isVisible(OnboardingQuestion q, Map<String, dynamic> answers) {
+    final depId = q.dependsOnId;
+    if (depId == null) return true;
+    final dep = answers[depId];
+    if (dep == null) return false;
+    final values = q.dependsOnValues.isNotEmpty
+        ? q.dependsOnValues
+        : (q.dependsOnValue == null
+            ? const <String>[]
+            : <String>[q.dependsOnValue!]);
+    if (values.isEmpty) return true;
+    if (dep is List) {
+      return dep.any((v) => values.contains(v.toString()));
+    }
+    return values.contains(dep.toString());
+  }
+
+  /// Persists edited template answers, re-projecting the structured sections
+  /// so the profile, the timeline and recruiter search all stay in step.
+  Future<bool> saveRoleAnswers(Map<String, dynamic> updated) async {
+    final template = roleTemplate;
+    final current = candidateProfile;
+    if (template == null || current == null) return false;
+
+    roleProfileSaving = true;
+    _safeNotifyListeners();
+    try {
+      final answers = Map<String, dynamic>.from(current.answers)
+        ..addAll(updated);
+      // Explicit nulls mean "cleared", not "unchanged".
+      updated.forEach((k, v) {
+        if (v == null) answers.remove(k);
+      });
+
+      final projected = ProfileProjector.project(
+        template,
+        answers,
+        base: current.personalInfo,
+      );
+      final next = current.copyWith(
+        answers: answers,
+        personalInfo: projected.personal,
+        roleSpecificData: projected.roleData,
+      );
+
+      await _candidateProfiles.updateRoleSections(next);
+      candidateProfile = next;
+      _lastFetchTime = null; // force a fresh read on the next load
+      roleProfileSaving = false;
+      _safeNotifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('⚠️ saveRoleAnswers failed: $e');
+      roleProfileSaving = false;
+      errorMessage = 'Could not save: $e';
+      _safeNotifyListeners();
+      return false;
+    }
   }
 
   void _parseAndSetData(Map<String, dynamic> data) {
@@ -288,16 +416,6 @@ class ProfileProvider_NEW extends ChangeNotifier {
     references = _mapListStrings(data['references']);
     documents = _mapListOfMap(data['documents']);
 
-    // Questionnaire (onboarding) section
-    final questionnaire = data['QUESTIONERE'] ?? data['questionnaire'];
-    if (questionnaire is Map) {
-      final qm = Map<String, dynamic>.from(questionnaire);
-      questionnaireRole = _getString(qm, ['roleTitle', 'role', 'category']);
-      questionnaireResponses = _mapListOfMap(qm['responses']);
-    } else {
-      questionnaireRole = '';
-      questionnaireResponses = [];
-    }
   }
 
   // ---------------- Save Logic (Optimized) ----------------
@@ -1237,8 +1355,8 @@ class ProfileProvider_NEW extends ChangeNotifier {
     retirementDate = '';
     experienceDocuments = [];
     certificationDocuments = [];
-    questionnaireRole = '';
-    questionnaireResponses = [];
+    candidateProfile = null;
+    roleTemplate = null;
     _resetAllDirtyFlags();
   }
 

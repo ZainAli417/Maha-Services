@@ -437,11 +437,11 @@ final GoRouter router = GoRouter(
     }
 
     // A. New User Logic (Job Seeker ONLY)
-    // New job seekers flow through onboarding → profile builder. Both routes
-    // are allowed; anything else redirects to onboarding first.
+    // Onboarding is now self-contained: role template → CV or manual entry →
+    // dynamic form → submit. It writes the candidate profile itself, so a new
+    // job seeker never passes through the legacy profile builder.
     if (role == 'Job Seeker' && authProvider.isNewUser) {
-      const allowed = {'/onboarding', '/profile-builder'};
-      if (!allowed.contains(location)) {
+      if (location != '/onboarding') {
         debugPrint('➡️ Redirecting new job seeker to onboarding');
         return '/onboarding';
       }

@@ -103,10 +103,10 @@ class AdminSidebar extends StatelessWidget {
                     menuKey: 'Audit Logs',
                   ),
                   _buildMenuItem(
-                    icon: Icons.quiz_outlined,
-                    activeIcon: Icons.quiz,
-                    label: 'Questionnaires',
-                    menuKey: 'Questionnaires',
+                    icon: Icons.badge_outlined,
+                    activeIcon: Icons.badge,
+                    label: 'Role Templates',
+                    menuKey: 'Role Templates',
                   ),
                   _buildLockedItem(
                     icon: Icons.report_outlined,

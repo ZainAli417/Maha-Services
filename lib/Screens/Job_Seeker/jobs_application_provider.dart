@@ -4,9 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../core/onboarding/models/candidate_profile.dart';
+import '../../core/onboarding/role_profile_snapshot.dart';
+import '../../core/onboarding/role_template_service.dart';
+
 class JobApplicationsProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final RoleTemplateService _templates = RoleTemplateService();
 
   String? _errorMessage;
   final Set<String> _appliedJobs = {};
@@ -19,6 +24,75 @@ class JobApplicationsProvider with ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Fields that would let a recruiter contact the candidate directly.
+  ///
+  /// Kept in one place so the apply path and any future snapshot writer agree
+  /// on what "contact details" means.
+  static const _contactKeys = {
+    'email',
+    'secondary_email',
+    'secondaryEmail',
+    'contactNumber',
+    'contact_number',
+    'phone',
+    'dob',
+    'dateOfBirth',
+    'socialLinks',
+    'social_links',
+  };
+
+  /// Copies `user_data` for the application snapshot with every contact field
+  /// removed from `personalProfile`.
+  ///
+  /// Recruiters read this snapshot to screen and shortlist, which needs skills,
+  /// experience and role data — not a direct line to the candidate. Contact
+  /// details reach the admin, who arranges interviews and travel, by a separate
+  /// read of Job_Seeker/{uid} that recruiters have no access to. Redacting here
+  /// rather than in the UI means the recruiter's client never receives the
+  /// values at all, so there is nothing to recover from the network response.
+  @visibleForTesting
+  static Map<String, dynamic> withoutContactDetails(dynamic userData) {
+    if (userData is! Map) return <String, dynamic>{};
+    final copy = Map<String, dynamic>.from(userData);
+
+    final personal = copy['personalProfile'] ?? copy['personal_profile'];
+    if (personal is Map) {
+      final scrubbed = Map<String, dynamic>.from(personal)
+        ..removeWhere((k, _) => _contactKeys.contains(k));
+      if (copy.containsKey('personalProfile')) {
+        copy['personalProfile'] = scrubbed;
+      } else {
+        copy['personal_profile'] = scrubbed;
+      }
+    }
+    return copy;
+  }
+
+  /// Flattens the candidate's role-template answers for the application
+  /// snapshot. Returns null for accounts that predate the template engine —
+  /// the recruiter UI renders those from the legacy sections alone.
+  Future<Map<String, dynamic>?> _buildRoleProfileSnapshot(
+    Map<String, dynamic> seekerDoc,
+  ) async {
+    try {
+      final raw = seekerDoc['candidateProfile'];
+      if (raw is! Map) return null;
+      final profile = CandidateProfile.fromJson(
+          seekerDoc['uid']?.toString() ?? '', Map<String, dynamic>.from(raw));
+      final roleId = profile.targetRole.roleId;
+      if (roleId.isEmpty) return null;
+
+      final template = await _templates.roleById(roleId);
+      if (template == null) return null;
+
+      return RoleProfileSnapshot.build(profile, template).toJson();
+    } catch (e) {
+      // A snapshot failure must never block an application.
+      debugPrint('⚠️ role profile snapshot skipped: $e');
+      return null;
+    }
   }
 
   /// Load all job IDs the current user has applied to.
@@ -122,8 +196,9 @@ class JobApplicationsProvider with ChangeNotifier {
       }
 
       final seekerDoc = seekerSnap.data()!;
-      final mainData = seekerDoc['user_data'] ?? {};
+      final mainData = withoutContactDetails(seekerDoc['user_data']);
       final subProfiles = seekerDoc['user_profile'] ?? {};
+      final roleProfile = await _buildRoleProfileSnapshot(seekerDoc);
 
       final applicationData = {
         'userId': user.uid,
@@ -132,8 +207,16 @@ class JobApplicationsProvider with ChangeNotifier {
         'appliedAt': FieldValue.serverTimestamp(),
         'status': 'pending',
         'profileSnapshot': {
-          'user_Account_Data': Map<String, dynamic>.from(mainData),
+          // Contact details are deliberately absent — see
+          // [withoutContactDetails]. Admins read them straight from
+          // Job_Seeker/{uid} when they review the shortlist.
+          'user_Account_Data': mainData,
           'user_Profile_Sections': Map<String, dynamic>.from(subProfiles),
+          // Display-ready copy of the role-template answers, so recruiters and
+          // admins can read a candidate's role profile without loading the
+          // template — and see exactly what was true on the day they applied,
+          // even if an admin edits the template afterwards.
+          if (roleProfile != null) 'role_profile': roleProfile,
         },
       };
 

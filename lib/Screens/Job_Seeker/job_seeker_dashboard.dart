@@ -4,9 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 import 'JS_Top_Bar.dart';
 import 'List_applied_jobs_provider.dart';
 import '../../Constant/js_header.dart';
+import 'JS_Profile/JS_Profile_Provider.dart';
+import 'widgets/profile_timeline.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  RESPONSIVE BREAKPOINTS
@@ -400,6 +403,11 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
+                                        // Shown before the application stats:
+                                        // a brand-new candidate has a profile
+                                        // but no applications yet.
+                                        _CareerTimelineCard(isMobile: isMobile),
+                                        SizedBox(height: isMobile ? 14 : 18),
                                         if (prov.applications.isNotEmpty) ...[
                                           _KpiStrip(
                                             total:
@@ -798,6 +806,60 @@ class _MobileAppCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  RIGHT PANEL
 // ═══════════════════════════════════════════════════════════════════════════
+/// Career progression, education and credential validity, read from the
+/// role-template profile onboarding wrote. Collapses to a prompt when the
+/// candidate has not built one yet.
+class _CareerTimelineCard extends StatelessWidget {
+  const _CareerTimelineCard({required this.isMobile});
+
+  final bool isMobile;
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = context.watch<ProfileProvider_NEW>();
+    final candidate = profile.candidateProfile;
+
+    if (profile.isLoading && candidate == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _SectionHead(
+                icon: Icons.timeline_rounded,
+                title: candidate == null
+                    ? 'Your Profile'
+                    : 'Career Timeline'
+                        '${candidate.targetRole.roleTitle.isEmpty ? '' : ' · ${candidate.targetRole.roleTitle}'}',
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => context.go('/profile'),
+              icon: const Icon(Icons.open_in_new_rounded, size: 15),
+              label: Text(candidate == null ? 'Complete profile' : 'View profile'),
+            ),
+          ],
+        ),
+        SizedBox(height: isMobile ? 10 : 14),
+        _Card(
+          child: Padding(
+            padding: EdgeInsets.all(isMobile ? 14 : 18),
+            child: ProfileTimeline(
+              profile: candidate,
+              maxItems: isMobile ? 4 : 6,
+              onViewAll: () => context.go('/profile'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _RightPanel extends StatelessWidget {
   final Map<String, dynamic> analytics;
   final List<dynamic> applications;

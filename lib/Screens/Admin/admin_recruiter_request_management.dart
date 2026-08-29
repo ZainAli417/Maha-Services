@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:job_portal/Constant/brand_snackbar.dart';
 
 import 'admin_recruiter_request_provider.dart';
+import '../../core/onboarding/role_profile_snapshot.dart';
+import '../../core/widgets/role_profile_view.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Breakpoints
@@ -2571,6 +2573,14 @@ class _CVSheet extends StatelessWidget {
       cand['certificationDocuments'] ?? cand['certification_documents'],
     );
 
+    // Role-template answers, carried verbatim from the recruiter's payload so
+    // the admin reviews the same fields the recruiter screened on.
+    final roleProfile = RoleProfileSnapshot.fromJson(
+      cand['role_profile'] is Map
+          ? Map<String, dynamic>.from(cand['role_profile'] as Map)
+          : null,
+    );
+
     // match_score
     final ms = norm(cand['match_score']);
     final hasScore = ms.isNotEmpty && ms['overallScore'] != null;
@@ -2724,6 +2734,17 @@ class _CVSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // ── Personal ──
+                            // Every row below is individually optional, so the
+                            // header would otherwise stand alone over nothing
+                            // for a candidate whose detail all lives in the
+                            // role template.
+                            if (nationality.isNotEmpty ||
+                                dob.isNotEmpty ||
+                                location.isNotEmpty ||
+                                retDate.isNotEmpty ||
+                                secEmail.isNotEmpty ||
+                                summary.isNotEmpty ||
+                                objectives.isNotEmpty)
                             _Sec('PERSONAL', Icons.person_outline, _C.primary, [
                               _Row2(
                                 nationality.isNotEmpty
@@ -2819,6 +2840,25 @@ class _CVSheet extends StatelessWidget {
                                 strengths: strengths,
                                 weaknesses: weaknesses,
                                 analysis: analysis,
+                              ),
+                            ],
+
+                            // ── Role Profile ──
+                            if (!roleProfile.isEmpty) ...[
+                              const SizedBox(height: 22),
+                              _Sec(
+                                'ROLE PROFILE',
+                                Icons.badge_outlined,
+                                _C.primary,
+                                [
+                                  // Admins run the candidate's paperwork and
+                                  // travel, so they see everything.
+                                  RoleProfileView(
+                                    snapshot: roleProfile,
+                                    dense: true,
+                                    canViewContactInfo: true,
+                                  ),
+                                ],
                               ),
                             ],
 

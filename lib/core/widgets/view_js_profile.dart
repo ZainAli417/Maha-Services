@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../Screens/Recruiter/LIst_of_Applicants_provider.dart';
+import 'role_profile_view.dart';
 
 // ─── Tokens ──────────────────────────────────────────────────────────────────
 class _T {
@@ -52,7 +53,12 @@ enum _Layout { mobile, tablet, desktop }
 class _LayoutData {
   final _Layout layout;
   final double sw;
-  _LayoutData(this.layout, this.sw);
+
+  /// Whether this viewer may see the candidate's direct contact details.
+  /// Recruiters may not; admins, who run the candidate's paperwork, may.
+  final bool canViewContactInfo;
+
+  _LayoutData(this.layout, this.sw, {this.canViewContactInfo = false});
 
   bool get isMobile => layout == _Layout.mobile;
   bool get isDesktop => layout == _Layout.desktop;
@@ -72,20 +78,19 @@ class _LD extends InheritedWidget {
       ctx.dependOnInheritedWidgetOfExactType<_LD>()!.data;
 
   @override
-  bool updateShouldNotify(_LD old) => old.data.layout != data.layout;
+  bool updateShouldNotify(_LD old) =>
+      old.data.layout != data.layout ||
+      old.data.canViewContactInfo != data.canViewContactInfo;
 }
 
-// ─── Email / phone masker (pure function) ────────────────────────────────────
-String _mask(String v, {bool email = false}) {
-  if (v.isEmpty) return 'Not provided';
-  if (email) {
-    final p = v.split('@');
-    if (p.length != 2) return v;
-    final u = p[0];
-    return '${u.length > 2 ? u.substring(0, 2) : '**'}***@${p[1]}';
-  }
-  if (v.length <= 4) return '****';
-  return '${v.substring(0, 2)}****${v.substring(v.length - 2)}';
+// ─── Contact visibility ──────────────────────────────────────────────────────
+/// Returns the value when the viewer is allowed it, and a withheld notice
+/// otherwise. Deliberately not a partial mask: "jo***@gmail.com" still hands
+/// over the domain and most of the handle, which is most of the way to a
+/// direct approach.
+String _contact(String v, {required bool canView}) {
+  if (!canView) return 'Shared after admin approval';
+  return v.isEmpty ? 'Not provided' : v;
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -93,7 +98,16 @@ String _mask(String v, {bool email = false}) {
 // ═════════════════════════════════════════════════════════════════════════════
 class ViewApplicantDetails extends StatelessWidget {
   final ApplicantRecord applicant;
-  const ViewApplicantDetails({super.key, required this.applicant});
+
+  /// Defaults to false so any new call site fails closed. Only the admin
+  /// screens, which own candidate paperwork and travel arrangements, pass true.
+  final bool canViewContactInfo;
+
+  const ViewApplicantDetails({
+    super.key,
+    required this.applicant,
+    this.canViewContactInfo = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +122,8 @@ class ViewApplicantDetails extends StatelessWidget {
         } else {
           l = _Layout.desktop;
         }
-        final ld = _LayoutData(l, sw);
+        final ld = _LayoutData(l, sw,
+            canViewContactInfo: canViewContactInfo);
 
         final content = ClipRRect(
           borderRadius: BorderRadius.circular(ld.isMobile ? 0 : 12),
@@ -288,7 +303,7 @@ class _BadgeRow extends StatelessWidget {
               applicant.nationality,
               ld.isMobile,
             ),
-          if (applicant.dob.isNotEmpty) ...[
+          if (ld.canViewContactInfo && applicant.dob.isNotEmpty) ...[
             const SizedBox(width: 5),
             _Chip(Icons.cake_outlined, applicant.dob, ld.isMobile),
           ],
@@ -410,20 +425,19 @@ class _MobileTabletBodyState extends State<_MobileTabletBody>
                     children: [
                       _SideContent(applicant: widget.applicant),
                       const SizedBox(height: 24),
-                      _SecHead('Executive Summary', Icons.dashboard_outlined),
-                      const SizedBox(height: 10),
-                      Text(
-                        widget.applicant.summary.isNotEmpty
-                            ? widget.applicant.summary
-                            : widget.applicant.objectives,
-                        style: _T.body(fs: ld.bodyFs),
-                      ),
-                      const SizedBox(height: 22),
-                      _SecHead('Education', Icons.school_outlined),
-                      const SizedBox(height: 10),
-                      widget.applicant.educations.isEmpty
-                          ? const _EmptyState('No education listed')
-                          : _EduList(widget.applicant.educations),
+                      if (_summaryOf(widget.applicant).isNotEmpty) ...[
+                        _SecHead(
+                            'Executive Summary', Icons.dashboard_outlined),
+                        const SizedBox(height: 10),
+                        Text(_summaryOf(widget.applicant),
+                            style: _T.body(fs: ld.bodyFs)),
+                        const SizedBox(height: 22),
+                      ],
+                      if (widget.applicant.educations.isNotEmpty) ...[
+                        _SecHead('Education', Icons.school_outlined),
+                        const SizedBox(height: 10),
+                        _EduList(widget.applicant.educations),
+                      ],
                     ],
                   ),
                 ),
@@ -465,10 +479,22 @@ class _SideContent extends StatelessWidget {
         _ContactRow(
           Icons.email_outlined,
           'Email',
-          _mask(applicant.email, email: true),
+          _contact(applicant.email, canView: ld.canViewContactInfo),
         ),
         const SizedBox(height: 7),
-        _ContactRow(Icons.phone_outlined, 'Phone', _mask(applicant.phone)),
+        _ContactRow(
+          Icons.phone_outlined,
+          'Phone',
+          _contact(applicant.phone, canView: ld.canViewContactInfo),
+        ),
+        if (ld.canViewContactInfo && applicant.secondaryEmail.isNotEmpty) ...[
+          const SizedBox(height: 7),
+          _ContactRow(
+            Icons.alternate_email_rounded,
+            'Alt email',
+            applicant.secondaryEmail,
+          ),
+        ],
 
         const SizedBox(height: 20),
 
@@ -502,15 +528,15 @@ class _SideContent extends StatelessWidget {
         const SizedBox(height: 20),
 
         // ── Skills
-        _CatLabel('Skills'),
-        const SizedBox(height: 8),
-        applicant.skills.isEmpty
-            ? const _EmptyState('No skills listed')
-            : Wrap(
-                spacing: 5,
-                runSpacing: 5,
-                children: [for (final s in applicant.skills) _SkillPill(s)],
-              ),
+        if (applicant.skills.isNotEmpty) ...[
+          _CatLabel('Skills'),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 5,
+            runSpacing: 5,
+            children: [for (final s in applicant.skills) _SkillPill(s)],
+          ),
+        ],
 
         // ── Social
         if (applicant.socialLinks.isNotEmpty) ...[
@@ -560,72 +586,105 @@ class _MainContent extends StatelessWidget {
       children: [
         // Summary + Education (desktop only)
         if (includeSummaryEdu) ...[
-          _SecHead('Executive Summary', Icons.dashboard_outlined),
-          const SizedBox(height: 10),
-          Text(
-            applicant.summary.isNotEmpty
-                ? applicant.summary
-                : applicant.objectives,
-            style: _T.body(),
+          if (_summaryOf(applicant).isNotEmpty) ...[
+            _SecHead('Executive Summary', Icons.dashboard_outlined),
+            const SizedBox(height: 10),
+            Text(_summaryOf(applicant), style: _T.body()),
+            const SizedBox(height: 26),
+          ],
+          if (applicant.educations.isNotEmpty) ...[
+            _SecHead('Education', Icons.school_outlined),
+            const SizedBox(height: 10),
+            _EduList(applicant.educations),
+            gap,
+          ],
+        ],
+
+        // Role profile — the template answers captured at apply time. Placed
+        // above the generic CV sections because it is the role-specific data a
+        // recruiter screens on (hours, ratings, clearances, recency).
+        if (!applicant.roleProfile.isEmpty) ...[
+          _SecHead('Role Profile', Icons.badge_outlined),
+          SizedBox(height: ld.isMobile ? 10 : 14),
+          RoleProfileView(
+            snapshot: applicant.roleProfile,
+            dense: true,
+            canViewContactInfo: ld.canViewContactInfo,
           ),
-          const SizedBox(height: 26),
-          _SecHead('Education', Icons.school_outlined),
-          const SizedBox(height: 10),
-          applicant.educations.isEmpty
-              ? const _EmptyState('No education listed')
-              : _EduList(applicant.educations),
           gap,
         ],
 
-        // Professional Experience
-        _SecHead('Professional Experience', Icons.work_history_outlined),
-        SizedBox(height: ld.isMobile ? 10 : 14),
-        applicant.experiences.isEmpty
-            ? const _EmptyState('No experience listed')
-            : _ExpList(applicant.experiences),
-        gap,
+        // Everything below is conditional. These sections were always drawn,
+        // each falling back to "No X provided" — which was tolerable when the
+        // old questionnaire asked for all of them, but now that the role
+        // template carries the substance, uploads are optional and the
+        // Experience page is gone, an unconditional render produced a screen of
+        // six "not provided" rows. A section the candidate has nothing for is
+        // simply not shown; the recruiter reads what exists.
 
-        // Experience Documents
-        _SecHead('Experience Documents', Icons.folder_outlined),
-        const SizedBox(height: 10),
-        applicant.experienceDocuments.isEmpty
-            ? const _EmptyState('No experience documents provided')
-            : _DocList(applicant.experienceDocuments),
-        gap,
+        if (applicant.experiences.isNotEmpty) ...[
+          _SecHead('Professional Experience', Icons.work_history_outlined),
+          SizedBox(height: ld.isMobile ? 10 : 14),
+          _ExpList(applicant.experiences),
+          gap,
+        ],
 
-        // Certifications
-        _SecHead('Certifications & Licenses', Icons.verified_user_outlined),
-        const SizedBox(height: 10),
-        applicant.certifications.isEmpty
-            ? const _EmptyState('No certifications provided')
-            : _CertGrid(applicant.certifications),
-        gap,
+        if (applicant.experienceDocuments.isNotEmpty) ...[
+          _SecHead('Experience Documents', Icons.folder_outlined),
+          const SizedBox(height: 10),
+          _DocList(applicant.experienceDocuments),
+          gap,
+        ],
 
-        // Certification Documents
-        _SecHead('Certification Documents', Icons.attach_file_rounded),
-        const SizedBox(height: 10),
-        applicant.certificationDocuments.isEmpty
-            ? const _EmptyState('No certification documents provided')
-            : _DocList(applicant.certificationDocuments),
-        gap,
+        if (applicant.certifications.isNotEmpty) ...[
+          _SecHead('Certifications & Licenses', Icons.verified_user_outlined),
+          const SizedBox(height: 10),
+          _CertGrid(applicant.certifications),
+          gap,
+        ],
 
-        // Publications
-        _SecHead('Publications', Icons.article_outlined),
-        const SizedBox(height: 10),
-        applicant.publications.isEmpty
-            ? const _EmptyState('No publications provided')
-            : _NumberedList(applicant.publications),
-        gap,
+        if (applicant.certificationDocuments.isNotEmpty) ...[
+          _SecHead('Certification Documents', Icons.attach_file_rounded),
+          const SizedBox(height: 10),
+          _DocList(applicant.certificationDocuments),
+          gap,
+        ],
 
-        // Awards
-        _SecHead('Awards', Icons.emoji_events_outlined),
-        const SizedBox(height: 10),
-        applicant.awards.isEmpty
-            ? const _EmptyState('No awards provided')
-            : _NumberedList(applicant.awards),
+        if (applicant.publications.isNotEmpty) ...[
+          _SecHead('Publications', Icons.article_outlined),
+          const SizedBox(height: 10),
+          _NumberedList(applicant.publications),
+          gap,
+        ],
+
+        if (applicant.awards.isNotEmpty) ...[
+          _SecHead('Awards', Icons.emoji_events_outlined),
+          const SizedBox(height: 10),
+          _NumberedList(applicant.awards),
+        ],
+
+        // A candidate whose whole profile lives in the role template would
+        // otherwise end on the summary with no indication anything follows.
+        if (_hasNoCvSections(applicant)) ...[
+          _SecHead('Additional Sections', Icons.info_outline_rounded),
+          const SizedBox(height: 10),
+          const _EmptyState(
+              'This candidate completed a role-specific profile. Everything '
+              'they provided is shown above.'),
+        ],
       ],
     );
   }
+
+  /// True when none of the optional CV-style sections have content, so the
+  /// view can say so once instead of six times.
+  static bool _hasNoCvSections(ApplicantRecord a) =>
+      a.experiences.isEmpty &&
+      a.experienceDocuments.isEmpty &&
+      a.certifications.isEmpty &&
+      a.certificationDocuments.isEmpty &&
+      a.publications.isEmpty &&
+      a.awards.isEmpty;
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1351,6 +1410,11 @@ class _InitAvatar extends StatelessWidget {
     ),
   );
 }
+
+/// The candidate's own words, whichever field they landed in. Older profiles
+/// used `objectives`; the role-template flow writes `summary`.
+String _summaryOf(ApplicantRecord a) =>
+    a.summary.trim().isNotEmpty ? a.summary.trim() : a.objectives.trim();
 
 class _EmptyState extends StatelessWidget {
   final String msg;
