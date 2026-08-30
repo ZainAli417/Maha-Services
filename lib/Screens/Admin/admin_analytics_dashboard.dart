@@ -320,22 +320,28 @@ class _MainContent extends StatelessWidget {
           title: 'Demand Intelligence',
         ),
         const SizedBox(height: 14),
+        // Two rows rather than one: the Top Recruiters card that used to sit
+        // beside the skills chart was commented out, leaving two fifths of
+        // this row blank. Target roles and profile quality fill it with
+        // things only the candidate documents can answer.
         isMid
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(flex: 3, child: _SkillsChart(prov: prov)),
+                  Expanded(child: _SkillsChart(prov: prov)),
                   const SizedBox(width: 20),
-                  // Expanded(flex: 2, child: _TopRecruiters(prov: prov)),
+                  Expanded(child: _TargetRolesCard(prov: prov)),
                 ],
               )
             : Column(
                 children: [
                   _SkillsChart(prov: prov),
-                  // const SizedBox(height: 20),
-                  // _TopRecruiters(prov: prov),
+                  const SizedBox(height: 20),
+                  _TargetRolesCard(prov: prov),
                 ],
               ),
+        const SizedBox(height: 20),
+        _PoolQualityCard(prov: prov),
         const SizedBox(height: 28),
 
         // STATUS BREAKDOWN  — line chart + bar chart
@@ -1492,194 +1498,435 @@ class _SkillsChart extends StatelessWidget {
   const _SkillsChart({required this.prov});
 
   @override
+  Widget build(BuildContext context) => _BarChartCard(
+        icon: Icons.bar_chart_rounded,
+        title: 'Candidate Skills',
+        sub: prov.selectedSkills.isNotEmpty
+            ? '${prov.skillFrequencies.length} selected'
+            : prov.skillsAreCapped
+                ? 'Top ${prov.skillFrequencies.length} of '
+                    '${prov.totalSkillCount}'
+                : '${prov.skillFrequencies.length} across all profiles',
+        data: prov.skillFrequencies,
+        from: _C.indigo,
+        to: _C.teal,
+        emptyLabel: 'No skill data yet',
+        trailing: _SkillFilterButton(prov: prov),
+      );
+}
+
+/// The bar chart both Demand Intelligence cards render.
+///
+/// The data handed in is already capped — see
+/// [AdminAnalyticsProvider.defaultSkillLimit]. That cap is what makes this
+/// readable: the chart used to receive every distinct value in the pool, which
+/// for templated roles runs past a hundred, and a hundred bars in a
+/// fixed-height card is the squeeze rather than anything about the chart
+/// itself.
+class _BarChartCard extends StatelessWidget {
+  const _BarChartCard({
+    required this.icon,
+    required this.title,
+    required this.sub,
+    required this.data,
+    required this.from,
+    required this.to,
+    required this.emptyLabel,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final String title;
+  final String sub;
+  final Map<String, int> data;
+  final Color from;
+  final Color to;
+  final String emptyLabel;
+  final Widget? trailing;
+
+  @override
   Widget build(BuildContext context) {
-    final skills = prov.skillFrequencies.keys.toList();
-    final counts = prov.skillFrequencies.values.toList();
+    final labels = data.keys.toList();
+    final counts = data.values.toList();
     final maxY = counts.isNotEmpty
         ? counts.reduce((a, b) => a > b ? a : b).toDouble() * 1.3
         : 10.0;
 
     return RepaintBoundary(
       child: _Card(
-      height: 370,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: _CardHead(
-                  icon: Icons.bar_chart_rounded,
-                  title: 'Candidates Skills',
-                  sub: 'Top ${skills.length} from job seeker profiles',
-                  // badge: _Chip(
-                  //     label: 'Profiles',
-                  //     icon: Icons.people_rounded,
-                  //     color: _C.teal),
+        height: 370,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: _CardHead(icon: icon, title: title, sub: sub),
                 ),
-              ),
-              // Multi-select Skills
-              InkWell(
-                onTap: () => _showMultiSelectSkills(context, prov),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: prov.selectedSkills.isNotEmpty
-                        ? _C.indigoLt
-                        : _C.surface,
-                    border: Border.all(
-                      color: prov.selectedSkills.isNotEmpty
-                          ? _C.indigo
-                          : _C.border,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.filter_list_rounded,
-                        size: 16,
-                        color: prov.selectedSkills.isNotEmpty
-                            ? _C.indigo
-                            : _C.t3,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        prov.selectedSkills.isNotEmpty
-                            ? '${prov.selectedSkills.length} Selected'
-                            : 'Select Skills',
-                        style: _C.p(
-                          12,
-                          fw: FontWeight.w600,
-                          color: prov.selectedSkills.isNotEmpty
-                              ? _C.indigo
-                              : _C.t2,
+                ?trailing,
+              ],
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: labels.isEmpty
+                  ? _Empty(icon: icon, label: emptyLabel)
+                  : BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: maxY,
+                        barTouchData: BarTouchData(
+                          touchTooltipData: BarTouchTooltipData(
+                            getTooltipColor: (_) => _C.t1,
+                            tooltipBorderRadius: BorderRadius.circular(8),
+                            // The axis label is abbreviated; the tooltip is
+                            // where the full name lives.
+                            getTooltipItem: (group, gi, rod, ri) =>
+                                BarTooltipItem(
+                              '${labels[group.x]}\n${rod.toY.round()}',
+                              _C.p(11, color: Colors.white),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: skills.isEmpty
-                ? _Empty(
-                    icon: Icons.bar_chart_rounded,
-                    label: 'No skill data yet',
-                  )
-                : BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceAround,
-                      maxY: maxY,
-                      barTouchData: BarTouchData(
-                        touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_) => _C.t1,
-                          tooltipBorderRadius: BorderRadius.circular(8),
-
-                          getTooltipItem: (group, gi, rod, ri) =>
-                              BarTooltipItem(
-                                '${skills[group.x]}\n${rod.toY.round()}',
-                                _C.p(11, color: Colors.white),
-                              ),
-                        ),
-                      ),
-                      titlesData: FlTitlesData(
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (v, _) {
-                              final i = v.toInt();
-                              if (i < 0 || i >= skills.length) {
-                                return const SizedBox.shrink();
-                              }
-                              final lbl = skills[i].length > 9
-                                  ? '${skills[i].substring(0, 7)}..'
-                                  : skills[i];
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  lbl,
-                                  style: _C.p(
-                                    9,
-                                    fw: FontWeight.w500,
-                                    color: _C.t3,
+                        titlesData: FlTitlesData(
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 34,
+                              getTitlesWidget: (v, _) {
+                                final i = v.toInt();
+                                if (i < 0 || i >= labels.length) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    _abbreviate(labels[i]),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: _C.p(
+                                      9,
+                                      fw: FontWeight.w500,
+                                      color: _C.t3,
+                                    ),
                                   ),
+                                );
+                              },
+                            ),
+                          ),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 36,
+                              getTitlesWidget: (v, _) => Text(
+                                v.toInt().toString(),
+                                style: _C.p(
+                                  9,
+                                  fw: FontWeight.w500,
+                                  color: _C.t3,
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 36,
-                            getTitlesWidget: (v, _) => Text(
-                              v.toInt().toString(),
-                              style: _C.p(9, fw: FontWeight.w500, color: _C.t3),
-                            ),
-                          ),
-                        ),
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                      ),
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                        getDrawingHorizontalLine: (_) => const FlLine(
-                          color: Color(0xFFF0F3FA),
-                          strokeWidth: 1,
-                        ),
-                      ),
-                      borderData: FlBorderData(show: false),
-                      barGroups: List.generate(skills.length, (i) {
-                        final pct = maxY > 0 ? counts[i] / maxY : 0.0;
-                        final col = Color.lerp(
-                          _C.indigo,
-                          _C.teal,
-                          pct.clamp(0.0, 1.0).toDouble(),
-                        )!;
-                        return BarChartGroupData(
-                          x: i,
-                          barRods: [
-                            BarChartRodData(
-                              toY: counts[i].toDouble(),
-                              gradient: LinearGradient(
-                                colors: [col.withValues(alpha: 0.5), col],
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                              ),
-                              width: 22,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(7),
-                              ),
-                              backDrawRodData: BackgroundBarChartRodData(
-                                show: true,
-                                toY: maxY,
-                                color: const Color(0xFFF4F6FB),
                               ),
                             ),
-                          ],
-                        );
-                      }),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                        ),
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          getDrawingHorizontalLine: (_) => const FlLine(
+                            color: Color(0xFFF0F3FA),
+                            strokeWidth: 1,
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        barGroups: List.generate(labels.length, (i) {
+                          final pct = maxY > 0 ? counts[i] / maxY : 0.0;
+                          final col = Color.lerp(
+                            from,
+                            to,
+                            pct.clamp(0.0, 1.0).toDouble(),
+                          )!;
+                          return BarChartGroupData(
+                            x: i,
+                            barRods: [
+                              BarChartRodData(
+                                toY: counts[i].toDouble(),
+                                gradient: LinearGradient(
+                                  colors: [col.withValues(alpha: 0.5), col],
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                ),
+                                width: 22,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(7),
+                                ),
+                                backDrawRodData: BackgroundBarChartRodData(
+                                  show: true,
+                                  toY: maxY,
+                                  color: const Color(0xFFF4F6FB),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                      swapAnimationDuration: const Duration(milliseconds: 700),
+                      swapAnimationCurve: Curves.easeOutCubic,
                     ),
-                    swapAnimationDuration: const Duration(milliseconds: 700),
-                    swapAnimationCurve: Curves.easeOutCubic,
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  /// Two short lines beat one truncated word: role titles like "Aircraft
+  /// Maintenance Engineer" were being cut to "Aircraf.." and told the reader
+  /// nothing.
+  static String _abbreviate(String label) {
+    if (label.length <= 12) return label;
+    final words = label.split(RegExp(r'[\s/]+')).where((w) => w.isNotEmpty);
+    if (words.length >= 2) {
+      return words.take(2).map((w) => w.length > 9 ? w.substring(0, 8) : w)
+          .join('\n');
+    }
+    return '${label.substring(0, 10)}…';
+  }
+}
+
+/// What roles candidates are onboarding against.
+///
+/// With sixty-odd role templates live, this is the clearest read an admin has
+/// on what the platform is actually being used for — and which templates are
+/// dead weight.
+class _TargetRolesCard extends StatelessWidget {
+  const _TargetRolesCard({required this.prov});
+  final AdminAnalyticsProvider prov;
+
+  @override
+  Widget build(BuildContext context) => _BarChartCard(
+        icon: Icons.badge_outlined,
+        title: 'Candidates by Target Role',
+        sub: prov.roleFrequencies.isEmpty
+            ? 'No completed role profiles yet'
+            : '${prov.roleFrequencies.length} roles represented',
+        data: prov.roleFrequencies,
+        from: _C.violet,
+        to: _C.amber,
+        emptyLabel: 'No role data yet',
+      );
+}
+
+/// Onboarding drop-off plus the credentials the pool actually holds.
+///
+/// Two things an admin cannot get anywhere else: how many people start a
+/// profile and never finish it, and what licences and aircraft are in the
+/// pool — the latter being what recruiters screen on, unlike self-declared
+/// skills.
+class _PoolQualityCard extends StatelessWidget {
+  const _PoolQualityCard({required this.prov});
+  final AdminAnalyticsProvider prov;
+
+  @override
+  Widget build(BuildContext context) {
+    final creds = prov.credentialFrequencies.entries.take(6).toList();
+    final pct = (prov.completionRate * 100).round();
+
+    return RepaintBoundary(
+      child: _Card(
+        height: 370,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _CardHead(
+              icon: Icons.verified_outlined,
+              title: 'Profile Quality',
+              sub: 'Completion and credentials held',
+            ),
+            const SizedBox(height: 18),
+
+            // Completion funnel
+            Row(
+              children: [
+                Expanded(
+                  child: _MiniStat(
+                    label: 'Completed',
+                    value: '${prov.completedProfiles}',
+                    color: _C.emerald,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _MiniStat(
+                    label: 'Still in draft',
+                    value: '${prov.draftProfiles}',
+                    color: _C.amber,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _MiniStat(
+                    label: 'Completion',
+                    value: '$pct%',
+                    color: _C.indigo,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: prov.completionRate,
+                minHeight: 6,
+                backgroundColor: const Color(0xFFF0F3FA),
+                valueColor: const AlwaysStoppedAnimation(_C.emerald),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'LICENCES & AIRCRAFT IN POOL',
+              style: _C.p(10, fw: FontWeight.w700, color: _C.t3)
+                  .copyWith(letterSpacing: 0.6),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: creds.isEmpty
+                  ? _Empty(
+                      icon: Icons.workspace_premium_outlined,
+                      label: 'No credentials recorded yet',
+                    )
+                  : SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final c in creds)
+                            _CountPill(label: c.key, count: c.value),
+                        ],
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(color: color.withValues(alpha: 0.18)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value, style: _C.p(18, fw: FontWeight.w800, color: color)),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: _C.p(10, fw: FontWeight.w500, color: _C.t3),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      );
+}
+
+class _CountPill extends StatelessWidget {
+  const _CountPill({required this.label, required this.count});
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: _C.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: _C.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: _C.p(11, fw: FontWeight.w600, color: _C.t1)),
+            const SizedBox(width: 7),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: _C.indigoLt,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: _C.p(10, fw: FontWeight.w700, color: _C.indigo),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+/// The skills filter trigger, lifted out of the chart so the chart body reads
+/// as one thing.
+class _SkillFilterButton extends StatelessWidget {
+  const _SkillFilterButton({required this.prov});
+  final AdminAnalyticsProvider prov;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = prov.selectedSkills.isNotEmpty;
+    return InkWell(
+      onTap: () => _showMultiSelectSkills(context, prov),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? _C.indigoLt : _C.surface,
+          border: Border.all(color: active ? _C.indigo : _C.border),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.filter_list_rounded,
+              size: 16,
+              color: active ? _C.indigo : _C.t3,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              active ? '${prov.selectedSkills.length} Selected' : 'Filter',
+              style: _C.p(
+                12,
+                fw: FontWeight.w600,
+                color: active ? _C.indigo : _C.t2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

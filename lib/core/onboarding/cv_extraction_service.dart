@@ -8,6 +8,7 @@ import '../../main.dart' show Env;
 import 'models/aviation_role.dart';
 import 'models/candidate_profile.dart';
 import 'models/question.dart';
+import '../../services/backend_api.dart';
 
 /// What the extractor produced from a CV, already shaped for the dynamic form.
 class RoleCvExtraction {
@@ -97,6 +98,7 @@ class CvExtractionService {
       // MultipartRequest behaves the same on web and Android.
       final request =
           http.MultipartRequest('POST', Uri.parse('${Env.backendUrl}/cv-extract'))
+            ..headers.addAll(await BackendApi.headers(multipart: true))
             ..files.add(http.MultipartFile.fromBytes(
               'file',
               bytes,

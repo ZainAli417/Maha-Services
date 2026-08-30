@@ -33,10 +33,6 @@ class ProfileProvider_NEW extends ChangeNotifier {
   bool isLoading = true;
   String errorMessage = '';
 
-  // Internal flag to track if this user uses the nested 'user_data' schema
-  // This prevents us from reading the DB before every write.
-  bool _usesNestedUserData = false;
-
   // Debug
   Map<String, dynamic>? lastFetchedRaw;
   String lastDebug = '';
@@ -89,10 +85,24 @@ class ProfileProvider_NEW extends ChangeNotifier {
   List<Map<String, dynamic>> educationalProfile = [];
 
   // PROFESSIONAL PROFILE / RECORD
-  String professionalProfileSummary = '';
   String professionalStatus = '';
   String expectedRetirementDate = '';
-  String retirementDate = '';
+
+  /// The Personal and Professional panels each show a summary box. They were
+  /// two stored fields saying the same thing, so they are now one: whichever
+  /// box the candidate edits, the other reflects it.
+  String get professionalProfileSummary => personalSummary;
+  set professionalProfileSummary(String v) {
+    personalSummary = v;
+    professionalProfileDirty = true;
+    _safeNotifyListeners();
+  }
+
+  /// "Expected retirement" (while serving) and "date of retirement" (once
+  /// retired) are the same date under two labels — the form shows one or the
+  /// other, never both.
+  String get retirementDate => expectedRetirementDate;
+  set retirementDate(String v) => expectedRetirementDate = v;
 
   // LISTS
   List<String> publications = [];
@@ -100,9 +110,11 @@ class ProfileProvider_NEW extends ChangeNotifier {
   List<String> references = [];
   List<Map<String, dynamic>> documents = [];
 
-  // ── Role-template profile (the schema onboarding writes) ─────────────────
-  /// The structured profile written by onboarding. Null for accounts created
-  /// before the role-template engine, which still render from `user_data`.
+  // ── The candidate document ───────────────────────────────────────────────
+  /// The whole profile, and the only thing stored. Null until the first load
+  /// completes or when the account has no profile yet; the flat fields above
+  /// are a view of it, rebuilt by [_populateFrom] and folded back by
+  /// [_composeProfile].
   CandidateProfile? candidateProfile;
 
   /// The template [candidateProfile.targetRole] points at, resolved from the
@@ -236,35 +248,16 @@ class ProfileProvider_NEW extends ChangeNotifier {
   }
 
   void _processRawData(Map<String, dynamic> rawData) {
-    Map<String, dynamic> data = rawData;
-
-    // OPTIMIZATION: Detect Schema Structure Once
-    if (rawData.containsKey('user_data') && rawData['user_data'] is Map) {
-      data = rawData['user_data'] as Map<String, dynamic>;
-      _usesNestedUserData = true;
-    } else if (rawData.containsKey('userData') && rawData['userData'] is Map) {
-      data = rawData['userData'] as Map<String, dynamic>;
-      _usesNestedUserData = true;
-    } else {
-      _usesNestedUserData = false;
-    }
-
-    // `candidateProfile` sits at the document root, not inside `user_data` —
-    // read it from the raw snapshot so the nested schema does not hide it.
     _parseRoleProfile(rawData);
-
-    _parseAndSetData(data);
+    _populateFrom(candidateProfile);
   }
 
   void _parseRoleProfile(Map<String, dynamic> rawData) {
-    final raw = rawData['candidateProfile'];
-    if (raw is! Map) {
-      candidateProfile = null;
+    candidateProfile = CandidateProfileService.parse(uid, rawData);
+    if (candidateProfile == null) {
       roleTemplate = null;
       return;
     }
-    candidateProfile =
-        CandidateProfile.fromJson(uid, Map<String, dynamic>.from(raw));
     // Resolving the template is a network read; do it without blocking the
     // rest of the parse and notify when it lands.
     unawaited(_resolveRoleTemplate());
@@ -340,10 +333,20 @@ class ProfileProvider_NEW extends ChangeNotifier {
         answers: answers,
         personalInfo: projected.personal,
         roleSpecificData: projected.roleData,
+        // Template attachments are re-projected with the answers so replacing
+        // a document here also updates the list the admin panel reads.
+        documents: [
+          ...ProfileProjector.documents(template, answers),
+          ...current.documents
+              .where((d) => d.category != DocumentCategory.general),
+        ],
       );
 
-      await _candidateProfiles.updateRoleSections(next);
+      await _candidateProfiles.save(next);
       candidateProfile = next;
+      // Re-fan the flat editor fields, or the next section save would compose
+      // from a stale view and undo what was just written.
+      _populateFrom(next);
       _lastFetchTime = null; // force a fresh read on the next load
       roleProfileSaving = false;
       _safeNotifyListeners();
@@ -357,105 +360,214 @@ class ProfileProvider_NEW extends ChangeNotifier {
     }
   }
 
-  void _parseAndSetData(Map<String, dynamic> data) {
-    // Personal
-    final personal = data['personalProfile'] ?? data['personal_profile'] ?? {};
-    if (personal is Map) {
-      final p = Map<String, dynamic>.from(personal);
-      name = _getString(p, ['name', 'fullName']);
-      email = _getString(p, ['email']);
-      secondaryEmail = _getString(p, ['secondary_email', 'secondaryEmail']);
-      contactNumber = _getString(p, ['contactNumber', 'contact_number']);
-      nationality = _getString(p, ['nationality']);
-      profilePicUrl = _getString(p, ['profilePicUrl', 'pic_url']);
-      objectives = _getString(p, ['objectives']);
-      personalSummary = _getString(p, ['summary']);
-      dob = _getString(p, ['dob']);
-
-      // ✅ ADD THIS DEBUG LOG
-      debugPrint('[LOAD DATA] DOB loaded from Firestore: "$dob"');
-
-      socialLinks = _toStringList(p['socialLinks'] ?? p['social_links']);
-      skillsList = _toStringList(p['skills'] ?? p['skillset']);
-    }
-    // Professional Profile
-    final profProfile =
-        data['professionalProfile'] ?? data['professional_profile'];
-    if (profProfile is Map) {
-      final prof = profProfile as Map<String, dynamic>;
-      professionalProfileSummary = _getString(prof, ['summary']);
-      professionalStatus = _getString(prof, ['status', 'professionalStatus']);
-      expectedRetirementDate = _getString(prof, [
-        'expectedRetirement',
-        'expectedRetirementDate',
-      ]);
-      retirementDate = _getString(prof, ['retirement', 'retirementDate']);
-    }
-
-    // Lists & Complex Objects
-    professionalExperience = _mapListOfMap(
-      data['professionalExperience'] ??
-          data['professional_experience'] ??
-          data['experiences'],
-    );
-    experienceDocuments = _mapListOfMap(
-      data['experienceDocuments'] ?? data['experience_documents'],
-    );
-
-    educationalProfile = _mapListOfMap(
-      data['educationalProfile'] ?? data['educational_profile'],
-    );
-
-    certifications = _mapCertifications(data['certifications']);
-    certificationDocuments = _mapListOfMap(
-      data['certificationDocuments'] ?? data['certification_documents'],
-    );
-
-    publications = _mapListStrings(data['publications']);
-    awards = _mapListStrings(data['awards']);
-    references = _mapListStrings(data['references']);
-    documents = _mapListOfMap(data['documents']);
-
-  }
-
-  // ---------------- Save Logic (Optimized) ----------------
-
-  /// OPTIMIZATION: Core Write Function
-  /// Does NOT read from DB. Uses cached `_usesNestedUserData` flag.
-  Future<void> _writeSection(Map<String, dynamic> payload) async {
-    if (uid.isEmpty) {
-      debugPrint('[_writeSection] ERROR: UID is empty!');
+  /// Fans the profile out onto the flat fields the editor widgets bind to.
+  ///
+  /// The widgets stay string- and list-shaped because that is what text
+  /// controllers and list editors want; [_persist] folds them back into a
+  /// [CandidateProfile] on save, so the document on disk only ever has one
+  /// shape.
+  void _populateFrom(CandidateProfile? p) {
+    if (p == null) {
+      _clearLocal();
       return;
     }
 
-    debugPrint('[_writeSection] Starting write...');
-    debugPrint('[_writeSection] _usesNestedUserData: $_usesNestedUserData');
+    final personal = p.personalInfo;
+    name = personal.fullName;
+    email = personal.email;
+    secondaryEmail = personal.secondaryEmail;
+    contactNumber = personal.phone;
+    nationality = personal.nationality;
+    profilePicUrl = personal.profilePicUrl;
+    objectives = personal.objectives;
+    personalSummary = personal.summary;
+    dob = personal.dateOfBirth;
+    socialLinks = List<String>.from(personal.socialLinks);
+    skillsList = List<String>.from(personal.skills);
+
+    professionalStatus = p.professionalStatus;
+    expectedRetirementDate = p.expectedRetirementDate;
+
+    professionalExperience = [
+      for (final x in p.experience)
+        {
+          'id': x.id,
+          'organization': x.company,
+          'role': x.title,
+          'location': x.location,
+          'startDate': x.startDate,
+          'endDate': x.endDate ?? '',
+          'isCurrent': x.isCurrent,
+          'duties': x.responsibilities.join('\n'),
+        },
+    ];
+
+    educationalProfile = [
+      for (final e in p.education)
+        {
+          'id': e.id,
+          'institutionName': e.institution,
+          'degree': e.degree,
+          'majorSubjects': e.fieldOfStudy,
+          'duration': e.graduationYear?.toString() ?? '',
+          'marksOrCgpa': e.grade,
+        },
+    ];
+
+    certifications = [
+      for (final c in p.certifications)
+        {'name': c.name, 'organization': c.issuer},
+    ];
+
+    publications = List<String>.from(p.publications);
+    awards = List<String>.from(p.awards);
+    references = List<String>.from(p.references);
+
+    documents = _docMaps(p, DocumentCategory.general);
+    experienceDocuments = _docMaps(p, DocumentCategory.experience);
+    certificationDocuments = _docMaps(p, DocumentCategory.certification);
+  }
+
+  static List<Map<String, dynamic>> _docMaps(
+    CandidateProfile p,
+    DocumentCategory category,
+  ) =>
+      [
+        for (final d in p.documentsIn(category))
+          {
+            'name': d.name,
+            'url': d.url,
+            'contentType': d.contentType,
+            if (d.uploadedAt != null)
+              'uploadedAt': Timestamp.fromDate(d.uploadedAt!),
+          },
+      ];
+
+  /// Folds the flat editor fields back into a [CandidateProfile].
+  ///
+  /// Built from [candidateProfile] so anything the editor does not surface —
+  /// the raw template answers, the projected role data, the target role —
+  /// survives a section save untouched.
+  CandidateProfile _composeProfile() {
+    final base = candidateProfile ?? CandidateProfile(uid: uid);
+
+    return base.copyWith(
+      personalInfo: base.personalInfo.copyWith(
+        fullName: name.trim(),
+        email: email.trim(),
+        secondaryEmail: secondaryEmail.trim(),
+        phone: contactNumber.trim(),
+        nationality: nationality.trim(),
+        profilePicUrl: profilePicUrl.trim(),
+        objectives: objectives.trim(),
+        summary: personalSummary.trim(),
+        dateOfBirth: dob.trim(),
+        socialLinks: socialLinks,
+        skills: skillsList,
+      ),
+      professionalStatus: professionalStatus.trim(),
+      expectedRetirementDate: expectedRetirementDate.trim(),
+      experience: [
+        for (final (i, e) in professionalExperience.indexed)
+          ExperienceEntry(
+            id: _entryId(e['id'], 'exp', i),
+            title: _s(e['role']),
+            company: _s(e['organization']),
+            location: _s(e['location']),
+            startDate: _s(e['startDate']),
+            endDate: _s(e['endDate']),
+            isCurrent: e['isCurrent'] == true,
+            responsibilities: _toStringList(e['duties']),
+          ),
+      ],
+      education: [
+        for (final (i, e) in educationalProfile.indexed)
+          EducationEntry(
+            id: _entryId(e['id'], 'edu', i),
+            institution: _s(e['institutionName']),
+            degree: _s(e['degree']),
+            fieldOfStudy: _s(e['majorSubjects']),
+            graduationYear: _yearOf(e['duration']),
+            grade: _s(e['marksOrCgpa']),
+          ),
+      ],
+      certifications: [
+        for (final (i, c) in certifications.indexed)
+          CertificationEntry(
+            id: _entryId(c['id'], 'cert', i),
+            name: _s(c['name']),
+            issuer: _s(c['organization']),
+          ),
+      ],
+      publications: publications,
+      awards: awards,
+      references: references,
+      documents: [
+        ..._toDocuments(documents, DocumentCategory.general),
+        ..._toDocuments(experienceDocuments, DocumentCategory.experience),
+        ..._toDocuments(
+            certificationDocuments, DocumentCategory.certification),
+      ],
+    );
+  }
+
+  static String _s(dynamic v) => v?.toString().trim() ?? '';
+
+  /// Keeps an entry's existing id, or mints a stable one. Ids matter because
+  /// the CV generator and the recruiter view key off them.
+  static String _entryId(dynamic existing, String prefix, int index) {
+    final id = _s(existing);
+    return id.isEmpty ? '${prefix}_$index' : id;
+  }
+
+  static int? _yearOf(dynamic v) {
+    final matches = RegExp(r'(19|20)\d{2}').allMatches(_s(v));
+    return matches.isEmpty ? null : int.tryParse(matches.last.group(0)!);
+  }
+
+  static List<ProfileDocument> _toDocuments(
+    List<Map<String, dynamic>> src,
+    DocumentCategory category,
+  ) =>
+      [
+        for (final d in src)
+          if (_s(d['url']).isNotEmpty)
+            ProfileDocument(
+              name: _s(d['name']),
+              url: _s(d['url']),
+              contentType: _s(d['contentType'] ?? d['type']),
+              category: category,
+              uploadedAt: d['uploadedAt'] is Timestamp
+                  ? (d['uploadedAt'] as Timestamp).toDate()
+                  : DateTime.tryParse(_s(d['uploadedAt'])),
+            ),
+      ];
+
+  // ---------------- Save Logic (Optimized) ----------------
+
+  /// Writes the whole profile.
+  ///
+  /// Section savers used to send just their own slice, which meant the write
+  /// path had to know how each slice nested. Composing the full profile and
+  /// writing it once is both simpler and safer: Firestore replaces arrays
+  /// wholesale on a merge, so a slice write was never the partial update it
+  /// looked like.
+  Future<void> _persist() async {
+    if (uid.isEmpty) {
+      debugPrint('[_persist] ERROR: UID is empty!');
+      return;
+    }
 
     try {
-      Map<String, dynamic> finalPayload;
-
-      if (_usesNestedUserData) {
-        finalPayload = {'user_data': payload};
-        debugPrint('[_writeSection] Wrapping in user_data structure');
-      } else {
-        finalPayload = payload;
-        debugPrint('[_writeSection] Using flat structure');
-      }
-
-      debugPrint('[_writeSection] Final payload to Firestore: $finalPayload');
-
-      await _docRef
-          .set(finalPayload, SetOptions(merge: true))
-          .timeout(
+      final next = _composeProfile();
+      await _candidateProfiles.save(next).timeout(
             const Duration(seconds: 10),
-            onTimeout: () => throw TimeoutException('Save operation timed out'),
+            onTimeout: () =>
+                throw TimeoutException('Save operation timed out'),
           );
-
-      debugPrint('[_writeSection] Firestore write successful');
+      candidateProfile = next;
       _lastFetchTime = DateTime.now();
     } catch (e, st) {
-      debugPrint('[_writeSection] ERROR: $e');
-      debugPrint('[_writeSection] Stack trace: $st');
       _handleError('Write failed', e, st);
       rethrow;
     }
@@ -481,149 +593,70 @@ class ProfileProvider_NEW extends ChangeNotifier {
   }
 
   // --- Section Specific Savers ---
+  //
+  // Every one of these writes the whole profile — see [_persist]. They differ
+  // only in which dirty flag they clear and what the confirmation says.
 
-  Future<void> savePersonalSection(BuildContext ctx) async {
-    debugPrint('═══════════════════════════════════════');
-    debugPrint('[SAVE PERSONAL] Starting save...');
-    debugPrint('[SAVE PERSONAL] Current DOB value: "$dob"');
-    debugPrint('[SAVE PERSONAL] personalDirty: $personalDirty');
+  Future<void> savePersonalSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Personal profile saved',
+        () => personalDirty = false,
+      );
 
-    final payload = {
-      'personalProfile': {
-        'name': name.trim(),
-        'email': email.trim(),
-        'secondary_email': secondaryEmail.trim(),
-        'contactNumber': contactNumber.trim(),
-        'nationality': nationality.trim(),
-        'profilePicUrl': profilePicUrl.trim(),
-        'skills': skillsList,
-        'objectives': objectives.trim(),
-        'socialLinks': socialLinks,
-        'summary': personalSummary.trim(),
-        'dob': dob.trim(),
-      },
-    };
+  Future<void> saveEducationSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Education saved',
+        () => educationDirty = false,
+      );
 
-    debugPrint(
-      '[SAVE PERSONAL] Payload DOB: "${payload['personalProfile']!['dob']}"',
-    );
-    debugPrint('[SAVE PERSONAL] Full payload: $payload');
+  Future<void> saveProfessionalProfileSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Professional profile saved',
+        () => professionalProfileDirty = false,
+      );
 
-    await _executeSave(
-      ctx,
-      () async {
-        debugPrint('[SAVE PERSONAL] Calling _writeSection...');
-        await _writeSection(payload);
-        debugPrint('[SAVE PERSONAL] _writeSection completed');
-      },
-      () {
-        debugPrint('[SAVE PERSONAL] Save successful, clearing dirty flag');
-        personalDirty = false;
-        _safeNotifyListeners();
-      },
-      'Personal profile saved',
-    );
+  Future<void> saveExperienceSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Experience saved',
+        () => experienceDirty = false,
+      );
 
-    debugPrint('[SAVE PERSONAL] Save operation completed');
-    debugPrint('═══════════════════════════════════════');
-  }
+  Future<void> saveCertificationsSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Certifications saved',
+        () => certificationsDirty = false,
+      );
 
-  Future<void> saveEducationSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({'educationalProfile': educationalProfile}),
-      () {
-        educationDirty = false;
-        _safeNotifyListeners();
-      },
-      'Education saved',
-    );
-  }
+  Future<void> savePublicationsSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Publications saved',
+        () => publicationsDirty = false,
+      );
 
-  Future<void> saveProfessionalProfileSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({
-        'professionalProfile': {
-          'summary': professionalProfileSummary,
-          'status': professionalStatus,
-          'expectedRetirementDate': expectedRetirementDate,
-          'retirementDate': retirementDate,
-        },
-      }),
-      () {
-        professionalProfileDirty = false;
-        _safeNotifyListeners();
-      },
-      'Professional profile saved',
-    );
-  }
+  Future<void> saveAwardsSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Awards saved',
+        () => awardsDirty = false,
+      );
 
-  Future<void> saveExperienceSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({
-        'professionalExperience': professionalExperience,
-        'experienceDocuments': experienceDocuments,
-      }),
-      () {
-        experienceDirty = false;
-        _safeNotifyListeners();
-      },
-      'Experience saved',
-    );
-  }
+  Future<void> saveReferencesSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'References saved',
+        () => referencesDirty = false,
+      );
 
-  Future<void> saveCertificationsSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({
-        'certifications': certifications,
-        'certificationDocuments': certificationDocuments,
-      }),
-      () {
-        certificationsDirty = false;
-        _safeNotifyListeners();
-      },
-      'Certifications saved',
-    );
-  }
+  Future<void> saveDocumentsSection(BuildContext ctx) => _saveSection(
+        ctx,
+        'Documents saved',
+        () => documentsDirty = false,
+      );
 
-  Future<void> savePublicationsSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({'publications': publications}),
-      () => _markClean(() => publicationsDirty = false),
-      'Publications saved',
-    );
-  }
-
-  Future<void> saveAwardsSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({'awards': awards}),
-      () => _markClean(() => awardsDirty = false),
-      'Awards saved',
-    );
-  }
-
-  Future<void> saveReferencesSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => _writeSection({'references': references}),
-      () => _markClean(() => referencesDirty = false),
-      'References saved',
-    );
-  }
-
-  Future<void> saveDocumentsSection(BuildContext ctx) async {
-    await _executeSave(
-      ctx,
-      () => saveDocumentsList(),
-      () => _markClean(() => documentsDirty = false),
-      'Documents saved',
-    );
-  }
+  Future<void> _saveSection(
+    BuildContext ctx,
+    String successMessage,
+    VoidCallback markClean,
+  ) =>
+      _executeSave(ctx, _persist, () => _markClean(markClean), successMessage);
 
   void _markClean(VoidCallback cleanAction) {
     cleanAction();
@@ -756,18 +789,13 @@ class ProfileProvider_NEW extends ChangeNotifier {
     );
     if (res != null) {
       profilePicUrl = res['url'];
-      await _writeSection({
-        'personalProfile': {'profilePicUrl': profilePicUrl},
-      });
+      await _persist();
     }
     isLoading = false;
     _safeNotifyListeners();
   }
 
-  Future<void> saveDocumentsList() async {
-    final sanitized = _sanitizeDocumentsForSave(documents);
-    await _writeSection({'documents': sanitized});
-  }
+  Future<void> saveDocumentsList() => _persist();
 
   // ---------------- UI Helpers ----------------
 
@@ -1207,13 +1235,6 @@ class ProfileProvider_NEW extends ChangeNotifier {
 
   bool _isValidIndex(int idx, int length) => idx >= 0 && idx < length;
 
-  String _getString(Map<String, dynamic> map, List<String> keys) {
-    for (final key in keys) {
-      if (map[key] != null) return map[key].toString();
-    }
-    return '';
-  }
-
   List<String> _toStringList(dynamic v) {
     if (v == null) return [];
     if (v is List) {
@@ -1232,51 +1253,7 @@ class ProfileProvider_NEW extends ChangeNotifier {
     return [];
   }
 
-  List<Map<String, dynamic>> _mapListOfMap(dynamic v) {
-    if (v is! List) return [];
-    return v.fold<List<Map<String, dynamic>>>([], (prev, e) {
-      if (e is Map) prev.add(Map<String, dynamic>.from(e));
-      return prev;
-    });
-  }
 
-  List<String> _mapListStrings(dynamic v) => _toStringList(v);
-
-  List<Map<String, String>> _mapCertifications(dynamic v) {
-    if (v is! List) return [];
-    return v
-        .map((item) {
-          if (item is Map) {
-            return {
-              'organization': (item['organization'] ?? '').toString(),
-              'name': (item['name'] ?? item['certName'] ?? '').toString(),
-            };
-          }
-          if (item is String && item.isNotEmpty) {
-            return {'organization': '', 'name': item};
-          }
-          return {'organization': '', 'name': ''};
-        })
-        .where((cert) => cert['name']!.isNotEmpty)
-        .toList();
-  }
-
-  List<Map<String, dynamic>> _sanitizeDocumentsForSave(
-    List<Map<String, dynamic>> src,
-  ) {
-    return src.map((doc) {
-      final copied = Map<String, dynamic>.from(doc);
-      final uploadedAt = copied['uploadedAt'];
-      if (uploadedAt is DateTime) {
-        copied['uploadedAt'] = Timestamp.fromDate(uploadedAt);
-      } else if (uploadedAt is int) {
-        copied['uploadedAt'] = Timestamp.fromMillisecondsSinceEpoch(uploadedAt);
-      } else if (uploadedAt is! Timestamp) {
-        copied['uploadedAt'] = Timestamp.now();
-      }
-      return copied;
-    }).toList();
-  }
 
   void _handleError(String context, dynamic error, [StackTrace? stackTrace]) {
     errorMessage = '$context: $error';
@@ -1343,7 +1320,6 @@ class ProfileProvider_NEW extends ChangeNotifier {
     personalSummary = '';
     dob = '';
     educationalProfile = [];
-    professionalProfileSummary = '';
     professionalExperience = [];
     certifications = [];
     publications = [];
@@ -1352,7 +1328,6 @@ class ProfileProvider_NEW extends ChangeNotifier {
     documents = [];
     professionalStatus = '';
     expectedRetirementDate = '';
-    retirementDate = '';
     experienceDocuments = [];
     certificationDocuments = [];
     candidateProfile = null;

@@ -27,6 +27,7 @@ import 'Web_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'login_provider.dart';
+import 'core/interviews/interview_provider.dart';
 
 /// ---------------------------
 /// Main + App (providers & JobPortalApp)
@@ -78,6 +79,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => AdminAnalyticsProvider()),
 
+        // Streams the recruiter's own bookings; the admin screens create
+        // their own scoped to one request.
+        ChangeNotifierProvider(
+          create: (_) => InterviewProvider()..watchForRecruiter(),
+        ),
         ChangeNotifierProvider(create: (_) => R_TopNavProvider()),
         ChangeNotifierProvider(create: (_) => job_listing_provider()),
         ChangeNotifierProvider(create: (_) => JobSeekerProvider()),

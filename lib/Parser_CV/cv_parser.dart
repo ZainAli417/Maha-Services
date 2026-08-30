@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import '../main.dart';
+import '../services/backend_api.dart';
 
 class CvExtractionResult {
   final String rawText;
@@ -151,6 +152,7 @@ class CvExtractor {
     try {
       final mimeType = _getMimeType(filename);
       final request = http.MultipartRequest('POST', uri)
+        ..headers.addAll(await BackendApi.headers(multipart: true))
         ..files.add(
           http.MultipartFile.fromBytes(
             'file',

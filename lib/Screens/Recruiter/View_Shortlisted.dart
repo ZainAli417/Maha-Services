@@ -3,8 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/interviews/arrange_interview_dialog.dart';
+import '../../core/interviews/interview_provider.dart';
+
 import '../../core/widgets/view_js_profile.dart';
 import 'LIst_of_Applicants_provider.dart';
+import 'active_filters_bar.dart';
 import 'filter.dart';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
@@ -19,6 +23,8 @@ class _T {
   static const border = Color(0xFFDCE7EF);
   static const success = Color(0xFF10B981);
   static const accent = Color(0xFFEC4899);
+  static const warning = Color(0xFFF59E0B);
+  static const danger = Color(0xFFEF4444);
 
   static const _avatarColors = [
     Color(0xFF3B82F6),
@@ -79,12 +85,63 @@ class _LD extends InheritedWidget {
   bool updateShouldNotify(_LD old) => old.isMobile != isMobile;
 }
 
-// ─── Email masker (pure fn) ────────────────────────────────────────────────
-String _maskEmail(String email) {
-  final p = email.split('@');
-  if (p.length != 2) return '****@****.com';
-  final u = p[0];
-  return '${u.length > 2 ? u.substring(0, 2) : '**'}****@${p[1]}';
+// ─── Row helpers (pure fns) ────────────────────────────────────────────────
+//
+// Contact details never reach this screen — the application snapshot is
+// written without them. So the line under a candidate's name is the role they
+// applied as, which is the thing a recruiter is actually sorting on when
+// fifteen different trades apply to one posting.
+String _subtitle(ApplicantRecord a) {
+  final role = a.targetRole.trim();
+  if (role.isNotEmpty) return role;
+  return a.location.trim().isNotEmpty ? a.location.trim() : 'Candidate';
+}
+
+/// What to show in the EXPERIENCE column, with its unit spelled out.
+///
+/// Three different things used to share this slot under one word. They are not
+/// the same measure and a recruiter should never have to guess which one they
+/// are looking at:
+///
+///   * flight hours — logged flying time, aircrew only
+///   * years — time in service or trade, for roles that do not fly
+///   * roles listed — a count of previous jobs, which is not a duration at all
+///
+/// The old label read "2y exp" off the job count, so two jobs looked like two
+/// years of experience. Whatever this returns now names its own unit.
+String _experienceOf(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => '${_n(a.flightHours!)} flight hours',
+  ExperienceBasis.declaredYears => '${_n(a.declaredYears!)} years experience',
+  // Named for where it came from. A recruiter reading "8 years of service"
+  // should be able to check it against the dates on the roles below and see
+  // that it is derived from them, not declared by the candidate.
+  ExperienceBasis.serviceHistory => '${_n(a.serviceYears!)} years of service',
+  ExperienceBasis.roleCount => a.roleCount == 0
+      ? 'No history on file'
+      : '${a.roleCount} role${a.roleCount == 1 ? '' : 's'} listed',
+};
+
+/// Thousands separator, because 2680 and 26800 are hard to tell apart at a
+/// glance in a list.
+String _n(num v) {
+  final s = v.round().toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
+
+/// Licences and aircraft, the fastest way to tell a fighter pilot from a fire
+/// fighter without opening the profile.
+List<String> _credentials(ApplicantRecord a, {int max = 3}) {
+  final out = <String>[
+    ...a.roleProfile.licences.map((l) => l.title).where((t) => t.isNotEmpty),
+    ...a.roleProfile.aircraftTypes,
+  ];
+  final seen = <String>{};
+  return [for (final v in out) if (seen.add(v)) v].take(max).toList();
 }
 
 // ─── Score helpers (pure fns) ──────────────────────────────────────────────
@@ -187,15 +244,27 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   // ─── Data helpers ───────────────────────────────────────────────────────
+  /// The people shortlisted for this job, before this screen's own controls.
+  ///
+  /// Everything on this screen -- the filter sheet, its live count, the chip
+  /// strip -- is scoped to this list. Filtering used to run against the whole
+  /// applicant pool, so narrowing a 17-person shortlist could hand back all
+  /// 20 applicants.
+  List<ApplicantRecord> _scope(ApplicantsProvider p) =>
+      p.getShortlistForJob(widget.jobId);
+
   List<ApplicantRecord> _filtered(ApplicantsProvider p) {
-    var list = p.getShortlistForJob(widget.jobId);
+    var list = p.applyFiltersTo(_scope(p));
     final q = _searchCtrl.text.trim().toLowerCase();
     if (q.isNotEmpty) {
+      // searchIndex already carries the name, location, role title, aircraft
+      // types, licences and competencies. Matching on it means "A320" and
+      // "ATPL" find people, which matching on email never could — the snapshot
+      // has no email in it.
       list = list
           .where(
             (a) =>
-                a.name.toLowerCase().contains(q) ||
-                a.email.toLowerCase().contains(q) ||
+                a.searchIndex.contains(q) ||
                 (a.jobData?.title ?? '').toLowerCase().contains(q),
           )
           .toList();
@@ -212,7 +281,11 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   void _toggleSelectAll(ApplicantsProvider p) {
-    final list = _filtered(p);
+    // Only the ones that can actually be sent. Selecting a locked candidate
+    // would put a tick beside a name the send then quietly drops, and the
+    // recruiter would believe they had sent someone they had not.
+    final list = _filtered(p).where(p.isSelectable).toList();
+    if (list.isEmpty) return;
     final all = list.every((a) => p.isSelected(a.userId));
     all ? p.clearSelection() : p.selectAll(list);
   }
@@ -274,6 +347,47 @@ class _ViewShortlistedState extends State<view_shortlisted>
     Future.delayed(const Duration(seconds: 3), entry.remove);
   }
 
+  // ─── Arrange interview ──────────────────────────────────────────────────
+  Future<void> _arrangeInterview(
+    ApplicantsProvider p, [
+    ApplicantRecord? single,
+  ]) async {
+    final chosen = single != null ? [single] : p.selectedForInterview;
+    if (chosen.isEmpty) return;
+
+    // The interview hangs off the request that advanced them, so the admin
+    // sees it on the batch they are actually working.
+    final request = p.advancedRequestFor(chosen.first.userId);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final booked = await showDialog<int>(
+      context: context,
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<InterviewProvider>(),
+        child: ArrangeInterviewDialog(
+          candidates: [
+            for (final a in chosen) (uid: a.userId, name: a.name),
+          ],
+          jobId: chosen.first.jobId,
+          jobTitle: chosen.first.jobData?.title ?? '',
+          requestId: (request?['request_id'] ?? '').toString(),
+          round: (request?['round'] as num?)?.toInt() ?? 2,
+        ),
+      ),
+    );
+
+    if (!mounted || booked == null) return;
+    if (single == null) p.clearSelection();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          '$booked interview${booked == 1 ? '' : 's'} sent to the admin. '
+          'They generate the joining link.',
+        ),
+      ),
+    );
+  }
+
   // ─── Send to Admin ──────────────────────────────────────────────────────
   Future<void> _sendToAdmin(ApplicantsProvider p) async {
     final notesCtrl = TextEditingController();
@@ -291,6 +405,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
           opacity: anim.value,
           child: _SendToAdminDialog(
             selectedCount: p.selectedApplicantIds.length,
+            round: p.pendingRound,
             notesController: notesCtrl,
             onSubmit: () => p.sendSelectedCandidatesToAdmin(
               notes: notesCtrl.text.trim().isEmpty
@@ -400,7 +515,14 @@ class _ViewShortlistedState extends State<view_shortlisted>
                             searchCtrl: _searchCtrl,
                             rankByScore: _rankByScore,
                             onToggleRank: () => _toggleRank(provider),
+                            scope: _scope(provider),
                           ),
+                        ),
+                        ActiveFiltersBar(
+                          provider: provider,
+                          shown: applicants.length,
+                          total: _scope(provider).length,
+                          horizontalPadding: isMobile ? 12 : 20,
                         ),
                         // ── Content: card list on mobile, table on desktop
                         Expanded(
@@ -420,6 +542,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
                                   onToggleSelectAll: () =>
                                       _toggleSelectAll(provider),
                                   onViewProfile: _showProfile,
+                                  onArrange: (a) => _arrangeInterview(provider, a),
                                 ),
                         ),
                       ],
@@ -434,6 +557,8 @@ class _ViewShortlistedState extends State<view_shortlisted>
                         provider: provider,
                         isMobile: isMobile,
                         onSend: () => _sendToAdmin(provider),
+                        onArrangeInterview: () =>
+                            _arrangeInterview(provider),
                       ),
                     ),
                   ],
@@ -473,10 +598,16 @@ class _ControlsBar extends StatelessWidget {
   final TextEditingController searchCtrl;
   final bool rankByScore;
   final VoidCallback onToggleRank;
+
+  /// The shortlisted candidates on screen, passed through to the filter sheet
+  /// so it narrows this list rather than the whole applicant pool.
+  final List<ApplicantRecord> scope;
+
   const _ControlsBar({
     required this.searchCtrl,
     required this.rankByScore,
     required this.onToggleRank,
+    required this.scope,
   });
 
   @override
@@ -505,7 +636,7 @@ class _ControlsBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    _FilterBtn(small: true),
+                    _FilterBtn(scope: scope, small: true),
                   ],
                 ),
               ],
@@ -514,7 +645,7 @@ class _ControlsBar extends StatelessWidget {
               children: [
                 Expanded(child: _SearchField(ctrl: searchCtrl)),
                 const SizedBox(width: 10),
-                _FilterBtn(),
+                _FilterBtn(scope: scope),
                 const SizedBox(width: 10),
                 _RankButton(active: rankByScore, onTap: onToggleRank),
               ],
@@ -593,26 +724,59 @@ class _RankButton extends StatelessWidget {
 }
 
 class _FilterBtn extends StatelessWidget {
+  const _FilterBtn({required this.scope, this.small = false});
+
   final bool small;
-  const _FilterBtn({this.small = false});
+
+  /// The shortlisted candidates this screen is showing. The sheet counts and
+  /// filters against these, not against every applicant to the job.
+  final List<ApplicantRecord> scope;
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    icon: Icon(
-      Icons.filter_list_rounded,
-      size: small ? 20 : 22,
-      color: _T.textSec,
-    ),
-    onPressed: () => showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const ApplicantFilterWidget(),
-    ),
-    tooltip: 'Filter',
-    padding: EdgeInsets.all(small ? 6 : 8),
-    constraints: const BoxConstraints(),
-  );
+  Widget build(BuildContext context) {
+    final provider = context.read<ApplicantsProvider>();
+    final count = provider.activeFilterChips.length;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.filter_list_rounded,
+            size: small ? 20 : 22,
+            color: count > 0 ? _T.purple : _T.textSec,
+          ),
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => ChangeNotifierProvider.value(
+              value: provider,
+              child: ApplicantFilterWidget(scope: scope),
+            ),
+          ),
+          tooltip: 'Filter',
+          padding: EdgeInsets.all(small ? 6 : 8),
+          constraints: const BoxConstraints(),
+        ),
+        if (count > 0)
+          Positioned(
+            right: 2,
+            top: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: _T.purple,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$count',
+                style: _T.label(fs: 9, c: Colors.white, fw: FontWeight.w800),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -742,16 +906,21 @@ class _ApplicantCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     child: Checkbox(
-                      value: applicant.sentToAdmin ? true : isSelected,
-                      onChanged: applicant.sentToAdmin
-                          ? null
-                          : (_) => provider.toggleSelection(applicant.userId),
+                      // Sending locks a candidate, but scores coming back
+                      // unlocks them again: the recruiter now knows something
+                      // they did not know when they chose.
+                      value: provider.isSelectable(applicant)
+                          ? isSelected
+                          : true,
+                      onChanged: provider.isSelectable(applicant)
+                          ? (_) => provider.toggleSelection(applicant.userId)
+                          : null,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      activeColor: applicant.sentToAdmin
-                          ? Colors.grey
-                          : _T.purple,
+                      activeColor: provider.isSelectable(applicant)
+                          ? _T.purple
+                          : Colors.grey,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
@@ -786,8 +955,9 @@ class _ApplicantCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          _maskEmail(applicant.email),
-                          style: _T.label(fs: 10),
+                          _subtitle(applicant),
+                          style: _T.label(fs: 10, c: _T.purple,
+                              fw: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -822,10 +992,11 @@ class _ApplicantCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 9, 12, 11),
               child: Row(
                 children: [
-                  // Exp
-                  _MetaChip(
-                    icon: Icons.work_outline_rounded,
-                    label: '${applicant.experienceYears}y exp',
+                  Flexible(
+                    child: _MetaChip(
+                      icon: Icons.insights_outlined,
+                      label: _experienceOf(applicant),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   // Applied
@@ -834,16 +1005,31 @@ class _ApplicantCard extends StatelessWidget {
                     label: DateFormat('MMM d').format(applicant.appliedAt),
                   ),
                   const Spacer(),
-                  // Score or status
-                  if (hasScore)
-                    _ScoreChip(score: score, color: sColor)
-                  else if (applicant.sentToAdmin)
-                    _SentBadge()
-                  else
-                    _ShortlistBadge(),
+                  // Standing first, then the AI score if there is one. The
+                  // standing is what the recruiter acts on; the score is what
+                  // they act with.
+                  _StatusBadge(standing: _Standing.of(applicant, provider)),
+                  if (hasScore) ...[
+                    const SizedBox(width: 6),
+                    _ScoreChip(score: score, color: sColor),
+                  ],
                 ],
               ),
             ),
+
+            // Licences and aircraft — what a recruiter screens on.
+            if (_credentials(applicant).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 11),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final c in _credentials(applicant))
+                      _CredPill(label: c),
+                  ],
+                ),
+              ),
 
             // AI score bar (if available)
             if (hasScore)
@@ -870,11 +1056,93 @@ class _ApplicantCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+            // The assessment. On a phone the table's columns collapse, so this
+            // gets its own strip rather than a cell — a recruiter deciding on
+            // the move needs the test result as much as the AI score.
+            if (applicant.assessment.invited)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 11),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _T.bg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _T.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.quiz_outlined, size: 14, color: _T.textSec),
+                      const SizedBox(width: 8),
+                      Text('Assessment',
+                          style: _T.label(fs: 11, fw: FontWeight.w600)),
+                      const Spacer(),
+                      Flexible(
+                        child: _TestScoreCell(summary: applicant.assessment),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+}
+
+/// Books this one candidate's interview.
+///
+/// Shows the booked time once there is one, so the recruiter can see at a
+/// glance which of the advanced candidates still need a slot without opening
+/// the calendar.
+class _InterviewAction extends StatelessWidget {
+  const _InterviewAction({required this.applicant, required this.onTap});
+
+  final ApplicantRecord applicant;
+  final ValueChanged<ApplicantRecord> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final booked =
+        context.watch<InterviewProvider>().forCandidate(applicant.userId);
+    final tone = booked == null ? _T.purple : _T.success;
+
+    return IconButton(
+      icon: Icon(
+        booked == null ? Icons.event_available_outlined : Icons.event_rounded,
+        size: 17,
+      ),
+      onPressed: () => onTap(applicant),
+      color: tone,
+      tooltip: booked == null
+          ? 'Arrange interview'
+          : 'Interview ${DateFormat('d MMM, HH:mm').format(booked.scheduledAt)}'
+              '${booked.hasLink ? '' : ' — awaiting link'}',
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+    );
+  }
+}
+
+/// A licence or aircraft type, rendered small enough that three fit a row.
+class _CredPill extends StatelessWidget {
+  const _CredPill({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: _T.purple.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: _T.purple.withValues(alpha: 0.18)),
+        ),
+        child: Text(
+          label,
+          style: _T.label(fs: 10, c: _T.purple, fw: FontWeight.w600),
+        ),
+      );
 }
 
 class _MetaChip extends StatelessWidget {
@@ -888,7 +1156,16 @@ class _MetaChip extends StatelessWidget {
     children: [
       Icon(icon, size: 12, color: _T.textSec),
       const SizedBox(width: 4),
-      Text(label, style: _T.label(fs: 11)),
+      // Flexible because the headline metric can run long — "Total flight
+      // hours 2680" has to ellipsize on a narrow card, not overflow it.
+      Flexible(
+        child: Text(
+          label,
+          style: _T.label(fs: 11),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     ],
   );
 }
@@ -922,6 +1199,7 @@ class _DesktopTable extends StatelessWidget {
   final String? jobId;
   final VoidCallback onToggleSelectAll;
   final ValueChanged<ApplicantRecord> onViewProfile;
+  final ValueChanged<ApplicantRecord> onArrange;
 
   const _DesktopTable({
     required this.applicants,
@@ -929,6 +1207,7 @@ class _DesktopTable extends StatelessWidget {
     required this.jobId,
     required this.onToggleSelectAll,
     required this.onViewProfile,
+    required this.onArrange,
   });
 
   @override
@@ -964,8 +1243,9 @@ class _DesktopTable extends StatelessWidget {
               Expanded(flex: 3, child: _Hdr('EXPERIENCE')),
               Expanded(flex: 2, child: _Hdr('APPLIED ON')),
               Expanded(flex: 2, child: _Hdr('AI SCORE')),
-              Expanded(flex: 1, child: _Hdr('STATUS')),
-              const SizedBox(width: 64),
+              Expanded(flex: 2, child: _Hdr('TEST SCORE')),
+              Expanded(flex: 2, child: _Hdr('STATUS')),
+              const SizedBox(width: 76),
             ],
           ),
         ),
@@ -980,6 +1260,7 @@ class _DesktopTable extends StatelessWidget {
               isSelected: provider.isSelected(applicants[i].userId),
               provider: provider,
               onViewProfile: onViewProfile,
+              onArrange: onArrange,
             ),
           ),
         ),
@@ -1004,6 +1285,7 @@ class _TableRow extends StatelessWidget {
   final bool isSelected;
   final ApplicantsProvider provider;
   final ValueChanged<ApplicantRecord> onViewProfile;
+  final ValueChanged<ApplicantRecord> onArrange;
 
   const _TableRow({
     required this.applicant,
@@ -1011,6 +1293,7 @@ class _TableRow extends StatelessWidget {
     required this.isSelected,
     required this.provider,
     required this.onViewProfile,
+    required this.onArrange,
   });
 
   @override
@@ -1033,14 +1316,15 @@ class _TableRow extends StatelessWidget {
           SizedBox(
             width: 38,
             child: Checkbox(
-              value: applicant.sentToAdmin ? true : isSelected,
-              onChanged: applicant.sentToAdmin
-                  ? null
-                  : (_) => provider.toggleSelection(applicant.userId),
+              value: provider.isSelectable(applicant) ? isSelected : true,
+              onChanged: provider.isSelectable(applicant)
+                  ? (_) => provider.toggleSelection(applicant.userId)
+                  : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
-              activeColor: applicant.sentToAdmin ? Colors.grey : _T.purple,
+              activeColor:
+                  provider.isSelectable(applicant) ? _T.purple : Colors.grey,
             ),
           ),
           const SizedBox(width: 8),
@@ -1077,8 +1361,9 @@ class _TableRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        _maskEmail(applicant.email),
-                        style: _T.label(fs: 11),
+                        _subtitle(applicant),
+                        style: _T.label(fs: 11, c: _T.purple,
+                            fw: FontWeight.w600),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -1088,12 +1373,35 @@ class _TableRow extends StatelessWidget {
             ),
           ),
 
-          // Experience
+          // Experience — the headline metric, plus licences and aircraft so
+          // the row says what the candidate is qualified to fly or fix.
           Expanded(
             flex: 3,
-            child: Text(
-              '${applicant.experienceYears}y  •  ${applicant.professionalStatus}',
-              style: _T.body(fs: 12, c: _T.textSec),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _experienceOf(applicant),
+                  style: _T.body(fs: 12, c: _T.textPri),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (_credentials(applicant, max: 2).isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _credentials(applicant, max: 2).join('  •  '),
+                    style: _T.label(fs: 10),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ] else if (applicant.professionalStatus.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    applicant.professionalStatus,
+                    style: _T.label(fs: 10),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
             ),
           ),
 
@@ -1142,27 +1450,132 @@ class _TableRow extends StatelessWidget {
                 : Text('Not analyzed', style: _T.label(fs: 11, c: _T.textTert)),
           ),
 
-          // Status
+          // Test score — the assessment result, kept beside the AI score so
+          // the two are read together. They measure different things: one is
+          // a machine's opinion of a CV, the other is what the candidate
+          // actually answered.
           Expanded(
-            flex: 1,
-            child: applicant.sentToAdmin ? _SentBadge() : _ShortlistBadge(),
+            flex: 2,
+            child: _TestScoreCell(summary: applicant.assessment),
           ),
 
-          // View
+          // Status
+          Expanded(
+            flex: 2,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _StatusBadge(standing: _Standing.of(applicant, provider)),
+            ),
+          ),
+
+          // View, and — once they have been advanced — book their interview
+          // without having to tick a box first. One candidate at a time is the
+          // common case; the island handles the batch.
           SizedBox(
-            width: 56,
-            child: IconButton(
-              icon: const Icon(Icons.visibility_outlined, size: 17),
-              onPressed: () => onViewProfile(applicant),
-              color: _T.textSec,
-              tooltip: 'View Profile',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+            width: 68,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (provider.canArrangeInterview(applicant))
+                  _InterviewAction(applicant: applicant, onTap: onArrange),
+                IconButton(
+                  icon: const Icon(Icons.visibility_outlined, size: 17),
+                  onPressed: () => onViewProfile(applicant),
+                  color: _T.textSec,
+                  tooltip: 'View Profile',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+/// The assessment column.
+///
+/// Shows a number only once an admin has released the batch. Before that it
+/// reports where the candidate has got to — invited, sitting it, finished and
+/// waiting — because a partial score is not a score, and showing one would
+/// invite a decision made on half the evidence.
+class _TestScoreCell extends StatelessWidget {
+  final AssessmentSummary summary;
+  const _TestScoreCell({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!summary.hasScore) {
+      final (color, icon) = switch (summary.status) {
+        '' => (_T.textTert, Icons.remove_circle_outline),
+        'invited' => (_T.textSec, Icons.mail_outline_rounded),
+        'accepted' || 'in_progress' => (_T.primary, Icons.pending_outlined),
+        'submitted' => (_T.warning, Icons.lock_clock_rounded),
+        'expired' => (_T.danger, Icons.hourglass_disabled_rounded),
+        _ => (_T.textTert, Icons.help_outline),
+      };
+      return Row(
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              summary.label,
+              style: _T.label(fs: 11, c: color, fw: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final passed = summary.verdict == 'pass';
+    final color = passed ? _T.success : _T.danger;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            Text('${summary.correct}/${summary.total}',
+                style: _T.mono(fs: 13, c: _T.textPri)),
+            const SizedBox(width: 7),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                passed ? 'PASS' : 'FAIL',
+                style: _T.label(fs: 9, c: color, fw: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 3),
+        Text(
+          [
+            '${summary.percentage}%',
+            // A rank turns a bare number into a decision: "14/20" says little,
+            // "3rd of 17" says who to call first.
+            if (summary.rank != null && summary.rankOf > 1)
+              '${_ordinal(summary.rank!)} of ${summary.rankOf}',
+            if (summary.tabSwitches > 0) '${summary.tabSwitches} tab switches',
+          ].join('  ·  '),
+          style: _T.label(fs: 10, c: _T.textTert),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  static String _ordinal(int n) {
+    if (n % 100 >= 11 && n % 100 <= 13) return '${n}th';
+    return switch (n % 10) { 1 => '${n}st', 2 => '${n}nd', 3 => '${n}rd', _ => '${n}th' };
   }
 }
 
@@ -1174,18 +1587,23 @@ class _SelectionIsland extends StatelessWidget {
   final ApplicantsProvider provider;
   final bool isMobile;
   final VoidCallback onSend;
+  final VoidCallback onArrangeInterview;
 
   const _SelectionIsland({
     required this.animation,
     required this.provider,
     required this.isMobile,
     required this.onSend,
+    required this.onArrangeInterview,
   });
 
   @override
   Widget build(BuildContext context) {
     final count = provider.selectedApplicantIds.length;
     if (count == 0) return const SizedBox.shrink();
+
+    final interviewCount = provider.selectedForInterview.length;
+    final sendable = count - interviewCount;
 
     return Center(
       child: ScaleTransition(
@@ -1244,26 +1662,55 @@ class _SelectionIsland extends StatelessWidget {
                 tooltip: 'Clear',
               ),
               const SizedBox(width: 10),
-              ElevatedButton.icon(
-                onPressed: onSend,
-                icon: const Icon(Icons.send_rounded, size: 15),
-                label: Text(
-                  isMobile ? 'Send' : 'Send to Admin',
-                  style: _T.label(fs: 13, c: _T.white, fw: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _T.primary,
-                  foregroundColor: _T.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 9,
+              // Once a candidate has been advanced past the assessment, the
+              // useful action is no longer "send" — the admin already has
+              // them — it is booking the interview.
+              if (interviewCount > 0)
+                ElevatedButton.icon(
+                  onPressed: onArrangeInterview,
+                  icon: const Icon(Icons.videocam_rounded, size: 15),
+                  label: Text(
+                    isMobile
+                        ? 'Interview'
+                        : 'Arrange interview'
+                            '${interviewCount == count ? '' : ' ($interviewCount)'}',
+                    style: _T.label(fs: 13, c: _T.white, fw: FontWeight.w600),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _T.accent,
+                    foregroundColor: _T.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
                 ),
-              ),
+              if (interviewCount > 0 && sendable > 0) const SizedBox(width: 8),
+              if (sendable > 0)
+                ElevatedButton.icon(
+                  onPressed: onSend,
+                  icon: const Icon(Icons.send_rounded, size: 15),
+                  label: Text(
+                    isMobile ? 'Send' : 'Send to Admin',
+                    style: _T.label(fs: 13, c: _T.white, fw: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _T.primary,
+                    foregroundColor: _T.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -1275,36 +1722,99 @@ class _SelectionIsland extends StatelessWidget {
 // ═════════════════════════════════════════════════════════════════════════════
 // SHARED MICRO WIDGETS
 // ═════════════════════════════════════════════════════════════════════════════
-class _SentBadge extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: const Color(0xFF2178B5).withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: const Color(0xFF2178B5).withValues(alpha: 0.3)),
-    ),
-    child: Text(
-      'SENT',
-      style: _T.label(fs: 9, c: const Color(0xFF14507F), fw: FontWeight.w800),
-    ),
-  );
+/// Where a candidate stands with the recruiter, in one word.
+///
+/// Four states, one widget. They used to be three separate badges with three
+/// different paddings and three different text sizes, which is why the column
+/// looked assembled rather than designed — and why the widest of them
+/// overflowed a column sized for the narrowest.
+enum _Standing {
+  /// On the shortlist, not sent anywhere yet.
+  shortlisted('Shortlisted', Icons.check_circle_outline_rounded, _T.success),
+
+  /// Sent to the admin and waiting on them. Nothing for the recruiter to do.
+  withAdmin('With admin', Icons.lock_outline_rounded, _T.primary),
+
+  /// The assessment result has come back. The recruiter's move.
+  resultIn('Result in', Icons.how_to_reg_outlined, _T.warning),
+
+  /// Already sent forward after the assessment.
+  advanced('Advanced', Icons.done_all_rounded, _T.purple);
+
+  const _Standing(this.label, this.icon, this.color);
+
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  /// Reads a candidate's standing from what is actually known about them.
+  ///
+  /// Order matters: being advanced outranks having a result, which outranks
+  /// having been sent. Each state is the latest thing that happened.
+  static _Standing of(ApplicantRecord a, ApplicantsProvider p) {
+    if (p.canArrangeInterview(a)) return _Standing.advanced;
+    if (p.canResend(a)) return _Standing.resultIn;
+    if (a.sentToAdmin) return _Standing.withAdmin;
+    return _Standing.shortlisted;
+  }
 }
 
-class _ShortlistBadge extends StatelessWidget {
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.standing, this.compact = false});
+
+  final _Standing standing;
+  final bool compact;
+
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-    decoration: BoxDecoration(
-      color: _T.success.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(5),
-    ),
-    child: Text(
-      'Shortlist',
-      style: _T.label(fs: 10, c: _T.success, fw: FontWeight.w600),
-    ),
-  );
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: switch (standing) {
+        _Standing.shortlisted => 'On your shortlist. Select and send to the admin.',
+        _Standing.withAdmin =>
+          'With the admin. Locked until their assessment result comes back.',
+        _Standing.resultIn =>
+          'Assessment result is in. You can re-select and send them forward.',
+        _Standing.advanced =>
+          'Sent forward after the assessment. Ready to interview.',
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 7 : 8,
+          vertical: 4,
+        ),
+        decoration: BoxDecoration(
+          color: standing.color.withValues(alpha: 0.11),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: standing.color.withValues(alpha: 0.28)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(standing.icon, size: 11, color: standing.color),
+            if (!compact) ...[
+              const SizedBox(width: 5),
+              // Flexible so a narrow column shortens the label instead of
+              // painting the overflow stripes over the next cell.
+              Flexible(
+                child: Text(
+                  standing.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _T.label(
+                    fs: 10,
+                    c: standing.color,
+                    fw: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
+
 
 class _EmptyState extends StatelessWidget {
   final String? jobId;
@@ -1367,11 +1877,13 @@ class _ErrorPanel extends StatelessWidget {
 // ═════════════════════════════════════════════════════════════════════════════
 class _SendToAdminDialog extends StatefulWidget {
   final int selectedCount;
+  final int round;
   final TextEditingController notesController;
   final Future<dynamic> Function() onSubmit;
 
   const _SendToAdminDialog({
     required this.selectedCount,
+    required this.round,
     required this.notesController,
     required this.onSubmit,
   });
@@ -1410,12 +1922,22 @@ class _SendToAdminDialogState extends State<_SendToAdminDialog> {
                 ),
               ),
               const SizedBox(width: 14),
-              Text('Send to Admin', style: _T.head(fs: 17)),
+              Text(
+                widget.round > 1
+                    ? 'Send revised list (round ${widget.round})'
+                    : 'Send to Admin',
+                style: _T.head(fs: 17),
+              ),
             ],
           ),
           const SizedBox(height: 18),
           Text(
-            'Submitting ${widget.selectedCount} candidate(s) to super admin for final approval.',
+            widget.round > 1
+                ? 'Sending ${widget.selectedCount} candidate(s) forward after the '
+                    'assessment. Your original shortlist is kept as it was — this '
+                    'goes across as a separate, later decision.'
+                : 'Submitting ${widget.selectedCount} candidate(s) to super admin '
+                    'for final approval.',
             style: _T.body(fs: 13, c: _T.textSec),
           ),
           const SizedBox(height: 20),

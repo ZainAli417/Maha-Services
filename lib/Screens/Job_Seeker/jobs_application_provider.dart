@@ -26,47 +26,45 @@ class JobApplicationsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fields that would let a recruiter contact the candidate directly.
+  /// Keys inside `candidateProfile.personalInfo` that would let a recruiter
+  /// contact the candidate directly.
   ///
   /// Kept in one place so the apply path and any future snapshot writer agree
   /// on what "contact details" means.
   static const _contactKeys = {
     'email',
-    'secondary_email',
     'secondaryEmail',
-    'contactNumber',
-    'contact_number',
     'phone',
-    'dob',
     'dateOfBirth',
     'socialLinks',
-    'social_links',
   };
 
-  /// Copies `user_data` for the application snapshot with every contact field
-  /// removed from `personalProfile`.
+  /// Copies the candidate profile for the application snapshot with every
+  /// contact field removed from `personalInfo`.
   ///
-  /// Recruiters read this snapshot to screen and shortlist, which needs skills,
-  /// experience and role data — not a direct line to the candidate. Contact
-  /// details reach the admin, who arranges interviews and travel, by a separate
-  /// read of Job_Seeker/{uid} that recruiters have no access to. Redacting here
-  /// rather than in the UI means the recruiter's client never receives the
-  /// values at all, so there is nothing to recover from the network response.
+  /// Recruiters read this snapshot to screen and shortlist, which needs
+  /// skills, experience and role data — not a direct line to the candidate.
+  /// Contact details reach the admin, who arranges interviews and travel, by a
+  /// separate read of Job_Seeker/{uid} that recruiters have no access to.
+  /// Redacting here rather than in the UI means the recruiter's client never
+  /// receives the values at all, so there is nothing to recover from the
+  /// network response.
   @visibleForTesting
-  static Map<String, dynamic> withoutContactDetails(dynamic userData) {
-    if (userData is! Map) return <String, dynamic>{};
-    final copy = Map<String, dynamic>.from(userData);
+  static Map<String, dynamic> withoutContactDetails(dynamic candidateProfile) {
+    if (candidateProfile is! Map) return <String, dynamic>{};
+    final copy = Map<String, dynamic>.from(candidateProfile);
 
-    final personal = copy['personalProfile'] ?? copy['personal_profile'];
+    final personal = copy['personalInfo'];
     if (personal is Map) {
-      final scrubbed = Map<String, dynamic>.from(personal)
+      copy['personalInfo'] = Map<String, dynamic>.from(personal)
         ..removeWhere((k, _) => _contactKeys.contains(k));
-      if (copy.containsKey('personalProfile')) {
-        copy['personalProfile'] = scrubbed;
-      } else {
-        copy['personal_profile'] = scrubbed;
-      }
     }
+
+    // `answers` holds the raw response to every template question, contact
+    // questions included. The recruiter-facing rendering of those answers is
+    // `role_profile`, which is built with the same exclusions; the raw map has
+    // no reader on the recruiter side and every reason not to travel.
+    copy.remove('answers');
     return copy;
   }
 
@@ -196,8 +194,12 @@ class JobApplicationsProvider with ChangeNotifier {
       }
 
       final seekerDoc = seekerSnap.data()!;
-      final mainData = withoutContactDetails(seekerDoc['user_data']);
-      final subProfiles = seekerDoc['user_profile'] ?? {};
+      if (seekerDoc['candidateProfile'] is! Map) {
+        throw Exception(
+          'Your profile is incomplete. Please finish onboarding first.',
+        );
+      }
+      final mainData = withoutContactDetails(seekerDoc['candidateProfile']);
       final roleProfile = await _buildRoleProfileSnapshot(seekerDoc);
 
       final applicationData = {
@@ -210,8 +212,7 @@ class JobApplicationsProvider with ChangeNotifier {
           // Contact details are deliberately absent — see
           // [withoutContactDetails]. Admins read them straight from
           // Job_Seeker/{uid} when they review the shortlist.
-          'user_Account_Data': mainData,
-          'user_Profile_Sections': Map<String, dynamic>.from(subProfiles),
+          'candidate_profile': mainData,
           // Display-ready copy of the role-template answers, so recruiters and
           // admins can read a candidate's role profile without loading the
           // template — and see exactly what was true on the day they applied,

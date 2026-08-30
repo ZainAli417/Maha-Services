@@ -82,7 +82,16 @@ abstract final class ProfileProjector {
         case _pCountry:
           country = _str(value);
         case _pCitizenship:
-          personal = personal.copyWith(citizenship: _list(value));
+          // The template's citizenship answer also settles `nationality`.
+          // Both describe the same fact, and the multi-select is the more
+          // trustworthy of the two: the candidate picked it from a list
+          // instead of typing it, so it wins any disagreement with the free
+          // text on the profile editor.
+          final citizenship = _list(value);
+          personal = personal.copyWith(
+            citizenship: citizenship,
+            nationality: citizenship.isEmpty ? null : citizenship.first,
+          );
         case _pWorkAuth:
           personal = personal.copyWith(workAuthorization: _list(value));
         case _pDob:
@@ -142,6 +151,33 @@ abstract final class ProfileProjector {
         attributes: attributes,
       ),
     );
+  }
+
+  /// Collects every `file` answer into the profile's document list.
+  ///
+  /// A file answer already lives in [CandidateProfile.answers], but only the
+  /// role-profile view reads that map. Projecting the attachments into
+  /// `documents` as well is what puts them in front of the admin's document
+  /// panel and the profile manager, which is where a candidate's paperwork is
+  /// actually reviewed.
+  static List<ProfileDocument> documents(
+    RoleTemplate template,
+    Map<String, dynamic> answers,
+  ) {
+    final out = <ProfileDocument>[];
+    for (final q in template.questions) {
+      if (q.type != QuestionType.file) continue;
+      final raw = answers[q.id];
+      if (raw is! Map) continue;
+      final url = (raw['url'] ?? '').toString();
+      if (url.isEmpty) continue;
+      out.add(ProfileDocument(
+        name: (raw['name'] ?? q.label).toString(),
+        url: url,
+        contentType: (raw['contentType'] ?? '').toString(),
+      ));
+    }
+    return out;
   }
 
   /// Seeds an answer map from an already-projected profile so a returning

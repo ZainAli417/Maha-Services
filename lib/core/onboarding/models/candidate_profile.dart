@@ -75,6 +75,9 @@ class PersonalInfo {
     this.dateOfBirth = '',
     this.secondaryEmail = '',
     this.socialLinks = const [],
+    this.nationality = '',
+    this.objectives = '',
+    this.skills = const [],
   });
 
   final String fullName;
@@ -94,6 +97,20 @@ class PersonalInfo {
   final String secondaryEmail;
   final List<String> socialLinks;
 
+  /// Single nationality as the candidate states it. [citizenship] is the
+  /// templated multi-select (dual nationals, right-to-work checks); this is
+  /// the one line a recruiter card and a printed CV show.
+  final String nationality;
+
+  /// Career objective. Distinct from [summary], which is the professional
+  /// history in prose — the profile editor asks for both and the CV prints
+  /// them in different places.
+  final String objectives;
+
+  /// Free-form skills the candidate claims, on top of whatever the role
+  /// template captured as competencies and tools.
+  final List<String> skills;
+
   Map<String, dynamic> toJson() => {
         'fullName': fullName,
         'email': email,
@@ -106,6 +123,9 @@ class PersonalInfo {
         if (dateOfBirth.isNotEmpty) 'dateOfBirth': dateOfBirth,
         if (secondaryEmail.isNotEmpty) 'secondaryEmail': secondaryEmail,
         if (socialLinks.isNotEmpty) 'socialLinks': socialLinks,
+        if (nationality.isNotEmpty) 'nationality': nationality,
+        if (objectives.isNotEmpty) 'objectives': objectives,
+        if (skills.isNotEmpty) 'skills': skills,
       };
 
   factory PersonalInfo.fromJson(Map<String, dynamic>? j) {
@@ -124,6 +144,9 @@ class PersonalInfo {
       secondaryEmail:
           (j['secondaryEmail'] ?? j['secondary_email'] ?? '').toString(),
       socialLinks: _stringList(j['socialLinks']),
+      nationality: (j['nationality'] ?? '').toString(),
+      objectives: (j['objectives'] ?? '').toString(),
+      skills: _stringList(j['skills']),
     );
   }
 
@@ -139,6 +162,9 @@ class PersonalInfo {
     String? dateOfBirth,
     String? secondaryEmail,
     List<String>? socialLinks,
+    String? nationality,
+    String? objectives,
+    List<String>? skills,
   }) =>
       PersonalInfo(
         fullName: fullName ?? this.fullName,
@@ -152,6 +178,9 @@ class PersonalInfo {
         dateOfBirth: dateOfBirth ?? this.dateOfBirth,
         secondaryEmail: secondaryEmail ?? this.secondaryEmail,
         socialLinks: socialLinks ?? this.socialLinks,
+        nationality: nationality ?? this.nationality,
+        objectives: objectives ?? this.objectives,
+        skills: skills ?? this.skills,
       );
 }
 
@@ -264,6 +293,7 @@ class EducationEntry {
     this.degree = '',
     this.fieldOfStudy = '',
     this.graduationYear,
+    this.grade = '',
   });
 
   final String id;
@@ -272,12 +302,17 @@ class EducationEntry {
   final String fieldOfStudy;
   final int? graduationYear;
 
+  /// Marks, CGPA or classification, exactly as the candidate wrote it —
+  /// grading scales differ too much between countries to normalise.
+  final String grade;
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'institution': institution,
         'degree': degree,
         'fieldOfStudy': fieldOfStudy,
         'graduationYear': graduationYear,
+        'grade': grade,
       };
 
   factory EducationEntry.fromJson(Map<String, dynamic> j) => EducationEntry(
@@ -286,6 +321,7 @@ class EducationEntry {
         degree: (j['degree'] ?? '').toString(),
         fieldOfStudy: (j['fieldOfStudy'] ?? j['majorSubjects'] ?? '').toString(),
         graduationYear: _year(j['graduationYear'] ?? j['duration']),
+        grade: (j['grade'] ?? j['marksOrCgpa'] ?? '').toString(),
       );
 
   EducationEntry copyWith({
@@ -293,6 +329,7 @@ class EducationEntry {
     String? degree,
     String? fieldOfStudy,
     int? graduationYear,
+    String? grade,
   }) =>
       EducationEntry(
         id: id,
@@ -300,6 +337,7 @@ class EducationEntry {
         degree: degree ?? this.degree,
         fieldOfStudy: fieldOfStudy ?? this.fieldOfStudy,
         graduationYear: graduationYear ?? this.graduationYear,
+        grade: grade ?? this.grade,
       );
 }
 
@@ -347,6 +385,71 @@ class CertificationEntry {
         issuer: issuer ?? this.issuer,
         issueDate: issueDate ?? this.issueDate,
         expiryDate: expiryDate ?? this.expiryDate,
+      );
+}
+
+/// Where an uploaded file belongs on the profile.
+///
+/// One document list with a category beats three parallel lists: every screen
+/// that showed "documents", "experience documents" and "certification
+/// documents" was really filtering the same pile, and three lists meant three
+/// chances for one of them to be forgotten in a merge.
+enum DocumentCategory {
+  general,
+  experience,
+  certification;
+
+  String toJson() => name;
+
+  static DocumentCategory fromJson(dynamic v) => DocumentCategory.values
+      .firstWhere((e) => e.name == v?.toString(),
+          orElse: () => DocumentCategory.general);
+}
+
+/// A file the candidate attached to their profile.
+class ProfileDocument {
+  const ProfileDocument({
+    required this.name,
+    required this.url,
+    this.contentType = '',
+    this.category = DocumentCategory.general,
+    this.uploadedAt,
+  });
+
+  final String name;
+  final String url;
+  final String contentType;
+  final DocumentCategory category;
+  final DateTime? uploadedAt;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'url': url,
+        'contentType': contentType,
+        'category': category.toJson(),
+        'uploadedAt':
+            uploadedAt == null ? null : Timestamp.fromDate(uploadedAt!),
+      };
+
+  factory ProfileDocument.fromJson(Map<String, dynamic> j) {
+    final ts = j['uploadedAt'];
+    return ProfileDocument(
+      name: (j['name'] ?? '').toString(),
+      url: (j['url'] ?? '').toString(),
+      contentType: (j['contentType'] ?? j['type'] ?? '').toString(),
+      category: DocumentCategory.fromJson(j['category']),
+      uploadedAt: ts is Timestamp
+          ? ts.toDate()
+          : DateTime.tryParse(ts?.toString() ?? ''),
+    );
+  }
+
+  ProfileDocument copyWith({DocumentCategory? category}) => ProfileDocument(
+        name: name,
+        url: url,
+        contentType: contentType,
+        category: category ?? this.category,
+        uploadedAt: uploadedAt,
       );
 }
 
@@ -433,6 +536,12 @@ class CandidateProfile {
     this.completedSections = const [],
     this.cvSourceFile,
     this.extractionConfidence,
+    this.professionalStatus = '',
+    this.expectedRetirementDate = '',
+    this.publications = const [],
+    this.awards = const [],
+    this.references = const [],
+    this.documents = const [],
   });
 
   final String uid;
@@ -459,7 +568,25 @@ class CandidateProfile {
   /// 0–1 confidence the extractor reported for the prefill.
   final double? extractionConfidence;
 
+  /// Serving / retired / civilian, and when service ends. Both matter to
+  /// recruiters screening ex-military aircrew, and neither is a template
+  /// question — every role asks them.
+  final String professionalStatus;
+  final String expectedRetirementDate;
+
+  final List<String> publications;
+  final List<String> awards;
+  final List<String> references;
+
+  /// Every uploaded file, tagged by [DocumentCategory].
+  final List<ProfileDocument> documents;
+
   bool get isComplete => onboardingStatus == OnboardingStatus.completed;
+
+  /// Documents filed under [category] — what the experience and certification
+  /// panels render.
+  List<ProfileDocument> documentsIn(DocumentCategory category) =>
+      documents.where((d) => d.category == category).toList();
 
   Map<String, dynamic> toJson() => {
         'uid': uid,
@@ -476,6 +603,12 @@ class CandidateProfile {
         if (cvSourceFile != null) 'cvSourceFile': cvSourceFile,
         if (extractionConfidence != null)
           'extractionConfidence': extractionConfidence,
+        'professionalStatus': professionalStatus,
+        'expectedRetirementDate': expectedRetirementDate,
+        'publications': publications,
+        'awards': awards,
+        'references': references,
+        'documents': documents.map((d) => d.toJson()).toList(),
       };
 
   factory CandidateProfile.fromJson(String uid, Map<String, dynamic> j) {
@@ -516,6 +649,16 @@ class CandidateProfile {
       extractionConfidence: j['extractionConfidence'] is num
           ? (j['extractionConfidence'] as num).toDouble()
           : null,
+      professionalStatus: (j['professionalStatus'] ?? '').toString(),
+      expectedRetirementDate: (j['expectedRetirementDate'] ?? '').toString(),
+      publications: _stringList(j['publications']),
+      awards: _stringList(j['awards']),
+      references: _stringList(j['references']),
+      documents: (j['documents'] as List?)
+              ?.whereType<Map>()
+              .map((m) => ProfileDocument.fromJson(Map<String, dynamic>.from(m)))
+              .toList() ??
+          const [],
     );
   }
 
@@ -531,6 +674,12 @@ class CandidateProfile {
     List<String>? completedSections,
     String? cvSourceFile,
     double? extractionConfidence,
+    String? professionalStatus,
+    String? expectedRetirementDate,
+    List<String>? publications,
+    List<String>? awards,
+    List<String>? references,
+    List<ProfileDocument>? documents,
   }) =>
       CandidateProfile(
         uid: uid,
@@ -546,6 +695,13 @@ class CandidateProfile {
         completedSections: completedSections ?? this.completedSections,
         cvSourceFile: cvSourceFile ?? this.cvSourceFile,
         extractionConfidence: extractionConfidence ?? this.extractionConfidence,
+        professionalStatus: professionalStatus ?? this.professionalStatus,
+        expectedRetirementDate:
+            expectedRetirementDate ?? this.expectedRetirementDate,
+        publications: publications ?? this.publications,
+        awards: awards ?? this.awards,
+        references: references ?? this.references,
+        documents: documents ?? this.documents,
       );
 }
 

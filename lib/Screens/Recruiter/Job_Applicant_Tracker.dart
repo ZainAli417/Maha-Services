@@ -1303,45 +1303,14 @@ class _Job_CardsState extends State<Job_Cards>
                       color: _kSurface,
                       elevation: 20,
                       shadowColor: Colors.black.withValues(alpha: 0.35),
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 12),
-                            width: 44,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: _kTxtTert.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 14),
-                              child: GestureDetector(
-                                onTap: () => Navigator.of(ctx).pop(),
-                                child: Container(
-                                  width: 34,
-                                  height: 34,
-                                  decoration: BoxDecoration(
-                                    color: _kSurfaceEl,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: _kBorder),
-                                  ),
-                                  child: const Icon(
-                                    Icons.close_rounded,
-                                    size: 18,
-                                    color: _kTxtSec,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: ApplicantsScreen(jobId: widget.jobId),
-                          ),
-                        ],
+                      // The drag handle and the close button used to sit on
+                      // two bands of their own above the content — a
+                      // bottom-sheet affordance on a centered desktop dialog,
+                      // costing a chunk of height before anything useful
+                      // started. Close now lives inside the screen's header.
+                      child: ApplicantsScreen(
+                        jobId: widget.jobId,
+                        onClose: () => Navigator.of(ctx).pop(),
                       ),
                     ),
                   ),

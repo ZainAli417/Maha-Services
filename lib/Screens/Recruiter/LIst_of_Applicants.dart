@@ -9,6 +9,8 @@ import '../../core/widgets/view_js_profile.dart';
 import 'AI Candidate Matching.dart';
 import 'AI Candidate Matching_Provider.dart';
 import 'LIst_of_Applicants_provider.dart';
+import 'active_filters_bar.dart';
+import 'filter.dart';
 import '../../core/widgets/custom_snackbars.dart';
 
 // ─── Scroll behavior ──────────────────────────────────────────────────────────
@@ -41,9 +43,63 @@ const _cTxtTert = Color(0xFF8AA5B5);
 const _cTeal = Color(0xFF086F63);
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ─── Row helpers (pure fns) ────────────────────────────────────────────────
+//
+// Contact details never reach this screen: the application snapshot is written
+// without them. The masker that used to live here always produced a fake
+// "****@****.com", so the line under a name said nothing at all. The role the
+// candidate applied as says a great deal, especially when fifteen trades apply
+// to one posting.
+String _subtitleOf(ApplicantRecord a) {
+  final role = a.targetRole.trim();
+  if (role.isNotEmpty) return role;
+  return a.location.trim().isNotEmpty ? a.location.trim() : 'Candidate';
+}
+
+/// What to show in the EXPERIENCE column, with its unit spelled out.
+///
+/// Three different things used to share this slot under one word. They are not
+/// the same measure and a recruiter should never have to guess which one they
+/// are looking at:
+///
+///   * flight hours — logged flying time, aircrew only
+///   * years — time in service or trade, for roles that do not fly
+///   * roles listed — a count of previous jobs, which is not a duration at all
+///
+/// The old label read "2y exp" off the job count, so two jobs looked like two
+/// years of experience. Whatever this returns now names its own unit.
+String _experienceOf(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => '${_n(a.flightHours!)} flight hours',
+  ExperienceBasis.declaredYears => '${_n(a.declaredYears!)} years experience',
+  // Named for where it came from. A recruiter reading "8 years of service"
+  // should be able to check it against the dates on the roles below and see
+  // that it is derived from them, not declared by the candidate.
+  ExperienceBasis.serviceHistory => '${_n(a.serviceYears!)} years of service',
+  ExperienceBasis.roleCount => a.roleCount == 0
+      ? 'No history on file'
+      : '${a.roleCount} role${a.roleCount == 1 ? '' : 's'} listed',
+};
+
+/// Thousands separator, because 2680 and 26800 are hard to tell apart at a
+/// glance in a list.
+String _n(num v) {
+  final s = v.round().toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
+
 class ApplicantsScreen extends StatefulWidget {
-  const ApplicantsScreen({super.key, this.jobId});
+  const ApplicantsScreen({super.key, this.jobId, this.onClose});
   final String? jobId;
+
+  /// Set when the screen is shown as a dialog. The close control then lives in
+  /// the header rather than on a band of its own above it, which was costing a
+  /// row of vertical space before any content started.
+  final VoidCallback? onClose;
 
   @override
   State<ApplicantsScreen> createState() => _ApplicantsScreenState();
@@ -77,15 +133,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
         : CustomSnackbars.showSuccess(context, msg);
   }
 
-  // ─── Email masking ──────────────────────────────────────────────────────
-  String _maskEmail(String email) {
-    final parts = email.split('@');
-    if (parts.length != 2) {
-      return '****@****.com';
-    }
-    final u = parts[0];
-    return '${u.length > 2 ? u.substring(0, 2) : '**'}****@${parts[1]}';
-  }
 
   // ─── Selection helpers ──────────────────────────────────────────────────
   void _toggleAll(ApplicantsProvider p) {
@@ -113,11 +160,14 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
     var list = p.applicants;
     if (_search.text.isNotEmpty) {
       final q = _search.text.toLowerCase();
+      // searchIndex already holds the name, location, role title, aircraft
+      // types, licences and competencies. Matching on it makes "A320" and
+      // "ATPL" find people; matching on email never could, because the
+      // snapshot has no email in it.
       list = list
           .where(
             (a) =>
-                a.name.toLowerCase().contains(q) ||
-                a.email.toLowerCase().contains(q) ||
+                a.searchIndex.contains(q) ||
                 (a.jobData?.title ?? '').toLowerCase().contains(q),
           )
           .toList();
@@ -303,6 +353,7 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                 bottom: false,
                 child: _Header(
                   isMobile: isMobile,
+                  onClose: widget.onClose,
                   selected: _selected,
                   rankByScore: _rankByScore,
                   jobId: widget.jobId,
@@ -330,13 +381,19 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
   Widget _buildTable(ApplicantsProvider p, bool isMobile) {
     final list = _filtered(p);
     if (list.isEmpty) {
-      return _EmptyResults(onClear: p.clearAllFilters);
+      return _EmptyResults(onClear: p.clearAllFilters, provider: p);
     }
 
     // ── Shared search bar + list, layout differs per breakpoint ──────────────
     return Column(
       children: [
-        _SearchBar(controller: _search, isMobile: isMobile),
+        _SearchBar(controller: _search, isMobile: isMobile, provider: p),
+        ActiveFiltersBar(
+          provider: p,
+          shown: list.length,
+          total: p.totalApplicants,
+          horizontalPadding: isMobile ? 12 : 20,
+        ),
         if (!isMobile)
           _TableHeader(
             selectAll: _selectAll,
@@ -370,7 +427,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                     applicant: a,
                     index: i,
                     isSelected: isSelected,
-                    maskEmail: _maskEmail,
                     scoreColor: _scoreColor,
                     scoreLabel: _scoreLabel,
                     onToggle: () => _toggleOne(a.userId, p),
@@ -402,7 +458,6 @@ class _ApplicantsScreenState extends State<ApplicantsScreen> {
                   index: i,
                   isSelected: isSelected,
                   isMobile: false,
-                  maskEmail: _maskEmail,
                   scoreColor: _scoreColor,
                   scoreLabel: _scoreLabel,
                   onToggle: () => _toggleOne(a.userId, p),
@@ -681,7 +736,6 @@ class _ApplicantCard extends StatelessWidget {
   final ApplicantRecord applicant;
   final int index;
   final bool isSelected;
-  final String Function(String) maskEmail;
   final Color Function(int) scoreColor;
   final String Function(int) scoreLabel;
   final VoidCallback onToggle;
@@ -693,7 +747,6 @@ class _ApplicantCard extends StatelessWidget {
     required this.applicant,
     required this.index,
     required this.isSelected,
-    required this.maskEmail,
     required this.scoreColor,
     required this.scoreLabel,
     required this.onToggle,
@@ -803,7 +856,7 @@ class _ApplicantCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          maskEmail(applicant.email),
+                          _subtitleOf(applicant),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             color: _cTxtSec,
@@ -837,7 +890,7 @@ class _ApplicantCard extends StatelessWidget {
                 children: [
                   _MetaChip(
                     icon: Icons.work_outline_rounded,
-                    label: '${applicant.experienceYears}y exp',
+                    label: _experienceOf(applicant),
                   ),
                   const SizedBox(width: 8),
                   _MetaChip(
@@ -1058,6 +1111,7 @@ class _MetaChip extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
   final bool isMobile;
+  final VoidCallback? onClose;
   final Set<String> selected;
   final bool rankByScore;
   final String? jobId;
@@ -1068,6 +1122,7 @@ class _Header extends StatelessWidget {
 
   const _Header({
     required this.isMobile,
+    required this.onClose,
     required this.selected,
     required this.rankByScore,
     required this.jobId,
@@ -1081,10 +1136,10 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        isMobile ? 14 : 28,
+        isMobile ? 14 : 24,
+        isMobile ? 12 : 14,
         isMobile ? 14 : 20,
-        isMobile ? 14 : 28,
-        isMobile ? 12 : 16,
+        isMobile ? 10 : 12,
       ),
       decoration: const BoxDecoration(color: Color(0xFFF4F9FB)),
       child: isMobile ? _mobileHeader(context) : _desktopHeader(context),
@@ -1329,44 +1384,90 @@ class _Header extends StatelessWidget {
             size: 22,
           ),
         ),
-        const SizedBox(width: 14),
-        Expanded(
+        const SizedBox(width: 12),
+        // The title takes only what it needs. It used to be Expanded, which
+        // claimed every spare pixel and squeezed four action buttons into
+        // whatever was left.
+        Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Candidate Shortlisting',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 22,
+                  fontSize: 19,
                   fontWeight: FontWeight.w800,
                   color: _cTxt,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.4,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
               Text(
                 'Manage applicants efficiently using AI',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: _cTxtSec,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
         ),
         const SizedBox(width: 16),
-        _DesktopActions(
-          selected: selected,
-          rankByScore: rankByScore,
-          jobId: jobId,
-          provider: provider,
-          onShortlist: onShortlist,
-          onAutoShortlist: onAutoShortlist,
-          onToggleRank: onToggleRank,
+        Flexible(
+          flex: 3,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _DesktopActions(
+              selected: selected,
+              rankByScore: rankByScore,
+              jobId: jobId,
+              provider: provider,
+              onShortlist: onShortlist,
+              onAutoShortlist: onAutoShortlist,
+              onToggleRank: onToggleRank,
+            ),
+          ),
         ),
+        if (onClose != null) ...[
+          const SizedBox(width: 12),
+          _CloseButton(onTap: onClose!),
+        ],
       ],
     );
   }
+}
+
+/// The dialog's close control, sitting at the end of the header row.
+class _CloseButton extends StatelessWidget {
+  const _CloseButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFDCE7EF)),
+            ),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 18,
+              color: _cTxtSec,
+            ),
+          ),
+        ),
+      );
 }
 
 // Desktop action buttons row
@@ -1543,7 +1644,12 @@ class _DesktopActions extends StatelessWidget {
 class _SearchBar extends StatelessWidget {
   final TextEditingController controller;
   final bool isMobile;
-  const _SearchBar({required this.controller, required this.isMobile});
+  final ApplicantsProvider provider;
+  const _SearchBar({
+    required this.controller,
+    required this.isMobile,
+    required this.provider,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1555,11 +1661,24 @@ class _SearchBar extends StatelessWidget {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: _cBorder)),
       ),
-      child: TextField(
+      child: Row(
+        children: [
+          Expanded(child: _field()),
+          const SizedBox(width: 10),
+          // This screen had no way to open the filters at all — the only
+          // filter button lived on the other shortlisting view.
+          _FilterButton(provider: provider),
+        ],
+      ),
+    );
+  }
+
+  Widget _field() {
+    return TextField(
         controller: controller,
         style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxt),
         decoration: InputDecoration(
-          hintText: 'Search by name, email or keyword…',
+          hintText: 'Search by name, role, aircraft or licence…',
           hintStyle: GoogleFonts.plusJakartaSans(
             fontSize: 12,
             color: _cTxtTert,
@@ -1582,6 +1701,59 @@ class _SearchBar extends StatelessWidget {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: _cPurple, width: 1.5),
+          ),
+        ),
+    );
+  }
+}
+
+/// Opens the filter sheet, with a badge for how many filters are on.
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({required this.provider});
+  final ApplicantsProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = provider.activeFilterChips.length;
+    final active = count > 0;
+    return Material(
+      color: active ? _cPurple : _cSurface,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => ChangeNotifierProvider.value(
+            value: provider,
+            child: const ApplicantFilterWidget(),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: active ? _cPurple : _cBorder),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                size: 16,
+                color: active ? Colors.white : _cTxtSec,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                active ? 'Filters · $count' : 'Filters',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: active ? Colors.white : _cTxtSec,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1666,7 +1838,6 @@ class _TableRow extends StatelessWidget {
   final int index;
   final bool isSelected;
   final bool isMobile;
-  final String Function(String) maskEmail;
   final Color Function(int) scoreColor;
   final String Function(int) scoreLabel;
   final VoidCallback onToggle;
@@ -1679,7 +1850,6 @@ class _TableRow extends StatelessWidget {
     required this.index,
     required this.isSelected,
     required this.isMobile,
-    required this.maskEmail,
     required this.scoreColor,
     required this.scoreLabel,
     required this.onToggle,
@@ -1764,7 +1934,7 @@ class _TableRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        maskEmail(applicant.email),
+                        _subtitleOf(applicant),
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           color: _cTxtSec,
@@ -1782,7 +1952,7 @@ class _TableRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(
-              '${applicant.experienceYears}y  ${applicant.professionalStatus}',
+              _experienceOf(applicant),
               style: GoogleFonts.plusJakartaSans(fontSize: 12, color: _cTxtSec),
               overflow: TextOverflow.ellipsis,
             ),
@@ -2229,66 +2399,118 @@ class _Bullet extends StatelessWidget {
 // EMPTY RESULTS
 // ─────────────────────────────────────────────────────────────────────────────
 class _EmptyResults extends StatelessWidget {
+  const _EmptyResults({required this.onClear, required this.provider});
+
   final VoidCallback onClear;
-  const _EmptyResults({required this.onClear});
+  final ApplicantsProvider provider;
 
   @override
   Widget build(BuildContext context) {
+    // "No applicants" and "your filters excluded all of them" are different
+    // problems, and only one of them has a fix the recruiter can act on. The
+    // old screen said the same thing for both.
+    final filtered = provider.hasActiveFilters;
+    final chips = provider.activeFilterChips;
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: _cSurface,
-              shape: BoxShape.circle,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: _cSurface,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                filtered
+                    ? Icons.filter_alt_off_rounded
+                    : Icons.person_search_rounded,
+                size: 48,
+                color: _cTxtTert,
+              ),
             ),
-            child: const Icon(
-              Icons.person_search_rounded,
-              size: 54,
-              color: _cTxtTert,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'No applicants found',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: 280,
-            child: Text(
-              'Try adjusting your search or clearing filters.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.plusJakartaSans(fontSize: 13, color: _cTxtSec),
-            ),
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton.icon(
-            onPressed: onClear,
-            icon: const Icon(Icons.clear_rounded, size: 16),
-            label: Text(
-              'Clear filters',
+            const SizedBox(height: 18),
+            Text(
+              filtered
+                  ? 'No candidates match your filters'
+                  : 'No applicants yet',
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
+                color: const Color(0xFF1E293B),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _cPurple,
-              side: const BorderSide(color: _cBorder),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 320,
+              child: Text(
+                filtered
+                    ? '${provider.totalApplicants} applied to this job. '
+                        'Remove a filter below to widen the search.'
+                    : 'Nobody has applied to this job yet.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: _cTxtSec,
+                ),
               ),
             ),
-          ),
-        ],
+            if (filtered) ...[
+              const SizedBox(height: 18),
+              // The filters themselves, so the fix is one tap from the
+              // problem rather than back through the filter sheet.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final c in chips)
+                      ActionChip(
+                        avatar: const Icon(Icons.close_rounded, size: 14),
+                        label: Text(c.label),
+                        onPressed: c.remove,
+                        labelStyle: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: _cBorder),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              OutlinedButton.icon(
+                onPressed: onClear,
+                icon: const Icon(Icons.clear_rounded, size: 16),
+                label: Text(
+                  'Clear all filters',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _cPurple,
+                  side: const BorderSide(color: _cBorder),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

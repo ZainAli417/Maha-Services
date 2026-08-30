@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/onboarding/candidate_profile_service.dart';
 import '../../core/rbac/user_role.dart';
 
 class AdminAnalyticsProvider extends ChangeNotifier {
@@ -34,6 +35,24 @@ class AdminAnalyticsProvider extends ChangeNotifier {
   Map<String, int> topRecruiters = {};
   Map<String, int> jobsByLocation = {};
   Map<String, int> applicantsByLocation = {};
+
+  /// Which role templates candidates are actually onboarding against, most
+  /// popular first. The single most useful thing an admin can see about the
+  /// candidate pool: it says what kind of platform this is becoming.
+  Map<String, int> roleFrequencies = {};
+
+  /// Licences, ratings and aircraft types held across the pool. Skills are
+  /// self-declared; these are the credentials recruiters screen on.
+  Map<String, int> credentialFrequencies = {};
+
+  /// Profiles that finished onboarding versus ones still in draft — the
+  /// drop-off number, and the only funnel metric available here.
+  int completedProfiles = 0;
+  int draftProfiles = 0;
+
+  int get totalProfiles => completedProfiles + draftProfiles;
+  double get completionRate =>
+      totalProfiles == 0 ? 0 : completedProfiles / totalProfiles;
   List<Map<String, dynamic>> recentRequests = [];
   List<Map<String, dynamic>> allJobs = [];
 
@@ -145,40 +164,58 @@ class AdminAnalyticsProvider extends ChangeNotifier {
           if (_disposed) return;
           _rawSkillFreqs.clear();
           final Map<String, int> applicantLocCounts = {};
+          final Map<String, int> roleCounts = {};
+          final Map<String, int> credentialCounts = {};
+          var completed = 0;
+          var draft = 0;
           for (var doc in snap.docs) {
-            final data = doc.data();
-            final userData = data['user_data'] as Map<String, dynamic>? ?? {};
-            final personalProfile =
-                userData['personalProfile'] as Map<String, dynamic>? ?? {};
-            final profProfile =
-                userData['professionalProfile'] as Map<String, dynamic>? ?? {};
+            final profile = CandidateProfileService.parse(doc.id, doc.data());
+            if (profile == null) continue;
+            final personal = profile.personalInfo;
 
             // Geographical aggregation — count applicants per country/region.
-            final region = (personalProfile['nationality'] ??
-                    personalProfile['country'] ??
-                    personalProfile['location'] ??
-                    data['nationality'] ??
-                    data['country'] ??
-                    '')
-                .toString()
+            final region = (personal.nationality.isNotEmpty
+                    ? personal.nationality
+                    : personal.location.country)
                 .trim();
             if (region.isNotEmpty && region.toLowerCase() != 'not specified') {
               final cap = region[0].toUpperCase() + region.substring(1);
               applicantLocCounts[cap] = (applicantLocCounts[cap] ?? 0) + 1;
             }
 
-            List<dynamic> skills = [];
-            if (data['skills'] is List) {
-              skills = data['skills'];
-            } else if (personalProfile['skills'] is List) {
-              skills = personalProfile['skills'];
-            } else if (profProfile['skills'] is List) {
-              skills = profProfile['skills'];
-            } else if (userData['skills'] is List) {
-              skills = userData['skills'];
+            // What the candidate typed plus what their role template
+            // captured — the chart is about the pool's capabilities, and for a
+            // templated role most of that lives in the role data.
+            final skills = <String>{
+              ...personal.skills,
+              ...profile.roleSpecificData.technicalCompetencies,
+              ...profile.roleSpecificData.toolsAndSystems,
+            };
+
+            final role = profile.targetRole.roleTitle.trim();
+            if (role.isNotEmpty) {
+              roleCounts[role] = (roleCounts[role] ?? 0) + 1;
             }
 
-            for (var s in skills) {
+            if (profile.isComplete) {
+              completed++;
+            } else {
+              draft++;
+            }
+
+            // Licences and aircraft, deduped per candidate so one pilot with
+            // six type ratings does not outweigh six pilots.
+            final credentials = <String>{
+              ...profile.roleSpecificData.licensesAndRatings
+                  .map((l) => l.title.trim())
+                  .where((t) => t.isNotEmpty),
+              ...profile.roleSpecificData.aircraftTypes,
+            };
+            for (final c in credentials) {
+              credentialCounts[c] = (credentialCounts[c] ?? 0) + 1;
+            }
+
+            for (final s in skills) {
               final skillStr = s.toString().trim();
               if (skillStr.isNotEmpty) {
                 final capSkill =
@@ -197,6 +234,11 @@ class AdminAnalyticsProvider extends ChangeNotifier {
           applicantsByLocation = {
             for (var k in sortedRegions.take(8)) k: applicantLocCounts[k]!,
           };
+
+          roleFrequencies = _topBy(roleCounts, 8);
+          credentialFrequencies = _topBy(credentialCounts, 10);
+          completedProfiles = completed;
+          draftProfiles = draft;
 
           _updateSkillFrequencies();
         });
@@ -344,10 +386,33 @@ class AdminAnalyticsProvider extends ChangeNotifier {
     }
   }
 
+  /// Highest counts first, capped — every one of these feeds a card with a
+  /// fixed height, and an uncapped map is what makes a chart unreadable.
+  static Map<String, int> _topBy(Map<String, int> src, int limit) {
+    final keys = src.keys.toList()..sort((a, b) => src[b]!.compareTo(src[a]!));
+    return {for (final k in keys.take(limit)) k: src[k]!};
+  }
+
+  /// How many skills the chart shows when nothing is filtered.
+  ///
+  /// Templated roles contribute competencies and tools as well as free-form
+  /// skills, so an unfiltered pool of twenty candidates easily produces a
+  /// hundred distinct values. Rendering all of them in one fixed-height card
+  /// is what made the chart unreadable; the long tail is one-per-candidate
+  /// noise anyway, and the filter is still there for anyone who wants it.
+  static const defaultSkillLimit = 12;
+
+  /// True when the chart is showing a capped view rather than everything.
+  bool get skillsAreCapped =>
+      selectedSkills.isEmpty && _rawSkillFreqs.length > defaultSkillLimit;
+
+  /// Every skill seen, for the filter dialog.
+  int get totalSkillCount => _rawSkillFreqs.length;
+
   void _updateSkillFrequencies() {
     Map<String, int> filtered = {};
     if (selectedSkills.isEmpty) {
-      filtered = Map.from(_rawSkillFreqs);
+      filtered = _topBy(_rawSkillFreqs, defaultSkillLimit);
     } else {
       _rawSkillFreqs.forEach((key, value) {
         if (selectedSkills.contains(key)) {

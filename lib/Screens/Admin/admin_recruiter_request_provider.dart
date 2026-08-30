@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/onboarding/candidate_profile_service.dart';
+import '../../core/rbac/hiring_pipeline.dart';
 import '../../core/rbac/user_role.dart';
 import '../../core/services/role_management_service.dart';
 
@@ -746,10 +748,7 @@ class AdminProvider extends ChangeNotifier {
           // --- STRICT CACHE VALIDATION ---
           // Prevent shallow maps or fallbacks from blocking a real fetch
           final data = cached.data;
-          final pp = _normalizeMap(
-            data['personalProfile'] ?? data['personal_profile'] ?? {},
-          );
-          final name = pp['name']?.toString() ?? data['name']?.toString() ?? '';
+          final name = data['name']?.toString() ?? '';
           final isFallback = name.toLowerCase().contains('unknown');
 
           if (name.isNotEmpty && !isFallback) {
@@ -911,49 +910,16 @@ class AdminProvider extends ChangeNotifier {
             .where(FieldPath.documentId, whereIn: batch)
             .get();
         for (final doc in snap.docs) {
-          final data = _normalizeMap(doc.data());
-          final userData = _normalizeMap(data['user_data'] ?? {});
-          final personal = _normalizeMap(
-            data['personalProfile'] ??
-                data['personal_profile'] ??
-                userData['personalProfile'] ??
-                userData['personal_profile'] ??
-                {},
-          );
-          final candidateProfile = _normalizeMap(data['candidateProfile'] ?? {});
-          final personalInfo =
-              _normalizeMap(candidateProfile['personalInfo'] ?? {});
-
-          String pick(List<String> keys) {
-            for (final k in keys) {
-              final v = personalInfo[k]?.toString().trim() ?? '';
-              if (v.isNotEmpty && v != 'null') return v;
-            }
-            for (final k in keys) {
-              final v = personal[k]?.toString().trim() ?? '';
-              if (v.isNotEmpty && v != 'null') return v;
-            }
-            return '';
-          }
-
-          List<String> pickList(List<String> keys) {
-            for (final src in [personalInfo, personal]) {
-              for (final k in keys) {
-                final v = src[k];
-                if (v is List && v.isNotEmpty) {
-                  return v.map((e) => e.toString()).toList();
-                }
-              }
-            }
-            return const [];
-          }
+          final profile = CandidateProfileService.parse(doc.id, doc.data());
+          if (profile == null) continue;
+          final personal = profile.personalInfo;
 
           out[doc.id.toLowerCase()] = {
-            'email': pick(['email']),
-            'secondary_email': pick(['secondaryEmail', 'secondary_email']),
-            'phone': pick(['phone', 'contactNumber', 'contact_number']),
-            'dob': pick(['dateOfBirth', 'dob']),
-            'social_links': pickList(['socialLinks', 'social_links']),
+            'email': personal.email,
+            'secondary_email': personal.secondaryEmail,
+            'phone': personal.phone,
+            'dob': personal.dateOfBirth,
+            'social_links': personal.socialLinks,
           }..removeWhere((_, v) => v is String ? v.isEmpty : (v as List).isEmpty);
         }
       } catch (e) {
@@ -970,67 +936,27 @@ class AdminProvider extends ChangeNotifier {
     final results = <Map<String, dynamic>>[];
     for (final doc in docs) {
       final jsData = _normalizeMap(doc.data());
-      final userData = _normalizeMap(jsData['user_data'] ?? {});
-      final pp = _normalizeMap(
-        jsData['personalProfile'] ??
-            jsData['personal_profile'] ??
-            userData['personalProfile'] ??
-            userData['personal_profile'] ??
-            {},
-      );
-      final prof = _normalizeMap(
-        jsData['professionalProfile'] ?? jsData['professional_profile'] ?? {},
-      );
-      final storedUid =
-          jsData['uid']?.toString() ??
-          jsData['user_id']?.toString() ??
-          userData['uid']?.toString() ??
-          doc.id;
-
-      String resolveName() {
-        for (final src in [pp, jsData, userData, prof]) {
-          for (final key in ['name', 'fullName', 'full_name', 'displayName']) {
-            final v = src[key]?.toString().trim() ?? '';
-            if (v.isNotEmpty && v.toLowerCase() != 'null') return v;
-          }
-          final fn = src['firstName']?.toString().trim() ?? '';
-          final ln = src['lastName']?.toString().trim() ?? '';
-          if (fn.isNotEmpty) return '$fn $ln'.trim();
-        }
-        return doc.id;
-      }
-
+      final storedUid = jsData['uid']?.toString() ?? doc.id;
+      final profile = CandidateProfileService.parse(storedUid, jsData);
+      final personal = profile?.personalInfo;
       final hint = _normalizeMap(hints?[doc.id] ?? hints?[storedUid] ?? {});
+
+      // The first employer on record is what the admin list shows as the
+      // candidate's current position.
+      final latest = (profile?.experience.isNotEmpty ?? false)
+          ? profile!.experience.first
+          : null;
+
+      final name = personal?.fullName.trim() ?? '';
       final result = {
         'uid': storedUid,
         'doc_id': doc.id,
-        'name': resolveName(),
-        'email':
-            pp['email']?.toString() ??
-            pp['emailAddress']?.toString() ??
-            jsData['email']?.toString() ??
-            userData['email']?.toString() ??
-            '',
-        'phone':
-            pp['contactNumber']?.toString() ??
-            pp['phone']?.toString() ??
-            pp['phoneNumber']?.toString() ??
-            jsData['phone']?.toString() ??
-            userData['phone']?.toString() ??
-            '',
-        'job_title':
-            prof['job_title']?.toString() ??
-            prof['jobTitle']?.toString() ??
-            jsData['job_title']?.toString() ??
-            jsData['jobTitle']?.toString() ??
-            hint['job_title']?.toString() ??
-            '',
-        'company':
-            prof['company']?.toString() ??
-            jsData['company']?.toString() ??
-            hint['company']?.toString() ??
-            '',
-        'user_data': {...hint, ...jsData},
+        'name': name.isEmpty ? doc.id : name,
+        'email': personal?.email ?? '',
+        'phone': personal?.phone ?? '',
+        'job_title': latest?.title ?? hint['job_title']?.toString() ?? '',
+        'company': latest?.company ?? hint['company']?.toString() ?? '',
+        'candidate_profile': profile?.toJson() ?? hint,
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
       if (storedUid != doc.id) {
@@ -1067,7 +993,10 @@ class AdminProvider extends ChangeNotifier {
             data['org']?.toString() ??
             hint['company']?.toString() ??
             '',
-        'user_data': {...hint, ...data},
+        // `users/{uid}` is the gating document, not a profile — there is no
+        // candidate profile to attach, so the card renders from the hint the
+        // recruiter's request supplied.
+        'candidate_profile': hint,
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
       results.add(result);
@@ -1075,34 +1004,27 @@ class AdminProvider extends ChangeNotifier {
     return results;
   }
 
+  /// A card for a candidate whose document could not be read at all.
+  ///
+  /// Everything here comes from the hint the recruiter's request carried, so
+  /// the admin still sees who the request is about instead of a blank row.
   Map<String, dynamic> _buildFallbackCard(
     String uid,
     Map<String, dynamic> hint,
   ) {
-    final pp = _normalizeMap(
-      hint['personalProfile'] ?? hint['personal_profile'] ?? {},
-    );
-    final prof = _normalizeMap(
-      hint['professionalProfile'] ?? hint['professional_profile'] ?? {},
-    );
-    final ud = _normalizeMap(hint['user_data'] ?? {});
-    final udPp = _normalizeMap(
-      ud['personalProfile'] ?? ud['personal_profile'] ?? {},
-    );
+    final profile = _normalizeMap(hint['candidate_profile'] ?? {});
+    final personal = _normalizeMap(profile['personalInfo'] ?? {});
 
     String resolveName() {
-      for (final src in [pp, udPp, hint, ud, prof]) {
-        for (final key in ['name', 'fullName', 'full_name', 'displayName']) {
+      for (final src in [personal, hint]) {
+        for (final key in ['fullName', 'name', 'displayName']) {
           final v = src[key]?.toString().trim() ?? '';
           if (v.isNotEmpty && v.toLowerCase() != 'null') return v;
         }
-        final fn = src['firstName']?.toString().trim() ?? '';
-        final ln = src['lastName']?.toString().trim() ?? '';
-        if (fn.isNotEmpty) return '$fn $ln'.trim();
       }
       final email =
+          personal['email']?.toString().trim() ??
           hint['email']?.toString().trim() ??
-          pp['email']?.toString().trim() ??
           '';
       if (email.contains('@')) return email.split('@').first;
       return uid.startsWith('__') ? 'Unknown Candidate' : uid;
@@ -1111,29 +1033,11 @@ class AdminProvider extends ChangeNotifier {
     return {
       'uid': uid,
       'name': resolveName(),
-      'email':
-          hint['email']?.toString() ??
-          pp['email']?.toString() ??
-          ud['email']?.toString() ??
-          '',
-      'phone':
-          hint['phone']?.toString() ??
-          hint['contactNumber']?.toString() ??
-          pp['phone']?.toString() ??
-          pp['contactNumber']?.toString() ??
-          '',
-      'job_title':
-          prof['job_title']?.toString() ??
-          prof['jobTitle']?.toString() ??
-          hint['job_title']?.toString() ??
-          hint['jobTitle']?.toString() ??
-          '',
-      'company':
-          prof['company']?.toString() ??
-          hint['company']?.toString() ??
-          hint['org']?.toString() ??
-          '',
-      'user_data': hint,
+      'email': personal['email']?.toString() ?? hint['email']?.toString() ?? '',
+      'phone': personal['phone']?.toString() ?? hint['phone']?.toString() ?? '',
+      'job_title': hint['job_title']?.toString() ?? '',
+      'company': hint['company']?.toString() ?? '',
+      'candidate_profile': profile.isEmpty ? hint : profile,
     };
   }
 
@@ -1423,6 +1327,13 @@ class AdminProvider extends ChangeNotifier {
   // On failure we invalidate the cache so the next open restores server state.
   // =========================================================================
 
+  /// Why the last status change was refused, if it was.
+  ///
+  /// Held here rather than thrown so the screen can explain the refusal to the
+  /// admin: a button that silently does nothing is worse than one that says no.
+  String _lastStatusRefusal = '';
+  String get lastStatusRefusal => _lastStatusRefusal;
+
   Future<bool> updateCandidateStatus({
     required String requestId,
     required String candidateUid,
@@ -1431,9 +1342,8 @@ class AdminProvider extends ChangeNotifier {
     String? performedBy,
   }) async {
     if (_disposed) return false;
-    final normalized = status.toLowerCase() == 'shortlisted'
-        ? 'shortlist'
-        : status.toLowerCase();
+    _lastStatusRefusal = '';
+    final normalized = HiringPipeline.normalize(status);
     try {
       final now = FieldValue.serverTimestamp();
       final ref = _firestore.collection('recruiter_requests').doc(requestId);
@@ -1444,6 +1354,36 @@ class AdminProvider extends ChangeNotifier {
 
       final data = snap.data() as Map<String, dynamic>;
       final candidates = List<dynamic>.from(data['candidates'] ?? []);
+
+      // The read is the check as well as the write. Enforcing the pipeline
+      // here rather than only in the menu is what makes it a rule: the menu
+      // is one caller, and a stale screen or a second admin working the same
+      // batch would otherwise walk a candidate backwards.
+      final statuses = _normalizeMap(data['candidate_statuses']);
+      var current = (statuses[candidateUid] ?? '').toString();
+      if (current.isEmpty) {
+        for (final raw in candidates) {
+          final c = _normalizeMap(raw);
+          if (c['uid'] == candidateUid) {
+            current = (c['status'] ?? '').toString();
+            break;
+          }
+        }
+      }
+
+      if (current.isNotEmpty &&
+          !HiringPipeline.canMove(from: current, to: normalized)) {
+        _lastStatusRefusal =
+            HiringPipeline.refusalReason(from: current, to: normalized);
+        debugPrint('🚫 Blocked backwards move: $current → $normalized');
+        // The optimistic patch already moved the cached copy, so put it back.
+        _requestDetailsCache.remove(requestId);
+        if (_selectedRequestId == requestId) {
+          fetchRequestDetails(requestId: requestId);
+        }
+        return false;
+      }
+
       for (int i = 0; i < candidates.length; i++) {
         final c = _normalizeMap(candidates[i]);
         if (c['uid'] == candidateUid) {
@@ -1572,19 +1512,10 @@ class AdminProvider extends ChangeNotifier {
       final jsDoc = await _firestore.collection('Job_Seeker').doc(uid).get();
       if (jsDoc.exists) {
         final data = _normalizeMap(jsDoc.data());
-        final ud = _normalizeMap(data['user_data'] ?? {});
-        final pp = _normalizeMap(
-          data['personalProfile'] ??
-              data['personal_profile'] ??
-              ud['personalProfile'] ??
-              ud['personal_profile'] ??
-              {},
-        );
-        final name =
-            pp['name']?.toString().trim() ??
-            pp['fullName']?.toString().trim() ??
-            ud['name']?.toString().trim() ??
-            data['name']?.toString().trim() ??
+        final name = CandidateProfileService.parse(uid, data)
+                ?.personalInfo
+                .fullName
+                .trim() ??
             '';
         if (name.isNotEmpty && name.toLowerCase() != 'null') {
           data['uid'] ??= uid;

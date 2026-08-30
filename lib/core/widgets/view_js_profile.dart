@@ -310,7 +310,7 @@ class _BadgeRow extends StatelessWidget {
           const SizedBox(width: 5),
           _Chip(
             Icons.work_outline_rounded,
-            '${applicant.experienceYears}y exp',
+            _experienceLabel(applicant),
             ld.isMobile,
             color: _T.cAcc,
           ),
@@ -505,8 +505,8 @@ class _SideContent extends StatelessWidget {
           children: [
             Expanded(
               child: _StatBox(
-                '${applicant.experienceYears}+',
-                'Yrs Exp',
+                _experienceValue(applicant),
+                _experienceUnit(applicant),
                 _T.cAcc,
               ),
             ),
@@ -523,6 +523,11 @@ class _SideContent extends StatelessWidget {
               child: _StatBox('${applicant.skills.length}', 'Skills', _T.cPur),
             ),
           ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _experienceSource(applicant),
+          style: _T.label(fs: 10, c: _T.cTert),
         ),
 
         const SizedBox(height: 20),
@@ -1413,6 +1418,47 @@ class _InitAvatar extends StatelessWidget {
 
 /// The candidate's own words, whichever field they landed in. Older profiles
 /// used `objectives`; the role-template flow writes `summary`.
+/// Experience, with the unit it is actually measured in.
+///
+/// This panel used to print a count of previous jobs followed by "y exp", so a
+/// pilot with two postings and 2,680 flight hours read as two years of
+/// experience.
+String _experienceLabel(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => '${a.flightHours!.round()} flight hrs',
+  ExperienceBasis.declaredYears => '${a.declaredYears!.round()} yrs experience',
+  ExperienceBasis.serviceHistory => '${a.serviceYears!.round()} yrs of service',
+  ExperienceBasis.roleCount => a.roleCount == 0
+      ? 'No history on file'
+      : '${a.roleCount} role${a.roleCount == 1 ? '' : 's'} listed',
+};
+
+String _experienceValue(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => a.flightHours!.round().toString(),
+  ExperienceBasis.declaredYears => a.declaredYears!.round().toString(),
+  ExperienceBasis.serviceHistory => a.serviceYears!.round().toString(),
+  ExperienceBasis.roleCount => a.roleCount.toString(),
+};
+
+String _experienceUnit(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => 'Flight Hrs',
+  ExperienceBasis.declaredYears => 'Yrs Exp',
+  ExperienceBasis.serviceHistory => 'Yrs Service',
+  ExperienceBasis.roleCount => 'Roles Listed',
+};
+
+/// Where the number above came from, in one line.
+///
+/// Shown under the stat so a recruiter never has to guess whether a figure was
+/// declared by the candidate, read off a logbook, or worked out from dates —
+/// which is exactly the ambiguity that let a job count be read as a duration.
+String _experienceSource(ApplicantRecord a) => switch (a.experienceBasis) {
+  ExperienceBasis.flightHours => 'Total logged flight time',
+  ExperienceBasis.declaredYears => 'Stated by the candidate',
+  ExperienceBasis.serviceHistory =>
+    'From ${a.roleCount} dated role${a.roleCount == 1 ? '' : 's'} on file',
+  ExperienceBasis.roleCount => 'No dates or hours on file',
+};
+
 String _summaryOf(ApplicantRecord a) =>
     a.summary.trim().isNotEmpty ? a.summary.trim() : a.objectives.trim();
 

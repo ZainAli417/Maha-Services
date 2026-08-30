@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/onboarding/candidate_profile_service.dart';
+
 class JS_TopNavProvider extends ChangeNotifier {
   String _initials = '';
   String get initials => _initials;
@@ -29,8 +31,7 @@ class JS_TopNavProvider extends ChangeNotifier {
         return;
       }
 
-      final data = docSnap.data();
-      final fullName = _extractName(data);
+      final fullName = _extractName(user.uid, docSnap.data());
 
       _updateInitials(_generateInitials(fullName));
     } catch (e) {
@@ -39,36 +40,10 @@ class JS_TopNavProvider extends ChangeNotifier {
     }
   }
 
-  String? _extractName(Map<String, dynamic>? data) {
-    if (data == null) return null;
-
-    // Check nested user_data.personalProfile.name
-    if (data['user_data'] is Map) {
-      final userData = data['user_data'] as Map<String, dynamic>;
-
-      if (userData['personalProfile'] is Map) {
-        final personalProfile =
-            userData['personalProfile'] as Map<String, dynamic>;
-        final name = personalProfile['name'];
-        if (name is String && name.trim().isNotEmpty) {
-          return name.trim();
-        }
-      }
-
-      // Fallback: check user_data.name directly
-      final userName = userData['name'];
-      if (userName is String && userName.trim().isNotEmpty) {
-        return userName.trim();
-      }
-    }
-
-    // Fallback: check direct name field
-    final directName = data['name'];
-    if (directName is String && directName.trim().isNotEmpty) {
-      return directName.trim();
-    }
-
-    return null;
+  String? _extractName(String uid, Map<String, dynamic>? data) {
+    final name =
+        CandidateProfileService.parse(uid, data)?.personalInfo.fullName.trim();
+    return (name == null || name.isEmpty) ? null : name;
   }
 
   String _generateInitials(String? fullName) {

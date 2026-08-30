@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:job_portal/main.dart';
+import '../services/backend_api.dart';
 
 // --------------------------------------------------
 // 1. DESIGN SYSTEM
@@ -124,7 +125,7 @@ class _AIJDBuilderWidgetState extends State<AIJDBuilderWidget> {
       final response = await http
           .post(
             Uri.parse('${Env.backendUrl}/ai-jdbuild'),
-            headers: {'Content-Type': 'application/json'},
+            headers: await BackendApi.headers(),
             body: jsonEncode({
               'prompt': prompt,
               'conversationHistory': history,

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:job_portal/Constant/brand_snackbar.dart';
 
 import 'admin_recruiter_request_provider.dart';
+import '../../core/onboarding/models/candidate_profile.dart';
 import '../../core/onboarding/role_profile_snapshot.dart';
 import '../../core/widgets/role_profile_view.dart';
+import '../../core/interviews/interview.dart';
+import '../../core/interviews/interview_provider.dart';
+import '../../core/rbac/hiring_pipeline.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Breakpoints
@@ -325,6 +331,45 @@ class _DashboardBodyState extends State<_DashboardBody> {
           ),
         );
       },
+    );
+  }
+
+  /// Moves a whole revised batch to Interview.
+  ///
+  /// Each candidate goes through the same single-candidate write as the menu
+  /// does, so the pipeline rule is applied once and in one place. Anything the
+  /// rule refuses is counted and reported rather than silently skipped — an
+  /// admin who clicks "move 5" and gets 4 needs to know which one did not go.
+  Future<void> _advanceAll(
+    BuildContext ctx, {
+    required String reqId,
+    required List<Map<String, dynamic>> candidates,
+    required AdminProvider prov,
+  }) async {
+    var moved = 0;
+    var refused = 0;
+
+    for (final c in candidates) {
+      final uid = _s(c['uid']);
+      if (uid.isEmpty) continue;
+      prov.optimisticCandidateStatusUpdate(reqId, uid, 'interview');
+      final ok = await prov.updateCandidateStatus(
+        requestId: reqId,
+        candidateUid: uid,
+        status: 'interview',
+        note: 'Advanced with the revised shortlist',
+        performedBy: 'admin_dashboard',
+      );
+      ok ? moved++ : refused++;
+    }
+
+    if (!mounted) return;
+    _toast(
+      ctx,
+      refused == 0
+          ? 'Moved $moved candidate${moved == 1 ? '' : 's'} to Interview'
+          : 'Moved $moved, could not move $refused',
+      refused == 0,
     );
   }
 
@@ -678,6 +723,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
       seen.putIfAbsent(uid.toLowerCase(), () => cd);
     }
     final cands = seen.values.toList();
+    final round = (reqData['round'] as num?)?.toInt() ?? 1;
 
     // candidate_statuses from the request doc overrides any embedded status
     final rawStat = _n(reqData['candidate_statuses']);
@@ -687,6 +733,24 @@ class _DashboardBodyState extends State<_DashboardBody> {
         statusMap[k.toLowerCase()] = v?.toString() ?? '';
       }
     });
+
+    // Everyone in this batch who is not already at Interview or past it. The
+    // same forward-only rule decides this as decides a single move, so the
+    // bulk button can never do something the per-candidate menu would refuse.
+    final movable = [
+      for (final c in cands)
+        if (() {
+          final uid = _s(c['uid']);
+          if (uid.isEmpty) return false;
+          final current = statusMap[uid.toLowerCase()]?.isNotEmpty == true
+              ? statusMap[uid.toLowerCase()]!
+              : _s(c['status'], 'shortlist');
+          return HiringPipeline.canMove(from: current, to: 'interview') &&
+              HiringPipeline.indexOf(current) <
+                  HiringPipeline.indexOf('interview');
+        }())
+          c,
+    ];
 
     return LayoutBuilder(
       builder: (_, cs) {
@@ -816,6 +880,25 @@ class _DashboardBodyState extends State<_DashboardBody> {
                 ),
                 const SizedBox(width: 10),
                 _CountBadge(count: cands.length),
+                if (round >= 2) ...[
+                  const SizedBox(width: 8),
+                  _RoundBadge(round: round),
+                ],
+                const Spacer(),
+                // The batch action for a revised shortlist. These candidates
+                // have been assessed and re-picked by the recruiter, so moving
+                // them one at a time is busywork — but it is still the same
+                // forward-only rule underneath, applied per candidate.
+                if (movable.isNotEmpty)
+                  _AdvanceAllButton(
+                    count: movable.length,
+                    onPressed: () => _advanceAll(
+                      ctx,
+                      reqId: reqId,
+                      candidates: movable,
+                      prov: prov,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 16),
@@ -823,17 +906,25 @@ class _DashboardBodyState extends State<_DashboardBody> {
             if (cands.isEmpty)
               _EmptyCandidates()
             else
-              _CandidateGrid(
-                candidates: cands,
-                statusMap: statusMap,
-                isNarrow: isNarrow,
-                reqId: reqId,
-                prov: prov,
-                onTap: (c) => _showCV(ctx, c),
-                mountedCheck: () => mounted,
-                showToast: (msg, ok) {
-                  if (mounted) _toast(ctx, msg, ok);
-                },
+              // Scoped to this batch rather than to the signed-in user: the
+              // app-level InterviewProvider watches the recruiter's own
+              // bookings, which is the wrong set entirely for an admin.
+              // Keyed on reqId so switching batches rebuilds the stream.
+              ChangeNotifierProvider(
+                key: ValueKey('interviews_$reqId'),
+                create: (_) => InterviewProvider()..watchForRequest(reqId),
+                child: _CandidateGrid(
+                  candidates: cands,
+                  statusMap: statusMap,
+                  isNarrow: isNarrow,
+                  reqId: reqId,
+                  prov: prov,
+                  onTap: (c) => _showCV(ctx, c),
+                  mountedCheck: () => mounted,
+                  showToast: (msg, ok) {
+                    if (mounted) _toast(ctx, msg, ok);
+                  },
+                ),
               ),
 
             const SizedBox(height: 48),
@@ -957,15 +1048,99 @@ class _DashboardBodyState extends State<_DashboardBody> {
   //                   skillsMatch, educationMatch, experienceMatch, detailedAnalysis }
   //     status                                        → excluded (on card only)
 
+  /// Projects `candidateProfile` onto the flat keys [_CVSheet] reads.
+  ///
+  /// The sheet predates the profile schema and reads one flat map; rather than
+  /// rewrite every row, the profile is unpacked here once. Contact fields are
+  /// included on purpose — this is the admin view, and admins are the ones who
+  /// arrange interviews and travel.
+  static Map<String, dynamic> _flattenProfile(Map<String, dynamic> raw) {
+    if (raw.isEmpty) return const {};
+    final profile = CandidateProfile.fromJson(
+        raw['uid']?.toString() ?? '', raw);
+    final personal = profile.personalInfo;
+    final latest =
+        profile.experience.isEmpty ? null : profile.experience.first;
+    final firstEdu =
+        profile.education.isEmpty ? null : profile.education.first;
+
+    List<Map<String, dynamic>> docs(DocumentCategory category) => [
+          for (final d in profile.documentsIn(category))
+            {'name': d.name, 'url': d.url, 'type': d.contentType},
+        ];
+
+    return {
+      'name': personal.fullName,
+      'email': personal.email,
+      'secondary_email': personal.secondaryEmail,
+      'phone': personal.phone,
+      'nationality': personal.nationality,
+      'dob': personal.dateOfBirth,
+      'location': personal.location.display,
+      'picture_url': personal.profilePicUrl,
+      'summary': personal.summary,
+      'objectives': personal.objectives,
+      'socialLinks': personal.socialLinks,
+      'skills': <String>{
+        ...personal.skills,
+        ...profile.roleSpecificData.technicalCompetencies,
+        ...profile.roleSpecificData.toolsAndSystems,
+      }.toList(),
+      'professional_status': profile.professionalStatus,
+      'retirement_date': profile.expectedRetirementDate,
+      'current_role': latest?.title ?? '',
+      'company': latest?.company ?? '',
+      'experience_years': profile.experience.length,
+      'university': firstEdu?.institution ?? '',
+      'education': firstEdu?.fieldOfStudy ?? '',
+      'education_duration': firstEdu?.graduationYear?.toString() ?? '',
+      'cgpa': firstEdu?.grade ?? '',
+      'professionalExperience': [
+        for (final x in profile.experience)
+          {
+            'organization': x.company,
+            'role': x.title,
+            'location': x.location,
+            'startDate': x.startDate,
+            'endDate': x.endDate ?? (x.isCurrent ? 'Present' : ''),
+            'duties': x.responsibilities.join('\n'),
+          },
+      ],
+      'educationalProfile': [
+        for (final e in profile.education)
+          {
+            'institutionName': e.institution,
+            'degree': e.degree,
+            'majorSubjects': e.fieldOfStudy,
+            'duration': e.graduationYear?.toString() ?? '',
+            'marksOrCgpa': e.grade,
+          },
+      ],
+      'certifications': [
+        for (final c in profile.certifications)
+          {'name': c.name, 'organization': c.issuer},
+        for (final l in profile.roleSpecificData.licensesAndRatings)
+          {'name': l.title, 'organization': l.issuingAuthority},
+      ],
+      'publications': profile.publications,
+      'awards': profile.awards,
+      'experienceDocuments': docs(DocumentCategory.experience),
+      'certification_documents': docs(DocumentCategory.certification),
+      'documents': docs(DocumentCategory.general),
+    };
+  }
+
   void _showCV(BuildContext ctx, Map<String, dynamic> candidate) {
-    // MERGE user_data into top level so ALL fields are accessible
-    // regardless of whether data came from the rich embedded path
-    // or the thin Job_Seeker/users lookup path.
+    // The sheet renders a flat map. Flatten the candidate profile into the
+    // keys it reads, then let anything the recruiter's request carried at the
+    // top level win — that layer holds the match score and the request's own
+    // view of the job title.
     final raw = _n(candidate);
-    final userData = _n(raw['user_data']);
-    // user_data fields as base; top-level fields override
-    final cand = <String, dynamic>{...userData, ...raw};
-    cand.remove('user_data');
+    final cand = <String, dynamic>{
+      ..._flattenProfile(_n(raw['candidate_profile'])),
+      ...raw,
+    };
+    cand.remove('candidate_profile');
 
     debugPrint('═══════════════════════════════════════════════════════');
     debugPrint('📋 CV SHEET — keys: ${cand.keys.toList()}');
@@ -1422,12 +1597,25 @@ class _CandidateGrid extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext ctx) => GridView.builder(
+  Widget build(BuildContext ctx) {
+    // Scoped to this batch. The recruiter books the slot and this is where the
+    // admin sees it appear — the same document, streamed by both sides, so a
+    // booking never has to be copied across and cannot fall out of step.
+    final interviews = ctx.watch<InterviewProvider>();
+    final booked = {
+      for (final i in interviews.interviews)
+        if (i.status != InterviewStatus.cancelled) i.candidateUid: i,
+    };
+    // The card grows a footer when there is an interview on it; a fixed extent
+    // would clip it.
+    final extent = booked.isEmpty ? 164.0 : 214.0;
+
+    return GridView.builder(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: isNarrow ? double.infinity : 440,
-      mainAxisExtent: 164, // Reduced from 196 to fix excessive spacing
+      mainAxisExtent: extent,
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
     ),
@@ -1455,6 +1643,7 @@ class _CandidateGrid extends StatelessWidget {
         company: c['company']?.toString() ?? '',
         score: score,
         status: cStat,
+        interview: booked[uid],
         onTap: () => onTap(c),
         onMenuAction: (action) {
           prov.optimisticCandidateStatusUpdate(reqId, uid, action);
@@ -1467,8 +1656,15 @@ class _CandidateGrid extends StatelessWidget {
               )
               .then((ok) {
                 if (!mountedCheck()) return;
+                // A refused move is not a failure to write; it is the pipeline
+                // saying no. Saying "Update failed" would send the admin
+                // looking for a bug that is not there.
                 showToast(
-                  ok ? 'Status Updated to $action' : 'Update failed',
+                  ok
+                      ? 'Status Updated to $action'
+                      : (prov.lastStatusRefusal.isNotEmpty
+                          ? prov.lastStatusRefusal
+                          : 'Update failed'),
                   ok,
                 );
               });
@@ -1476,6 +1672,7 @@ class _CandidateGrid extends StatelessWidget {
       );
     },
   );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2002,14 +2199,11 @@ abstract final class _T {
 }
 
 // ─── Pipeline stage definitions ───────────────────────────────────────────────
-const _kStages = [
-  'Shortlist',
-  'Screening',
-  'Interview',
-  'Technical',
-  'Offer',
-  'Handover',
-];
+/// The pipeline this screen paints, taken from the one definition of it.
+///
+/// It used to be a second copy of the same list. Two copies is how a button
+/// ends up offering a stage the write path does not recognise.
+const _kStages = HiringPipeline.stages;
 
 const _kStageColors = <String, Color>{
   'shortlist': _T.primary,
@@ -2032,12 +2226,7 @@ Color _scoreColor(int v) {
   return _T.danger;
 }
 
-int _stageIndex(String status) {
-  final key = status.toLowerCase() == 'shortlisted'
-      ? 'shortlist'
-      : status.toLowerCase();
-  return _kStages.map((s) => s.toLowerCase()).toList().indexOf(key);
-}
+int _stageIndex(String status) => HiringPipeline.indexOf(status);
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  PUBLIC WIDGET
@@ -2050,6 +2239,9 @@ class CandidateCard extends StatelessWidget {
   final String company;
   final String score;
   final String status;
+
+  /// The slot the recruiter booked, if they have.
+  final Interview? interview;
   final void Function(String) onMenuAction;
   final VoidCallback onTap;
 
@@ -2064,6 +2256,7 @@ class CandidateCard extends StatelessWidget {
     required this.status,
     required this.onMenuAction,
     required this.onTap,
+    this.interview,
   });
 
   @override
@@ -2106,9 +2299,11 @@ class CandidateCard extends StatelessWidget {
                     phone: phone,
                     stageIndex: idx,
                     stageColor: col,
+                    status: status,
                     onMenuAction: onMenuAction,
                   ),
                 ),
+                if (interview != null) _InterviewStrip(interview: interview!),
                 _PipelineBar(index: idx, total: _kStages.length, color: col),
               ],
             ),
@@ -2208,11 +2403,116 @@ class _CardHeader extends StatelessWidget {
   }
 }
 
+/// The interview the recruiter booked, and the one action the admin owns.
+///
+/// The recruiter chooses who and when; the admin turns that into a joining
+/// link. Keeping the two apart is the point — the person arranging the meeting
+/// is not the person deciding it should happen.
+class _InterviewStrip extends StatelessWidget {
+  const _InterviewStrip({required this.interview});
+
+  final Interview interview;
+
+  Future<void> _generate(BuildContext context) async {
+    final provider = context.read<InterviewProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Placeholder until the Zoom integration lands. Deliberately obvious:
+    // a link that looks real but is not would be handed to a candidate.
+    final link = 'https://zoom.us/j/PENDING-${interview.id.substring(0, 8)}';
+    final ok = await provider.attachLink(
+      interviewId: interview.id,
+      link: link,
+      provider: 'zoom_placeholder',
+    );
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(ok
+            ? 'Placeholder link attached. Zoom is not connected yet — replace '
+                'it before sending anything to the candidate.'
+            : 'Could not attach the link.'),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final waiting = !interview.hasLink;
+    final tone = waiting ? _T.warning : _T.blue;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.07),
+        border: Border(top: BorderSide(color: _T.border)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            waiting ? Icons.event_rounded : Icons.videocam_rounded,
+            size: 15,
+            color: tone,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat('EEE d MMM, HH:mm')
+                      .format(interview.scheduledAt),
+                  style: _T.label(
+                      size: 11.5, weight: FontWeight.w800, color: _T.txt1),
+                ),
+                Text(
+                  '${interview.mode.label} · ${interview.durationMinutes} min'
+                  '${waiting ? '' : ' · link sent'}',
+                  style: _T.label(size: 10, color: _T.txt3),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (waiting)
+            TextButton.icon(
+              onPressed: () => _generate(context),
+              icon: const Icon(Icons.add_link_rounded, size: 15),
+              label: const Text('Generate link'),
+              style: TextButton.styleFrom(
+                foregroundColor: tone,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: _T.label(size: 11.5, weight: FontWeight.w800),
+              ),
+            )
+          else
+            IconButton(
+              tooltip: 'Copy joining link',
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: interview.meetingLink));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Joining link copied')),
+                );
+              },
+              icon: const Icon(Icons.copy_rounded, size: 15),
+              color: tone,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Main body ────────────────────────────────────────────────────────────────
 class _CardBody extends StatelessWidget {
   final String name, title, company, email, phone;
   final int stageIndex;
   final Color stageColor;
+  final String status;
   final void Function(String) onMenuAction;
 
   const _CardBody({
@@ -2221,6 +2521,7 @@ class _CardBody extends StatelessWidget {
     required this.company,
     required this.email,
     required this.phone,
+    required this.status,
     required this.stageIndex,
     required this.stageColor,
     required this.onMenuAction,
@@ -2296,6 +2597,7 @@ class _CardBody extends StatelessWidget {
                       stages: _kStages,
                       index: stageIndex,
                       color: stageColor,
+                      status: status,
                       onAction: onMenuAction,
                     ),
                   ],
@@ -2368,11 +2670,16 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final void Function(String) onAction;
 
+  /// The candidate's current stage, so the menu can grey out the ones behind
+  /// them instead of offering moves the write path will refuse.
+  final String status;
+
   const _ActionButton({
     required this.stages,
     required this.index,
     required this.color,
     required this.onAction,
+    required this.status,
   });
 
   @override
@@ -2417,24 +2724,92 @@ class _ActionButton extends StatelessWidget {
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       onSelected: onAction,
-      itemBuilder: (_) => stages
-          .map(
-            (s) => PopupMenuItem(
-              value: s.toLowerCase(),
-              height: 36,
-              child: Text(
-                s,
-                style: _T.label(
-                  size: 13,
-                  weight: FontWeight.w500,
-                  color: _T.txt1,
-                ),
-              ),
-            ),
-          )
-          .toList(),
+      // Stages already passed stay on the list but are disabled, with a lock
+      // beside them. Hiding them would leave the admin wondering where they
+      // went; showing them dead says the pipeline only runs one way.
+      itemBuilder: (_) => [
+        for (final s in stages)
+          _stageItem(s, enabled: HiringPipeline.canMove(
+            from: status,
+            to: s.toLowerCase(),
+          )),
+        const PopupMenuDivider(),
+        _stageItem('Rejected', enabled: !HiringPipeline.isTerminal(status)),
+      ],
     );
   }
+}
+
+/// One stage in the overflow menu, live or locked.
+PopupMenuItem<String> _stageItem(String label, {required bool enabled}) =>
+    PopupMenuItem<String>(
+      value: label.toLowerCase(),
+      enabled: enabled,
+      height: 36,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: _T.label(
+                size: 13,
+                weight: FontWeight.w500,
+                color: enabled ? _T.txt1 : _T.txt3,
+              ),
+            ),
+          ),
+          if (!enabled)
+            Icon(Icons.lock_outline_rounded, size: 13, color: _T.txt3),
+        ],
+      ),
+    );
+
+/// Marks a shortlist that has already been round the loop once.
+class _RoundBadge extends StatelessWidget {
+  const _RoundBadge({required this.round});
+
+  final int round;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: _T.violet.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.replay_rounded, size: 12, color: _T.violet),
+            const SizedBox(width: 5),
+            Text(
+              'Round $round · post-assessment',
+              style: _T.label(
+                  size: 10.5, weight: FontWeight.w800, color: _T.violet),
+            ),
+          ],
+        ),
+      );
+}
+
+/// Advances the whole revised batch in one action.
+class _AdvanceAllButton extends StatelessWidget {
+  const _AdvanceAllButton({required this.count, required this.onPressed});
+
+  final int count;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => FilledButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+        label: Text('Move $count to Interview'),
+        style: FilledButton.styleFrom(
+          backgroundColor: _T.violet,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          textStyle: _T.label(size: 12.5, weight: FontWeight.w700),
+        ),
+      );
 }
 
 // ─── Email / phone row ────────────────────────────────────────────────────────

@@ -10,6 +10,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../Parser_CV/cv_parser.dart';
+import '../core/onboarding/candidate_profile_service.dart';
+import '../core/onboarding/models/candidate_profile.dart';
 import 'web_image_picker.dart';
 
 class SignupProvider extends ChangeNotifier {
@@ -55,6 +57,7 @@ class SignupProvider extends ChangeNotifier {
   bool jobAlertsEnabled = true;
 
   final _picker = ImagePicker();
+  final _candidateProfiles = CandidateProfileService();
 
   // ─── Safe notify helper ───────────────────────────────────────────────────────
   /// Schedules notifyListeners after the current build frame completes.
@@ -348,7 +351,7 @@ class SignupProvider extends ChangeNotifier {
       final uid = cred.user?.uid;
       if (uid == null) throw Exception('Failed to obtain user id');
 
-      await _saveUserData(uid, _buildRecruiterData(uid));
+      await _saveRecruiterData(uid);
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'uid': uid,
         'name': nameController.text.trim(),
@@ -408,7 +411,7 @@ class SignupProvider extends ChangeNotifier {
       });
 
       if (hasProfileData) {
-        await _saveUserData(uid, _buildManualUserData(uid));
+        await _saveCandidateProfile(_buildManualProfile(uid));
       }
 
       // The dynamic role-template onboarding owns profile creation now.
@@ -431,7 +434,7 @@ class SignupProvider extends ChangeNotifier {
       if (profilePicBytes != null && profilePicUrl == null) {
         profilePicUrl = await _uploadProfilePic(user.uid);
       }
-      await _saveUserData(user.uid, _buildManualUserData(user.uid));
+      await _saveCandidateProfile(_buildManualProfile(user.uid));
 
       try {
         final updateData = <String, dynamic>{
@@ -471,7 +474,8 @@ class SignupProvider extends ChangeNotifier {
       _populateFromCvResult(result);
       await _handleCvProfilePic(result.personalProfile);
       profilePicUrl = await _uploadProfilePic(uid);
-      await _saveUserData(uid, _buildCvUserData(uid, result, user.email ?? ''));
+      await _saveCandidateProfile(
+          _buildCvProfile(uid, result, user.email ?? ''));
 
       try {
         final cvUpdateData = <String, dynamic>{
@@ -529,12 +533,19 @@ class SignupProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _saveUserData(String uid, Map<String, dynamic> userData) async {
-    final collectionName = role == 'Recruiter' ? 'recruiter' : 'Job_Seeker';
-    await FirebaseFirestore.instance.collection(collectionName).doc(uid).set({
-      'user_data': userData,
+  /// Recruiters keep their own flat document shape; a job seeker's account is
+  /// a [CandidateProfile] and nothing else.
+  Future<void> _saveRecruiterData(String uid) async {
+    await FirebaseFirestore.instance.collection('recruiter').doc(uid).set({
+      'user_data': _buildRecruiterData(uid),
     }, SetOptions(merge: true));
   }
+
+  /// Saved as a draft, not submitted: signup only collects the basics, and the
+  /// role-template onboarding is what marks a profile complete. Each caller
+  /// writes its own `users/{uid}` flags, so this must not touch them.
+  Future<void> _saveCandidateProfile(CandidateProfile profile) =>
+      _candidateProfiles.saveDraft(profile);
 
   Map<String, dynamic> _buildRecruiterData(String uid) => {
     'uid': uid,
@@ -544,62 +555,99 @@ class SignupProvider extends ChangeNotifier {
     'createdAt': FieldValue.serverTimestamp(),
   };
 
-  Map<String, dynamic> _buildManualUserData(String uid) => {
-    'personalProfile': {
-      'fullName': nameController.text.trim().isNotEmpty
-          ? nameController.text.trim()
-          : null,
-      'email': emailController.text.trim(),
-      'contactNumber': contactNumberController.text.trim().isNotEmpty
-          ? contactNumberController.text.trim()
-          : null,
-      'nationality': nationalityController.text.trim().isNotEmpty
-          ? nationalityController.text.trim()
-          : null,
-      'summary': summaryController.text.trim().isNotEmpty
-          ? summaryController.text.trim()
-          : null,
-      'profilePicUrl': profilePicUrl,
-      'skills': skills.isNotEmpty ? skills : null,
-      'objectives': objectivesController.text.trim().isNotEmpty
-          ? objectivesController.text.trim()
-          : null,
-      'socialLinks': socialLinks.isNotEmpty ? socialLinks : null,
-      'dob': dob != null ? DateFormat('yyyy-MM-dd').format(dob!) : null,
-      'createdAt': FieldValue.serverTimestamp(),
-    },
-    'educationalProfile': educationalProfile.isNotEmpty
-        ? educationalProfile
-        : null,
-  };
+  /// The profile a candidate types by hand during signup.
+  ///
+  /// Signup collects only the basics; the role-template onboarding fills in
+  /// everything else and rewrites this same document, so the shape has to be
+  /// identical from the first write.
+  CandidateProfile _buildManualProfile(String uid) => CandidateProfile(
+        uid: uid,
+        personalInfo: PersonalInfo(
+          fullName: nameController.text.trim(),
+          email: emailController.text.trim(),
+          phone: contactNumberController.text.trim(),
+          nationality: nationalityController.text.trim(),
+          summary: summaryController.text.trim(),
+          objectives: objectivesController.text.trim(),
+          profilePicUrl: profilePicUrl ?? '',
+          skills: List<String>.from(skills),
+          socialLinks: List<String>.from(socialLinks),
+          dateOfBirth: dob == null ? '' : DateFormat('yyyy-MM-dd').format(dob!),
+        ),
+        education: _educationEntries(),
+      );
 
-  Map<String, dynamic> _buildCvUserData(
+  /// The profile prefilled from an uploaded CV.
+  CandidateProfile _buildCvProfile(
     String uid,
     CvExtractionResult result,
     String authEmail,
-  ) => {
-    'personalProfile': {
-      'name': nameController.text.trim(),
-      'email': authEmail,
-      'secondary_email': secondaryEmail ?? '',
-      'contactNumber': contactNumberController.text.trim(),
-      'nationality': nationalityController.text.trim(),
-      'profilePicUrl': profilePicUrl,
-      'skills': skills,
-      'objectives': objectivesController.text.trim(),
-      'socialLinks': socialLinks,
-      'summary': summaryController.text.trim(),
-      'dob': dob != null ? DateFormat('yyyy-MM-dd').format(dob!) : null,
-    },
-    'educationalProfile': educationalProfile,
-    'professionalProfile': {'summary': result.professionalSummary},
-    'professionalExperience': result.professionalExperience,
-    'certifications': result.certifications,
-    'publications': result.publications,
-    'awards': result.awards,
-    'references': result.references,
-    'createdAt': FieldValue.serverTimestamp(),
-  };
+  ) =>
+      CandidateProfile(
+        uid: uid,
+        personalInfo: PersonalInfo(
+          fullName: nameController.text.trim(),
+          email: authEmail,
+          secondaryEmail: secondaryEmail ?? '',
+          phone: contactNumberController.text.trim(),
+          nationality: nationalityController.text.trim(),
+          summary: summaryController.text.trim().isNotEmpty
+              ? summaryController.text.trim()
+              : result.professionalSummary,
+          objectives: objectivesController.text.trim(),
+          profilePicUrl: profilePicUrl ?? '',
+          skills: List<String>.from(skills),
+          socialLinks: List<String>.from(socialLinks),
+          dateOfBirth: dob == null ? '' : DateFormat('yyyy-MM-dd').format(dob!),
+        ),
+        education: _educationEntries(),
+        experience: [
+          for (final (i, e) in result.professionalExperience.indexed)
+            ExperienceEntry(
+              id: 'exp_$i',
+              title: (e['role'] ?? '').toString(),
+              company: (e['organization'] ?? '').toString(),
+              location: (e['location'] ?? '').toString(),
+              startDate: (e['startDate'] ?? '').toString(),
+              endDate: (e['endDate'] ?? '').toString(),
+              responsibilities: _splitLines(e['duties']),
+            ),
+        ],
+        certifications: [
+          for (final (i, c) in result.certifications.indexed)
+            CertificationEntry(
+              id: 'cert_$i',
+              name: (c['name'] ?? '').toString(),
+              issuer: (c['organization'] ?? '').toString(),
+            ),
+        ],
+        publications: result.publications,
+        awards: result.awards,
+        references: result.references,
+        cvSourceFile: 'cv-upload',
+      );
+
+  List<EducationEntry> _educationEntries() => [
+        for (final (i, e) in educationalProfile.indexed)
+          EducationEntry(
+            id: 'edu_$i',
+            institution: (e['institutionName'] ?? '').toString(),
+            fieldOfStudy: (e['majorSubjects'] ?? '').toString(),
+            graduationYear: _yearOf(e['duration']),
+            grade: (e['marksOrCgpa'] ?? '').toString(),
+          ),
+      ];
+
+  static int? _yearOf(dynamic v) {
+    final matches = RegExp(r'(19|20)\d{2}').allMatches(v?.toString() ?? '');
+    return matches.isEmpty ? null : int.tryParse(matches.last.group(0)!);
+  }
+
+  static List<String> _splitLines(dynamic v) => (v?.toString() ?? '')
+      .split(RegExp(r'[\n;]'))
+      .map((s) => s.trim())
+      .where((s) => s.isNotEmpty)
+      .toList();
 
   void _populateFromCvResult(CvExtractionResult result) {
     final personal = result.personalProfile;

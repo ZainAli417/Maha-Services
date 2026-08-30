@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../../main.dart';
 import 'LIst_of_Applicants_provider.dart';
+import '../../services/backend_api.dart';
 
 /// Provider for AI-powered applicant matching using Node.js Backend + Groq Cloud
 class AIMatchProvider with ChangeNotifier {
@@ -313,7 +314,15 @@ class AIMatchProvider with ChangeNotifier {
         'applicant': {
           'id': applicant.userId,
           'name': applicant.name,
-          'experienceYears': applicant.experienceYears,
+          // These used to be one key, 'experienceYears', fed from a count of
+          // previous jobs -- so a 2,680-hour pilot was scored as having two
+          // years of experience.
+          'flightHours': applicant.flightHours,
+          'yearsOfExperience': applicant.yearsOfExperience,
+          'previousRolesListed': applicant.roleCount,
+          'licences': applicant.licences,
+          'aircraftTypes': applicant.aircraftTypes,
+          'targetRole': applicant.targetRole,
           'workExperience': workExp,
           'education': education,
           'skills': applicant.skills,
@@ -332,7 +341,7 @@ class AIMatchProvider with ChangeNotifier {
       final response = await http
           .post(
             Uri.parse(apiUrl),
-            headers: {'Content-Type': 'application/json'},
+            headers: await BackendApi.headers(),
             body: jsonEncode(requestPayload),
           )
           .timeout(

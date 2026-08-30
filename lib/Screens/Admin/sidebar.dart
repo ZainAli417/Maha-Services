@@ -36,7 +36,7 @@ class AdminSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 260,
+      width: 296,
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(right: BorderSide(color: _S.border, width: 1)),
@@ -85,9 +85,11 @@ class AdminSidebar extends StatelessWidget {
                   // Recruiter Requests — LIVE BADGE from Firestore
                   _buildRecruiterRequestItem(),
                   // Locked items below Recruiter Requests
-                  _buildLockedItem(
-                    icon: Icons.person_search_outlined,
-                    label: 'Candidate Vetting',
+                  _buildMenuItem(
+                    icon: Icons.quiz_outlined,
+                    activeIcon: Icons.quiz,
+                    label: 'Assessments',
+                    menuKey: 'Assessments',
                   ),
                   _buildLockedItem(
                     icon: Icons.calendar_today_outlined,

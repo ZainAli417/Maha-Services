@@ -291,6 +291,55 @@ abstract final class MetricLabels {
         : spaced[0].toUpperCase() + spaced.substring(1);
   }
 
+  /// Metric ids measured in flight hours.
+  ///
+  /// Kept apart from the year metrics because they are not comparable: a
+  /// filter for "at least 500" means 500 hours for a pilot and 500 years for
+  /// an engineer if the two are pooled, which is how a single "top metric"
+  /// number quietly produces nonsense.
+  static const hourKeys = {
+    'totalTime',
+    'pic',
+    'sic',
+    'fixedWing',
+    'rotaryWing',
+    'multiEngine',
+    'turbine',
+    'instrument',
+    'night',
+    'nvg',
+  };
+
+  /// Metric ids measured in years of service or trade.
+  static const yearKeys = {
+    'totalYears',
+    'tradeYears',
+    'safetyYears',
+    'cabinYears',
+  };
+
+  /// Total flight hours for a set of metrics, or null when the candidate has
+  /// none — a ground role legitimately has no hours, and zero would read as
+  /// "flew nothing" rather than "does not fly".
+  static num? flightHours(Map<String, num> metrics) {
+    final total = metrics['totalTime'];
+    if (total != null) return total;
+    final hours = [
+      for (final e in metrics.entries)
+        if (hourKeys.contains(e.key)) e.value,
+    ];
+    return hours.isEmpty ? null : hours.reduce((a, b) => a > b ? a : b);
+  }
+
+  /// Years of experience for a set of metrics, or null when none was captured.
+  static num? years(Map<String, num> metrics) {
+    final values = [
+      for (final e in metrics.entries)
+        if (yearKeys.contains(e.key)) e.value,
+    ];
+    return values.isEmpty ? null : values.reduce((a, b) => a > b ? a : b);
+  }
+
   /// Metrics worth a headline tile, most important first.
   static const priority = [
     'totalTime',

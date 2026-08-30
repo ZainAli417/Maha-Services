@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/onboarding/candidate_profile_service.dart';
+import '../../core/onboarding/models/candidate_profile.dart';
 import '../../core/rbac/user_role.dart';
 
 /// Admin-facing read-only detail view of a user: identity, account metadata,
@@ -320,13 +322,10 @@ class _DocumentsList extends StatelessWidget {
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           );
         }
-        final data = snap.data?.data();
-        final root = _unwrap(data);
-        final docs = <Map<String, dynamic>>[
-          ..._docsFrom(root['documents']),
-          ..._docsFrom(root['certificationDocuments']),
-          ..._docsFrom(root['experienceDocuments']),
-        ];
+        final profile = CandidateProfileService.parse(uid, snap.data?.data());
+        // One list, every category — the panel shows the candidate's whole
+        // paperwork pile regardless of which section they attached it under.
+        final docs = profile?.documents ?? const <ProfileDocument>[];
         if (docs.isEmpty) {
           return Text(
             'No documents uploaded.',
@@ -345,26 +344,9 @@ class _DocumentsList extends StatelessWidget {
     );
   }
 
-  Map<String, dynamic> _unwrap(Map<String, dynamic>? data) {
-    if (data == null) return {};
-    final ud = data['user_data'] ?? data['userData'];
-    if (ud is Map) return Map<String, dynamic>.from(ud);
-    return data;
-  }
-
-  List<Map<String, dynamic>> _docsFrom(dynamic list) {
-    if (list is List) {
-      return list
-          .whereType<Map>()
-          .map((m) => Map<String, dynamic>.from(m))
-          .toList();
-    }
-    return const [];
-  }
-
-  Widget _docTile(BuildContext context, Map<String, dynamic> d) {
-    final name = (d['name'] ?? 'Document').toString();
-    final url = (d['url'] ?? '').toString();
+  Widget _docTile(BuildContext context, ProfileDocument d) {
+    final name = d.name.isEmpty ? 'Document' : d.name;
+    final url = d.url;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

@@ -1,0 +1,2912 @@
+[
+ {
+  "slot": 1,
+  "roleId": "fighter_pilot",
+  "name": "Asfandyar Khattak",
+  "city": "Islamabad",
+  "phone": "+92 300 4471209",
+  "dob": "1986-03-14",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-09-30",
+  "summary": "Squadron Leader (Retd) with 2,150 hours on the F-16 Block 52+, including four years as a Qualified Weapons Instructor at No. 9 Squadron, PAF Base Mushaf. Led composite strike packages during Exercise Indus Shield and stood operational air defence alert through 2019. Now converting to a civil ATPL and targeting a narrowbody seat with a Gulf operator.",
+  "objectives": "Transition to commercial airline flying on the A320 or B737 family and progress to command within five years.",
+  "skills": [
+   "Air Combat Manoeuvring",
+   "Weapons Delivery",
+   "Formation Lead",
+   "Mission Planning",
+   "CRM Facilitation"
+  ],
+  "awards": [
+   "Tamgha-i-Basalat (2019)",
+   "Chief of Air Staff Commendation (2017)"
+  ],
+  "references": [
+   "Air Cdre (Retd) Tariq Mehmood — former OC Flying, PAF Base Mushaf",
+   "Wg Cdr Sohail Anjum — Standards & Evaluation, PAF"
+  ],
+  "answers": {
+   "full_name": "Asfandyar Khattak",
+   "email": "zain1@mail.com",
+   "phone": "+92 300 4471209",
+   "city": "Islamabad",
+   "country": "Pakistan",
+   "date_of_birth": "1986-03-14",
+   "social_links": [
+    "linkedin.com/in/asfandyar-khattak"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Qualified Weapons Instructor, No. 9 Squadron PAF (Retd)",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "Immediate",
+   "education": "Master",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 48000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "total_hours": 2680,
+   "pic_hours": 2150,
+   "sic_hours": 530,
+   "multi_engine_hours": 240,
+   "turbine_hours": 2680,
+   "jet_hours": 2680,
+   "sim_hours": 310,
+   "licenses": [
+    "CPL"
+   ],
+   "ratings": [
+    "Instrument",
+    "Multi-Engine",
+    "Type Rating",
+    "Night"
+   ],
+   "type_ratings": "F-16 Block 52+, F-16A/B MLU",
+   "aircraft_flown": "F-16C/D Block 52+, F-16A/B MLU, K-8 Karakorum, T-37 Tweet",
+   "medical_class": "Class 1",
+   "crm_training": true,
+   "human_factors": true,
+   "dangerous_goods": false,
+   "awards": "Tamgha-i-Basalat 2019, Chief of Air Staff Commendation 2017"
+  },
+  "experience": [
+   {
+    "role": "Qualified Weapons Instructor",
+    "organization": "Pakistan Air Force — No. 9 Squadron",
+    "location": "PAF Base Mushaf, Sargodha",
+    "startDate": "2020-01",
+    "endDate": "2024-09",
+    "duties": "Led air combat and weapons delivery training for 18 operational pilots.\nPlanned and led composite strike packages during Exercise Indus Shield.\nAuthored squadron tactics notes later adopted across the F-16 fleet."
+   },
+   {
+    "role": "Flight Commander",
+    "organization": "Pakistan Air Force — No. 5 Squadron",
+    "location": "PAF Base Shahbaz, Jacobabad",
+    "startDate": "2015-06",
+    "endDate": "2019-12",
+    "duties": "Flew operational air defence alert and reconnaissance sorties.\nSupervised eight junior pilots through combat readiness workup."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2008",
+    "marksOrCgpa": "3.62 CGPA"
+   },
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "MSc Air Power Management",
+    "majorSubjects": "Air Power Management",
+    "duration": "2021",
+    "marksOrCgpa": "3.71 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "F-16 Fighter Conversion Course",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Qualified Weapons Instructor Course",
+    "organization": "PAF CCS Sargodha"
+   },
+   {
+    "name": "ICAO English Level 5",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 2,
+  "roleId": "military_pilot",
+  "name": "Bilal Ahmed Qureshi",
+  "city": "Rawalpindi",
+  "phone": "+92 321 5538864",
+  "dob": "1983-11-02",
+  "professionalStatus": "retired",
+  "retirementDate": "2025-03-31",
+  "summary": "Wing Commander (Retd) and JF-17 Thunder Block II conversion instructor with 3,240 total hours. Ran the type conversion syllabus at No. 16 Squadron, PAF Base Minhas, and served two tours on Mirage III/V before transitioning to the Thunder. Experienced in weapons integration trials with Pakistan Aeronautical Complex.",
+  "objectives": "Secure a type rating instructor or simulator instructor post with a regional operator or defence training provider.",
+  "skills": [
+   "Type Conversion Instruction",
+   "Weapons Integration Trials",
+   "Syllabus Design",
+   "Threat & Error Management"
+  ],
+  "awards": [
+   "Sitara-i-Imtiaz (Military) (2022)"
+  ],
+  "publications": [
+   "\"Beyond Visual Range Engagement Training in a Constrained Airspace\", PAF Air Power Review, 2021"
+  ],
+  "references": [
+   "Air Cdre (Retd) Junaid Riaz — former Base Commander, PAF Base Minhas"
+  ],
+  "answers": {
+   "full_name": "Bilal Ahmed Qureshi",
+   "email": "zain2@mail.com",
+   "phone": "+92 321 5538864",
+   "city": "Rawalpindi",
+   "country": "Pakistan",
+   "date_of_birth": "1983-11-02",
+   "social_links": [
+    "linkedin.com/in/bilal-qureshi-av"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "No. 16 Squadron \"Black Panthers\", PAF Base Minhas, Kamra",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "30 Days",
+   "issuing_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "medical_class": "Class 1",
+   "english_proficiency": "Level 5 (Extended)",
+   "violation_history": {
+    "value": false,
+    "details": ""
+   },
+   "accident_history": {
+    "value": false,
+    "details": ""
+   },
+   "primary_category": [
+    "Fixed-Wing (Airplane)"
+   ],
+   "fixed_wing_types": [
+    "JF17",
+    "Mirage III/V",
+    "K-8 Karakorum"
+   ],
+   "primary_aircraft": "JF17",
+   "type_ratings": [
+    "JF-17 Block II"
+   ],
+   "aircraft_variants": [
+    "JF-17A Block I",
+    "JF-17B twin-seat"
+   ],
+   "license_level": "Military Rating / Wings",
+   "license_number": "PAF-GDP-2005-0892",
+   "class_ratings": [
+    "Single-Engine Land (SEL)",
+    "Instrument Rating (IR)"
+   ],
+   "instructor_ratings": [
+    "TRI (Type Rating Instructor)",
+    "TRE (Type Rating Examiner)"
+   ],
+   "medical_expiry": "2026-01-31",
+   "total_hours": 3240,
+   "pic_hours": 2890,
+   "sic_hours": 350,
+   "fixed_wing_hours": 3240,
+   "multi_engine_hours": 180,
+   "turbine_hours": 3240,
+   "ifr_hours": 520,
+   "night_hours": 440,
+   "nvg_hours": 90,
+   "military_profile": [
+    "Tactical / Fighter",
+    "Training Command"
+   ],
+   "security_clearance": "Top Secret",
+   "landings_day_90": 18,
+   "landings_night_90": 6,
+   "last_checkride": "11/2024"
+  },
+  "experience": [
+   {
+    "role": "Officer Commanding — Conversion Flight",
+    "organization": "Pakistan Air Force — No. 16 Squadron",
+    "location": "PAF Base Minhas, Kamra",
+    "startDate": "2019-03",
+    "endDate": "2025-03",
+    "duties": "Owned the JF-17 type conversion syllabus and checked out 34 pilots onto type.\nFlew weapons integration trial sorties alongside PAC Kamra engineers.\nChaired the squadron flight safety board."
+   },
+   {
+    "role": "Flight Commander",
+    "organization": "Pakistan Air Force — No. 8 Squadron",
+    "location": "PAF Base Masroor, Karachi",
+    "startDate": "2012-01",
+    "endDate": "2019-02",
+    "duties": "Operated Mirage III/V in the maritime strike role.\nLed the squadron instrument rating standardisation programme."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2005",
+    "marksOrCgpa": "3.48 CGPA"
+   },
+   {
+    "institutionName": "National Defence University, Islamabad",
+    "degree": "MSc War Studies",
+    "majorSubjects": "War Studies",
+    "duration": "2018",
+    "marksOrCgpa": "3.55 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "JF-17 Type Conversion Instructor",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Flight Safety Officer Course",
+    "organization": "PAF Institute of Flight Safety"
+   },
+   {
+    "name": "ICAO English Level 5",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 3,
+  "roleId": "transport_pilot",
+  "name": "Hamza Tariq Awan",
+  "city": "Islamabad",
+  "phone": "+92 333 2214470",
+  "dob": "1988-07-21",
+  "professionalStatus": "serving",
+  "retirementDate": "2027-06-30",
+  "summary": "Squadron Leader currently serving on the C-130E/H with No. 6 Squadron at PAF Base Nur Khan. 2,980 hours of heavy transport flying including UN peacekeeping resupply into Africa, domestic flood relief airlift in 2022, and paradrop support to SSG. Holds a current instrument rating and instructs on type.",
+  "objectives": "Move to a civil cargo or humanitarian airlift operator flying the C-130 or a comparable heavy freighter.",
+  "skills": [
+   "Heavy Airlift Operations",
+   "Tactical Low-Level Navigation",
+   "Airdrop & Paradrop",
+   "Load Planning Oversight",
+   "Disaster Relief Coordination"
+  ],
+  "awards": [
+   "UN Peacekeeping Medal (MONUSCO, 2019)",
+   "Flood Relief Commendation (2022)"
+  ],
+  "references": [
+   "Gp Capt Naeem Akhtar — OC Flying Wing, PAF Base Nur Khan"
+  ],
+  "answers": {
+   "full_name": "Hamza Tariq Awan",
+   "email": "zain3@mail.com",
+   "phone": "+92 333 2214470",
+   "city": "Islamabad",
+   "country": "Pakistan",
+   "date_of_birth": "1988-07-21",
+   "social_links": [
+    "linkedin.com/in/hamza-t-awan"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Aircraft Commander & Instructor Pilot, No. 6 Squadron PAF",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "3 months+",
+   "education": "Bachelor",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 44000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "total_hours": 2980,
+   "pic_hours": 1840,
+   "sic_hours": 1140,
+   "multi_engine_hours": 2860,
+   "turbine_hours": 2980,
+   "jet_hours": 0,
+   "sim_hours": 420,
+   "licenses": [
+    "CPL"
+   ],
+   "ratings": [
+    "Instrument",
+    "Multi-Engine",
+    "Night",
+    "Instructor"
+   ],
+   "type_ratings": "C-130E/H, CN-235",
+   "aircraft_flown": "C-130E, C-130H, CN-235, Cessna 208 Caravan, K-8 Karakorum",
+   "medical_class": "Class 1",
+   "crm_training": true,
+   "human_factors": true,
+   "dangerous_goods": true,
+   "awards": "UN Peacekeeping Medal (MONUSCO) 2019, Flood Relief Commendation 2022"
+  },
+  "experience": [
+   {
+    "role": "Aircraft Commander & Instructor Pilot",
+    "organization": "Pakistan Air Force — No. 6 Squadron",
+    "location": "PAF Base Nur Khan, Rawalpindi",
+    "startDate": "2018-05",
+    "endDate": "",
+    "duties": "Commands C-130 crews on strategic airlift, paradrop and casualty evacuation tasks.\nFlew 41 relief sorties into Sindh and southern Punjab during the 2022 floods.\nInstructs new co-pilots through type conversion and line checks."
+   },
+   {
+    "role": "Co-Pilot",
+    "organization": "Pakistan Air Force — No. 21 Squadron",
+    "location": "PAF Base Chaklala, Rawalpindi",
+    "startDate": "2012-08",
+    "endDate": "2018-04",
+    "duties": "Flew CN-235 and C-130 transport tasks across domestic and UN deployments."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2010",
+    "marksOrCgpa": "3.40 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "C-130 Aircraft Commander Upgrade",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Dangerous Goods by Air — Category 6",
+    "organization": "IATA"
+   },
+   {
+    "name": "ICAO English Level 5",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 4,
+  "roleId": "test_pilot",
+  "name": "Rizwan Ul Haq",
+  "city": "Attock",
+  "phone": "+92 300 8890114",
+  "dob": "1978-05-09",
+  "professionalStatus": "retired",
+  "retirementDate": "2023-12-31",
+  "summary": "Group Captain (Retd), graduate of the Empire Test Pilots’ School, with 4,100 hours across 14 types. Led production acceptance and post-overhaul test flying at Pakistan Aeronautical Complex Kamra for the JF-17 and Mirage rebuild lines, and ran flight test for the Super Mushshak export programme.",
+  "objectives": "Consult on flight test, certification and acceptance programmes for a manufacturer or civil aviation authority.",
+  "skills": [
+   "Flight Test Engineering",
+   "Production Acceptance Testing",
+   "Certification Flight Test",
+   "Handling Qualities Assessment",
+   "Test Report Authoring"
+  ],
+  "awards": [
+   "Sitara-i-Imtiaz (Military) (2020)",
+   "PAC Kamra Excellence Award (2016)"
+  ],
+  "publications": [
+   "\"Post-Overhaul Acceptance Criteria for Legacy Fighter Airframes\", Journal of Aeronautical Engineering Pakistan, 2019",
+   "\"Spin Recovery Characteristics of the Super Mushshak\", ETPS Symposium Proceedings, 2014"
+  ],
+  "references": [
+   "Air Vice Marshal (Retd) Kamran Shafi — former Chairman, PAC Kamra"
+  ],
+  "answers": {
+   "full_name": "Rizwan Ul Haq",
+   "email": "zain4@mail.com",
+   "phone": "+92 300 8890114",
+   "city": "Attock",
+   "country": "Pakistan",
+   "date_of_birth": "1978-05-09",
+   "social_links": [
+    "linkedin.com/in/rizwan-ul-haq-tp"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Chief Test Pilot (Retd), Pakistan Aeronautical Complex",
+   "experience_band": "20+ years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "Immediate",
+   "education": "Master",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 42000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "total_hours": 4100,
+   "pic_hours": 3560,
+   "sic_hours": 540,
+   "multi_engine_hours": 980,
+   "turbine_hours": 3800,
+   "jet_hours": 3200,
+   "sim_hours": 620,
+   "licenses": [
+    "CPL",
+    "ATPL"
+   ],
+   "ratings": [
+    "Instrument",
+    "Multi-Engine",
+    "Type Rating",
+    "Night",
+    "Instructor"
+   ],
+   "type_ratings": "JF-17, Mirage III/V, F-7PG, K-8, Super Mushshak",
+   "aircraft_flown": "JF-17 Thunder, Mirage IIIEA/5PA, F-7PG, K-8 Karakorum, Super Mushshak, C-130E, Y-12",
+   "medical_class": "Class 1",
+   "crm_training": true,
+   "human_factors": true,
+   "dangerous_goods": false,
+   "test_school": true,
+   "awards": "Sitara-i-Imtiaz (Military), PAC Kamra Excellence Award"
+  },
+  "experience": [
+   {
+    "role": "Chief Test Pilot",
+    "organization": "Pakistan Aeronautical Complex, Kamra",
+    "location": "Kamra, Attock",
+    "startDate": "2014-02",
+    "endDate": "2023-12",
+    "duties": "Led production acceptance flight test for the JF-17 assembly line.\nRan the Mirage Rebuild Factory post-overhaul test programme.\nOwned flight test for the Super Mushshak export certification campaign."
+   },
+   {
+    "role": "Experimental Test Pilot",
+    "organization": "Pakistan Air Force — Flight Test Wing",
+    "location": "PAF Base Minhas, Kamra",
+    "startDate": "2007-06",
+    "endDate": "2014-01",
+    "duties": "Flew envelope expansion and stores clearance sorties on Mirage and F-7 airframes.\nAuthored 60+ flight test reports to ETPS reporting standards."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2000",
+    "marksOrCgpa": "3.70 CGPA"
+   },
+   {
+    "institutionName": "Empire Test Pilots’ School, Boscombe Down, UK",
+    "degree": "Postgraduate Diploma in Flight Test",
+    "majorSubjects": "Flight Test Engineering",
+    "duration": "2007",
+    "marksOrCgpa": "Distinction"
+   },
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "MS Aerospace Engineering",
+    "majorSubjects": "Aerospace Engineering",
+    "duration": "2013",
+    "marksOrCgpa": "3.80 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ETPS Fixed-Wing Test Pilot Course",
+    "organization": "Empire Test Pilots’ School"
+   },
+   {
+    "name": "Flight Test Safety Management",
+    "organization": "Society of Experimental Test Pilots"
+   }
+  ]
+ },
+ {
+  "slot": 5,
+  "roleId": "helicopter_pilot",
+  "name": "Ahsan Raza Gilani",
+  "city": "Peshawar",
+  "phone": "+92 345 9903327",
+  "dob": "1987-01-30",
+  "professionalStatus": "retired",
+  "retirementDate": "2025-01-31",
+  "summary": "Squadron Leader (Retd) rotary pilot with 2,410 hours, 1,700 of them on the Mi-17. Flew mountain rescue and casualty evacuation across Gilgit-Baltistan and Chitral, including avalanche response at Siachen, plus VIP transport out of PAF Base Peshawar. Extensive hoist, sling load and NVG experience.",
+  "objectives": "Fly HEMS, offshore or utility rotary operations with a civil operator in Pakistan or the Gulf.",
+  "skills": [
+   "Mountain Flying",
+   "Hoist & Sling Load",
+   "NVG Operations",
+   "Casualty Evacuation",
+   "Confined Area Landings"
+  ],
+  "awards": [
+   "Tamgha-i-Basalat (2020) — Chitral avalanche rescue"
+  ],
+  "references": [
+   "Wg Cdr (Retd) Imtiaz Gul — former OC, No. 4 Squadron"
+  ],
+  "answers": {
+   "full_name": "Ahsan Raza Gilani",
+   "email": "zain5@mail.com",
+   "phone": "+92 345 9903327",
+   "city": "Peshawar",
+   "country": "Pakistan",
+   "date_of_birth": "1987-01-30",
+   "social_links": [
+    "linkedin.com/in/ahsan-raza-heli"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "No. 4 Squadron, PAF Base Peshawar",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "Immediate",
+   "issuing_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "medical_class": "Class 1",
+   "english_proficiency": "Level 5 (Extended)",
+   "violation_history": {
+    "value": false,
+    "details": ""
+   },
+   "accident_history": {
+    "value": false,
+    "details": ""
+   },
+   "primary_category": [
+    "Rotary-Wing (Helicopter)"
+   ],
+   "rotary_types": [
+    "MI17",
+    "AS350",
+    "B412"
+   ],
+   "primary_aircraft": "MI17",
+   "type_ratings": [
+    "Mi-17-1V"
+   ],
+   "aircraft_variants": [
+    "Mi-17-1V",
+    "Mi-171",
+    "Alouette III"
+   ],
+   "license_level": "Military Rating / Wings",
+   "license_number": "PAF-GDP-2009-1288",
+   "class_ratings": [
+    "Helicopter",
+    "Instrument Rating (IR)"
+   ],
+   "instructor_ratings": [
+    "None"
+   ],
+   "medical_expiry": "2026-02-28",
+   "total_hours": 2410,
+   "pic_hours": 1960,
+   "sic_hours": 450,
+   "rotary_hours": 2410,
+   "multi_engine_hours": 1700,
+   "turbine_hours": 2410,
+   "ifr_hours": 240,
+   "night_hours": 410,
+   "nvg_hours": 380,
+   "helicopter_missions": [
+    "HEMS / Air Ambulance",
+    "Hoist / Sling / External Load",
+    "VIP / Corporate",
+    "Mountain Flying"
+   ],
+   "military_profile": [
+    "Combat SAR",
+    "Special Operations"
+   ],
+   "security_clearance": "Secret",
+   "landings_day_90": 34,
+   "landings_night_90": 14,
+   "last_checkride": "10/2024"
+  },
+  "experience": [
+   {
+    "role": "Aircraft Captain",
+    "organization": "Pakistan Air Force — No. 4 Squadron",
+    "location": "PAF Base Peshawar",
+    "startDate": "2016-04",
+    "endDate": "2025-01",
+    "duties": "Captained Mi-17 crews on mountain SAR, casualty evacuation and VIP tasks.\nLed the Chitral avalanche rescue detachment in 2020, recovering 23 casualties.\nMaintained NVG currency and instructed confined-area landing technique."
+   },
+   {
+    "role": "Co-Pilot",
+    "organization": "Pakistan Air Force — No. 41 Squadron",
+    "location": "PAF Base Chaklala, Rawalpindi",
+    "startDate": "2011-09",
+    "endDate": "2016-03",
+    "duties": "Flew Alouette III and Mi-17 utility and liaison sorties."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2009",
+    "marksOrCgpa": "3.31 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Mi-17 Type Conversion",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Mountain Flying & Rescue Course",
+    "organization": "PAF Base Skardu Detachment"
+   },
+   {
+    "name": "ICAO English Level 4",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 6,
+  "roleId": "flight_instructor",
+  "name": "Naveed Anwar Sheikh",
+  "city": "Risalpur",
+  "phone": "+92 301 4472218",
+  "dob": "1981-09-17",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-06-30",
+  "summary": "Wing Commander (Retd) and Qualified Flying Instructor with 3,650 hours, of which 2,400 are instructional. Ran basic and advanced flying training at PAF Academy Asghar Khan on the Super Mushshak and K-8 Karakorum, and served as Chief Ground Instructor for two cadet intakes.",
+  "objectives": "Join a civil flight training organisation as a head of training or senior instructor.",
+  "skills": [
+   "Ab-Initio Flight Instruction",
+   "Instrument Instruction",
+   "Syllabus Development",
+   "Student Assessment",
+   "Upset Prevention & Recovery Training"
+  ],
+  "awards": [
+   "Best Flying Instructor Trophy, PAF Academy (2015)"
+  ],
+  "references": [
+   "Gp Capt (Retd) Zafar Iqbal — former OC Training Wing, PAF Academy"
+  ],
+  "answers": {
+   "full_name": "Naveed Anwar Sheikh",
+   "email": "zain6@mail.com",
+   "phone": "+92 301 4472218",
+   "city": "Risalpur",
+   "country": "Pakistan",
+   "date_of_birth": "1981-09-17",
+   "social_links": [
+    "linkedin.com/in/naveed-anwar-qfi"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "Primary Flying Training Wing, PAF Academy Asghar Khan, Risalpur",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "Immediate",
+   "issuing_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "medical_class": "Class 1",
+   "english_proficiency": "Level 5 (Extended)",
+   "violation_history": {
+    "value": false,
+    "details": ""
+   },
+   "accident_history": {
+    "value": false,
+    "details": ""
+   },
+   "primary_category": [
+    "Fixed-Wing (Airplane)"
+   ],
+   "fixed_wing_types": [
+    "Super Mushshak",
+    "K-8 Karakorum",
+    "T-37 Tweet",
+    "C172"
+   ],
+   "primary_aircraft": "K-8 Karakorum",
+   "type_ratings": [
+    "K-8 Karakorum",
+    "Super Mushshak"
+   ],
+   "aircraft_variants": [
+    "MFI-17 Mushshak",
+    "Super Mushshak"
+   ],
+   "license_level": "Military Rating / Wings",
+   "license_number": "PAF-GDP-2003-0714",
+   "class_ratings": [
+    "Single-Engine Land (SEL)",
+    "Multi-Engine Land (MEL)",
+    "Instrument Rating (IR)"
+   ],
+   "instructor_ratings": [
+    "CFI",
+    "CFII (Instrument)",
+    "TRI (Type Rating Instructor)"
+   ],
+   "medical_expiry": "2025-12-31",
+   "total_hours": 3650,
+   "pic_hours": 3200,
+   "sic_hours": 450,
+   "fixed_wing_hours": 3650,
+   "multi_engine_hours": 620,
+   "turbine_hours": 1900,
+   "ifr_hours": 880,
+   "night_hours": 520,
+   "nvg_hours": 0,
+   "military_profile": [
+    "Training Command"
+   ],
+   "security_clearance": "Confidential",
+   "landings_day_90": 48,
+   "landings_night_90": 12,
+   "last_checkride": "05/2024"
+  },
+  "experience": [
+   {
+    "role": "Chief Flying Instructor",
+    "organization": "Pakistan Air Force — PAF Academy Asghar Khan",
+    "location": "Risalpur, Nowshera",
+    "startDate": "2017-01",
+    "endDate": "2024-06",
+    "duties": "Ran basic and advanced flying training for cadet intakes of 90+ students.\nRewrote the K-8 instrument phase syllabus, cutting failure rates by a third.\nStandardised instructor checks across three training squadrons."
+   },
+   {
+    "role": "Flying Instructor",
+    "organization": "Pakistan Air Force — No. 1 FTS",
+    "location": "Risalpur, Nowshera",
+    "startDate": "2009-03",
+    "endDate": "2016-12",
+    "duties": "Delivered ab-initio instruction on Mushshak and T-37.\nQualified as Instrument Rating Examiner in 2013."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2003",
+    "marksOrCgpa": "3.55 CGPA"
+   },
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "MSc Aviation Management",
+    "majorSubjects": "Aviation Management",
+    "duration": "2019",
+    "marksOrCgpa": "3.60 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Qualified Flying Instructor Course",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Instrument Rating Examiner",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "ICAO English Level 6",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 7,
+  "roleId": "air_traffic_controller",
+  "name": "Kashif Mehmood Butt",
+  "city": "Lahore",
+  "phone": "+92 322 7761140",
+  "dob": "1985-04-25",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-11-30",
+  "summary": "Squadron Leader (Retd) air traffic controller with 16 years across PAF tower, approach radar and area control, latterly as Watch Supervisor at Lahore Area Control Centre. Handled mixed military and civil traffic during Exercise Indus Shield and holds current aerodrome and approach radar ratings.",
+  "objectives": "Take up a senior ATC or airspace management role with PCAA or a Gulf air navigation service provider.",
+  "skills": [
+   "Approach Radar Control",
+   "Area Control",
+   "Watch Supervision",
+   "Airspace Coordination",
+   "Emergency Traffic Handling"
+  ],
+  "awards": [
+   "Chief of Air Staff Commendation (2021) — emergency diversion handling"
+  ],
+  "references": [
+   "Gp Capt (Retd) Asim Farooq — former Director ATC, PAF"
+  ],
+  "answers": {
+   "full_name": "Kashif Mehmood Butt",
+   "email": "zain7@mail.com",
+   "phone": "+92 322 7761140",
+   "city": "Lahore",
+   "country": "Pakistan",
+   "date_of_birth": "1985-04-25",
+   "social_links": [
+    "linkedin.com/in/kashif-mehmood-atc"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Watch Supervisor, Lahore Area Control Centre (Retd)",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "Immediate",
+   "education": "Bachelor",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 42000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "atc_ratings": [
+    "Aerodrome",
+    "Approach",
+    "Approach Radar",
+    "Area",
+    "Area Radar"
+   ],
+   "atc_facility": "Approach/TRACON",
+   "atc_license_current": true,
+   "radar_endorsement": true,
+   "awards": "Chief of Air Staff Commendation, 2021"
+  },
+  "experience": [
+   {
+    "role": "Watch Supervisor — Area Control",
+    "organization": "Pakistan Air Force / PCAA joint civil-military ACC",
+    "location": "Lahore",
+    "startDate": "2019-02",
+    "endDate": "2024-11",
+    "duties": "Supervised a watch of nine controllers handling upper-airspace traffic over central Punjab.\nCoordinated civil-military airspace release during large-scale exercises.\nLed the unit investigation into three loss-of-separation events and closed all findings."
+   },
+   {
+    "role": "Approach Radar Controller",
+    "organization": "Pakistan Air Force — PAF Base Mushaf",
+    "location": "Sargodha",
+    "startDate": "2010-07",
+    "endDate": "2019-01",
+    "duties": "Provided radar approach and departure control for fast-jet and transport traffic.\nQualified on-the-job training instructor for trainee controllers."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "Civil Aviation Training Institute, Hyderabad",
+    "degree": "ATC Basic & Rating Courses",
+    "majorSubjects": "Air Traffic Control",
+    "duration": "2008",
+    "marksOrCgpa": "Distinction"
+   },
+   {
+    "institutionName": "University of the Punjab, Lahore",
+    "degree": "BSc Physics & Mathematics",
+    "majorSubjects": "Physics, Mathematics",
+    "duration": "2006",
+    "marksOrCgpa": "3.20 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Aerodrome & Approach Radar Rating",
+    "organization": "PCAA"
+   },
+   {
+    "name": "ATC On-the-Job Training Instructor",
+    "organization": "PCAA"
+   },
+   {
+    "name": "ICAO English Level 5",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 8,
+  "roleId": "avionics_engineer",
+  "name": "Muhammad Imran Aslam",
+  "city": "Kamra",
+  "phone": "+92 336 5540912",
+  "dob": "1984-12-06",
+  "professionalStatus": "serving",
+  "retirementDate": "2028-04-30",
+  "summary": "Chief Technician (Avionics) with 17 years on fighter avionics and mission systems, currently at the Aircraft Rebuild Factory, PAC Kamra. Specialises in radar and glass-cockpit integration on the JF-17 and Mirage ROSE upgrade, including wire harness fabrication and post-modification functional testing.",
+  "objectives": "Move into a civil avionics certifying-staff role with an MRO, or a defence systems integration post.",
+  "skills": [
+   "Radar & Sensor Systems",
+   "Wire Harness Fabrication",
+   "Glass Cockpit Integration",
+   "Fault Diagnosis",
+   "Functional Test Procedures"
+  ],
+  "references": [
+   "Sqn Ldr Ahmed Waqas — Avionics Officer, Aircraft Rebuild Factory, PAC Kamra"
+  ],
+  "answers": {
+   "full_name": "Muhammad Imran Aslam",
+   "email": "zain8@mail.com",
+   "phone": "+92 336 5540912",
+   "city": "Kamra",
+   "country": "Pakistan",
+   "date_of_birth": "1984-12-06",
+   "social_links": [
+    "linkedin.com/in/imran-aslam-avionics"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "Aircraft Rebuild Factory, Pakistan Aeronautical Complex, Kamra",
+   "employment_status": "Active Duty",
+   "cert_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "notice_period": "90 Days",
+   "primary_trade": [
+    "Avionics & Electrical",
+    "Armament / Weapons Systems",
+    "Airframe"
+   ],
+   "avionics_skills": [
+    "Navigation Systems",
+    "Radar & Sensor Systems",
+    "Flight Deck / Glass Cockpit",
+    "Wiring / Wire Harness Fabrication",
+    "Auto-Flight / Autopilot"
+   ],
+   "armament_skills": [
+    "Missile Launch Rails",
+    "Bomb Racks / Stores Management",
+    "Ejection Seat / Escape Systems"
+   ],
+   "airframe_systems": [
+    "Flight Controls",
+    "Environmental Control Systems (ECS)"
+   ],
+   "military_moc": "PAF Avionics Trade — Radar & Navigation Fitter",
+   "license_number": "PAF-AVN-2007-4471",
+   "license_expiry": "2027-06-30",
+   "fixed_wing_maintained": [
+    "JF17",
+    "Mirage III/V",
+    "F-7PG",
+    "K-8 Karakorum"
+   ],
+   "engine_models": [
+    "RD-93",
+    "SNECMA Atar 9C"
+   ],
+   "maintenance_environment": [
+    "Base / Heavy Maintenance",
+    "Component / Backshop",
+    "Flight Line (Military)"
+   ],
+   "factory_courses": [
+    "CATIC JF-17 Avionics Gen-Fam",
+    "Thales ROSE Radar Maintenance"
+   ],
+   "total_experience_years": 17,
+   "trade_experience_years": 17,
+   "toolbox_status": "Has Own Shadowed/Etched Mechanics Toolkit",
+   "security_clearance": "Secret"
+  },
+  "experience": [
+   {
+    "role": "Chief Technician — Avionics",
+    "organization": "Pakistan Aeronautical Complex, Aircraft Rebuild Factory",
+    "location": "Kamra, Attock",
+    "startDate": "2016-03",
+    "endDate": "",
+    "duties": "Leads a six-technician avionics bay through JF-17 radar and mission computer installation.\nFabricates and certifies wire harnesses to drawing and inspects to RII standard.\nWrote the functional test card set now used across the Mirage ROSE line."
+   },
+   {
+    "role": "Senior Technician — Radar & Navigation",
+    "organization": "Pakistan Air Force — No. 15 Squadron",
+    "location": "PAF Base Rafiqui, Shorkot",
+    "startDate": "2008-01",
+    "endDate": "2016-02",
+    "duties": "Maintained radar, IFF and navigation systems on the flight line.\nCleared aircraft for operational sorties under a 45-minute turnaround."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF College of Aeronautical Engineering, Risalpur",
+    "degree": "Diploma in Avionics Technology",
+    "majorSubjects": "Avionics",
+    "duration": "2007",
+    "marksOrCgpa": "A Grade"
+   },
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "BSc Electrical Engineering Technology",
+    "majorSubjects": "Electrical Engineering Technology",
+    "duration": "2020",
+    "marksOrCgpa": "3.35 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "JF-17 Avionics General Familiarisation",
+    "organization": "CATIC / PAC Kamra"
+   },
+   {
+    "name": "Aircraft Wiring & Harness Certification",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Human Factors in Aircraft Maintenance",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 9,
+  "roleId": "aircraft_mechanic",
+  "name": "Abdul Rehman Baloch",
+  "city": "Quetta",
+  "phone": "+92 314 6620875",
+  "dob": "1990-08-11",
+  "professionalStatus": "serving",
+  "retirementDate": "2030-08-31",
+  "summary": "Senior Technician (Airframe & Powerplant) with 12 years on the C-130 and CN-235 fleet at PAF Base Samungli. Runs line maintenance turnarounds, engine change teams and pre-flight servicing, and holds run-up and taxi authorisation on both types.",
+  "objectives": "Qualify as PCAA Part-66 B1.1 certifying staff and join a commercial line maintenance organisation.",
+  "skills": [
+   "Line Maintenance",
+   "Engine Change",
+   "Turboprop Systems",
+   "Hydraulics & Landing Gear",
+   "Ground Run & Taxi"
+  ],
+  "references": [
+   "Sqn Ldr Muhammad Yasir — Engineering Officer, PAF Base Samungli"
+  ],
+  "answers": {
+   "full_name": "Abdul Rehman Baloch",
+   "email": "zain9@mail.com",
+   "phone": "+92 314 6620875",
+   "city": "Quetta",
+   "country": "Pakistan",
+   "date_of_birth": "1990-08-11",
+   "social_links": [],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "No. 21 Squadron Engineering Flight, PAF Base Samungli, Quetta",
+   "employment_status": "Active Duty",
+   "cert_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "notice_period": "90 Days",
+   "primary_trade": [
+    "Airframe",
+    "Powerplant / Engine"
+   ],
+   "airframe_systems": [
+    "Landing Gear",
+    "Flight Controls",
+    "Fuel Systems",
+    "Hydraulics",
+    "Pneumatics"
+   ],
+   "powerplant_skills": [
+    "Turboprop",
+    "APU (Auxiliary Power Unit)"
+   ],
+   "military_moc": "PAF Airframe & Engine Trade — Aircraft Fitter",
+   "license_number": "PAF-AEF-2012-6620",
+   "license_expiry": "2028-03-31",
+   "fixed_wing_maintained": [
+    "C130",
+    "CN-235",
+    "Y-12"
+   ],
+   "engine_models": [
+    "Allison T56-A-15",
+    "GE CT7-9C"
+   ],
+   "maintenance_environment": [
+    "Line Maintenance",
+    "Flight Line (Military)"
+   ],
+   "factory_courses": [
+    "Rolls-Royce T56 Line Maintenance"
+   ],
+   "total_experience_years": 12,
+   "trade_experience_years": 12,
+   "toolbox_status": "Has Own Shadowed/Etched Mechanics Toolkit",
+   "security_clearance": "Confidential"
+  },
+  "experience": [
+   {
+    "role": "Senior Technician — Airframe & Engines",
+    "organization": "Pakistan Air Force — No. 21 Squadron",
+    "location": "PAF Base Samungli, Quetta",
+    "startDate": "2017-06",
+    "endDate": "",
+    "duties": "Leads a four-technician line crew through C-130 turnarounds and daily inspections.\nCompleted 11 T56 engine changes as team lead with no re-work.\nHolds ground run and taxi authorisation on C-130 and CN-235."
+   },
+   {
+    "role": "Technician — Airframe",
+    "organization": "Pakistan Air Force — No. 6 Squadron",
+    "location": "PAF Base Nur Khan, Rawalpindi",
+    "startDate": "2012-09",
+    "endDate": "2017-05",
+    "duties": "Carried out scheduled inspections, hydraulic and landing gear servicing."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF School of Aeronautics, Korangi Creek, Karachi",
+    "degree": "Diploma in Aircraft Maintenance Technology",
+    "majorSubjects": "Airframe & Powerplant",
+    "duration": "2012",
+    "marksOrCgpa": "A Grade"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "C-130 Airframe & Engine Course",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "T56 Turboprop Line Maintenance",
+    "organization": "Rolls-Royce"
+   },
+   {
+    "name": "Aviation Safety & FOD Prevention",
+    "organization": "PAF Institute of Flight Safety"
+   }
+  ]
+ },
+ {
+  "slot": 10,
+  "roleId": "maintenance_engineer",
+  "name": "Faisal Nadeem Chaudhry",
+  "city": "Karachi",
+  "phone": "+92 302 3318846",
+  "dob": "1982-02-19",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-04-30",
+  "summary": "Squadron Leader (Retd) aeronautical engineer with 18 years of base and depot maintenance leadership, most recently as Officer Commanding Engineering Wing at PAF Base Faisal. Ran the 1,200-hour phase inspection programme for the Mirage fleet and led an ISO 9001 recertification of the base engineering organisation.",
+  "objectives": "Lead a maintenance or continuing airworthiness organisation at a commercial airline or MRO.",
+  "skills": [
+   "Continuing Airworthiness Management",
+   "Heavy Maintenance Planning",
+   "Reliability Analysis",
+   "Quality Systems (ISO 9001)",
+   "Technical Team Leadership"
+  ],
+  "awards": [
+   "Chief of Air Staff Commendation (2018) — fleet availability improvement"
+  ],
+  "publications": [
+   "\"Reliability-Centred Maintenance on Legacy Fighter Fleets\", PAC Kamra Technical Digest, 2020"
+  ],
+  "references": [
+   "Air Cdre (Retd) Shahzad Alam — former Director Engineering, PAF"
+  ],
+  "answers": {
+   "full_name": "Faisal Nadeem Chaudhry",
+   "email": "zain10@mail.com",
+   "phone": "+92 302 3318846",
+   "city": "Karachi",
+   "country": "Pakistan",
+   "date_of_birth": "1982-02-19",
+   "social_links": [
+    "linkedin.com/in/faisal-nadeem-ame"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "Engineering Wing, PAF Base Faisal, Karachi",
+   "employment_status": "Unemployed / Seeking Role",
+   "cert_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "notice_period": "Immediate",
+   "primary_trade": [
+    "Airframe",
+    "Powerplant / Engine",
+    "Structures / Sheet Metal"
+   ],
+   "airframe_systems": [
+    "Landing Gear",
+    "Flight Controls",
+    "Fuel Systems",
+    "Hydraulics",
+    "Environmental Control Systems (ECS)"
+   ],
+   "powerplant_skills": [
+    "Turbofan",
+    "Turboprop",
+    "APU (Auxiliary Power Unit)"
+   ],
+   "structures_ndt": [
+    "Structural Inspection",
+    "NDT Level II"
+   ],
+   "military_moc": "PAF Aeronautical Engineering Branch",
+   "license_number": "PAF-AE-2006-0338",
+   "license_expiry": "2026-12-31",
+   "fixed_wing_maintained": [
+    "Mirage III/V",
+    "F-7PG",
+    "C130",
+    "K-8 Karakorum"
+   ],
+   "engine_models": [
+    "SNECMA Atar 9C",
+    "Allison T56-A-15"
+   ],
+   "maintenance_environment": [
+    "Base / Heavy Maintenance",
+    "Line Maintenance",
+    "Component / Backshop"
+   ],
+   "factory_courses": [
+    "Atar 9C Overhaul",
+    "ISO 9001:2015 Lead Auditor"
+   ],
+   "total_experience_years": 18,
+   "trade_experience_years": 14,
+   "toolbox_status": "Minimum Toolkit Available",
+   "security_clearance": "Secret"
+  },
+  "experience": [
+   {
+    "role": "Officer Commanding — Engineering Wing",
+    "organization": "Pakistan Air Force — PAF Base Faisal",
+    "location": "Karachi",
+    "startDate": "2019-01",
+    "endDate": "2024-04",
+    "duties": "Led 140 technicians and six engineering officers across line, base and backshop.\nRaised fleet availability from 68% to 84% by rebuilding the phase inspection plan.\nPassed ISO 9001:2015 recertification with zero major findings."
+   },
+   {
+    "role": "Engineering Officer",
+    "organization": "Pakistan Air Force — Mirage Rebuild Factory, PAC Kamra",
+    "location": "Kamra, Attock",
+    "startDate": "2010-05",
+    "endDate": "2018-12",
+    "duties": "Managed the Atar 9C engine overhaul cell and its spares pipeline.\nIntroduced reliability tracking that cut unscheduled removals by a fifth."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "College of Aeronautical Engineering, NUST — PAF Academy Risalpur",
+    "degree": "BE Aerospace Engineering",
+    "majorSubjects": "Aerospace Engineering",
+    "duration": "2006",
+    "marksOrCgpa": "3.58 CGPA"
+   },
+   {
+    "institutionName": "NED University of Engineering & Technology, Karachi",
+    "degree": "MS Mechanical Engineering",
+    "majorSubjects": "Mechanical Engineering",
+    "duration": "2016",
+    "marksOrCgpa": "3.66 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ISO 9001:2015 Lead Auditor",
+    "organization": "Bureau Veritas"
+   },
+   {
+    "name": "Aircraft Maintenance Management Course",
+    "organization": "PAF Institute of Aeronautical Engineering"
+   },
+   {
+    "name": "NDT Level II — Penetrant & Magnetic Particle",
+    "organization": "PAC Kamra"
+   }
+  ]
+ },
+ {
+  "slot": 11,
+  "roleId": "structures_technician",
+  "name": "Zubair Hussain Shah",
+  "city": "Kamra",
+  "phone": "+92 335 7784023",
+  "dob": "1989-06-03",
+  "professionalStatus": "serving",
+  "retirementDate": "2029-06-30",
+  "summary": "Junior Warrant Officer specialising in sheet metal and composite repair at the Aircraft Rebuild Factory, PAC Kamra. Eleven years of structural repair on Mirage and F-7 airframes, including corrosion control, wing spar splice work and carbon fibre patch repair to SRM limits. NDT Level II qualified.",
+  "objectives": "Join a commercial MRO structures bay or a composite repair station in the Gulf.",
+  "skills": [
+   "Sheet Metal Repair",
+   "Composite Patch Repair",
+   "Corrosion Control",
+   "NDT Level II",
+   "Structural Repair Manual Interpretation"
+  ],
+  "references": [
+   "Sqn Ldr Bilal Saeed — Structures Officer, Aircraft Rebuild Factory, PAC Kamra"
+  ],
+  "answers": {
+   "full_name": "Zubair Hussain Shah",
+   "email": "zain11@mail.com",
+   "phone": "+92 335 7784023",
+   "city": "Kamra",
+   "country": "Pakistan",
+   "date_of_birth": "1989-06-03",
+   "social_links": [],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Branch",
+   "military_branch": "Pakistan Air Force",
+   "military_unit": "Structures Bay, Aircraft Rebuild Factory, PAC Kamra",
+   "employment_status": "Active Duty",
+   "cert_authority": [
+    "PCAA (Pakistan)",
+    "Military Authority"
+   ],
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "notice_period": "90 Days",
+   "primary_trade": [
+    "Structures / Sheet Metal",
+    "Airframe"
+   ],
+   "structures_ndt": [
+    "Sheet Metal Repair",
+    "Carbon Fiber / Composite Repair",
+    "Structural Inspection",
+    "NDT Level I",
+    "NDT Level II",
+    "Eddy Current",
+    "Ultrasonic"
+   ],
+   "airframe_systems": [
+    "Flight Controls"
+   ],
+   "military_moc": "PAF Structures Trade — Airframe Repair Fitter",
+   "license_number": "PAF-STR-2013-7784",
+   "license_expiry": "2029-01-31",
+   "fixed_wing_maintained": [
+    "Mirage III/V",
+    "F-7PG",
+    "JF17"
+   ],
+   "maintenance_environment": [
+    "Base / Heavy Maintenance",
+    "Component / Backshop"
+   ],
+   "factory_courses": [
+    "Advanced Composite Repair — PAC Kamra",
+    "Eddy Current NDT Level II"
+   ],
+   "total_experience_years": 11,
+   "trade_experience_years": 11,
+   "toolbox_status": "Has Own Shadowed/Etched Mechanics Toolkit",
+   "security_clearance": "Confidential"
+  },
+  "experience": [
+   {
+    "role": "Junior Warrant Officer — Structures",
+    "organization": "Pakistan Aeronautical Complex, Aircraft Rebuild Factory",
+    "location": "Kamra, Attock",
+    "startDate": "2018-02",
+    "endDate": "",
+    "duties": "Performs structural repair and corrosion control on Mirage and F-7 airframes.\nCompleted a wing spar splice repair that returned a grounded airframe to service.\nInspects composite repairs to NDT Level II before release."
+   },
+   {
+    "role": "Technician — Sheet Metal",
+    "organization": "Pakistan Air Force — No. 25 Squadron",
+    "location": "PAF Base Bholari, Jamshoro",
+    "startDate": "2013-04",
+    "endDate": "2018-01",
+    "duties": "Carried out skin panel replacement, riveting and battle damage repair."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF School of Aeronautics, Korangi Creek, Karachi",
+    "degree": "Diploma in Aircraft Structures",
+    "majorSubjects": "Aircraft Structures",
+    "duration": "2013",
+    "marksOrCgpa": "A Grade"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Advanced Composite Repair",
+    "organization": "PAC Kamra"
+   },
+   {
+    "name": "NDT Level II — Eddy Current & Ultrasonic",
+    "organization": "PAC Kamra"
+   },
+   {
+    "name": "Corrosion Prevention & Control",
+    "organization": "Pakistan Air Force"
+   }
+  ]
+ },
+ {
+  "slot": 12,
+  "roleId": "safety_officer",
+  "name": "Adnan Sarwar Malik",
+  "city": "Islamabad",
+  "phone": "+92 300 5527731",
+  "dob": "1980-10-12",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-08-31",
+  "summary": "Wing Commander (Retd) flight safety officer with 15 years in aviation safety, built on 1,900 hours of Mirage flying. Ran flight safety for a fighter wing, introduced flight data monitoring on the JF-17 fleet and led 40+ occurrence investigations. Trained at the PAF Institute of Flight Safety and holds an ICAO SMS Manager certificate.",
+  "objectives": "Head a safety or SMS function at a commercial airline, MRO or civil aviation authority.",
+  "skills": [
+   "Safety Management Systems",
+   "Flight Data Monitoring",
+   "Occurrence Investigation",
+   "Human Factors",
+   "Just Culture Implementation"
+  ],
+  "awards": [
+   "Chief of Air Staff Flight Safety Trophy (2019)"
+  ],
+  "publications": [
+   "\"Introducing FDM to a Fast-Jet Fleet: Lessons from the JF-17 Programme\", PAF Air Power Review, 2022"
+  ],
+  "references": [
+   "Air Cdre (Retd) Nadeem Aslam — former Director of Flight Safety, PAF"
+  ],
+  "answers": {
+   "full_name": "Adnan Sarwar Malik",
+   "email": "zain12@mail.com",
+   "phone": "+92 300 5527731",
+   "city": "Islamabad",
+   "country": "Pakistan",
+   "date_of_birth": "1980-10-12",
+   "social_links": [
+    "linkedin.com/in/adnan-sarwar-safety"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Service Arm",
+   "employer_name": "Pakistan Air Force",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "Immediate",
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "safety_role": "Flight Safety Officer (FSO)",
+   "safety_background": [
+    "Pilot Background (Fixed-Wing)"
+   ],
+   "safety_disciplines": [
+    "Safety Management Systems (SMS)",
+    "Flight Data Monitoring (FDM / FOQA)",
+    "Aircraft Accident & Incident Investigation",
+    "Human Factors & CRM"
+   ],
+   "flight_safety_skills": [
+    "FOQA / FDM Data Analysis",
+    "Flight Crew Human Factors",
+    "CRM / TEM Instructor",
+    "Runway Safety / Incursion Prevention"
+   ],
+   "sms_skills": [
+    "SMS Development & Rollout (ICAO Doc 9859)",
+    "Hazard Identification & Risk Assessment (HIRA)",
+    "Safety Risk Management (SRM)",
+    "Safety Assurance & Performance Indicators (SPIs / SPTs)",
+    "Just Culture Implementation"
+   ],
+   "investigation_methods": [
+    "ICAO Annex 13 Accident Investigation",
+    "Root Cause Analysis (RCA)",
+    "5 Whys"
+   ],
+   "safety_credentials": [
+    "ICAO / FAA / EASA SMS Manager Certificate",
+    "Qualified Aircraft Accident Investigator"
+   ],
+   "technical_licenses": [
+    "Pilot License (ATPL / CPL / Military Wings)"
+   ],
+   "issuing_bodies": [
+    "ICAO",
+    "Military Safety Center"
+   ],
+   "aviation_sectors": [
+    "Military Aviation (Tactical)",
+    "Military Aviation (Heavy / Transport)",
+    "Commercial Airlines (Passenger)"
+   ],
+   "aircraft_familiarity": [
+    "JF17",
+    "Mirage III/V",
+    "C130"
+   ],
+   "safety_software": [
+    "AQD"
+   ],
+   "safety_experience_years": 15,
+   "operational_experience": 24,
+   "erp_roles": [
+    "Crisis Management Team Lead",
+    "Go-Team / On-Scene Commander"
+   ]
+  },
+  "experience": [
+   {
+    "role": "Officer Commanding — Flight Safety",
+    "organization": "Pakistan Air Force — Central Air Command",
+    "location": "PAF Base Mushaf, Sargodha",
+    "startDate": "2018-06",
+    "endDate": "2024-08",
+    "duties": "Ran flight safety across three fighter squadrons and a training wing.\nIntroduced flight data monitoring on the JF-17 fleet and built the SPI dashboard.\nLed 40+ Annex 13 style occurrence investigations to board sign-off."
+   },
+   {
+    "role": "Flight Safety Officer",
+    "organization": "Pakistan Air Force — No. 8 Squadron",
+    "location": "PAF Base Masroor, Karachi",
+    "startDate": "2011-01",
+    "endDate": "2018-05",
+    "duties": "Ran the squadron hazard reporting scheme and quarterly safety board.\nDelivered CRM and human factors training to aircrew and maintainers."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "2002",
+    "marksOrCgpa": "3.44 CGPA"
+   },
+   {
+    "institutionName": "Cranfield University, UK",
+    "degree": "MSc Air Safety Management",
+    "majorSubjects": "Air Safety Management",
+    "duration": "2017",
+    "marksOrCgpa": "Merit"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ICAO SMS Manager Certificate",
+    "organization": "ICAO"
+   },
+   {
+    "name": "Aircraft Accident Investigation Course",
+    "organization": "Cranfield University"
+   },
+   {
+    "name": "CRM Instructor",
+    "organization": "PAF Institute of Flight Safety"
+   }
+  ]
+ },
+ {
+  "slot": 13,
+  "roleId": "accident_investigator",
+  "name": "Shahid Mahmood Janjua",
+  "city": "Rawalpindi",
+  "phone": "+92 321 4409937",
+  "dob": "1976-01-28",
+  "professionalStatus": "retired",
+  "retirementDate": "2023-06-30",
+  "summary": "Group Captain (Retd) and qualified aircraft accident investigator, formerly Director of the PAF Safety Investigation Board. Led or supervised 26 Class A investigations across fighter, transport and rotary fleets, and served as accredited representative on two joint civil-military inquiries with the Safety Investigation Board of Pakistan.",
+  "objectives": "Serve as a lead investigator or safety advisor for a national investigation authority or an airline.",
+  "skills": [
+   "Annex 13 Investigation",
+   "Wreckage & Site Analysis",
+   "Flight Data & CVR Analysis",
+   "Human Factors Analysis",
+   "Investigation Report Authoring"
+  ],
+  "awards": [
+   "Sitara-i-Imtiaz (Military) (2021)"
+  ],
+  "publications": [
+   "\"Organisational Factors in Fast-Jet Loss of Control Accidents\", ISASI Forum, 2020",
+   "\"Wreckage Distribution Analysis in Mountainous Terrain\", PAF Safety Review, 2018"
+  ],
+  "references": [
+   "Air Marshal (Retd) Farhat Hussain — former Deputy Chief of Air Staff (Operations)"
+  ],
+  "answers": {
+   "full_name": "Shahid Mahmood Janjua",
+   "email": "zain13@mail.com",
+   "phone": "+92 321 4409937",
+   "city": "Rawalpindi",
+   "country": "Pakistan",
+   "date_of_birth": "1976-01-28",
+   "social_links": [
+    "linkedin.com/in/shahid-janjua-isasi"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Military Service Arm",
+   "employer_name": "Pakistan Air Force",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "Immediate",
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "safety_role": "Accident Investigator",
+   "safety_background": [
+    "Pilot Background (Fixed-Wing)",
+    "Pilot Background (Helicopter)"
+   ],
+   "safety_disciplines": [
+    "Aircraft Accident & Incident Investigation",
+    "Human Factors & CRM",
+    "Safety Management Systems (SMS)",
+    "Flight Data Monitoring (FDM / FOQA)"
+   ],
+   "flight_safety_skills": [
+    "FOQA / FDM Data Analysis",
+    "Flight Crew Human Factors"
+   ],
+   "sms_skills": [
+    "Hazard Identification & Risk Assessment (HIRA)",
+    "Safety Risk Management (SRM)",
+    "Just Culture Implementation"
+   ],
+   "investigation_methods": [
+    "ICAO Annex 13 Accident Investigation",
+    "Root Cause Analysis (RCA)",
+    "BowTie Analysis",
+    "5 Whys"
+   ],
+   "safety_credentials": [
+    "Qualified Aircraft Accident Investigator",
+    "ICAO / FAA / EASA SMS Manager Certificate"
+   ],
+   "technical_licenses": [
+    "Pilot License (ATPL / CPL / Military Wings)"
+   ],
+   "issuing_bodies": [
+    "ICAO",
+    "Military Safety Center"
+   ],
+   "aviation_sectors": [
+    "Military Aviation (Tactical)",
+    "Military Aviation (Rotary)",
+    "Military Aviation (Heavy / Transport)",
+    "Commercial Airlines (Passenger)"
+   ],
+   "aircraft_familiarity": [
+    "F16",
+    "Mirage III/V",
+    "C130",
+    "MI17"
+   ],
+   "safety_software": [
+    "AQD",
+    "Q-Pulse"
+   ],
+   "safety_experience_years": 19,
+   "operational_experience": 30,
+   "erp_roles": [
+    "Go-Team / On-Scene Commander",
+    "Crisis Management Team Lead",
+    "Family Assistance Program Lead"
+   ]
+  },
+  "experience": [
+   {
+    "role": "Director — Safety Investigation Board",
+    "organization": "Pakistan Air Force — Air Headquarters",
+    "location": "Islamabad",
+    "startDate": "2017-04",
+    "endDate": "2023-06",
+    "duties": "Directed the PAF accident investigation function across all fleets.\nLed or supervised 26 Class A investigations and their safety recommendations.\nActed as accredited representative on joint inquiries with SIB Pakistan."
+   },
+   {
+    "role": "Senior Investigator",
+    "organization": "Pakistan Air Force — Directorate of Flight Safety",
+    "location": "Islamabad",
+    "startDate": "2009-08",
+    "endDate": "2017-03",
+    "duties": "Conducted on-site wreckage analysis and flight data recovery.\nBuilt the human factors analysis framework adopted PAF-wide."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Academy Asghar Khan, Risalpur",
+    "degree": "BSc Aviation Sciences",
+    "majorSubjects": "Aviation Sciences",
+    "duration": "1998",
+    "marksOrCgpa": "3.50 CGPA"
+   },
+   {
+    "institutionName": "University of Southern California, Aviation Safety & Security Program",
+    "degree": "Certificate — Aircraft Accident Investigation",
+    "majorSubjects": "Aviation Safety",
+    "duration": "2012",
+    "marksOrCgpa": "Pass"
+   },
+   {
+    "institutionName": "National Defence University, Islamabad",
+    "degree": "MPhil Strategic Studies",
+    "majorSubjects": "Strategic Studies",
+    "duration": "2015",
+    "marksOrCgpa": "3.72 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Aircraft Accident Investigation — USC ASSP",
+    "organization": "University of Southern California"
+   },
+   {
+    "name": "ISASI Member",
+    "organization": "International Society of Air Safety Investigators"
+   },
+   {
+    "name": "ICAO SMS Manager Certificate",
+    "organization": "ICAO"
+   }
+  ]
+ },
+ {
+  "slot": 14,
+  "roleId": "sms_manager",
+  "name": "Umar Farooq Kiani",
+  "city": "Lahore",
+  "phone": "+92 333 6674408",
+  "dob": "1984-03-08",
+  "professionalStatus": "retired",
+  "retirementDate": "2025-02-28",
+  "summary": "Wing Commander (Retd) who built and ran the safety management system for a PAF transport wing, then advised PCAA on SMS acceptance for two domestic operators. Background as an aircraft maintenance engineer, so the risk work is grounded in the hangar as well as the flight deck.",
+  "objectives": "Own the SMS function at an airline or ground handling organisation and take it through regulator acceptance.",
+  "skills": [
+   "SMS Implementation",
+   "Hazard Identification & Risk Assessment",
+   "Safety Performance Indicators",
+   "Internal Audit",
+   "Regulatory Liaison"
+  ],
+  "awards": [
+   "PCAA Safety Partnership Award (2023)"
+  ],
+  "references": [
+   "Gp Capt (Retd) Salman Haider — former OC Engineering, PAF Base Nur Khan"
+  ],
+  "answers": {
+   "full_name": "Umar Farooq Kiani",
+   "email": "zain14@mail.com",
+   "phone": "+92 333 6674408",
+   "city": "Lahore",
+   "country": "Pakistan",
+   "date_of_birth": "1984-03-08",
+   "social_links": [
+    "linkedin.com/in/umar-farooq-sms"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "employer_type": "Civil Aviation Authority (CAA / FAA)",
+   "employer_name": "Other (Specify)",
+   "employment_status": "Unemployed / Seeking Role",
+   "notice_period": "30 Days",
+   "enforcement_history": {
+    "value": false,
+    "details": ""
+   },
+   "safety_role": "Safety Manager (SMS)",
+   "safety_background": [
+    "Aircraft Mechanic / Technician (A&P / Part-66)",
+    "Flight Dispatcher / Operations"
+   ],
+   "safety_disciplines": [
+    "Safety Management Systems (SMS)",
+    "Quality Assurance (QA) & Compliance",
+    "Human Factors & CRM"
+   ],
+   "maintenance_safety_skills": [
+    "Maintenance Human Factors (MEDA)",
+    "Tooling & FOD Prevention",
+    "Airworthiness Risk Assessment",
+    "Hangars & Ramp Safety"
+   ],
+   "sms_skills": [
+    "SMS Development & Rollout (ICAO Doc 9859)",
+    "Hazard Identification & Risk Assessment (HIRA)",
+    "Safety Risk Management (SRM)",
+    "Safety Assurance & Performance Indicators (SPIs / SPTs)",
+    "Just Culture Implementation"
+   ],
+   "investigation_methods": [
+    "Root Cause Analysis (RCA)",
+    "BowTie Analysis",
+    "5 Whys",
+    "IATA Operational Safety Audit (IOSA)"
+   ],
+   "safety_credentials": [
+    "ICAO / FAA / EASA SMS Manager Certificate",
+    "NEBOSH International General Certificate (IGC)"
+   ],
+   "technical_licenses": [
+    "Aircraft Maintenance License (A&P / Part-66 / Military MOS)"
+   ],
+   "issuing_bodies": [
+    "ICAO",
+    "Military Safety Center"
+   ],
+   "aviation_sectors": [
+    "Military Aviation (Heavy / Transport)",
+    "Commercial Airlines (Passenger)",
+    "Airport Authorities & Airfield Operations"
+   ],
+   "aircraft_familiarity": [
+    "C130",
+    "A320",
+    "B738"
+   ],
+   "safety_software": [
+    "Q-Pulse",
+    "AQD"
+   ],
+   "safety_experience_years": 12,
+   "operational_experience": 20,
+   "erp_roles": [
+    "Emergency Command Center Operator",
+    "Crisis Management Team Lead"
+   ]
+  },
+  "experience": [
+   {
+    "role": "SMS Advisor",
+    "organization": "Pakistan Civil Aviation Authority — Safety Oversight (secondment)",
+    "location": "Karachi",
+    "startDate": "2022-01",
+    "endDate": "2025-02",
+    "duties": "Assessed SMS submissions from two domestic operators through to acceptance.\nRan gap analyses against ICAO Doc 9859 and tracked corrective actions."
+   },
+   {
+    "role": "Safety Manager — Air Transport Wing",
+    "organization": "Pakistan Air Force",
+    "location": "PAF Base Nur Khan, Rawalpindi",
+    "startDate": "2015-03",
+    "endDate": "2021-12",
+    "duties": "Built the wing SMS from scratch, including hazard register and SPI reporting.\nCut ground damage occurrences by 40% over three years."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "College of Aeronautical Engineering, NUST — PAF Academy Risalpur",
+    "degree": "BE Aerospace Engineering",
+    "majorSubjects": "Aerospace Engineering",
+    "duration": "2006",
+    "marksOrCgpa": "3.40 CGPA"
+   },
+   {
+    "institutionName": "Lahore University of Management Sciences",
+    "degree": "MBA (Executive)",
+    "majorSubjects": "Business Administration",
+    "duration": "2020",
+    "marksOrCgpa": "3.55 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ICAO SMS Manager Certificate",
+    "organization": "ICAO"
+   },
+   {
+    "name": "NEBOSH International General Certificate",
+    "organization": "NEBOSH"
+   },
+   {
+    "name": "IOSA Auditor Familiarisation",
+    "organization": "IATA"
+   }
+  ]
+ },
+ {
+  "slot": 15,
+  "roleId": "flight_dispatcher",
+  "name": "Salman Akram Toor",
+  "city": "Karachi",
+  "phone": "+92 316 8892250",
+  "dob": "1987-12-14",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-10-31",
+  "summary": "Squadron Leader (Retd) operations officer turned licensed flight dispatcher, with nine years planning PAF transport missions and three years on the PIA operations control desk. Comfortable with fuel and payload optimisation, ETOPS planning and diversion management across South Asia and the Gulf.",
+  "objectives": "Work an airline operations control desk, progressing to duty manager.",
+  "skills": [
+   "Flight Planning",
+   "Weight & Balance",
+   "Fuel Optimisation",
+   "Meteorological Analysis",
+   "NOTAM & Route Assessment"
+  ],
+  "references": [
+   "Capt. Rehan Sultan — Chief Dispatcher, Pakistan International Airlines"
+  ],
+  "answers": {
+   "full_name": "Salman Akram Toor",
+   "email": "zain15@mail.com",
+   "phone": "+92 316 8892250",
+   "city": "Karachi",
+   "country": "Pakistan",
+   "date_of_birth": "1987-12-14",
+   "social_links": [
+    "linkedin.com/in/salman-toor-ops"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Flight Dispatcher, Pakistan International Airlines",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "2 weeks",
+   "education": "Bachelor",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 42000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "dispatch_license": true,
+   "ops_systems": "Lido/Flight, Jeppesen JetPlan, SITA Flight Ops, AIMS",
+   "weather_analysis": true,
+   "weight_balance": true,
+   "awards": "PIA Operations Excellence Award, 2023"
+  },
+  "experience": [
+   {
+    "role": "Flight Dispatcher",
+    "organization": "Pakistan International Airlines",
+    "location": "Karachi",
+    "startDate": "2021-11",
+    "endDate": "2024-10",
+    "duties": "Dispatched up to 22 sectors per shift across the A320 and B777 fleets.\nManaged diversions and fuel re-planning during winter fog operations at Lahore.\nHeld joint responsibility with the commander for flight release."
+   },
+   {
+    "role": "Operations Officer",
+    "organization": "Pakistan Air Force — Air Transport Wing",
+    "location": "PAF Base Nur Khan, Rawalpindi",
+    "startDate": "2012-06",
+    "endDate": "2021-10",
+    "duties": "Planned strategic airlift and UN deployment missions including diplomatic clearances.\nRan the operations desk for flood relief airlift in 2010 and 2022."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "Institute of Business Management, Karachi",
+    "degree": "BBA Logistics & Supply Chain",
+    "majorSubjects": "Logistics",
+    "duration": "2011",
+    "marksOrCgpa": "3.28 CGPA"
+   },
+   {
+    "institutionName": "Civil Aviation Training Institute, Hyderabad",
+    "degree": "Flight Dispatcher Licence Course",
+    "majorSubjects": "Flight Dispatch",
+    "duration": "2021",
+    "marksOrCgpa": "Distinction"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "Flight Dispatcher Licence",
+    "organization": "PCAA"
+   },
+   {
+    "name": "Dangerous Goods by Air — Category 10",
+    "organization": "IATA"
+   },
+   {
+    "name": "ETOPS Flight Planning",
+    "organization": "Pakistan International Airlines"
+   }
+  ]
+ },
+ {
+  "slot": 16,
+  "roleId": "loadmaster",
+  "name": "Tanveer Abbas Bhatti",
+  "city": "Rawalpindi",
+  "phone": "+92 340 2216693",
+  "dob": "1986-05-20",
+  "professionalStatus": "serving",
+  "retirementDate": "2027-05-31",
+  "summary": "Warrant Officer loadmaster on the C-130 with 2,100 flying hours and 14 years of airlift experience. Handles load planning, restraint and airdrop for outsize cargo, vehicles and palletised relief supplies, including UN deployments and the 2022 flood response.",
+  "objectives": "Move to a civil freighter operator as a loadmaster or load control specialist.",
+  "skills": [
+   "Load Planning & Restraint",
+   "Weight & Balance",
+   "Airdrop Rigging",
+   "Dangerous Goods Handling",
+   "Cargo Loading Supervision"
+  ],
+  "awards": [
+   "Flood Relief Commendation (2022)"
+  ],
+  "references": [
+   "Sqn Ldr Hamza Tariq Awan — Aircraft Commander, No. 6 Squadron"
+  ],
+  "answers": {
+   "full_name": "Tanveer Abbas Bhatti",
+   "email": "zain16@mail.com",
+   "phone": "+92 340 2216693",
+   "city": "Rawalpindi",
+   "country": "Pakistan",
+   "date_of_birth": "1986-05-20",
+   "social_links": [],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Loadmaster, No. 6 Squadron, Pakistan Air Force",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "3 months+",
+   "education": "Diploma",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 28000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "ground_functions": [
+    "Ramp",
+    "Baggage",
+    "Marshalling"
+   ],
+   "gse_licensed": true,
+   "shift_pref": "Rotating",
+   "dg_awareness": true,
+   "load_planning": true,
+   "awards": "Flood Relief Commendation, 2022"
+  },
+  "experience": [
+   {
+    "role": "Loadmaster",
+    "organization": "Pakistan Air Force — No. 6 Squadron",
+    "location": "PAF Base Nur Khan, Rawalpindi",
+    "startDate": "2014-01",
+    "endDate": "",
+    "duties": "Plans and supervises loading for C-130 airlift, airdrop and casualty evacuation.\nRigged and released 60+ container delivery system drops.\nTrained eight junior loadmasters through their operational workup."
+   },
+   {
+    "role": "Air Cargo Handler",
+    "organization": "Pakistan Air Force — Air Movements Section",
+    "location": "PAF Base Chaklala, Rawalpindi",
+    "startDate": "2010-03",
+    "endDate": "2013-12",
+    "duties": "Handled palletisation, weighing and manifesting for transport tasks."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF School of Aeronautics, Korangi Creek, Karachi",
+    "degree": "Diploma in Air Movements & Logistics",
+    "majorSubjects": "Air Movements",
+    "duration": "2010",
+    "marksOrCgpa": "B Grade"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "C-130 Loadmaster Course",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Dangerous Goods by Air — Category 8",
+    "organization": "IATA"
+   },
+   {
+    "name": "Ground Support Equipment Operator Licence",
+    "organization": "Pakistan Air Force"
+   }
+  ]
+ },
+ {
+  "slot": 17,
+  "roleId": "uav_pilot",
+  "name": "Danish Iqbal Wattoo",
+  "city": "Multan",
+  "phone": "+92 313 5548816",
+  "dob": "1992-02-27",
+  "professionalStatus": "serving",
+  "retirementDate": "2032-02-28",
+  "summary": "Squadron Leader flying the Burraq and Shahpar II UAS with 1,450 unmanned operating hours. Runs ISR and target acquisition missions in support of ground operations, and qualified as a UAS instructor in 2023. Holds a PCAA remote pilot certificate for civil BVLOS work.",
+  "objectives": "Apply military ISR experience to civil BVLOS survey, inspection or agricultural UAS operations.",
+  "skills": [
+   "ISR Mission Management",
+   "BVLOS Operations",
+   "Sensor Payload Operation",
+   "Mission Planning",
+   "UAS Instruction"
+  ],
+  "references": [
+   "Wg Cdr Arsalan Cheema — OC, No. 40 Squadron (UAS)"
+  ],
+  "answers": {
+   "full_name": "Danish Iqbal Wattoo",
+   "email": "zain17@mail.com",
+   "phone": "+92 313 5548816",
+   "city": "Multan",
+   "country": "Pakistan",
+   "date_of_birth": "1992-02-27",
+   "social_links": [
+    "linkedin.com/in/danish-wattoo-uas"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "UAS Commander & Instructor, Pakistan Air Force",
+   "experience_band": "5-10 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "3 months+",
+   "education": "Bachelor",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 36000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "uav_certs": [
+    "BVLOS"
+   ],
+   "uav_platforms": "Burraq, Shahpar II, Bayraktar TB2 (familiarisation), DJI Matrice 300 RTK",
+   "uav_hours": 1450
+  },
+  "experience": [
+   {
+    "role": "UAS Commander & Instructor",
+    "organization": "Pakistan Air Force — No. 40 Squadron (UAS)",
+    "location": "PAF Base Rafiqui, Shorkot",
+    "startDate": "2019-07",
+    "endDate": "",
+    "duties": "Commands UAS crews on ISR and target acquisition missions.\nQualified as UAS instructor and wrote the sensor operator syllabus.\nCoordinates airspace deconfliction with civil ATC for training sorties."
+   },
+   {
+    "role": "Sensor Operator",
+    "organization": "Pakistan Air Force — No. 40 Squadron (UAS)",
+    "location": "PAF Base Rafiqui, Shorkot",
+    "startDate": "2015-09",
+    "endDate": "2019-06",
+    "duties": "Operated EO/IR payloads and produced imagery intelligence products."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "BSc Aerospace Engineering",
+    "majorSubjects": "Aerospace Engineering",
+    "duration": "2015",
+    "marksOrCgpa": "3.44 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "UAS Commander Course",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Remote Pilot Certificate — BVLOS",
+    "organization": "PCAA"
+   },
+   {
+    "name": "Imagery Intelligence Analysis",
+    "organization": "PAF Air Intelligence School"
+   }
+  ]
+ },
+ {
+  "slot": 18,
+  "roleId": "qa_inspector",
+  "name": "Ejaz Ahmed Nasir",
+  "city": "Kamra",
+  "phone": "+92 331 7702254",
+  "dob": "1979-07-04",
+  "professionalStatus": "retired",
+  "retirementDate": "2024-12-31",
+  "summary": "Chief Technician (Retd) turned quality assurance inspector with 21 years across line, base and depot maintenance. Ran the QA cell at the Aircraft Rebuild Factory, PAC Kamra, auditing work packs, tool control and release documentation, and holds borescope and engine inspection authority on the Atar and RD-93.",
+  "objectives": "Take a QA inspector or auditor post with a Part-145 approved maintenance organisation.",
+  "skills": [
+   "Quality Auditing",
+   "Work Pack Review",
+   "Borescope Inspection",
+   "Tool Control",
+   "Non-Conformance Management"
+  ],
+  "references": [
+   "Sqn Ldr (Retd) Faisal Nadeem Chaudhry — former OC Engineering, PAF Base Faisal"
+  ],
+  "answers": {
+   "full_name": "Ejaz Ahmed Nasir",
+   "email": "zain18@mail.com",
+   "phone": "+92 331 7702254",
+   "city": "Kamra",
+   "country": "Pakistan",
+   "date_of_birth": "1979-07-04",
+   "social_links": [
+    "linkedin.com/in/ejaz-nasir-qa"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "QA Inspector, Aircraft Rebuild Factory, PAC Kamra (Retd)",
+   "experience_band": "20+ years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "Immediate",
+   "education": "Diploma",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 42000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "mx_licenses": [
+    "A&P"
+   ],
+   "aircraft_types": "Mirage III/V, F-7PG, JF-17, K-8 Karakorum, C-130",
+   "engine_types": "SNECMA Atar 9C, RD-93, Allison T56-A-15",
+   "mx_specialties": [
+    "Airframe",
+    "Powerplant",
+    "Structures"
+   ],
+   "inspection_authorization": true,
+   "approvals": "RII Inspector, Engine Borescope Authority, Tool Control Auditor",
+   "borescope": true,
+   "line_maintenance": true,
+   "base_maintenance": true,
+   "sms_experience": true,
+   "safety_domains": [
+    "Quality",
+    "Compliance",
+    "Ground Safety"
+   ],
+   "auditor_qualified": true,
+   "safety_certs": "ISO 9001:2015 Internal Auditor, Human Factors in Maintenance"
+  },
+  "experience": [
+   {
+    "role": "QA Inspector — Depot Maintenance",
+    "organization": "Pakistan Aeronautical Complex, Aircraft Rebuild Factory",
+    "location": "Kamra, Attock",
+    "startDate": "2015-01",
+    "endDate": "2024-12",
+    "duties": "Audited work packs, tool control and release documentation across the rebuild line.\nHeld engine borescope authority on the Atar 9C and RD-93.\nRaised and closed non-conformance reports with root cause analysis."
+   },
+   {
+    "role": "Senior Technician — Powerplant",
+    "organization": "Pakistan Air Force — No. 15 Squadron",
+    "location": "PAF Base Rafiqui, Shorkot",
+    "startDate": "2003-08",
+    "endDate": "2014-12",
+    "duties": "Maintained fighter powerplants on the flight line and in the engine bay."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF School of Aeronautics, Korangi Creek, Karachi",
+    "degree": "Diploma in Aircraft Maintenance Technology",
+    "majorSubjects": "Airframe & Powerplant",
+    "duration": "2003",
+    "marksOrCgpa": "A Grade"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ISO 9001:2015 Internal Auditor",
+    "organization": "Bureau Veritas"
+   },
+   {
+    "name": "Engine Borescope Inspection Authority",
+    "organization": "PAC Kamra"
+   },
+   {
+    "name": "Human Factors in Aircraft Maintenance",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 19,
+  "roleId": "airport_ops_officer",
+  "name": "Waqar Younis Malik",
+  "city": "Islamabad",
+  "phone": "+92 300 7719942",
+  "dob": "1983-09-30",
+  "professionalStatus": "retired",
+  "retirementDate": "2025-04-30",
+  "summary": "Squadron Leader (Retd) airfield operations officer with 15 years running movement areas, aerodrome inspections and emergency response at PAF bases, followed by two years on the airside operations desk at Islamabad International. Experienced in runway safety, wildlife hazard management and low-visibility procedures.",
+  "objectives": "Manage airside operations for a commercial airport or ground handling company.",
+  "skills": [
+   "Airside Operations",
+   "Runway Safety Management",
+   "Aerodrome Inspection",
+   "Wildlife Hazard Management",
+   "Emergency Response Coordination"
+  ],
+  "awards": [
+   "PCAA Airside Safety Commendation (2024)"
+  ],
+  "references": [
+   "Air Cdre (Retd) Rashid Naeem — former Base Commander, PAF Base Nur Khan"
+  ],
+  "answers": {
+   "full_name": "Waqar Younis Malik",
+   "email": "zain19@mail.com",
+   "phone": "+92 300 7719942",
+   "city": "Islamabad",
+   "country": "Pakistan",
+   "date_of_birth": "1983-09-30",
+   "social_links": [
+    "linkedin.com/in/waqar-malik-airside"
+   ],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Airside Operations Officer, Islamabad International Airport",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "1 month",
+   "education": "Bachelor",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 42000,
+   "safety_training_extra": [
+    "CRM",
+    "Human Factors",
+    "SMS",
+    "First Aid"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "ground_functions": [
+    "Ramp",
+    "Marshalling",
+    "Pushback",
+    "De-icing"
+   ],
+   "gse_licensed": true,
+   "shift_pref": "Rotating",
+   "dg_awareness": true,
+   "awards": "PCAA Airside Safety Commendation, 2024"
+  },
+  "experience": [
+   {
+    "role": "Airside Operations Officer",
+    "organization": "Pakistan Civil Aviation Authority — Islamabad International Airport",
+    "location": "Islamabad",
+    "startDate": "2023-05",
+    "endDate": "2025-04",
+    "duties": "Ran airside inspections, runway condition reporting and FOD control on shift.\nCoordinated low-visibility procedures through two winter fog seasons.\nChaired the monthly runway safety team meeting."
+   },
+   {
+    "role": "Officer Commanding — Airfield Operations",
+    "organization": "Pakistan Air Force — PAF Base Nur Khan",
+    "location": "Rawalpindi",
+    "startDate": "2010-02",
+    "endDate": "2023-04",
+    "duties": "Managed movement area operations for mixed military and civil traffic.\nLed the base wildlife hazard management programme.\nDirected the aerodrome emergency exercise cycle."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "Air University, Islamabad",
+    "degree": "BSc Aviation Management",
+    "majorSubjects": "Aviation Management",
+    "duration": "2009",
+    "marksOrCgpa": "3.30 CGPA"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ICAO Aerodrome Certification & Inspection",
+    "organization": "PCAA"
+   },
+   {
+    "name": "Runway Safety Team Leader",
+    "organization": "PCAA"
+   },
+   {
+    "name": "Airside Driving Permit — All Areas",
+    "organization": "PCAA"
+   }
+  ]
+ },
+ {
+  "slot": 20,
+  "roleId": "rff_personnel",
+  "name": "Ghulam Mustafa Sial",
+  "city": "Faisalabad",
+  "phone": "+92 342 5583370",
+  "dob": "1988-11-08",
+  "professionalStatus": "serving",
+  "retirementDate": "2028-11-30",
+  "summary": "Warrant Officer and crash rescue crew commander with 13 years on PAF airfield fire and rescue. Certified on foam tender operations, aircraft extrication and fuel fire suppression, and led the response team during two live aircraft emergencies at PAF Base Rafiqui.",
+  "objectives": "Join a commercial airport rescue and fire fighting service as a watch or crew commander.",
+  "skills": [
+   "Aircraft Rescue & Fire Fighting",
+   "Foam Tender Operations",
+   "Aircraft Extrication",
+   "HazMat Response",
+   "Crew Command"
+  ],
+  "awards": [
+   "Base Commander Commendation (2021) — live aircraft emergency response"
+  ],
+  "references": [
+   "Sqn Ldr Kamran Zafar — Officer Commanding, Airfield Services, PAF Base Rafiqui"
+  ],
+  "answers": {
+   "full_name": "Ghulam Mustafa Sial",
+   "email": "zain20@mail.com",
+   "phone": "+92 342 5583370",
+   "city": "Faisalabad",
+   "country": "Pakistan",
+   "date_of_birth": "1988-11-08",
+   "social_links": [],
+   "citizenship": [
+    "Pakistan"
+   ],
+   "work_authorization": [
+    "Citizen — no sponsorship required",
+    "Open to Relocation with Sponsorship"
+   ],
+   "languages": [
+    "English",
+    "Urdu"
+   ],
+   "preferred_regions": [
+    "Middle East",
+    "South Asia"
+   ],
+   "employment_type": "Full-time",
+   "willing_relocate": true,
+   "current_position": "Crash Rescue Crew Commander, Pakistan Air Force",
+   "experience_band": "10-20 years",
+   "background": "Military",
+   "regulators": [
+    "ICAO",
+    "Other"
+   ],
+   "notice_period": "3 months+",
+   "education": "Diploma",
+   "passport_valid": true,
+   "visa_status": "Pakistani citizen — no sponsorship required in Pakistan",
+   "salary_expectation": 24000,
+   "safety_training_extra": [
+    "First Aid",
+    "Fire & Smoke",
+    "Dangerous Goods",
+    "Human Factors"
+   ],
+   "memberships": "Pakistan Aviation Professionals Forum",
+   "rff_certified": true,
+   "hazmat": true,
+   "awards": "Base Commander Commendation, 2021"
+  },
+  "experience": [
+   {
+    "role": "Crash Rescue Crew Commander",
+    "organization": "Pakistan Air Force — Airfield Services",
+    "location": "PAF Base Rafiqui, Shorkot",
+    "startDate": "2018-04",
+    "endDate": "",
+    "duties": "Commands a foam tender crew on airfield standby and live emergency response.\nLed the response to two aircraft ground emergencies with no loss of life.\nRuns quarterly extrication and fuel fire drills for the section."
+   },
+   {
+    "role": "Fire Fighter",
+    "organization": "Pakistan Air Force — Airfield Services",
+    "location": "PAF Base Minhas, Kamra",
+    "startDate": "2012-01",
+    "endDate": "2018-03",
+    "duties": "Crewed rescue and fire fighting vehicles on airfield standby."
+   }
+  ],
+  "education": [
+   {
+    "institutionName": "PAF Fire Fighting & Rescue School, Kohat",
+    "degree": "Diploma in Aircraft Rescue & Fire Fighting",
+    "majorSubjects": "Fire & Rescue",
+    "duration": "2012",
+    "marksOrCgpa": "A Grade"
+   }
+  ],
+  "certifications": [
+   {
+    "name": "ICAO Category 9 ARFF Operations",
+    "organization": "PCAA"
+   },
+   {
+    "name": "HazMat Awareness & Operations",
+    "organization": "Pakistan Air Force"
+   },
+   {
+    "name": "Emergency Medical First Responder",
+    "organization": "Rescue 1122 Punjab"
+   }
+  ]
+ }
+]

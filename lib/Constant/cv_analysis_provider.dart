@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io' as io;
 
 import '../main.dart';
+import '../services/backend_api.dart';
 
 class CVAnalyzerBackendProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -263,6 +264,7 @@ class CVAnalyzerBackendProvider extends ChangeNotifier {
     // from parsing a multi-megabyte string, and puts the upload outside
     // express.json()'s body limit. Identical on Flutter web and Android.
     final request = http.MultipartRequest('POST', uri)
+      ..headers.addAll(await BackendApi.headers(multipart: true))
       ..files.add(http.MultipartFile.fromBytes(
         'file',
         fileBytes,

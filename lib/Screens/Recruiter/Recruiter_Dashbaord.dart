@@ -11,6 +11,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'Recruiter_provider_Job_listing.dart';
 import '../../Constant/js_header.dart';
+import '../../core/interviews/interview.dart';
+import '../../core/interviews/interview_calendar.dart';
+import '../../core/interviews/interview_provider.dart';
 
 // ─── Design Tokens (navy + teal brand) ──────────────────────────────────────
 const _navy = Color(0xFF0A2E4F);
@@ -364,6 +367,11 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                   : _buildStats(data, isMobile),
             ),
 
+            // Interviews. Placed above the charts because a booking today is
+            // more urgent than a trend this quarter, and the awaiting-link
+            // state is something the recruiter has to chase.
+            SliverToBoxAdapter(child: _buildInterviews(isMobile)),
+
             // Charts
             SliverToBoxAdapter(
               child: loading
@@ -392,6 +400,53 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
     }
 
     return scrollView;
+  }
+
+  // ─── Interview Calendar ─────────────────────────────────────────────────
+  Widget _buildInterviews(bool isMobile) {
+    final provider = context.watch<InterviewProvider>();
+    final upcoming = provider.upcoming;
+    final awaitingLink = upcoming
+        .where((i) => i.status == InterviewStatus.requested)
+        .length;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 28, 8, isMobile ? 16 : 28, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.event_note_rounded, size: 18, color: _blue),
+              const SizedBox(width: 9),
+              Text(
+                'Interview schedule',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: _slate900,
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (upcoming.isNotEmpty)
+                _Pill(
+                  text: '${upcoming.length} upcoming',
+                  color: _blue,
+                ),
+              if (awaitingLink > 0) ...[
+                const SizedBox(width: 6),
+                _Pill(
+                  text: '$awaitingLink awaiting link',
+                  color: const Color(0xFFF59E0B),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          InterviewCalendar(compact: isMobile),
+        ],
+      ),
+    );
   }
 
   // ─── Stats Cards ────────────────────────────────────────────────────────
@@ -680,9 +735,16 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
   Future<Map<String, dynamic>> _fetchData() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
+      // The orderBy is not cosmetic: an equality filter on a collection group
+      // with no ordering needs a COLLECTION_GROUP-scoped single-field index,
+      // which Firestore does not create automatically. Ordering by appliedAt
+      // makes this reuse the (recruiterUid, appliedAt) composite index the
+      // applicant list already relies on, so the dashboard needs no index of
+      // its own.
       final snap = await FirebaseFirestore.instance
           .collectionGroup('applied_jobs')
           .where('recruiterUid', isEqualTo: uid)
+          .orderBy('appliedAt', descending: true)
           .get();
 
       int total = snap.docs.length;
@@ -709,9 +771,18 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
         final jid = d['jobId']?.toString() ?? '';
         if (jid.isNotEmpty) jobCount[jid] = (jobCount[jid] ?? 0) + 1;
 
-        final pp = ((d['profileSnapshot'] as Map?) ?? {})['user_Account_Data'];
-        final personal = (pp as Map?)?['personalProfile'] as Map?;
-        for (var s in (personal?['skills'] as List? ?? [])) {
+        final snapshot =
+            ((d['profileSnapshot'] as Map?) ?? {})['candidate_profile'] as Map?;
+        final personal = snapshot?['personalInfo'] as Map?;
+        final roleData = snapshot?['roleSpecificData'] as Map?;
+        // Free-form skills plus the template's competencies and tools: the
+        // chart is meant to show what this pool can do, and templated roles
+        // put most of that in the role data.
+        for (final s in [
+          ...(personal?['skills'] as List? ?? const []),
+          ...(roleData?['technicalCompetencies'] as List? ?? const []),
+          ...(roleData?['toolsAndSystems'] as List? ?? const []),
+        ]) {
           final sk = s.toString();
           skillsCount[sk] = (skillsCount[sk] ?? 0) + 1;
         }
@@ -1602,6 +1673,30 @@ class _TopJobsCard extends StatelessWidget {
 }
 
 // ─── Chart Card Shell ─────────────────────────────────────────────────────────
+class _Pill extends StatelessWidget {
+  const _Pill({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      );
+}
+
 class _ChartCard extends StatelessWidget {
   final Widget child;
   final bool isMobile;

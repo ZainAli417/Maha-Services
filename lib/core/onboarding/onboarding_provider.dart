@@ -625,6 +625,7 @@ class OnboardingProvider extends ChangeNotifier {
       completedSections: _visited.toList(),
       cvSourceFile: cvFilename,
       extractionConfidence: extraction?.confidence,
+      documents: ProfileProjector.documents(t, answers),
     );
   }
 

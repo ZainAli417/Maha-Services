@@ -28,6 +28,7 @@ import 'Screens/Onboarding/onboarding_screen.dart';
 import 'SignUp/signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
 import 'Screens/Job_Seeker/js_settings_screen.dart';
+import 'Screens/Job_Seeker/assessment/assessment_screen.dart';
 
 // ========== 1. ROBUST DATA SERVICE (Logic from Code A) ==========
 class RoleService {
@@ -391,6 +392,19 @@ class RouteConfig {
     '/admin',
   };
 
+  /// Validates a `?next=` destination before redirecting to it.
+  ///
+  /// Only same-site absolute paths are honoured. Without this the parameter is
+  /// an open redirect: a link to our own /login carrying next=https://evil.example
+  /// would bounce a signed-in user straight off the product.
+  static String? safeNext(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    final decoded = Uri.decodeComponent(raw);
+    if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
+    if (loggedInRedirectPaths.contains(Uri.parse(decoded).path)) return null;
+    return decoded;
+  }
+
   static String getHome(String? role) {
     if (role == 'admin') return '/admin_dashboard';
     if (role == 'recruiter') return '/recruiter-dashboard';
@@ -422,7 +436,15 @@ final GoRouter router = GoRouter(
     if (!isLoggedIn) {
       debugPrint('🚫 Not logged in, location: $location');
       if (location == '/admin') return null; // Allow admin login page
-      return isPublic ? null : '/login';
+      if (isPublic) return null;
+      // An assessment link arrives by email, so the candidate is usually
+      // signed out when they click it. Sending them to /login and forgetting
+      // where they were headed would drop them on the dashboard with no way
+      // back to a link that expires in 24 hours.
+      if (location.startsWith('/assessment/')) {
+        return '/login?next=${Uri.encodeComponent(state.uri.toString())}';
+      }
+      return '/login';
     }
 
     // 3. Authenticated Flow
@@ -458,6 +480,11 @@ final GoRouter router = GoRouter(
 
     // C. Logged in users trying to hit auth/landing routes
     if (RouteConfig.loggedInRedirectPaths.contains(location)) {
+      final next = RouteConfig.safeNext(state.uri.queryParameters['next']);
+      if (next != null) {
+        debugPrint('➡️ Resuming intended destination: $next');
+        return next;
+      }
       debugPrint('➡️ Already logged in, redirecting to home');
       return RouteConfig.getHome(role);
     }
@@ -470,6 +497,13 @@ final GoRouter router = GoRouter(
 
     if (RouteConfig.recruiterPaths.contains(location) && role != 'recruiter') {
       debugPrint('🚫 Non-recruiter trying to access recruiter route');
+      return RouteConfig.getHome(role);
+    }
+
+    // Path-prefixed, so it cannot be listed in jobSeekerPaths with the rest.
+    // The backend enforces the same rule; this only saves a wasted round trip.
+    if (location.startsWith('/assessment/') && role != 'Job Seeker') {
+      debugPrint('🚫 Non-candidate trying to open an assessment');
       return RouteConfig.getHome(role);
     }
 
@@ -543,6 +577,15 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/saved-jobs',
       pageBuilder: (c, s) => _fadePage(const SavedJobsScreen(), s),
+    ),
+    // Outside the app shell on purpose: a timed assessment with a navigation
+    // rail beside it is an invitation to wander off mid-question.
+    GoRoute(
+      path: '/assessment/:token',
+      pageBuilder: (c, s) => _fadePage(
+        AssessmentScreen(token: s.pathParameters['token'] ?? ''),
+        s,
+      ),
     ),
     GoRoute(
       path: '/js-settings',
