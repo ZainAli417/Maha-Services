@@ -187,9 +187,12 @@ class ProfileTimeline extends StatelessWidget {
     if (iso != null) return iso;
     final slash = RegExp(r'^(\d{1,2})[/\-](\d{4})$').firstMatch(s);
     if (slash != null) {
-      // Treated as valid through the end of the stated month.
+      // Valid through the end of the stated month, and "the end" means the end
+      // of that day. Day 0 of the following month lands on the last day at
+      // 00:00, which made a licence read as expired for the whole of its final
+      // day — the one day a pilot most needs it to still count.
       return DateTime(int.parse(slash.group(2)!),
-          int.parse(slash.group(1)!) + 1, 0);
+          int.parse(slash.group(1)!) + 1, 0, 23, 59, 59);
     }
     return null;
   }

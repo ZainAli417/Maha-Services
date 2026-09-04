@@ -752,7 +752,10 @@ class AdminProvider extends ChangeNotifier {
           final isFallback = name.toLowerCase().contains('unknown');
 
           if (name.isNotEmpty && !isFallback) {
-            cachedResults.add(data);
+            cachedResults.add({
+              ...data,
+              ..._requestFields(_normalizeMap(hints?[id])),
+            });
             continue; // Data is fully valid, safe to skip fetch
           } else {
             debugPrint(
@@ -958,11 +961,14 @@ class AdminProvider extends ChangeNotifier {
         'company': latest?.company ?? hint['company']?.toString() ?? '',
         'candidate_profile': profile?.toJson() ?? hint,
       };
+      // Cached without the request fields — the cache is keyed by candidate,
+      // and one candidate can sit in two recruiters' batches at two different
+      // stages. Caching one batch's status would show it in the other.
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
       if (storedUid != doc.id) {
         _candidateCache[storedUid] = _CacheEntry(result, DateTime.now());
       }
-      results.add(result);
+      results.add({...result, ..._requestFields(hint)});
     }
     return results;
   }
@@ -999,10 +1005,35 @@ class AdminProvider extends ChangeNotifier {
         'candidate_profile': hint,
       };
       _candidateCache[doc.id] = _CacheEntry(result, DateTime.now());
-      results.add(result);
+      results.add({...result, ..._requestFields(hint)});
     }
     return results;
   }
+
+  /// Fields that belong to the *application*, not to the person.
+  ///
+  /// A candidate document knows who somebody is; it cannot know what stage they
+  /// are at in one recruiter's batch, what they scored against that job, or
+  /// which job it was. Those live only on the request, so they have to be
+  /// carried across when the card is built from a fetched profile — otherwise
+  /// the card renders with no status at all, which is how every candidate on
+  /// the admin screen came to be labelled "unknown".
+  static Map<String, dynamic> _requestFields(Map<String, dynamic> hint) => {
+        for (final key in const [
+          'status',
+          'match_score',
+          'job_id',
+          'job_title',
+          'target_role',
+          'applied_at',
+          'roles_listed',
+          'years_experience',
+          'flight_hours',
+          'professional_status',
+          'retirement_date',
+        ])
+          if (hint[key] != null) key: hint[key],
+      };
 
   /// A card for a candidate whose document could not be read at all.
   ///
@@ -1038,6 +1069,7 @@ class AdminProvider extends ChangeNotifier {
       'job_title': hint['job_title']?.toString() ?? '',
       'company': hint['company']?.toString() ?? '',
       'candidate_profile': profile.isEmpty ? hint : profile,
+      ..._requestFields(hint),
     };
   }
 
@@ -1085,6 +1117,35 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  /// The recruiter behind a request, resolved from their account.
+  ///
+  /// The request document carries a `recruiter_email` copied in at send time.
+  /// That copy is what the review queue used to show, and it can be wrong —
+  /// it was, for a seeded batch that said `recruiter@mahaservices.org` for an
+  /// account whose actual address is `r@mail.com`. The account is the source of
+  /// truth for who somebody is; the request only knows who they were when it
+  /// was written.
+  ///
+  /// Returns an empty map until the prefetch has run, so callers fall back to
+  /// the stored copy rather than rendering a blank row.
+  Map<String, dynamic> recruiterFor(String recruiterId) {
+    final cached = _recruiterCache[recruiterId];
+    return cached == null ? const {} : cached.data;
+  }
+
+  /// Resolves every recruiter named by the loaded requests.
+  ///
+  /// Runs off the back of the list load so the queue can show real names
+  /// without one read per tile.
+  Future<void> hydrateRecruiters() async {
+    final ids = <String>{
+      for (final r in requests)
+        (_normalizeMap(r)['recruiter_id'] ?? '').toString(),
+    }..removeWhere((id) => id.isEmpty || _recruiterCache.containsKey(id));
+    if (ids.isEmpty) return;
+    await _batchPrefetchRecruiters(ids.toList());
+  }
+
   // =========================================================================
   // BATCH PREFETCH RECRUITERS
   // =========================================================================
@@ -1112,10 +1173,19 @@ class AdminProvider extends ChangeNotifier {
           }
           for (final doc in snap.docs) {
             final data = _normalizeMap(doc.data());
-            final userData =
-                data.containsKey('user_data') && data['user_data'] != null
-                ? _normalizeMap(data['user_data'])
-                : {'name': data['name'] ?? '', 'email': data['email'] ?? ''};
+            // Two shapes in this collection: the account nested under
+            // `user_data`, and older records with the fields flat. Reading only
+            // the flat one returned an empty name for every recruiter written
+            // the newer way.
+            final nested = _normalizeMap(data['user_data']);
+            final userData = {
+              'name': (nested['name'] ?? data['name'] ?? data['displayName'] ?? '')
+                  .toString(),
+              'email': (nested['email'] ?? data['email'] ?? '').toString(),
+              'company':
+                  (nested['company'] ?? data['company'] ?? data['org'] ?? '')
+                      .toString(),
+            };
             _recruiterCache[doc.id] = _CacheEntry(userData, DateTime.now());
           }
         }),
@@ -1213,7 +1283,13 @@ class AdminProvider extends ChangeNotifier {
               hasChanges = true;
             }
           }
-          if (hasChanges) _safeNotify();
+          if (hasChanges) {
+            _safeNotify();
+            // A request that arrives live may name a recruiter nobody has
+            // looked up yet. Without this its tile shows the address copied
+            // into the request instead of the account's own.
+            hydrateRecruiters();
+          }
         }, onError: (e) => debugPrint('❌ Realtime listener error: $e'));
   }
 
@@ -1334,6 +1410,16 @@ class AdminProvider extends ChangeNotifier {
   String _lastStatusRefusal = '';
   String get lastStatusRefusal => _lastStatusRefusal;
 
+  /// Moves one candidate's stage on a request, forward only.
+  ///
+  /// Nothing in the admin UI calls this any more: the stage a candidate is at
+  /// now follows from the action that put them there — inviting them to the
+  /// test writes `screening`, the recruiter keeping them writes `interview` —
+  /// so there is no dropdown that can set a stage the record disagrees with.
+  ///
+  /// Kept because the forward-only rule lives here, and the first feature that
+  /// legitimately needs a manual move (rejecting a candidate outright) must go
+  /// through this rather than writing the field directly.
   Future<bool> updateCandidateStatus({
     required String requestId,
     required String candidateUid,

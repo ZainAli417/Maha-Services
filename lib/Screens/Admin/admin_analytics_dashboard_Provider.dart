@@ -226,13 +226,20 @@ class AdminAnalyticsProvider extends ChangeNotifier {
             }
           }
 
-          // Sort applicant regions descending by count and keep the top 8.
+          // Every region, not the top eight. This now feeds a map, and a map
+          // that silently drops the ninth country is a map that lies about the
+          // pool — the ranked-bar card that needed a top-N is gone.
+          //
+          // Ties break by name so two reads put the same countries in the same
+          // order rather than reshuffling the legend on every snapshot.
           final sortedRegions = applicantLocCounts.keys.toList()
-            ..sort(
-              (a, b) => applicantLocCounts[b]!.compareTo(applicantLocCounts[a]!),
-            );
+            ..sort((a, b) {
+              final byCount =
+                  applicantLocCounts[b]!.compareTo(applicantLocCounts[a]!);
+              return byCount != 0 ? byCount : a.compareTo(b);
+            });
           applicantsByLocation = {
-            for (var k in sortedRegions.take(8)) k: applicantLocCounts[k]!,
+            for (var k in sortedRegions) k: applicantLocCounts[k]!,
           };
 
           roleFrequencies = _topBy(roleCounts, 8);

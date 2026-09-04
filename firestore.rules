@@ -1,6 +1,523 @@
 rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  Maha HR Services — Firestore security rules
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Every collection the app touches is listed. Anything not listed is denied,
+// and two of those omissions are deliberate — see DENIED ON PURPOSE at the end.
+//
+// FOUR THINGS TO KNOW BEFORE EDITING
+//
+//  1. Rules are OR'd, never layered. If any match grants access, access is
+//     granted. There is therefore NO catch-all admin rule in this file: one
+//     would silently override every `if false` below, including the immutable
+//     audit log. Admin access is granted per collection instead — longer, but
+//     it means a written restriction is a real restriction.
+//
+//  2. The Node backend uses the Firebase Admin SDK, which bypasses these rules
+//     entirely. Everything it owns — grading, score release, candidate stage
+//     writes, job-alert dispatch — is `if false` for clients. That is not an
+//     oversight; it is the reason the answer key is safe.
+//
+//  3. Role comes from `users/{uid}.role`, lower-cased, via get(). The app has
+//     written 'Recruiter', 'recruiter' and 'Job Seeker' at different times, and
+//     a check that depended on the casing of the day would lock people out of
+//     their own accounts.
+//
+//  4. Query rules are proved, not evaluated per document. A rule like
+//     `resource.data.x == request.auth.uid` only permits a query that filters
+//     on x. Where a read rule ORs conditions over different fields, each
+//     non-matching branch must short-circuit on a document-independent check
+//     (isAdmin(), isRecruiter()) or the whole query is refused. That is why the
+//     read rules below are narrower than they could be: only the paths the app
+//     actually queries are granted.
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} { allow read, write: if true; }
+
+    // ── identity ──────────────────────────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    function hasUserDoc() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return hasUserDoc()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid))
+            .data.role.lower()
+        : '';
+    }
+
+    function isAdmin() {
+      return isAuth() && (
+        exists(/databases/$(database)/documents/admin/$(request.auth.uid)) ||
+        userRole() in ['admin', 'superadmin', 'super admin', 'super_admin']
+      );
+    }
+
+    // Recruiter, employer and recruitment agent share one capability set.
+    function isRecruiter() {
+      return isAuth() && userRole() in [
+        'recruiter', 'employer', 'recruitment agent', 'recruitment_agent'
+      ];
+    }
+
+    function isJobSeeker() {
+      return isAuth() && userRole() in [
+        'job seeker', 'job_seeker', 'jobseeker', 'candidate'
+      ];
+    }
+
+    // Recruitment agents are absent on purpose: an agent account is created by
+    // an admin, not by self-signup.
+    function isAllowedSignupRole(role) {
+      return role.lower() in [
+        'recruiter', 'employer',
+        'job seeker', 'job_seeker', 'jobseeker', 'candidate'
+      ];
+    }
+
+    // ── paths ─────────────────────────────────────────────────────────────
+
+    function privateJobPath(recruiterUid, jobId) {
+      return /databases/$(database)/documents/recruiter/$(recruiterUid)/Posted_jobs/$(jobId);
+    }
+
+    function publicJobPath(jobId) {
+      return /databases/$(database)/documents/Posted_jobs_public/$(jobId);
+    }
+
+    function applicationPath(candidateUid, jobId) {
+      return /databases/$(database)/documents/applications/$(candidateUid)/applied_jobs/$(jobId);
+    }
+
+    function viewPath(jobId, viewerUid) {
+      return /databases/$(database)/documents/Posted_jobs_public/$(jobId)/views/$(viewerUid);
+    }
+
+    // ── field-level helpers ───────────────────────────────────────────────
+    //
+    // A dotted write such as `candidate_statuses.abc` reports its top-level key
+    // (`candidate_statuses`) here, which is what makes these usable against the
+    // app's nested-map updates.
+
+    function changed(keys) {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys().hasAny(keys);
+    }
+
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(keys);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ACCOUNTS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      // Only ever read as doc(uid) for the signed-in user — no screen queries
+      // other people's account records — plus admin user management.
+      allow read: if isUser(userId) || isAdmin();
+
+      allow create: if isUser(userId) &&
+        request.resource.data.uid == userId &&
+        isAllowedSignupRole(request.resource.data.role) &&
+        request.resource.data.account_status == 'active';
+
+      // A user edits their own profile, onboarding progress and alert
+      // preference — and nothing that decides what they may do. Verification
+      // and status belong to the admin: a recruiter able to set `is_verified`
+      // on themselves would walk straight past the login gate that reads it.
+      allow update: if isUser(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        !changed([
+          'uid', 'role', 'account_status', 'user_lvl',
+          'admin', 'isAdmin',
+          'is_verified', 'verified_at', 'verified_by',
+          'email_verified', 'documents_verified',
+          'deleted_at', 'deleted_by'
+        ]);
+
+      allow update: if isAdmin();
+      allow delete: if false;   // deactivation is account_status, not deletion
+    }
+
+    // Read by the router and the admin login to detect an admin. Membership is
+    // granted out of band — console or backend — never from the app.
+    match /admin/{adminId} {
+      allow read: if isUser(adminId) || isAdmin();
+      allow write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  AUDIT LOG — append-only, and that includes admins
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // An admin-action log an admin can edit answers no question worth asking.
+    // This is where the absence of a catch-all admin rule matters most.
+
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() &&
+        request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ADMIN-MANAGED CONFIG — read by everyone onboarding, written by admins
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /questionnaire_config/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // `role_templates/active` drives the whole onboarding form: every candidate
+    // reads it, only an admin edits it.
+    match /role_templates/{docId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  RECRUITER WORKSPACE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /recruiter/{recruiterId} {
+      allow read: if isUser(recruiterId) || isAdmin();
+      allow create, update: if isUser(recruiterId);
+      allow update: if isAdmin();
+      allow delete: if false;
+
+      // The recruiter's private copy of a posting, created in one batch with
+      // the public one. That is what the existsAfter checks verify: a private
+      // job with no public twin, or a public twin owned by somebody else, is
+      // refused.
+      match /Posted_jobs/{jobId} {
+        allow read: if isUser(recruiterId) || isAdmin();
+
+        allow create: if isUser(recruiterId) &&
+          isRecruiter() &&
+          request.resource.data.recruiterUid == recruiterId &&
+          existsAfter(publicJobPath(jobId)) &&
+          getAfter(publicJobPath(jobId)).data.recruiterUid == recruiterId;
+
+        allow update: if isUser(recruiterId) &&
+          isRecruiter() &&
+          resource.data.recruiterUid == recruiterId &&
+          request.resource.data.recruiterUid == recruiterId &&
+          !changed(['recruiterUid', 'id', 'timestamp']);
+
+        allow update: if isAdmin();
+        allow delete: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  JOB BOARD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /Posted_jobs_public/{jobId} {
+      // Public for active listings so a shared link opens before sign-in; any
+      // signed-in user may read the collection, which is what lets the
+      // app-level providers run their owner and status queries at login
+      // without a permission error.
+      allow read: if resource.data.status == 'active' || isAuth();
+
+      allow create: if isRecruiter() &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        request.resource.data.status == 'active' &&
+        request.resource.data.applicationCount == 0 &&
+        request.resource.data.viewCount == 0 &&
+        existsAfter(privateJobPath(request.auth.uid, jobId)) &&
+        getAfter(privateJobPath(request.auth.uid, jobId)).data.recruiterUid ==
+          request.auth.uid;
+
+      // The owner edits the listing but never the two counters — those move
+      // only through the rules below, one application or one view at a time.
+      allow update: if isRecruiter() &&
+        resource.data.recruiterUid == request.auth.uid &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        !changed(['applicationCount', 'viewCount', 'recruiterUid', 'id',
+                  'timestamp']) &&
+        existsAfter(privateJobPath(request.auth.uid, jobId)) &&
+        getAfter(privateJobPath(request.auth.uid, jobId)).data.status ==
+          request.resource.data.status;
+
+      // +1 application, only alongside the application document that justifies
+      // it. A candidate cannot inflate the count, and cannot apply twice: the
+      // second attempt fails the !exists check.
+      allow update: if isJobSeeker() &&
+        resource.data.status == 'active' &&
+        onlyChanged(['applicationCount']) &&
+        request.resource.data.applicationCount ==
+          resource.data.applicationCount + 1 &&
+        !exists(applicationPath(request.auth.uid, jobId)) &&
+        existsAfter(applicationPath(request.auth.uid, jobId));
+
+      // +1 view, once per viewer, only with the view document beside it.
+      allow update: if isAuth() &&
+        resource.data.status == 'active' &&
+        onlyChanged(['viewCount']) &&
+        request.resource.data.viewCount == resource.data.viewCount + 1 &&
+        !exists(viewPath(jobId, request.auth.uid)) &&
+        existsAfter(viewPath(jobId, request.auth.uid));
+
+      allow update: if isAdmin();
+      allow delete: if false;
+
+      match /views/{viewerUid} {
+        allow read: if isUser(viewerUid) || isAdmin() ||
+          (isRecruiter() &&
+            get(publicJobPath(jobId)).data.recruiterUid == request.auth.uid);
+        allow create: if isUser(viewerUid) &&
+          request.resource.data.viewerUid == viewerUid &&
+          request.resource.data.jobId == jobId &&
+          get(publicJobPath(jobId)).data.status == 'active' &&
+          getAfter(publicJobPath(jobId)).data.viewCount ==
+            get(publicJobPath(jobId)).data.viewCount + 1;
+        allow update, delete: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CANDIDATE PROFILE
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // Owner and admin only — never the recruiter. This collection holds phone
+    // numbers, dates of birth and secondary emails, and keeping the recruiter
+    // out of it is the entire reason application snapshots are written with
+    // contact details stripped. This read rule is the last line of that design;
+    // without it the stripping is decoration.
+
+    match /Job_Seeker/{jobSeekerId} {
+      allow read: if isUser(jobSeekerId) || isAdmin();
+      allow create, update: if isUser(jobSeekerId);
+      allow delete: if false;
+
+      match /saved_jobs/{jobId} {
+        allow read: if isUser(jobSeekerId);
+        allow create, update: if isUser(jobSeekerId) &&
+          request.resource.data.jobId == jobId;
+        allow delete: if isUser(jobSeekerId);
+      }
+
+      // Everything else under a candidate — drafts, documents, role answers.
+      // Owner and admin, nobody else.
+      match /{sub=**} {
+        allow read: if isUser(jobSeekerId) || isAdmin();
+        allow create, update: if isUser(jobSeekerId);
+        allow delete: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  APPLICATIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    match /applications/{candidateUid}/applied_jobs/{jobId} {
+      allow read: if isUser(candidateUid) || isAdmin() ||
+        (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+
+      // Created in the same batch as the counter increment above. `status`
+      // starts at 'pending' and the recruiter is copied off the live job, so an
+      // application cannot be filed against the wrong recruiter or arrive
+      // pre-shortlisted.
+      allow create: if isUser(candidateUid) &&
+        isJobSeeker() &&
+        jobId == request.resource.data.jobId &&
+        request.resource.data.userId == candidateUid &&
+        request.resource.data.status == 'pending' &&
+        exists(publicJobPath(jobId)) &&
+        get(publicJobPath(jobId)).data.status == 'active' &&
+        request.resource.data.recruiterUid ==
+          get(publicJobPath(jobId)).data.recruiterUid &&
+        getAfter(publicJobPath(jobId)).data.applicationCount ==
+          get(publicJobPath(jobId)).data.applicationCount + 1;
+
+      // The owning recruiter moves the application through their own funnel.
+      // `test_score` and `assessment` are absent on purpose — the backend
+      // writes those, and a recruiter who could write test_score could hand
+      // themselves a passing candidate.
+      allow update: if isRecruiter() &&
+        resource.data.recruiterUid == request.auth.uid &&
+        onlyChanged(['status', 'sentToAdmin', 'match_score', 'responseDate']);
+
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // The recruiter's applicant list is a collection-group query, matched by
+    // path pattern rather than by the parent rule above.
+    match /{path=**}/applied_jobs/{jobId} {
+      allow read: if isAdmin() ||
+        (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  SHORTLIST BATCHES
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // One document per shortlist for its whole life: the candidates sent, the
+    // scores that came back, and the recruiter's answer to them.
+    //
+    // The field list on update is the important part. Scores live on this
+    // document and only the backend may write them, so the recruiter gets
+    // exactly the fields their own actions produce. `assessment_summary`,
+    // `assessment_note`, `assessment_released_at` and `assessment_released_by`
+    // are not among them — without that, a recruiter could write
+    // `verdict: 'pass'` for anybody and every guarantee the assessment makes
+    // would be worthless.
+
+    match /recruiter_requests/{requestId} {
+      allow read: if isAdmin() ||
+        (isRecruiter() && resource.data.recruiter_id == request.auth.uid);
+
+      allow create: if isRecruiter() &&
+        request.resource.data.recruiter_id == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        !request.resource.data.keys().hasAny([
+          'assessment_summary', 'assessment_note',
+          'assessment_released_at', 'assessment_released_by'
+        ]);
+
+      allow update: if isRecruiter() &&
+        resource.data.recruiter_id == request.auth.uid &&
+        request.resource.data.recruiter_id == request.auth.uid &&
+        onlyChanged([
+          // the recruiter's post-assessment answer
+          'final_selection', 'final_selection_note', 'final_selection_at',
+          'final_selection_by', 'round',
+          // stage moves their own actions cause
+          'candidate_statuses',
+          // Request Box rewrites the whole embedded array to change one
+          // candidate's status. It is in this list because that screen would
+          // otherwise break — but it is the loosest grant here: it lets a
+          // recruiter alter the record of who was sent. The scores stay out of
+          // reach, so the damage is bounded. The clean fix is for
+          // `updateCandidateStatus` to stop rewriting `candidates` and touch
+          // only `candidate_statuses`; drop this key once it does.
+          'candidates',
+          'status', 'notes', 'last_updated_at'
+        ]);
+
+      allow update: if isAdmin();
+      allow delete: if false;
+
+      // Append-only trail of stage changes on this batch.
+      match /audit/{entryId} {
+        allow read: if isAdmin() ||
+          (isRecruiter() &&
+            get(/databases/$(database)/documents/recruiter_requests/$(requestId))
+              .data.recruiter_id == request.auth.uid);
+        allow create: if isAdmin();
+        allow update, delete: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  ASSESSMENTS
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // Read-only for clients, top to bottom. Every write — inviting, accepting,
+    // serving a question, recording an answer, grading, releasing — goes
+    // through the backend, which holds the answer key and the only clock worth
+    // trusting. A client that could write here could set its own score.
+
+    match /assessments/{assessmentId} {
+      // The candidate sees their own sitting: status, pass mark, deadline, and
+      // afterwards their result. The answer key is not in this document — it is
+      // in `private` below, which nobody can read.
+      //
+      // No recruiter branch: no recruiter screen reads this collection (they
+      // read the released `test_score` mirrored onto the application), and a
+      // second branch over a different field would put the candidate's own
+      // query at risk of being refused.
+      allow read: if isAdmin() ||
+        (isAuth() && resource.data.candidateUid == request.auth.uid);
+      allow write: if false;
+
+      // The paper as served to this candidate, with the correct option index
+      // for each question. Denied to everyone, admins included: an admin reads
+      // the key through the backend's bank endpoint, which is audited.
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+
+      // One document per answer, including whether it was correct.
+      match /responses/{index} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  INTERVIEWS
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // The recruiter decides who and when; the admin issues the joining link.
+    // That split is enforced here, not only in the UI: the recruiter cannot
+    // write `meetingLink`, so they cannot put their own link in front of a
+    // candidate.
+
+    match /interviews/{interviewId} {
+      allow read: if isAdmin() ||
+        (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
+
+      allow create: if isRecruiter() &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        !request.resource.data.keys().hasAny([
+          'meetingLink', 'meetingProvider', 'linkGeneratedAt'
+        ]);
+
+      allow update: if isRecruiter() &&
+        resource.data.recruiterUid == request.auth.uid &&
+        request.resource.data.recruiterUid == request.auth.uid &&
+        !changed(['meetingLink', 'meetingProvider', 'linkGeneratedAt',
+                  'candidateUid', 'recruiterUid']);
+
+      allow update: if isAdmin();
+      allow delete: if false;   // cancelling sets status, so the record stays
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  JOB ALERTS
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // A recruiter drops a job on the queue; the backend drains it. Nothing in
+    // the app reads it back, and no entry is edited once queued.
+
+    match /job_alert_queue/{alertId} {
+      allow read: if isAdmin();
+      allow create: if isRecruiter();
+      allow update, delete: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  DENIED ON PURPOSE — no rule is the rule
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    //  question_banks/{jobId}
+    //      Sixty questions with `correctIndex` on every one: the answer key for
+    //      a whole job. Unreadable by anyone, admins included. Papers are
+    //      generated, reviewed and approved through the backend's bank
+    //      endpoints, so there is no client path to this collection at all —
+    //      which is the point.
+    //
+    //  everything else
+    //      A collection nobody has thought about is a collection nobody has
+    //      secured. Adding a rule should be a deliberate act, so the default
+    //      stays deny.
   }
 }

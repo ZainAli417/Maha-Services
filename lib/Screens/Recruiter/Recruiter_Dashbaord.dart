@@ -13,6 +13,8 @@ import 'Recruiter_provider_Job_listing.dart';
 import '../../Constant/js_header.dart';
 import '../../core/interviews/interview.dart';
 import '../../core/interviews/interview_calendar.dart';
+import 'LIst_of_Applicants_provider.dart';
+import 'widgets/pipeline_overview.dart';
 import '../../core/interviews/interview_provider.dart';
 
 // ─── Design Tokens (navy + teal brand) ──────────────────────────────────────
@@ -291,6 +293,12 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
   void initState() {
     super.initState();
     _dataFuture = _fetchData();
+    // The pipeline reads the recruiter's whole applicant stream. Without this
+    // it would show an empty funnel until the user had visited a shortlist,
+    // which reads as "you have nobody" rather than "not loaded yet".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<ApplicantsProvider>().refresh();
+    });
   }
 
   @override
@@ -359,6 +367,13 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                   ),
                 ),
               ),
+
+            // The pipeline leads. It is the answer to "where is everybody",
+            // which is the question a recruiter opens this screen with — the
+            // posting counts below are context for it, not the headline.
+            SliverToBoxAdapter(
+              child: PipelineOverview(isMobile: isMobile),
+            ),
 
             // Stats
             SliverToBoxAdapter(
@@ -521,7 +536,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
             crossAxisCount: 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 2.35,
+            mainAxisExtent: 68,
           ),
           itemBuilder: (context, index) =>
               _StatCard(meta: cards[index], isMobile: true),
@@ -531,21 +546,26 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
 
     return Padding(
       padding: pad,
-      child: Row(
-        children: cards
-            .asMap()
-            .entries
-            .map(
-              (e) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: e.key < cards.length - 1 ? 14 : 0,
+      child: SizedBox(
+        // Fixed, so six cards cannot disagree about their height and none of
+        // them has to fill space it does not need.
+        height: 68,
+        child: Row(
+          children: cards
+              .asMap()
+              .entries
+              .map(
+                (e) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: e.key < cards.length - 1 ? 10 : 0,
+                    ),
+                    child: _StatCard(meta: e.value, isMobile: false),
                   ),
-                  child: _StatCard(meta: e.value, isMobile: false),
                 ),
-              ),
-            )
-            .toList(),
+              )
+              .toList(),
+        ),
       ),
     );
   }
@@ -695,13 +715,13 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+                    Expanded(child: _ShimmerBox(height: 68, radius: 14)),
                     const SizedBox(width: 10),
-                    Expanded(child: _ShimmerBox(height: 78, radius: 16)),
+                    Expanded(child: _ShimmerBox(height: 68, radius: 14)),
                   ],
                 ),
                 const SizedBox(height: 10),
-                _ShimmerBox(height: 78, radius: 16),
+                _ShimmerBox(height: 68, radius: 14),
               ],
             )
           : Row(
@@ -710,7 +730,7 @@ class _AnalyticsDashboardState extends State<_AnalyticsDashboard> {
                 (i) => Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(right: i < 5 ? 14 : 0),
-                    child: _ShimmerBox(height: 110, radius: 18),
+                    child: _ShimmerBox(height: 68, radius: 14),
                   ),
                 ),
               ),
@@ -981,137 +1001,79 @@ class _StatMeta {
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
+
+/// One posting-side figure: icon, number, label, and what it counts.
+///
+/// One layout for both breakpoints. The desktop version used to be a tall
+/// vertical card with a 32px number, a decorative accent dash and a lot of air
+/// between the two — six of them across the top of a dashboard read as empty
+/// space with small print in it.
 class _StatCard extends StatelessWidget {
   final _StatMeta meta;
   final bool isMobile;
   const _StatCard({required this.meta, required this.isMobile});
 
   @override
-  Widget build(BuildContext context) {
-    if (isMobile) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: _white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _slate200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: meta.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(meta.icon, color: meta.color, size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    meta.value,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: _slate900,
-                      height: 1.1,
-                    ),
-                  ),
-                  Text(
-                    meta.label,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: _slate600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Desktop vertical card
-    return Container(
-      padding: const EdgeInsets.all(20),
+  Widget build(BuildContext context) => Tooltip(
+    message: '${meta.label} — ${meta.subtitle}',
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: _white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: meta.color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(meta.icon, color: meta.color, size: 20),
-              ),
-              // accent bar
-              Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: meta.color.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            meta.value,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: _slate900,
-              height: 1.0,
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: meta.color.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Icon(meta.icon, color: meta.color, size: 17),
           ),
-          const SizedBox(height: 4),
-          Text(
-            meta.label,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: _slate900,
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  meta.value,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: _slate900,
+                    height: 1.05,
+                  ),
+                ),
+                Text(
+                  meta.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    color: _slate600,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            meta.subtitle,
-            style: GoogleFonts.plusJakartaSans(fontSize: 11, color: _slate400),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 // ─── Trend Chart ──────────────────────────────────────────────────────────────

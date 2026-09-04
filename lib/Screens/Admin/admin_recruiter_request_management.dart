@@ -13,6 +13,9 @@ import '../../core/widgets/role_profile_view.dart';
 import '../../core/interviews/interview.dart';
 import '../../core/interviews/interview_provider.dart';
 import '../../core/rbac/hiring_pipeline.dart';
+import '../../core/profile/service_years.dart';
+import 'assessment/assessment_models.dart';
+import 'assessment/request_assessment_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Breakpoints
@@ -117,6 +120,17 @@ class _U {
   }
 }
 
+/// Reads a numeric field that may arrive as a num, a numeric string, or absent.
+///
+/// Returns null rather than 0 for anything unreadable: "not recorded" and
+/// "zero hours" are different facts about a pilot, and a screen that shows the
+/// second when it means the first is lying about the candidate.
+num? _numOrNull(dynamic v) {
+  if (v is num) return v;
+  final t = v?.toString().trim() ?? '';
+  return t.isEmpty ? null : num.tryParse(t);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Root Screen
 // ─────────────────────────────────────────────────────────────────────────────
@@ -163,6 +177,10 @@ class _DashboardBodyState extends State<_DashboardBody> {
   final _searchCtrl = TextEditingController();
   String _statusFilter = 'all';
 
+  /// Candidates ticked for a bulk action. Held on the screen, not the provider,
+  /// because it is a gesture in progress rather than anything about the batch.
+  final Set<String> _picked = {};
+
   @override
   void dispose() {
     _listCtrl.dispose();
@@ -202,7 +220,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
   List<Map<String, dynamic>> _filteredRequests(AdminProvider prov) {
     final q = _searchCtrl.text.trim().toLowerCase();
     return prov.requests.map(_n).where((r) {
-      final status = _s(r['status'], 'unknown').toLowerCase().trim();
+      final status = _s(r['status'], 'pending').toLowerCase().trim();
       final haystack = [
         r['id'],
         r['recruiter_email'],
@@ -220,7 +238,7 @@ class _DashboardBodyState extends State<_DashboardBody> {
   int _countByStatus(AdminProvider prov, String status) {
     if (status == 'all') return prov.requests.length;
     return prov.requests.map(_n).where((r) {
-      return _s(r['status'], 'unknown').toLowerCase().trim() == status;
+      return _s(r['status'], 'pending').toLowerCase().trim() == status;
     }).length;
   }
 
@@ -331,45 +349,6 @@ class _DashboardBodyState extends State<_DashboardBody> {
           ),
         );
       },
-    );
-  }
-
-  /// Moves a whole revised batch to Interview.
-  ///
-  /// Each candidate goes through the same single-candidate write as the menu
-  /// does, so the pipeline rule is applied once and in one place. Anything the
-  /// rule refuses is counted and reported rather than silently skipped — an
-  /// admin who clicks "move 5" and gets 4 needs to know which one did not go.
-  Future<void> _advanceAll(
-    BuildContext ctx, {
-    required String reqId,
-    required List<Map<String, dynamic>> candidates,
-    required AdminProvider prov,
-  }) async {
-    var moved = 0;
-    var refused = 0;
-
-    for (final c in candidates) {
-      final uid = _s(c['uid']);
-      if (uid.isEmpty) continue;
-      prov.optimisticCandidateStatusUpdate(reqId, uid, 'interview');
-      final ok = await prov.updateCandidateStatus(
-        requestId: reqId,
-        candidateUid: uid,
-        status: 'interview',
-        note: 'Advanced with the revised shortlist',
-        performedBy: 'admin_dashboard',
-      );
-      ok ? moved++ : refused++;
-    }
-
-    if (!mounted) return;
-    _toast(
-      ctx,
-      refused == 0
-          ? 'Moved $moved candidate${moved == 1 ? '' : 's'} to Interview'
-          : 'Moved $moved, could not move $refused',
-      refused == 0,
     );
   }
 
@@ -597,15 +576,30 @@ class _DashboardBodyState extends State<_DashboardBody> {
                       itemBuilder: (ctx, i) {
                         final r = visible[i];
                         final id = _s(r['id']);
-                        final email = _s(r['recruiter_email']);
+                        // The account, not the copy the request was written
+                        // with. A denormalised address goes stale; the person
+                        // it names does not.
+                        final account = prov.recruiterFor(
+                          _s(r['recruiter_id']),
+                        );
+                        final name = _s(account['name']);
+                        final email = _s(
+                          account['email'],
+                          _s(r['recruiter_email']),
+                        );
                         final total = r['total_candidates'] ?? 0;
+                        // A request with no status is one nobody has
+                        // acted on yet, which is what pending means. The old
+                        // default said "unknown", which reads as a data fault
+                        // rather than as a queue position.
                         final stat = _s(
                           r['status'],
-                          'unknown',
+                          'pending',
                         ).replaceAll('\n', '').trim();
                         final date = AdminProvider.formatDate(r['created_at']);
                         return _RequestTile(
                           id: id,
+                          name: name,
                           email: email,
                           total: total,
                           status: stat,
@@ -673,10 +667,26 @@ class _DashboardBodyState extends State<_DashboardBody> {
     );
   }
 
+  /// Invites one candidate from their own card.
+  ///
+  /// Same backend call as the bulk button, with a list of one. There is no
+  /// second code path for the single case, so the two cannot disagree about
+  /// what an invitation is.
+  Future<void> _inviteOne(
+    BuildContext ctx,
+    RequestAssessmentProvider assess,
+    String uid,
+  ) async {
+    final ok = await assess.invite([uid]);
+    if (!mounted) return;
+    _toast(ctx, ok ? assess.notice : assess.error, ok);
+  }
+
   Future<void> _openDetails(BuildContext ctx, String id) async {
     final prov = Provider.of<AdminProvider>(ctx, listen: false);
     if (prov.selectedRequestId == id) return;
     setState(() => _loadingDetails = true);
+    _picked.clear();
     await prov.selectRequest(id);
     if (mounted) setState(() => _loadingDetails = false);
   }
@@ -699,10 +709,6 @@ class _DashboardBodyState extends State<_DashboardBody> {
     final notes = _s(reqData['notes']);
     final dateStr = AdminProvider.formatDateTime(reqData['created_at']);
 
-    final rData = _n(recruiter['data']);
-    final rName = _s(rData['name'], _s(recruiter['id'], '-'));
-    final rEmail = _s(rData['email'], '-');
-    final rCompany = _s(rData['company']);
 
     // Dedup candidates by uid (uid is flat on each candidate object)
     final seen = <String, Map<String, dynamic>>{};
@@ -734,23 +740,19 @@ class _DashboardBodyState extends State<_DashboardBody> {
       }
     });
 
-    // Everyone in this batch who is not already at Interview or past it. The
-    // same forward-only rule decides this as decides a single move, so the
-    // bulk button can never do something the per-candidate menu would refuse.
-    final movable = [
-      for (final c in cands)
-        if (() {
-          final uid = _s(c['uid']);
-          if (uid.isEmpty) return false;
-          final current = statusMap[uid.toLowerCase()]?.isNotEmpty == true
-              ? statusMap[uid.toLowerCase()]!
-              : _s(c['status'], 'shortlist');
-          return HiringPipeline.canMove(from: current, to: 'interview') &&
-              HiringPipeline.indexOf(current) <
-                  HiringPipeline.indexOf('interview');
-        }())
-          c,
-    ];
+    // The recruiter's post-assessment answer, written onto this same request.
+    // Empty until they have given one, which is the difference between "this
+    // batch has not been narrowed" and "nobody was kept".
+    final finalSelection = {
+      for (final id in (reqData['final_selection'] as List? ?? const []))
+        id.toString(),
+    };
+
+    // Every candidate in a batch applied to the same job, so the paper is the
+    // job's. Read off the batch rather than stored twice and left to drift.
+    final jobId = cands
+        .map((c) => _s(c['job_id']))
+        .firstWhere((id) => id.isNotEmpty, orElse: () => '');
 
     return LayoutBuilder(
       builder: (_, cs) {
@@ -833,6 +835,40 @@ class _DashboardBodyState extends State<_DashboardBody> {
                               ),
                             ],
                           ),
+                          // What the recruiter typed when they sent the batch.
+                          // Kept as one line rather than dropped with the card
+                          // it used to sit in: it is the only place the admin
+                          // learns why this shortlist arrived.
+                          if (notes.isNotEmpty) ...[
+                            const SizedBox(height: 7),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.notes_rounded,
+                                  size: 14,
+                                  color: _C.txt3,
+                                ),
+                                const SizedBox(width: 5),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 460,
+                                  ),
+                                  child: Text(
+                                    notes,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11.5,
+                                      height: 1.4,
+                                      fontWeight: FontWeight.w500,
+                                      color: _C.txt3,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ],
@@ -859,46 +895,23 @@ class _DashboardBodyState extends State<_DashboardBody> {
               ),
             ),
 
-            const SizedBox(height: 18),
-            _RecruiterCard(
-              name: rName,
-              email: rEmail,
-              company: rCompany,
-              notes: notes,
-            ),
             const SizedBox(height: 22),
 
-            Row(
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  'Candidate Review',
+                  'Candidates',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: _C.txt1,
                   ),
                 ),
-                const SizedBox(width: 10),
                 _CountBadge(count: cands.length),
-                if (round >= 2) ...[
-                  const SizedBox(width: 8),
-                  _RoundBadge(round: round),
-                ],
-                const Spacer(),
-                // The batch action for a revised shortlist. These candidates
-                // have been assessed and re-picked by the recruiter, so moving
-                // them one at a time is busywork — but it is still the same
-                // forward-only rule underneath, applied per candidate.
-                if (movable.isNotEmpty)
-                  _AdvanceAllButton(
-                    count: movable.length,
-                    onPressed: () => _advanceAll(
-                      ctx,
-                      reqId: reqId,
-                      candidates: movable,
-                      prov: prov,
-                    ),
-                  ),
+                if (round >= 2) _RoundBadge(round: round),
               ],
             ),
             const SizedBox(height: 16),
@@ -906,24 +919,56 @@ class _DashboardBodyState extends State<_DashboardBody> {
             if (cands.isEmpty)
               _EmptyCandidates()
             else
-              // Scoped to this batch rather than to the signed-in user: the
-              // app-level InterviewProvider watches the recruiter's own
+              // Two streams, both scoped to this batch, both keyed on reqId so
+              // switching batches rebuilds them. The app-level
+              // InterviewProvider watches the signed-in recruiter's own
               // bookings, which is the wrong set entirely for an admin.
-              // Keyed on reqId so switching batches rebuilds the stream.
-              ChangeNotifierProvider(
-                key: ValueKey('interviews_$reqId'),
-                create: (_) => InterviewProvider()..watchForRequest(reqId),
-                child: _CandidateGrid(
-                  candidates: cands,
-                  statusMap: statusMap,
-                  isNarrow: isNarrow,
-                  reqId: reqId,
-                  prov: prov,
-                  onTap: (c) => _showCV(ctx, c),
-                  mountedCheck: () => mounted,
-                  showToast: (msg, ok) {
-                    if (mounted) _toast(ctx, msg, ok);
-                  },
+              MultiProvider(
+                key: ValueKey('batch_$reqId'),
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (_) => InterviewProvider()..watchForRequest(reqId),
+                  ),
+                  ChangeNotifierProvider(
+                    create: (_) => RequestAssessmentProvider()
+                      ..open(requestId: reqId, jobId: jobId),
+                  ),
+                ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _TestConsole(
+                      reqId: reqId,
+                      candidates: cands,
+                      picked: _picked,
+                      onPickMany: (uids) => setState(() {
+                        _picked
+                          ..clear()
+                          ..addAll(uids);
+                      }),
+                      onDone: (msg, ok) {
+                        if (mounted) {
+                          setState(_picked.clear);
+                          _toast(ctx, msg, ok);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _CandidateGrid(
+                      candidates: cands,
+                      statusMap: statusMap,
+                      finalSelection: finalSelection,
+                      isNarrow: isNarrow,
+                      reqId: reqId,
+                      picked: _picked,
+                      onPick: (uid, on) => setState(
+                        () => on ? _picked.add(uid) : _picked.remove(uid),
+                      ),
+                      onTap: (c) => _showCV(ctx, c),
+                      onInvite: (assess, uid) =>
+                          _inviteOne(ctx, assess, uid),
+                    ),
+                  ],
                 ),
               ),
 
@@ -1090,11 +1135,21 @@ class _DashboardBodyState extends State<_DashboardBody> {
       'retirement_date': profile.expectedRetirementDate,
       'current_role': latest?.title ?? '',
       'company': latest?.company ?? '',
-      'experience_years': profile.experience.length,
+      // A count and a duration, under names that say which is which. The key
+      // called `experience_years` used to hold this count, which is how a
+      // two-posting candidate was rendered as "2 year(s)" on this very sheet.
+      'roles_listed': profile.experience.length,
+      'years_experience': ServiceYears.from([
+        for (final x in profile.experience)
+          {
+            'startDate': x.startDate,
+            'endDate': x.endDate,
+            'isCurrent': x.isCurrent,
+          },
+      ]),
       'university': firstEdu?.institution ?? '',
       'education': firstEdu?.fieldOfStudy ?? '',
       'education_duration': firstEdu?.graduationYear?.toString() ?? '',
-      'cgpa': firstEdu?.grade ?? '',
       'professionalExperience': [
         for (final x in profile.experience)
           {
@@ -1578,100 +1633,112 @@ class _EmptyCandidates extends StatelessWidget {
 class _CandidateGrid extends StatelessWidget {
   final List<Map<String, dynamic>> candidates;
   final Map<String, String> statusMap;
+  final Set<String> finalSelection;
   final bool isNarrow;
   final String reqId;
-  final AdminProvider prov;
+  final Set<String> picked;
+  final void Function(String uid, bool on) onPick;
   final void Function(Map<String, dynamic>) onTap;
-  final bool Function() mountedCheck;
-  final void Function(String, bool) showToast;
+
+  /// Takes the provider the grid is already watching rather than looking it up
+  /// again: the caller lives above the [MultiProvider] that supplies it, so a
+  /// lookup from there would find nothing.
+  final void Function(RequestAssessmentProvider, String uid) onInvite;
 
   const _CandidateGrid({
     required this.candidates,
     required this.statusMap,
+    required this.finalSelection,
     required this.isNarrow,
     required this.reqId,
-    required this.prov,
+    required this.picked,
+    required this.onPick,
     required this.onTap,
-    required this.mountedCheck,
-    required this.showToast,
+    required this.onInvite,
   });
 
   @override
   Widget build(BuildContext ctx) {
-    // Scoped to this batch. The recruiter books the slot and this is where the
-    // admin sees it appear — the same document, streamed by both sides, so a
-    // booking never has to be copied across and cannot fall out of step.
+    // Both scoped to this batch. The recruiter books the slot and the candidate
+    // sits the test; this is where the admin sees both happen — the same
+    // documents, streamed by every side, so nothing has to be copied across and
+    // nothing can fall out of step.
     final interviews = ctx.watch<InterviewProvider>();
+    final assess = ctx.watch<RequestAssessmentProvider>();
+
     final booked = {
       for (final i in interviews.interviews)
         if (i.status != InterviewStatus.cancelled) i.candidateUid: i,
     };
-    // The card grows a footer when there is an interview on it; a fixed extent
-    // would clip it.
-    final extent = booked.isEmpty ? 164.0 : 214.0;
+
+    // The card grows a footer for each of the two strips it can carry; a fixed
+    // extent sized for the shortest would clip the others.
+    final extent = booked.isEmpty ? 212.0 : 262.0;
+    final narrowed = finalSelection.isNotEmpty;
+    final canInvite = assess.paperApproved == true;
 
     return GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-      maxCrossAxisExtent: isNarrow ? double.infinity : 440,
-      mainAxisExtent: extent,
-      crossAxisSpacing: 14,
-      mainAxisSpacing: 14,
-    ),
-    itemCount: candidates.length,
-    itemBuilder: (ctx2, i) {
-      final c = candidates[i];
-      final uid = c['uid']?.toString() ?? '';
-      final canon = uid.toLowerCase();
-      // Prefer candidate_statuses map from the request doc; fall back to
-      // the embedded status field on the candidate itself.
-      final cStat = statusMap[canon]?.isNotEmpty == true
-          ? statusMap[canon]!
-          : c['status']?.toString() ?? 'unknown';
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: isNarrow ? double.infinity : 440,
+        mainAxisExtent: extent,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+      ),
+      itemCount: candidates.length,
+      itemBuilder: (ctx2, i) {
+        final c = candidates[i];
+        final uid = c['uid']?.toString() ?? '';
+        final canon = uid.toLowerCase();
 
-      final score =
-          (c['match_score'] as Map?)?['overallScore']?.toString() ?? '';
+        // candidate_statuses on the request wins over the copy embedded in the
+        // candidate map; the embedded one is a snapshot from when the recruiter
+        // sent them. Neither being set means shortlist, which is what being in
+        // this batch means — not "unknown".
+        final embedded = c['status']?.toString().trim() ?? '';
+        final cStat = statusMap[canon]?.isNotEmpty == true
+            ? statusMap[canon]!
+            : (embedded.isEmpty ? 'shortlist' : embedded);
 
-      return CandidateCard(
-        key: ValueKey('${reqId}_$canon'),
-        name: c['name']?.toString() ?? uid,
-        email: c['email']?.toString() ?? '',
-        phone: c['phone']?.toString() ?? '',
-        title:
-            c['job_title']?.toString() ?? c['current_role']?.toString() ?? '',
-        company: c['company']?.toString() ?? '',
-        score: score,
-        status: cStat,
-        interview: booked[uid],
-        onTap: () => onTap(c),
-        onMenuAction: (action) {
-          prov.optimisticCandidateStatusUpdate(reqId, uid, action);
-          prov
-              .updateCandidateStatus(
-                requestId: reqId,
-                candidateUid: uid,
-                status: action,
-                performedBy: 'admin_dashboard',
-              )
-              .then((ok) {
-                if (!mountedCheck()) return;
-                // A refused move is not a failure to write; it is the pipeline
-                // saying no. Saying "Update failed" would send the admin
-                // looking for a bug that is not there.
-                showToast(
-                  ok
-                      ? 'Status Updated to $action'
-                      : (prov.lastStatusRefusal.isNotEmpty
-                          ? prov.lastStatusRefusal
-                          : 'Update failed'),
-                  ok,
-                );
-              });
-        },
-      );
-    },
-  );
+        final row = assess.rowFor(uid);
+
+        // Two ways a candidate stops being live in this batch, and both look
+        // the same to a reader: the test decided it (a released fail), or the
+        // recruiter did (narrowed the batch and did not keep them). Dimmed,
+        // never removed — the record of them being considered has to survive.
+        final failed = row?.released == true && row?.verdict == 'fail';
+        final dead = failed || (narrowed && !finalSelection.contains(uid));
+
+        return CandidateCard(
+          key: ValueKey('${reqId}_$canon'),
+          name: c['name']?.toString() ?? uid,
+          email: c['email']?.toString() ?? '',
+          phone: c['phone']?.toString() ?? '',
+          title: c['job_title']?.toString() ??
+              c['current_role']?.toString() ??
+              '',
+          company: c['company']?.toString() ?? '',
+          score: (c['match_score'] as Map?)?['overallScore']?.toString() ?? '',
+          status: cStat,
+          assessment: row,
+          interview: booked[uid],
+          superseded: dead,
+          finalPick: finalSelection.contains(uid),
+          // Selectable for the two things the admin does in bulk: inviting
+          // people who have not been invited, and sending back scores that
+          // have arrived and not gone yet. A score already sent is not
+          // something a tick can act on, so the box stays dead for it.
+          selectable: row == null || (row.percentage != null && !row.released),
+          selected: picked.contains(uid),
+          onSelected: (on) => onPick(uid, on),
+          onInvite: row == null && canInvite && uid.isNotEmpty
+              ? () => onInvite(assess, uid)
+              : null,
+          onTap: () => onTap(c),
+        );
+      },
+    );
   }
 }
 
@@ -1679,13 +1746,14 @@ class _CandidateGrid extends StatelessWidget {
 //  REQUEST TILE
 // ─────────────────────────────────────────────────────────────────────────────
 class _RequestTile extends StatefulWidget {
-  final String id, email, status, date;
+  final String id, name, email, status, date;
   final int total;
   final bool selected;
   final VoidCallback onTap;
 
   const _RequestTile({
     required this.id,
+    required this.name,
     required this.email,
     required this.total,
     required this.status,
@@ -1795,32 +1863,55 @@ class _RequestTileState extends State<_RequestTile> {
                                 ),
                               ),
                               const SizedBox(width: 10),
+                              // Who sent it, then how to reach them, then the
+                              // reference. An admin scans this queue for a
+                              // person, not for an id — the id used to be the
+                              // headline and the person was not shown at all.
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'REQ #${widget.id}',
+                                      widget.name.isEmpty
+                                          ? (widget.email.isEmpty
+                                              ? 'Unnamed recruiter'
+                                              : widget.email)
+                                          : widget.name,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
+                                        fontSize: 13.5,
                                         fontWeight: FontWeight.w800,
                                         color: selected
                                             ? _C.primary
                                             : _C.txt1,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
+                                    if (widget.name.isNotEmpty &&
+                                        widget.email.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        widget.email,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 11.5,
+                                          color: _C.txt2,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 3),
                                     Text(
-                                      widget.email,
+                                      'REQ #${widget.id}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
-                                        color: _C.txt2,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.2,
+                                        color: _C.txt4,
                                       ),
                                     ),
                                   ],
@@ -1898,127 +1989,6 @@ class _RequestTileState extends State<_RequestTile> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  RECRUITER CARD
-// ─────────────────────────────────────────────────────────────────────────────
-class _RecruiterCard extends StatelessWidget {
-  final String name, email, company, notes;
-  const _RecruiterCard({
-    required this.name,
-    required this.email,
-    required this.company,
-    required this.notes,
-  });
-
-  @override
-  Widget build(BuildContext ctx) => Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: _C.surface,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: _C.border),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: .03),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'RECRUITER',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: _C.txt3,
-            letterSpacing: 1.4,
-          ),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Avatar(name: name, size: 52),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SelectableText(
-                    name,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: _C.txt1,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  SelectableText(
-                    email,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: _C.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (company.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.business_outlined,
-                          size: 13,
-                          color: _C.txt3,
-                        ),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            company,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
-                              color: _C.txt2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (notes.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: _C.divider),
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.notes_rounded, size: 15, color: _C.txt3),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  notes,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    color: _C.txt2,
-                    height: 1.6,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ],
-    ),
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  AVATAR
 // ─────────────────────────────────────────────────────────────────────────────
 class _Avatar extends StatelessWidget {
   final String name;
@@ -2231,18 +2201,46 @@ int _stageIndex(String status) => HiringPipeline.indexOf(status);
 // ══════════════════════════════════════════════════════════════════════════════
 //  PUBLIC WIDGET
 // ══════════════════════════════════════════════════════════════════════════════
+/// One candidate, everything the admin does to them, on one card.
+///
+/// There is no stage menu on it any more. Every stage this screen can move a
+/// candidate through is the consequence of a real action — inviting them to the
+/// test, sending their score to the recruiter, the recruiter booking them an
+/// interview — so a dropdown that set the stage directly could only ever
+/// disagree with what had actually happened.
 class CandidateCard extends StatelessWidget {
   final String name;
   final String email;
   final String phone;
   final String title;
   final String company;
+
+  /// The AI match score from shortlisting. Not the test score.
   final String score;
   final String status;
 
+  /// This candidate's sitting, or null if they have never been invited.
+  final AssessmentRow? assessment;
+
   /// The slot the recruiter booked, if they have.
   final Interview? interview;
-  final void Function(String) onMenuAction;
+
+  /// True when the recruiter has narrowed the batch and did not keep this one.
+  /// The card dims; it is never removed, because the record of them having been
+  /// considered has to survive the narrowing.
+  final bool superseded;
+
+  /// True when the recruiter kept this candidate after seeing the scores.
+  final bool finalPick;
+
+  final bool selectable;
+  final bool selected;
+  final ValueChanged<bool>? onSelected;
+
+  /// Invites this one candidate to sit the test. Null when that is not
+  /// currently possible — no approved paper, or they are already invited.
+  final VoidCallback? onInvite;
+
   final VoidCallback onTap;
 
   const CandidateCard({
@@ -2254,9 +2252,15 @@ class CandidateCard extends StatelessWidget {
     required this.company,
     required this.score,
     required this.status,
-    required this.onMenuAction,
     required this.onTap,
+    this.assessment,
     this.interview,
+    this.superseded = false,
+    this.finalPick = false,
+    this.selectable = false,
+    this.selected = false,
+    this.onSelected,
+    this.onInvite,
   });
 
   @override
@@ -2264,7 +2268,7 @@ class CandidateCard extends StatelessWidget {
     final col = _stageColor(status);
     final idx = _stageIndex(status);
 
-    return DecoratedBox(
+    final card = DecoratedBox(
       decoration: BoxDecoration(
         color: _T.surface,
         borderRadius: BorderRadius.circular(14),
@@ -2289,20 +2293,27 @@ class CandidateCard extends StatelessWidget {
               mainAxisSize:
                   MainAxisSize.max, // Changed from min to allow Expanded
               children: [
-                _CardHeader(status: status, score: score, color: col),
+                _CardHeader(
+                  status: status,
+                  score: score,
+                  color: col,
+                  finalPick: finalPick,
+                  superseded: superseded,
+                  selectable: selectable,
+                  selected: selected,
+                  onSelected: onSelected,
+                ),
                 Expanded(
                   child: _CardBody(
                     name: name,
                     title: title,
-                    company: company, // Added this
+                    company: company,
                     email: email,
                     phone: phone,
-                    stageIndex: idx,
                     stageColor: col,
-                    status: status,
-                    onMenuAction: onMenuAction,
                   ),
                 ),
+                _AssessmentStrip(row: assessment, onInvite: onInvite),
                 if (interview != null) _InterviewStrip(interview: interview!),
                 _PipelineBar(index: idx, total: _kStages.length, color: col),
               ],
@@ -2311,6 +2322,11 @@ class CandidateCard extends StatelessWidget {
         ),
       ),
     );
+
+    // Dimmed, not hidden. A reader looking at this batch in three months needs
+    // to see who was considered as well as who was kept.
+    if (!superseded) return card;
+    return Opacity(opacity: 0.45, child: card);
   }
 }
 
@@ -2318,11 +2334,18 @@ class CandidateCard extends StatelessWidget {
 class _CardHeader extends StatelessWidget {
   final String status, score;
   final Color color;
+  final bool finalPick, superseded, selectable, selected;
+  final ValueChanged<bool>? onSelected;
 
   const _CardHeader({
     required this.status,
     required this.score,
     required this.color,
+    this.finalPick = false,
+    this.superseded = false,
+    this.selectable = false,
+    this.selected = false,
+    this.onSelected,
   });
 
   @override
@@ -2338,6 +2361,18 @@ class _CardHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (selectable)
+            SizedBox(
+              width: 26,
+              height: 26,
+              child: Checkbox(
+                value: selected,
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: (v) => onSelected?.call(v ?? false),
+              ),
+            ),
+          if (selectable) const SizedBox(width: 6),
           // Status badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -2370,9 +2405,27 @@ class _CardHeader extends StatelessWidget {
             ),
           ),
 
+          if (finalPick) ...[
+            const SizedBox(width: 5),
+            _MiniTag(
+              text: 'KEPT',
+              icon: Icons.push_pin_rounded,
+              color: _T.violet,
+            ),
+          ],
+          if (superseded) ...[
+            const SizedBox(width: 5),
+            _MiniTag(
+              text: 'CLOSED',
+              icon: Icons.remove_circle_outline_rounded,
+              color: _T.txt3,
+            ),
+          ],
+
           const Spacer(),
 
-          // Score pill
+          // Score pill — the AI match score from shortlisting. Labelled, so it
+          // is never read as the test score sitting two rows below it.
           if (score.isNotEmpty) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -2386,7 +2439,7 @@ class _CardHeader extends StatelessWidget {
                   Icon(Icons.bolt_rounded, size: 11, color: sc),
                   const SizedBox(width: 3),
                   Text(
-                    '$score%',
+                    'AI $score%',
                     style: _T.label(
                       size: 10,
                       weight: FontWeight.w700,
@@ -2401,6 +2454,501 @@ class _CardHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A one-word marker on the card header.
+/// The online test, for one recruiter request, in one strip.
+///
+/// Everything the admin does about the assessment happens here: invite the
+/// batch, watch it come in, send the scores back with a note. It sits directly
+/// above the candidates it acts on, because the alternative — a separate
+/// assessment screen with its own copy of the candidate list — is what made two
+/// screens disagree about which batch was which.
+class _TestConsole extends StatelessWidget {
+  const _TestConsole({
+    required this.reqId,
+    required this.candidates,
+    required this.picked,
+    required this.onPickMany,
+    required this.onDone,
+  });
+
+  final String reqId;
+  final List<Map<String, dynamic>> candidates;
+  final Set<String> picked;
+  final ValueChanged<Set<String>> onPickMany;
+  final void Function(String message, bool ok) onDone;
+
+  List<String> get _uids => [
+        for (final c in candidates)
+          if ((c['uid']?.toString() ?? '').isNotEmpty) c['uid'].toString(),
+      ];
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.watch<RequestAssessmentProvider>();
+
+    final uninvited = [for (final u in _uids) if (!p.isInvited(u)) u];
+    final scored = [
+      for (final u in _uids)
+        if (p.hasScore(u) && !p.isReleased(u)) u,
+    ];
+
+    final pickedUninvited =
+        picked.where((u) => uninvited.contains(u)).toList();
+    final pickedScored = picked.where((u) => scored.contains(u)).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _C.bgLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _C.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.quiz_outlined, size: 17, color: _C.tealDeep),
+              const SizedBox(width: 8),
+              Text(
+                'Online test assessment',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                  color: _C.txt1,
+                ),
+              ),
+              const Spacer(),
+              if (p.busy)
+                const SizedBox(
+                  width: 15,
+                  height: 15,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: _C.primary,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _paperLine(p),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _stat('${p.invitedCount} invited', _C.primary),
+              _stat('${p.submittedCount} sat the test', _C.blue),
+              _stat('${p.scoredCount} scored', _C.success),
+              _stat('${p.releasedCount} sent to recruiter', _C.teal),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: _C.border),
+          const SizedBox(height: 14),
+
+          // ── Invite ────────────────────────────────────────────────────────
+          if (uninvited.isNotEmpty)
+            _actionRow(
+              context,
+              label: pickedUninvited.isEmpty
+                  ? '${uninvited.length} not invited yet'
+                  : '${pickedUninvited.length} selected to invite',
+              selectAllLabel: 'Select all ${uninvited.length}',
+              onSelectAll: () => onPickMany(uninvited.toSet()),
+              button: FilledButton.icon(
+                onPressed: p.busy ||
+                        pickedUninvited.isEmpty ||
+                        p.paperApproved != true
+                    ? null
+                    : () async {
+                        final ok = await p.invite(pickedUninvited);
+                        onDone(ok ? p.notice : p.error, ok);
+                      },
+                icon: const Icon(Icons.send_rounded, size: 15),
+                label: Text('Invite ${pickedUninvited.length} for test'),
+              ),
+            ),
+
+          // ── Release ───────────────────────────────────────────────────────
+          if (scored.isNotEmpty) ...[
+            if (uninvited.isNotEmpty) const SizedBox(height: 12),
+            _actionRow(
+              context,
+              label: pickedScored.isEmpty
+                  ? '${scored.length} score${scored.length == 1 ? '' : 's'} '
+                      'not sent to the recruiter yet'
+                  : '${pickedScored.length} selected to send',
+              selectAllLabel: 'Select all ${scored.length}',
+              onSelectAll: () => onPickMany(scored.toSet()),
+              button: FilledButton.icon(
+                onPressed: p.busy || pickedScored.isEmpty
+                    ? null
+                    : () => _release(context, p, pickedScored),
+                icon: const Icon(Icons.forward_to_inbox_rounded, size: 15),
+                label: Text('Send ${pickedScored.length} to recruiter'),
+                style: FilledButton.styleFrom(backgroundColor: _C.tealDeep),
+              ),
+            ),
+          ],
+
+          if (uninvited.isEmpty && scored.isEmpty)
+            Text(
+              p.invitedCount == 0
+                  ? 'Nobody in this batch has been invited yet.'
+                  : 'Nothing to do here right now — every score that has come '
+                      'back has been sent to the recruiter.',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                height: 1.45,
+                color: _C.txt2,
+              ),
+            ),
+
+          if (p.error.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _note(p.error, _C.danger, Icons.error_outline_rounded),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _paperLine(RequestAssessmentProvider p) => switch (p.paperApproved) {
+        true => _note(
+            'Question paper approved for this job. Every candidate sits 20 '
+            'questions sampled from the same set.',
+            _C.success,
+            Icons.verified_rounded,
+          ),
+        false => _note(
+            'No approved question paper for this job yet. Write and approve one '
+            'on the Assessments screen, then come back and invite.',
+            _C.warning,
+            Icons.edit_note_rounded,
+          ),
+        // Unknown, not absent. Reporting an unreachable backend as "no paper"
+        // is how an admin ends up regenerating a paper that already exists.
+        null => _note(
+            'Cannot reach the assessment backend, so the paper for this job '
+            'could not be checked. There may well be an approved one.',
+            _C.txt3,
+            Icons.cloud_off_rounded,
+          ),
+      };
+
+  Widget _note(String text, Color color, IconData icon) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      );
+
+  Widget _stat(String text, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      );
+
+  Widget _actionRow(
+    BuildContext context, {
+    required String label,
+    required String selectAllLabel,
+    required VoidCallback onSelectAll,
+    required Widget button,
+  }) =>
+      Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: _C.txt2,
+            ),
+          ),
+          TextButton(
+            onPressed: onSelectAll,
+            style: TextButton.styleFrom(
+              minimumSize: const Size(0, 32),
+              visualDensity: VisualDensity.compact,
+              textStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            child: Text(selectAllLabel),
+          ),
+          button,
+        ],
+      );
+
+  /// Sends the picked scores to the recruiter, with the note the admin writes.
+  ///
+  /// The note is the point of the step. A number on its own does not tell the
+  /// recruiter what the admin thought of it.
+  Future<void> _release(
+    BuildContext context,
+    RequestAssessmentProvider p,
+    List<String> uids,
+  ) async {
+    final controller = TextEditingController();
+    final note = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Send ${uids.length} score${uids.length == 1 ? '' : 's'} to the recruiter',
+        ),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'They will see the score, the rank within the batch and the '
+                'pass mark, and can then re-select from this same shortlist. '
+                'Candidates you have not picked stay hidden from them.',
+                style: TextStyle(fontSize: 12.5, height: 1.5),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                minLines: 3,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  labelText: 'Note for the recruiter',
+                  hintText: 'e.g. Scores in — shortlist for interview from '
+                      'these, technical section was strongest for the top three.',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Send scores'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (note == null) return;
+
+    final ok = await p.release(uids: uids, note: note);
+    onDone(ok ? p.notice : p.error, ok);
+  }
+}
+
+class _MiniTag extends StatelessWidget {
+  const _MiniTag({
+    required this.text,
+    required this.icon,
+    required this.color,
+  });
+
+  final String text;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 10, color: color),
+            const SizedBox(width: 3),
+            Text(
+              text,
+              style: _T.label(
+                size: 8.5,
+                weight: FontWeight.w800,
+                color: color,
+                spacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+/// Where this candidate is in the online test, and the button that starts it.
+///
+/// The status is the same fact the candidate and the recruiter see, read from
+/// the same assessment document. Nobody is looking at a copy.
+class _AssessmentStrip extends StatelessWidget {
+  const _AssessmentStrip({required this.row, required this.onInvite});
+
+  final AssessmentRow? row;
+  final VoidCallback? onInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = row;
+
+    // Never invited. The only state with an action attached.
+    if (r == null) {
+      return _shell(
+        icon: Icons.quiz_outlined,
+        color: _T.txt3,
+        label: 'Not invited to the test',
+        trailing: onInvite == null
+            ? null
+            : TextButton.icon(
+                onPressed: onInvite,
+                icon: const Icon(Icons.send_rounded, size: 14),
+                label: const Text('Invite for test'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 30),
+                  visualDensity: VisualDensity.compact,
+                  textStyle: _T.label(size: 11, weight: FontWeight.w700),
+                ),
+              ),
+      );
+    }
+
+    final (label, color) = switch (r.status) {
+      'invited' => (
+          r.expiresAt == null
+              ? 'Invited · waiting for them to accept'
+              : 'Invited · ${_countdown(r.expiresAt!)} to accept',
+          _T.warning,
+        ),
+      'accepted' => ('Accepted · has not started yet', _T.blue),
+      'in_progress' => (
+          'In test assessment · ${r.answeredCount} of ${r.questionCount} answered',
+          _T.blue,
+        ),
+      'submitted' => (
+          r.percentage == null
+              ? 'Submitted · awaiting score'
+              : 'Scored ${r.correct}/${r.questionCount} · ${r.percentage}%'
+                  '${r.verdict == null ? '' : ' · ${r.verdict!.toUpperCase()}'}',
+          r.verdict == 'pass' ? _T.success : _T.danger,
+        ),
+      'expired' => ('Expired · did not sit the test', _T.danger),
+      _ => (r.status.isEmpty ? 'Unknown state' : r.status, _T.txt3),
+    };
+
+    return _shell(
+      icon: r.status == 'submitted'
+          ? Icons.fact_check_rounded
+          : Icons.timer_outlined,
+      color: color,
+      label: label,
+      trailing: r.released
+          ? _MiniTag(
+              text: 'SENT',
+              icon: Icons.forward_to_inbox_rounded,
+              color: _T.success,
+            )
+          : null,
+      // Two integrity signals worth an admin's attention, and worth naming
+      // rather than acting on: a tab switch is not proof of anything.
+      note: r.tabSwitches > 0 || r.resumes > 1
+          ? '${r.tabSwitches} tab switch${r.tabSwitches == 1 ? '' : 'es'}'
+              '${r.resumes > 1 ? ', resumed ${r.resumes}×' : ''}'
+          : null,
+    );
+  }
+
+  static String _countdown(DateTime deadline) {
+    final left = deadline.difference(DateTime.now());
+    if (left.isNegative) return 'expired';
+    if (left.inHours >= 1) return '${left.inHours}h left';
+    return '${left.inMinutes}m left';
+  }
+
+  Widget _shell({
+    required IconData icon,
+    required Color color,
+    required String label,
+    Widget? trailing,
+    String? note,
+  }) =>
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          border: const Border(
+            top: BorderSide(color: _T.divider, width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: _T.label(
+                      size: 11,
+                      weight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                  if (note != null)
+                    Text(
+                      note,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _T.label(size: 9.5, color: _T.txt3),
+                    ),
+                ],
+              ),
+            ),
+            ?trailing,
+          ],
+        ),
+      );
 }
 
 /// The interview the recruiter booked, and the one action the admin owns.
@@ -2510,10 +3058,7 @@ class _InterviewStrip extends StatelessWidget {
 // ─── Main body ────────────────────────────────────────────────────────────────
 class _CardBody extends StatelessWidget {
   final String name, title, company, email, phone;
-  final int stageIndex;
   final Color stageColor;
-  final String status;
-  final void Function(String) onMenuAction;
 
   const _CardBody({
     required this.name,
@@ -2521,10 +3066,7 @@ class _CardBody extends StatelessWidget {
     required this.company,
     required this.email,
     required this.phone,
-    required this.status,
-    required this.stageIndex,
     required this.stageColor,
-    required this.onMenuAction,
   });
 
   @override
@@ -2592,14 +3134,6 @@ class _CardBody extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    _ActionButton(
-                      stages: _kStages,
-                      index: stageIndex,
-                      color: stageColor,
-                      status: status,
-                      onAction: onMenuAction,
-                    ),
                   ],
                 ),
                 if (email.isNotEmpty) ...[
@@ -2663,107 +3197,6 @@ class second_Avatar extends StatelessWidget {
   }
 }
 
-// ─── Next / menu action button ────────────────────────────────────────────────
-class _ActionButton extends StatelessWidget {
-  final List<String> stages;
-  final int index;
-  final Color color;
-  final void Function(String) onAction;
-
-  /// The candidate's current stage, so the menu can grey out the ones behind
-  /// them instead of offering moves the write path will refuse.
-  final String status;
-
-  const _ActionButton({
-    required this.stages,
-    required this.index,
-    required this.color,
-    required this.onAction,
-    required this.status,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final hasNext = index >= 0 && index < stages.length - 1;
-
-    if (hasNext) {
-      return GestureDetector(
-        onTap: () => onAction(stages[index + 1].toLowerCase()),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withValues(alpha: 0.18)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                stages[index + 1].toUpperCase(),
-                style: _T.label(
-                  size: 8,
-                  weight: FontWeight.w800,
-                  color: color,
-                  spacing: 0.4,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(Icons.east_rounded, size: 11, color: color),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Fallback: overflow menu
-    return PopupMenuButton<String>(
-      padding: EdgeInsets.zero,
-      icon: Icon(Icons.more_horiz_rounded, size: 18, color: _T.txt3),
-      elevation: 4,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      onSelected: onAction,
-      // Stages already passed stay on the list but are disabled, with a lock
-      // beside them. Hiding them would leave the admin wondering where they
-      // went; showing them dead says the pipeline only runs one way.
-      itemBuilder: (_) => [
-        for (final s in stages)
-          _stageItem(s, enabled: HiringPipeline.canMove(
-            from: status,
-            to: s.toLowerCase(),
-          )),
-        const PopupMenuDivider(),
-        _stageItem('Rejected', enabled: !HiringPipeline.isTerminal(status)),
-      ],
-    );
-  }
-}
-
-/// One stage in the overflow menu, live or locked.
-PopupMenuItem<String> _stageItem(String label, {required bool enabled}) =>
-    PopupMenuItem<String>(
-      value: label.toLowerCase(),
-      enabled: enabled,
-      height: 36,
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: _T.label(
-                size: 13,
-                weight: FontWeight.w500,
-                color: enabled ? _T.txt1 : _T.txt3,
-              ),
-            ),
-          ),
-          if (!enabled)
-            Icon(Icons.lock_outline_rounded, size: 13, color: _T.txt3),
-        ],
-      ),
-    );
-
 /// Marks a shortlist that has already been round the loop once.
 class _RoundBadge extends StatelessWidget {
   const _RoundBadge({required this.round});
@@ -2788,26 +3221,6 @@ class _RoundBadge extends StatelessWidget {
                   size: 10.5, weight: FontWeight.w800, color: _T.violet),
             ),
           ],
-        ),
-      );
-}
-
-/// Advances the whole revised batch in one action.
-class _AdvanceAllButton extends StatelessWidget {
-  const _AdvanceAllButton({required this.count, required this.onPressed});
-
-  final int count;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => FilledButton.icon(
-        onPressed: onPressed,
-        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-        label: Text('Move $count to Interview'),
-        style: FilledButton.styleFrom(
-          backgroundColor: _T.violet,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          textStyle: _T.label(size: 12.5, weight: FontWeight.w700),
         ),
       );
 }
@@ -2911,8 +3324,11 @@ class _CVSheet extends StatelessWidget {
     final jobTitle = str(cand['job_title']);
     final currentRole = str(cand['current_role']);
     final profStatus = str(cand['professional_status']);
-    final expYears = cand['experience_years'];
-    final cgpa = str(cand['cgpa']);
+    // Three separate measures, never merged. `years_experience` is a duration
+    // the recruiter's request already computed; `roles_listed` is a count.
+    final serviceYears = _numOrNull(cand['years_experience']);
+    final rolesListed = _numOrNull(cand['roles_listed']);
+    final flightHours = _numOrNull(cand['flight_hours']);
     final education = str(cand['education']);
     final university = str(cand['university']);
     final eduDur = str(cand['education_duration']);
@@ -3146,10 +3562,19 @@ class _CVSheet extends StatelessWidget {
                             ]),
 
                             // ── Professional Status ──
-                            if (expYears != null ||
+                            //
+                            // Service length, roles listed and flight hours are
+                            // three different measurements in three different
+                            // units. They each get their own tile and their own
+                            // label; the bug this replaces was one number shown
+                            // under another one's name. CGPA is not here — it
+                            // belongs to a specific degree and is rendered with
+                            // that degree in the education list below.
+                            if (serviceYears != null ||
+                                rolesListed != null ||
+                                flightHours != null ||
                                 profStatus.isNotEmpty ||
-                                currentRole.isNotEmpty ||
-                                cgpa.isNotEmpty) ...[
+                                currentRole.isNotEmpty) ...[
                               const SizedBox(height: 22),
                               _Sec(
                                 'PROFESSIONAL STATUS',
@@ -3165,15 +3590,32 @@ class _CVSheet extends StatelessWidget {
                                         : null,
                                   ),
                                   _Row2(
-                                    expYears != null
+                                    serviceYears != null
                                         ? _InfoTile(
-                                            'Experience',
-                                            '$expYears year(s)',
+                                            'Service Length',
+                                            ServiceYears.label(serviceYears),
+                                          )
+                                        : (rolesListed != null
+                                            ? _InfoTile(
+                                                'Service Length',
+                                                'No dated roles on file',
+                                              )
+                                            : null),
+                                    rolesListed != null
+                                        ? _InfoTile(
+                                            'Roles Listed',
+                                            '${rolesListed.toInt()}',
                                           )
                                         : null,
-                                    cgpa.isNotEmpty
-                                        ? _InfoTile('CGPA', cgpa)
+                                  ),
+                                  _Row2(
+                                    flightHours != null
+                                        ? _InfoTile(
+                                            'Flight Hours',
+                                            '${flightHours.toInt()}',
+                                          )
                                         : null,
+                                    null,
                                   ),
                                 ],
                               ),

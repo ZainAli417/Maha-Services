@@ -183,7 +183,15 @@ class _ViewShortlistedState extends State<view_shortlisted>
   );
 
   late ApplicantsProvider _provider;
-  bool _rankByScore = false;
+
+  /// How the table is ordered, or null for the order the list arrived in.
+  ///
+  /// The "Rank by Match Score" button and the AI-score column header write to
+  /// this same field on purpose. Two pieces of state for one ordering is how a
+  /// pressed button ends up disagreeing with the arrow above the column.
+  ShortlistSort? _sort;
+
+  bool get _rankByScore => _sort?.column == ShortlistSortColumn.aiScore;
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────
   @override
@@ -208,7 +216,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
   void didUpdateWidget(view_shortlisted old) {
     super.didUpdateWidget(old);
     if (old.jobId == widget.jobId) return;
-    _rankByScore = false;
+    _sort = null;
     _searchCtrl.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -269,15 +277,36 @@ class _ViewShortlistedState extends State<view_shortlisted>
           )
           .toList();
     }
-    if (_rankByScore) {
-      list = List.from(list)..sort((a, b) => _score(b).compareTo(_score(a)));
+    final sort = _sort;
+    if (sort != null) {
+      list = ShortlistOrder.by(
+        list,
+        value: (a) => _sortKey(p, a, sort.column),
+        ascending: sort.ascending,
+      );
     }
     return list;
   }
 
-  int _score(ApplicantRecord a) {
-    final d = a.profileSnapshot['match_score'];
-    return (d is Map) ? (d['overallScore'] as int? ?? 0) : 0;
+  /// The number a column sorts on, or null when this candidate has none.
+  ///
+  /// Null rather than zero, so [ShortlistOrder] can keep "not analyzed" and
+  /// "not invited" out of the ranking instead of ranking them bottom.
+  num? _sortKey(
+    ApplicantsProvider p,
+    ApplicantRecord a,
+    ShortlistSortColumn column,
+  ) =>
+      switch (column) {
+        ShortlistSortColumn.aiScore => a.aiScore,
+        // Only a released score. One the admin has not sent yet is not the
+        // recruiter's to order people by, and is not on screen either.
+        ShortlistSortColumn.testScore =>
+          a.assessment.hasScore ? a.assessment.percentage : null,
+      };
+
+  void _sortBy(ShortlistSortColumn column) {
+    setState(() => _sort = ShortlistOrder.cycle(_sort, column));
   }
 
   void _toggleSelectAll(ApplicantsProvider p) {
@@ -291,7 +320,9 @@ class _ViewShortlistedState extends State<view_shortlisted>
   }
 
   void _toggleRank(ApplicantsProvider p) {
-    setState(() => _rankByScore = !_rankByScore);
+    setState(() => _sort = _rankByScore
+        ? null
+        : (column: ShortlistSortColumn.aiScore, ascending: false));
     _showToast(
       _rankByScore
           ? 'Candidates ranked by AI score'
@@ -357,7 +388,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
 
     // The interview hangs off the request that advanced them, so the admin
     // sees it on the batch they are actually working.
-    final request = p.advancedRequestFor(chosen.first.userId);
+    final request = p.interviewRequestFor(chosen.first.userId);
     final messenger = ScaffoldMessenger.of(context);
 
     final booked = await showDialog<int>(
@@ -377,6 +408,17 @@ class _ViewShortlistedState extends State<view_shortlisted>
     );
 
     if (!mounted || booked == null) return;
+
+    // Booking the slot is the recruiter putting them forward, so it is written
+    // as exactly that on the request the shortlist lives on. Otherwise the
+    // admin's Interview Schedule holds a booking with no batch to show it in.
+    final reqId = (request?['request_id'] ?? '').toString();
+    await p.markAdvanced(
+      requestId: reqId,
+      candidateUids: [for (final a in chosen) a.userId],
+    );
+
+    if (!mounted) return;
     if (single == null) p.clearSelection();
     messenger.showSnackBar(
       SnackBar(
@@ -411,7 +453,7 @@ class _ViewShortlistedState extends State<view_shortlisted>
               notes: notesCtrl.text.trim().isEmpty
                   ? 'No notes provided'
                   : notesCtrl.text.trim(),
-            ),
+            ).then((id) => id != null),
           ),
         ),
       ),
@@ -453,11 +495,17 @@ class _ViewShortlistedState extends State<view_shortlisted>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Submission Successful',
+                        'Sent to admin',
                         style: _T.head(fs: 13, c: _T.white),
                       ),
+                      // What actually happened, not a fixed line. A send can be
+                      // a new shortlist, an answer to one already assessed, or
+                      // both at once — "Pending admin review" was only ever
+                      // true for the first.
                       Text(
-                        'Pending admin review.',
+                        p.lastSendSummary.isEmpty
+                            ? 'Pending admin review.'
+                            : p.lastSendSummary,
                         style: _T.label(fs: 11, c: _T.textTert),
                       ),
                     ],
@@ -524,6 +572,16 @@ class _ViewShortlistedState extends State<view_shortlisted>
                           total: _scope(provider).length,
                           horizontalPadding: isMobile ? 12 : 20,
                         ),
+                        // What the admin said when they sent the scores. This
+                        // is the half of the release that a percentage cannot
+                        // carry, and it belongs where the decision is made.
+                        for (final n in provider.assessmentNotes)
+                          _AdminNoteBanner(
+                            note: n.note,
+                            at: n.at,
+                            scored: n.scored,
+                            horizontalPadding: isMobile ? 12 : 20,
+                          ),
                         // ── Content: card list on mobile, table on desktop
                         Expanded(
                           child: isMobile
@@ -543,6 +601,8 @@ class _ViewShortlistedState extends State<view_shortlisted>
                                       _toggleSelectAll(provider),
                                   onViewProfile: _showProfile,
                                   onArrange: (a) => _arrangeInterview(provider, a),
+                                  sort: _sort,
+                                  onSort: _sortBy,
                                 ),
                         ),
                       ],
@@ -849,6 +909,61 @@ class _MobileCardList extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The admin's note that came with a batch of scores.
+class _AdminNoteBanner extends StatelessWidget {
+  const _AdminNoteBanner({
+    required this.note,
+    required this.at,
+    required this.scored,
+    required this.horizontalPadding,
+  });
+
+  final String note;
+  final DateTime? at;
+  final int scored;
+  final double horizontalPadding;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        margin: EdgeInsets.fromLTRB(horizontalPadding, 4, horizontalPadding, 8),
+        padding: const EdgeInsets.all(13),
+        decoration: BoxDecoration(
+          color: _T.purple.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: _T.purple.withValues(alpha: 0.28)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.mark_email_read_outlined, size: 17, color: _T.purple),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Admin sent $scored assessment '
+                    '${scored == 1 ? 'score' : 'scores'}'
+                    '${at == null ? '' : ' · ${DateFormat('d MMM, HH:mm').format(at!)}'}',
+                    style: _T.label(
+                      fs: 11,
+                      c: _T.purple,
+                      fw: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    note,
+                    style: _T.label(fs: 12.5, c: _T.textSec),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _ApplicantCard extends StatelessWidget {
@@ -1208,7 +1323,13 @@ class _DesktopTable extends StatelessWidget {
     required this.onToggleSelectAll,
     required this.onViewProfile,
     required this.onArrange,
+    required this.sort,
+    required this.onSort,
   });
+
+  /// The column in use, or null for the order the list arrived in.
+  final ShortlistSort? sort;
+  final ValueChanged<ShortlistSortColumn> onSort;
 
   @override
   Widget build(BuildContext context) {
@@ -1242,8 +1363,26 @@ class _DesktopTable extends StatelessWidget {
               Expanded(flex: 3, child: _Hdr('CANDIDATE')),
               Expanded(flex: 3, child: _Hdr('EXPERIENCE')),
               Expanded(flex: 2, child: _Hdr('APPLIED ON')),
-              Expanded(flex: 2, child: _Hdr('AI SCORE')),
-              Expanded(flex: 2, child: _Hdr('TEST SCORE')),
+              Expanded(
+                flex: 2,
+                child: _Hdr(
+                  'AI SCORE',
+                  ascending: sort?.column == ShortlistSortColumn.aiScore
+                      ? sort!.ascending
+                      : null,
+                  onTap: () => onSort(ShortlistSortColumn.aiScore),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: _Hdr(
+                  'TEST SCORE',
+                  ascending: sort?.column == ShortlistSortColumn.testScore
+                      ? sort!.ascending
+                      : null,
+                  onTap: () => onSort(ShortlistSortColumn.testScore),
+                ),
+              ),
               Expanded(flex: 2, child: _Hdr('STATUS')),
               const SizedBox(width: 76),
             ],
@@ -1269,14 +1408,71 @@ class _DesktopTable extends StatelessWidget {
   }
 }
 
+/// A column heading, optionally one the recruiter can order by.
+///
+/// A sortable heading always shows an arrow, faint when the column is not the
+/// one in use. A control that only appears once you have already found it is a
+/// control most people never find.
 class _Hdr extends StatelessWidget {
+  const _Hdr(this.text, {this.ascending, this.onTap});
+
   final String text;
-  const _Hdr(this.text);
+
+  /// Direction when this is the column in use; null when it is not.
+  final bool? ascending;
+
+  /// Non-null makes the heading clickable.
+  final VoidCallback? onTap;
+
   @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: _T.label(fs: 11, fw: FontWeight.w700).copyWith(letterSpacing: 0.4),
-  );
+  Widget build(BuildContext context) {
+    final label = Text(
+      text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: _T.label(
+        fs: 11,
+        fw: FontWeight.w700,
+        c: ascending == null ? _T.textSec : _T.purple,
+      ).copyWith(letterSpacing: 0.4),
+    );
+
+    if (onTap == null) return label;
+
+    final asc = ascending;
+    return Tooltip(
+      message: switch (asc) {
+        null => 'Sort by $text — highest first',
+        false => 'Highest first. Click for lowest first.',
+        true => 'Lowest first. Click to clear the sort.',
+      },
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(5),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 3, 4, 3),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: label),
+              const SizedBox(width: 3),
+              Icon(
+                switch (asc) {
+                  null => Icons.unfold_more_rounded,
+                  false => Icons.arrow_downward_rounded,
+                  true => Icons.arrow_upward_rounded,
+                },
+                size: 12,
+                color: asc == null
+                    ? _T.textTert
+                    : _T.purple,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _TableRow extends StatelessWidget {
@@ -1735,11 +1931,20 @@ enum _Standing {
   /// Sent to the admin and waiting on them. Nothing for the recruiter to do.
   withAdmin('With admin', Icons.lock_outline_rounded, _T.primary),
 
-  /// The assessment result has come back. The recruiter's move.
-  resultIn('Result in', Icons.how_to_reg_outlined, _T.warning),
+  /// Passed the assessment. The recruiter's move — book the interview.
+  passed('Passed', Icons.how_to_reg_outlined, _T.success),
 
-  /// Already sent forward after the assessment.
-  advanced('Advanced', Icons.done_all_rounded, _T.purple);
+  /// Sat the assessment and came in under the pass mark.
+  ///
+  /// Nothing is possible from here. The test made this decision, not the
+  /// recruiter, so no control on the row is live.
+  didNotPass('Did not pass', Icons.block_rounded, _T.danger),
+
+  /// Interview arranged. Already forward.
+  advanced('Interview set', Icons.event_available_rounded, _T.purple),
+
+  /// Considered in a batch that has since been narrowed, and not kept.
+  notKept('Not kept', Icons.remove_circle_outline_rounded, _T.textTert);
 
   const _Standing(this.label, this.icon, this.color);
 
@@ -1752,8 +1957,10 @@ enum _Standing {
   /// Order matters: being advanced outranks having a result, which outranks
   /// having been sent. Each state is the latest thing that happened.
   static _Standing of(ApplicantRecord a, ApplicantsProvider p) {
-    if (p.canArrangeInterview(a)) return _Standing.advanced;
-    if (p.canResend(a)) return _Standing.resultIn;
+    if (p.isAdvanced(a)) return _Standing.advanced;
+    if (p.hasFailedAssessment(a)) return _Standing.didNotPass;
+    if (p.canArrangeInterview(a)) return _Standing.passed;
+    if (p.isSuperseded(a)) return _Standing.notKept;
     if (a.sentToAdmin) return _Standing.withAdmin;
     return _Standing.shortlisted;
   }
@@ -1772,10 +1979,15 @@ class _StatusBadge extends StatelessWidget {
         _Standing.shortlisted => 'On your shortlist. Select and send to the admin.',
         _Standing.withAdmin =>
           'With the admin. Locked until their assessment result comes back.',
-        _Standing.resultIn =>
-          'Assessment result is in. You can re-select and send them forward.',
+        _Standing.passed =>
+          'Passed the assessment. Arrange their interview from this row.',
+        _Standing.didNotPass =>
+          'Sat the assessment and came in under the pass mark. Nothing further '
+              'can be done with them on this job.',
         _Standing.advanced =>
-          'Sent forward after the assessment. Ready to interview.',
+          'Interview arranged. The admin issues the joining link.',
+        _Standing.notKept =>
+          'You narrowed this batch and did not keep them.',
       },
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -1924,7 +2136,7 @@ class _SendToAdminDialogState extends State<_SendToAdminDialog> {
               const SizedBox(width: 14),
               Text(
                 widget.round > 1
-                    ? 'Send revised list (round ${widget.round})'
+                    ? 'Confirm your picks after the assessment'
                     : 'Send to Admin',
                 style: _T.head(fs: 17),
               ),
@@ -1933,9 +2145,11 @@ class _SendToAdminDialogState extends State<_SendToAdminDialog> {
           const SizedBox(height: 18),
           Text(
             widget.round > 1
-                ? 'Sending ${widget.selectedCount} candidate(s) forward after the '
-                    'assessment. Your original shortlist is kept as it was — this '
-                    'goes across as a separate, later decision.'
+                ? 'Keeping ${widget.selectedCount} candidate(s) from this batch '
+                    'for interview. Your original shortlist stays on the same '
+                    'request exactly as you sent it — the people you did not '
+                    'keep are dimmed, not removed, so the reason for the change '
+                    'is still readable next to it.'
                 : 'Submitting ${widget.selectedCount} candidate(s) to super admin '
                     'for final approval.',
             style: _T.body(fs: 13, c: _T.textSec),

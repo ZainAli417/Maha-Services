@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'admin_analytics_dashboard_Provider.dart';
+import 'widgets/candidate_map.dart';
+import 'widgets/ops_overview.dart';
+import 'widgets/ops_provider.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  DESIGN TOKENS  — Light Professional
@@ -251,6 +254,23 @@ class _BarBtn extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 //  MAIN CONTENT
 // ═══════════════════════════════════════════════════════════════════════════
+/// Owns the operations stream for the lifetime of the dashboard.
+///
+/// Its own provider rather than the analytics one: this reads four collections
+/// the analytics provider has no reason to touch, and keeping them apart means
+/// a failure in one does not blank the other.
+class _OpsSection extends StatelessWidget {
+  const _OpsSection({required this.isMobile});
+
+  final bool isMobile;
+
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+        create: (_) => AdminOpsProvider()..start(),
+        child: OpsOverview(isMobile: isMobile),
+      );
+}
+
 class _MainContent extends StatelessWidget {
   final AdminAnalyticsProvider prov;
   final bool isWide, isMid;
@@ -308,6 +328,14 @@ class _MainContent extends StatelessWidget {
         _KpiGrid(prov: prov, isMid: isMid, onNavigate: onNavigate),
         const SizedBox(height: 28),
 
+        // ASSESSMENT OPERATIONS — the admin's own queue.
+        //
+        // Placed above the platform charts on purpose: "what is waiting on me"
+        // outranks "what is the pool made of", and a panel that carries real
+        // warnings has to be seen before the reader has scrolled past it.
+        _OpsSection(isMobile: !isMid),
+        const SizedBox(height: 28),
+
         // USER BREAKDOWN
         _SectionHead(icon: Icons.people_alt_rounded, title: 'User Composition'),
         const SizedBox(height: 14),
@@ -341,7 +369,7 @@ class _MainContent extends StatelessWidget {
                 ],
               ),
         const SizedBox(height: 20),
-        _PoolQualityCard(prov: prov),
+       // _PoolQualityCard(prov: prov),
         const SizedBox(height: 28),
 
         // STATUS BREAKDOWN  — line chart + bar chart
@@ -373,193 +401,345 @@ class _MainContent extends StatelessWidget {
           title: 'Geographical Distribution',
         ),
         const SizedBox(height: 14),
-        isMid
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _GeoCard(data: prov.jobsByLocation)),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: _GeoCard(
-                      data: prov.applicantsByLocation,
-                      icon: Icons.groups_rounded,
-                      title: 'Applicants by Region',
-                      subtitle: 'Top applicant countries / regions',
-                      emptyLabel: 'No applicant region data yet',
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  _GeoCard(data: prov.jobsByLocation),
-                  const SizedBox(height: 20),
-                  _GeoCard(
-                    data: prov.applicantsByLocation,
-                    icon: Icons.groups_rounded,
-                    title: 'Applicants by Region',
-                    subtitle: 'Top applicant countries / regions',
-                    emptyLabel: 'No applicant region data yet',
-                  ),
-                ],
-              ),
+
+        // The map on its own. The two ranked-bar cards that used to sit here
+        // said the same thing in a form that answers "how many" but never
+        // "where" — and the map's own legend already carries the counts.
+        _MapCard(data: prov.applicantsByLocation, isMid: isMid),
         const SizedBox(height: 32),
       ],
     );
   }
 }
 
-/// Branded "Jobs by Location" card — ranked proportional bars (teal→navy) with
-/// a no-data state. Lightweight (no chart lib) and RepaintBoundary-isolated.
-class _GeoCard extends StatelessWidget {
-  final Map<String, int> data;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String emptyLabel;
-  const _GeoCard({
-    required this.data,
-    this.icon = Icons.public_rounded,
-    this.title = 'Jobs by Location',
-    this.subtitle = 'Top hiring regions',
-    this.emptyLabel = 'No location data yet',
-  });
+/// The map panel, in the same shell as the cards beside it.
+// ═══════════════════════════════════════════════════════════════════════════
+//  POPUPS
+// ═══════════════════════════════════════════════════════════════════════════
 
-  @override
-  Widget build(BuildContext context) {
-    final entries = data.entries.toList();
-    final maxV = entries.isEmpty
-        ? 1
-        : entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
-    return RepaintBoundary(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: _C.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: _C.border),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x140B2239),
-              blurRadius: 16,
-              offset: Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(9),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_C.tealDeep, _C.navy],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,
-                          style: _C.p(15, fw: FontWeight.w800)),
-                      Text(subtitle,
-                          style:
-                              _C.p(12, fw: FontWeight.w500, color: _C.t3)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            if (entries.isEmpty)
+/// Every public job listing, from the Jobs Posted tile.
+///
+/// A list rather than a navigation: the tile is a count, and the question it
+/// raises is "which ones", which does not need a whole screen to answer.
+void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
+  showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      final jobs = prov.allJobs;
+      return Dialog(
+        backgroundColor: _C.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640, maxHeight: 620),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 22),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: const BoxDecoration(
-                          color: _C.tealLt,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.map_outlined,
-                            color: _C.tealDeep, size: 26),
+                padding: const EdgeInsets.fromLTRB(22, 20, 12, 14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: _C.indigoLt,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(height: 12),
-                      Text(emptyLabel,
-                          style: _C.p(13, fw: FontWeight.w700)),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Data appears here as records are added.',
-                        textAlign: TextAlign.center,
-                        style: _C.p(12, fw: FontWeight.w500, color: _C.t3),
+                      child: const Icon(
+                        Icons.work_rounded,
+                        size: 17,
+                        color: _C.navy,
                       ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              ...List.generate(entries.length, (i) {
-                final e = entries[i];
-                final frac = maxV == 0 ? 0.0 : e.value / maxV;
-                return Padding(
-                  padding: EdgeInsets.only(
-                      bottom: i == entries.length - 1 ? 0 : 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              e.key,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: _C.p(13, fw: FontWeight.w600),
-                            ),
+                          Text(
+                            'Jobs Posted',
+                            style: _C.p(16, fw: FontWeight.w800),
                           ),
-                          const SizedBox(width: 8),
-                          Text('${e.value}',
-                              style: _C.p(13,
-                                  fw: FontWeight.w800, color: _C.navy)),
+                          Text(
+                            '${jobs.length} public listing'
+                            '${jobs.length == 1 ? '' : 's'}',
+                            style: _C.p(11.5, fw: FontWeight.w500, color: _C.t2),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Stack(
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: _C.t3),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: _C.border),
+              if (jobs.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(34),
+                  child: Text(
+                    'No job has been posted yet.',
+                    style: _C.p(12.5, fw: FontWeight.w500, color: _C.t2),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 18),
+                    itemCount: jobs.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final j = jobs[i];
+                      final status =
+                          (j['status'] ?? 'open').toString().toLowerCase();
+                      final closed = status == 'closed';
+                      final tone = closed ? _C.rose : _C.emerald;
+                      final loc = (j['location'] ?? '').toString().trim();
+                      return Container(
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color: _C.surfaceL,
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(color: _C.border),
+                        ),
+                        child: Row(
                           children: [
-                            Container(height: 8, color: _C.canvas),
-                            FractionallySizedBox(
-                              widthFactor: frac.clamp(0.04, 1.0),
-                              child: Container(
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [_C.teal, _C.navy],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (j['title'] ?? 'Untitled role').toString(),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: _C.p(13, fw: FontWeight.w800),
                                   ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    [
+                                      if ((j['company'] ?? '')
+                                          .toString()
+                                          .trim()
+                                          .isNotEmpty)
+                                        j['company'].toString(),
+                                      if (loc.isNotEmpty) loc,
+                                      if ((j['createdStr'] ?? '')
+                                          .toString()
+                                          .isNotEmpty)
+                                        j['createdStr'].toString(),
+                                    ].join('  ·  '),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: _C.p(
+                                      11,
+                                      fw: FontWeight.w500,
+                                      color: _C.t2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tone.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: tone.withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Text(
+                                closed ? 'CLOSED' : 'OPEN',
+                                style: _C.p(
+                                  8.5,
+                                  fw: FontWeight.w800,
+                                  color: tone,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              }),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// The skills multi-select behind the Demand Intelligence filter.
+///
+/// Stateful inside the dialog so a tick shows immediately: the provider does
+/// notify, but the dialog is a separate route and would not rebuild with the
+/// page behind it.
+void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
+  showDialog<void>(
+    context: context,
+    builder: (ctx) => _SkillPicker(prov: prov),
+  );
+}
+
+class _SkillPicker extends StatefulWidget {
+  const _SkillPicker({required this.prov});
+  final AdminAnalyticsProvider prov;
+
+  @override
+  State<_SkillPicker> createState() => _SkillPickerState();
+}
+
+class _SkillPickerState extends State<_SkillPicker> {
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final all = widget.prov.getAllRawSkills();
+    final q = _search.text.trim().toLowerCase();
+    final shown =
+        q.isEmpty ? all : all.where((s) => s.toLowerCase().contains(q)).toList();
+    final selected = widget.prov.selectedSkills;
+
+    return Dialog(
+      backgroundColor: _C.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 600),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 20, 12, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Filter by skill',
+                          style: _C.p(16, fw: FontWeight.w800),
+                        ),
+                        Text(
+                          '${selected.length} of ${all.length} selected',
+                          style: _C.p(11.5, fw: FontWeight.w500, color: _C.t2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: _C.t3),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: TextField(
+                controller: _search,
+                onChanged: (_) => setState(() {}),
+                style: _C.p(13, fw: FontWeight.w500),
+                decoration: InputDecoration(
+                  hintText: 'Search skills…',
+                  hintStyle: _C.p(12.5, fw: FontWeight.w500, color: _C.t3),
+                  prefixIcon:
+                      const Icon(Icons.search_rounded, size: 18, color: _C.t3),
+                  isDense: true,
+                  filled: true,
+                  fillColor: _C.surfaceL,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _C.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _C.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _C.navy, width: 1.5),
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 1, color: _C.border),
+            if (shown.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(30),
+                child: Text(
+                  all.isEmpty
+                      ? 'No skill has been recorded on a profile yet.'
+                      : 'Nothing matches that search.',
+                  style: _C.p(12.5, fw: FontWeight.w500, color: _C.t2),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  itemCount: shown.length,
+                  itemBuilder: (_, i) {
+                    final skill = shown[i];
+                    final on = selected.contains(skill);
+                    return CheckboxListTile(
+                      value: on,
+                      dense: true,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: _C.navy,
+                      title: Text(skill, style: _C.p(13, fw: FontWeight.w600)),
+                      onChanged: (_) {
+                        widget.prov.toggleSkill(skill);
+                        setState(() {});
+                      },
+                    );
+                  },
+                ),
+              ),
+            const Divider(height: 1, color: _C.border),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: selected.isEmpty
+                        ? null
+                        : () {
+                            widget.prov.clearSkills();
+                            setState(() {});
+                          },
+                    child: Text(
+                      'Clear all',
+                      style: _C.p(12.5, fw: FontWeight.w700, color: _C.t2),
+                    ),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: FilledButton.styleFrom(backgroundColor: _C.navy),
+                    child: Text(
+                      'Done',
+                      style: _C.p(12.5, fw: FontWeight.w700,
+                          color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -567,300 +747,36 @@ class _GeoCard extends StatelessWidget {
   }
 }
 
-void _showJobsPopup(BuildContext context, AdminAnalyticsProvider prov) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
+class _MapCard extends StatelessWidget {
+  const _MapCard({required this.data, required this.isMid});
+
+  final Map<String, int> data;
+  final bool isMid;
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
         child: Container(
-          width: 500,
-          constraints: const BoxConstraints(maxHeight: 600),
+          padding: EdgeInsets.all(isMid ? 20 : 14),
           decoration: BoxDecoration(
             color: _C.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20)],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // HEADER
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
-                decoration: const BoxDecoration(
-                  color: _C.tealLt,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: _C.teal,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.work_history_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Recent Jobs',
-                            style: _C.p(
-                              20,
-                              fw: FontWeight.w800,
-                              color: _C.teal,
-                            ),
-                          ),
-                          Text(
-                            'Overview of latest posted listings',
-                            style: _C.p(13, color: _C.t2),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, color: _C.t2),
-                      onPressed: () => Navigator.pop(context),
-                      splashRadius: 24,
-                    ),
-                  ],
-                ),
-              ),
-              // BODY
-              Expanded(
-                child: prov.allJobs.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No jobs found.',
-                          style: _C.p(15, color: _C.t3),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: prov.allJobs.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 16),
-                        itemBuilder: (context, i) {
-                          final job = prov.allJobs[i];
-                          final status = (job['status'] ?? 'Open').toString();
-                          final isOpen = status.toLowerCase() == 'open';
-
-                          return Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _C.surface,
-                              border: Border.all(color: _C.border),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x05000000),
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Left details
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        job['title'] ?? 'Untitled Job',
-                                        style: _C.p(16, fw: FontWeight.w700),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.business_center_rounded,
-                                            size: 14,
-                                            color: _C.t3,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Expanded(
-                                            child: Text(
-                                              job['company'] ??
-                                                  'Unknown Company',
-                                              style: _C.p(13, color: _C.t2),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on_rounded,
-                                            size: 14,
-                                            color: _C.t3,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            job['location'] ?? 'Remote',
-                                            style: _C.p(12, color: _C.t3),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          const Icon(
-                                            Icons.access_time_rounded,
-                                            size: 14,
-                                            color: _C.t3,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            job['type'] ?? 'Full-time',
-                                            style: _C.p(12, color: _C.t3),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Right Badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isOpen ? _C.emeraldL : _C.roseLt,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    status.toUpperCase(),
-                                    style: _C.p(
-                                      11,
-                                      fw: FontWeight.w700,
-                                      color: isOpen ? _C.emerald : _C.rose,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: _C.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.035),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
-        ),
-      );
-    },
-  );
-}
-
-void _showMultiSelectSkills(BuildContext context, AdminAnalyticsProvider prov) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          width: 350,
-          constraints: const BoxConstraints(maxHeight: 500),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Filter Skills', style: _C.p(16, fw: FontWeight.w700)),
-                  if (prov.selectedSkills.isNotEmpty)
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(50, 30),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () => prov.clearSkills(),
-                      child: Text('Clear', style: _C.p(14, color: _C.rose)),
-                    ),
-                ],
-              ),
-              const Divider(),
-              Expanded(
-                child: Consumer<AdminAnalyticsProvider>(
-                  builder: (context, p, _) {
-                    final allSkills = p.getAllRawSkills();
-                    if (allSkills.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No skills available',
-                          style: _C.p(14, color: _C.t3),
-                        ),
-                      );
-                    }
-                    return Scrollbar(
-                      child: ListView.builder(
-                        itemCount: allSkills.length,
-                        itemBuilder: (context, i) {
-                          final skill = allSkills[i];
-                          return CheckboxListTile(
-                            title: Text(
-                              skill,
-                              style: _C.p(14, fw: FontWeight.w600),
-                            ),
-                            value: p.selectedSkills.contains(skill),
-                            onChanged: (_) => p.toggleSkill(skill),
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            activeColor: _C.indigo,
-                            dense: true,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _C.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Done',
-                    style: _C.p(14, fw: FontWeight.w700, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
+          child: CandidateMap(
+            byName: data,
+            height: isMid ? 320 : 220,
           ),
         ),
       );
-    },
-  );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  KPI GRID
-// ═══════════════════════════════════════════════════════════════════════════
-// ─── KPI data model ───────────────────────────────────────────────────────
 class _KD {
   final IconData icon;
   final String label, sub;

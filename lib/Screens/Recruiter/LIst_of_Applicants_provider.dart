@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/onboarding/models/candidate_profile.dart';
 import '../../core/onboarding/role_profile_snapshot.dart';
+import '../../core/profile/service_years.dart';
+import '../../core/recruiter/hiring_funnel.dart';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -321,71 +323,8 @@ class ApplicantRecord {
   /// career; adding them would hand a recruiter sixteen years for eight.
   /// Returns null when nothing is dated, rather than 0 — "no dates on file"
   /// and "no experience" are not the same claim.
-  static num? serviceYearsFrom(List<Map<String, dynamic>> experiences) {
-    final now = DateTime.now();
-    final spans = <({DateTime start, DateTime end})>[];
-
-    for (final e in experiences) {
-      final start = _month(e['startDate']);
-      if (start == null) continue;
-      final isCurrent = e['isCurrent'] == true;
-      final end = isCurrent ? now : (_month(e['endDate']) ?? now);
-      if (end.isBefore(start)) continue;
-      spans.add((start: start, end: end));
-    }
-    if (spans.isEmpty) return null;
-
-    spans.sort((a, b) => a.start.compareTo(b.start));
-    var total = Duration.zero;
-    var blockStart = spans.first.start;
-    var blockEnd = spans.first.end;
-
-    for (final span in spans.skip(1)) {
-      if (span.start.isAfter(blockEnd)) {
-        total += blockEnd.difference(blockStart);
-        blockStart = span.start;
-        blockEnd = span.end;
-      } else if (span.end.isAfter(blockEnd)) {
-        blockEnd = span.end;
-      }
-    }
-    total += blockEnd.difference(blockStart);
-
-    final years = total.inDays / 365.25;
-    // Under six months is a posting, not "years of experience"; rounding it up
-    // to 1 would overstate the candidate.
-    return years < 0.5 ? null : years;
-  }
-
-  /// Parses the month formats this data actually contains.
-  ///
-  /// The onboarding form writes MM/YYYY, the CV extractor and the imported
-  /// profiles write YYYY-MM, and a few carry a bare year. One field, several
-  /// spellings — so the parser reads all of them and refuses anything else
-  /// rather than guessing.
-  static DateTime? _month(dynamic raw) {
-    final text = (raw ?? '').toString().trim();
-    if (text.isEmpty) return null;
-
-    final iso = RegExp(r'^(\d{4})-(\d{1,2})').firstMatch(text);
-    if (iso != null) {
-      final month = int.parse(iso.group(2)!);
-      if (month < 1 || month > 12) return null;
-      return DateTime(int.parse(iso.group(1)!), month);
-    }
-
-    final slash = RegExp(r'^(\d{1,2})[/-](\d{4})$').firstMatch(text);
-    if (slash != null) {
-      final month = int.parse(slash.group(1)!);
-      if (month < 1 || month > 12) return null;
-      return DateTime(int.parse(slash.group(2)!), month);
-    }
-
-    final year = RegExp(r'^(\d{4})$').firstMatch(text);
-    if (year != null) return DateTime(int.parse(year.group(1)!));
-
-    return null;
-  }
+  static num? serviceYearsFrom(List<Map<String, dynamic>> experiences) =>
+      ServiceYears.from(experiences);
 
   /// How many previous positions the candidate listed.
   ///
@@ -792,10 +731,103 @@ class ApplicantsProvider with ChangeNotifier {
   /// The round the next request from the current selection would be.
   int get pendingRound => resendPolicy.roundFor(selectedApplicantIds);
 
-  /// True once the recruiter has advanced this candidate past the assessment,
-  /// which is the point an interview becomes theirs to arrange.
+  /// True once this candidate has passed the assessment.
+  ///
+  /// Passing is what earns an interview, and booking it is the recruiter's
+  /// move — not a second round-trip through the admin. Failing earns nothing,
+  /// which is why this reads the verdict rather than mere membership of a
+  /// released batch.
   bool canArrangeInterview(ApplicantRecord a) =>
-      resendPolicy.interviewReadyCandidateIds.contains(a.userId);
+      resendPolicy.passedCandidateIds.contains(a.userId);
+
+  /// True once the recruiter has actually put this candidate forward.
+  bool isAdvanced(ApplicantRecord a) =>
+      resendPolicy.finalSelectedCandidateIds.contains(a.userId);
+
+  /// True for a candidate whose released score is not a pass.
+  ///
+  /// Nothing is possible for them here: no checkbox, no resend, no interview.
+  bool hasFailedAssessment(ApplicantRecord a) =>
+      resendPolicy.failedCandidateIds.contains(a.userId);
+
+  /// True for a candidate who was in a batch the recruiter has since narrowed
+  /// and who was not kept. Their card dims; it does not disappear.
+  bool isSuperseded(ApplicantRecord a) =>
+      resendPolicy.supersededCandidateIds.contains(a.userId);
+
+  /// The request an interview for this candidate hangs off.
+  Map<String, dynamic>? interviewRequestFor(String uid) =>
+      resendPolicy.interviewRequestFor(uid);
+
+  /// The whole pipeline, counted once.
+  ///
+  /// [bookedUids] comes from the interview stream, which this provider does not
+  /// own — passing it in keeps one owner per stream rather than two providers
+  /// racing to describe the same bookings.
+  ///
+  /// Pass [jobId] to scope it to one job; omit for every job the recruiter has.
+  HiringFunnel funnel({Set<String> bookedUids = const {}, String? jobId}) {
+    final pool = (jobId == null || jobId.isEmpty)
+        ? _all
+        : _all.where((a) => a.jobId == jobId);
+    return HiringFunnel.from([
+      for (final a in pool)
+        (
+          status: a.status,
+          sentToAdmin: a.sentToAdmin,
+          aiScore: a.aiScore,
+          testStatus: a.assessment.status,
+          // Released only. An unreleased score is not on the recruiter's screen
+          // and must not be behind their numbers either.
+          testPercentage:
+              a.assessment.hasScore ? a.assessment.percentage : null,
+          testVerdict: a.assessment.released ? a.assessment.verdict : '',
+          interviewBooked: bookedUids.contains(a.userId),
+        ),
+    ]);
+  }
+
+  /// Jobs the recruiter has shortlisted anybody for, newest activity first.
+  List<({String id, String title, int shortlisted})> get shortlistedJobs {
+    final byJob = <String, ({String title, int count})>{};
+    for (final a in _all) {
+      if (a.status.toLowerCase().trim() != 'shortlist') continue;
+      if (a.jobId.isEmpty) continue;
+      final prev = byJob[a.jobId];
+      byJob[a.jobId] = (
+        title: prev?.title.isNotEmpty == true
+            ? prev!.title
+            : (a.jobData?.title ?? a.jobId),
+        count: (prev?.count ?? 0) + 1,
+      );
+    }
+    return [
+      for (final e in byJob.entries)
+        (id: e.key, title: e.value.title, shortlisted: e.value.count),
+    ]..sort((a, b) => b.shortlisted.compareTo(a.shortlisted));
+  }
+
+  /// What the admin wrote when they sent the scores over, newest first.
+  ///
+  /// The note is the reason the release step exists. A percentage on its own
+  /// does not tell a recruiter what the admin made of it, and the note was
+  /// being written to the request and then read by nobody.
+  List<({String note, DateTime? at, int scored})> get assessmentNotes => [
+        for (final r in _recruiterRequests)
+          if (r['assessment_released_at'] != null &&
+              (r['assessment_note'] ?? '').toString().trim().isNotEmpty)
+            (
+              note: r['assessment_note'].toString().trim(),
+              at: _releasedAt(r['assessment_released_at']),
+              scored: (r['assessment_summary'] as Map? ?? const {}).length,
+            ),
+      ];
+
+  static DateTime? _releasedAt(dynamic raw) {
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) return DateTime.tryParse(raw);
+    return null;
+  }
 
   /// The request a candidate was advanced in, for the interview to hang off.
   Map<String, dynamic>? advancedRequestFor(String uid) =>
@@ -1510,6 +1542,83 @@ class ApplicantsProvider with ChangeNotifier {
     }
   }
 
+  /// What the last send actually did, in words the snackbar can show.
+  ///
+  /// A send is not always one thing — see [sendSelectedCandidatesToAdmin] — so
+  /// "Submitted" alone would sometimes be an understatement and sometimes a
+  /// lie.
+  String lastSendSummary = '';
+
+  List<Map<String, dynamic>> _candidateMaps(List<ApplicantRecord> people) =>
+      people
+          .map(
+            (a) => {
+              // No contact details here by design: the recruiter's client never
+              // receives them (they are stripped when the application snapshot is
+              // written), and the admin reads them straight from Job_Seeker/{uid}
+              // using this uid. Sending them through the recruiter would put a
+              // second, staler copy of the candidate's PII in a document the
+              // recruiter can write.
+              'uid': a.userId,
+              'name': a.name,
+              'nationality': a.nationality,
+              'picture_url': a.pictureUrl,
+              'location': a.location,
+              'job_id': a.jobId,
+              'job_title': a.jobData?.title ?? '',
+              'applied_at': a.appliedAt.toIso8601String(),
+              'status': a.status,
+              'match_score': a.matchScore,
+              'professional_status': a.professionalStatus,
+              'retirement_date': a.retirementDate,
+              'summary': a.summary,
+              'objectives': a.objectives,
+              // Named for what it is. The admin sheet reads these keys, and a
+              // count of jobs under a "years" name is how the recruiter view
+              // ended up claiming two jobs was two years.
+              'roles_listed': a.roleCount,
+              'flight_hours': a.flightHours,
+              'years_experience': a.yearsOfExperience,
+              'current_role': a.currentRole,
+              'company': a.company,
+              'education': a.education,
+              'university': a.university,
+              'education_duration': a.educationDuration,
+              'cgpa': a.cgpa,
+              'skills': a.skills,
+              'certifications': a.certifications,
+              'publications': a.publications,
+              'awards': a.awards,
+              'professionalExperience': a.experiences,
+              'educationalProfile': a.educations,
+              'documents': a.documents,
+              'experienceDocuments': a.experienceDocuments,
+              'certificationDocuments': a.certificationDocuments,
+              // Carried through verbatim so the admin sheet renders exactly what
+              // the recruiter reviewed — same keys, same values.
+              'role_profile': a.roleProfile.toJson(),
+              'target_role': a.roleProfile.roleTitle,
+            },
+          )
+            .toList();
+
+  /// Sends the current selection to the admin.
+  ///
+  /// Two different things can happen here, and which one happens depends on
+  /// whether the candidate has already been assessed:
+  ///
+  ///   * Nobody has a score yet — a new request document is opened. This is
+  ///     the recruiter putting a shortlist in front of the admin.
+  ///   * Their scores came back from an existing request — that same request
+  ///     gains a `final_selection`. It is deliberately *not* a second request.
+  ///     The seventeen who were sent, the scores that came back and the four
+  ///     the recruiter kept are three facts about one decision; splitting them
+  ///     across two documents is what made the admin's queue show the same
+  ///     recruiter twice with nothing to tell the two entries apart.
+  ///
+  /// A selection may legitimately contain both kinds. Each group is written
+  /// the way it needs to be written, in one batch, and [lastSendSummary] says
+  /// what happened.
   Future<String?> sendSelectedCandidatesToAdmin({String? notes}) async {
     if (selectedApplicantIds.isEmpty) return null;
 
@@ -1520,15 +1629,9 @@ class ApplicantsProvider with ChangeNotifier {
       return null;
     }
 
-    // Already advanced candidates are excluded rather than refused: the admin
-    // has them, and the recruiter's remaining action for those is booking the
-    // interview, not sending them a second time. A mixed selection therefore
-    // sends only the people who still need sending.
     final selected = _all
         .where((a) =>
-            selectedApplicantIds.contains(a.userId) &&
-            isSelectable(a) &&
-            !canArrangeInterview(a))
+            selectedApplicantIds.contains(a.userId) && isSelectable(a))
         .toList();
 
     if (selected.isEmpty) {
@@ -1538,102 +1641,119 @@ class ApplicantsProvider with ChangeNotifier {
       return null;
     }
 
-    // Round two revises a decision made on round one. It is written as its own
-    // document rather than as an edit to the first: the recruiter's original
-    // shortlist, and the scores it was revised on, have to stay readable
-    // afterwards. Overwriting them would erase the reason for the change.
-    final round = pendingRound;
-    final previous =
-        round > 1 ? releasedRequestFor(selected.first.userId) : null;
-    final parent = previous == null
-        ? null
-        : (previous['request_id'] ?? '').toString();
+    // Split by where each candidate belongs. Someone whose score has come back
+    // is revising a request that already exists; someone who has never been
+    // sent needs a new one.
+    final revising = <String, List<ApplicantRecord>>{};
+    final fresh = <ApplicantRecord>[];
+    for (final a in selected) {
+      final released = releasedRequestFor(a.userId);
+      final id = (released?['request_id'] ?? '').toString();
+      if (id.isEmpty) {
+        fresh.add(a);
+      } else {
+        revising.putIfAbsent(id, () => []).add(a);
+      }
+    }
 
-    // ✅ Build payload in single pass
-    final candidateMaps = selected
-        .map(
-          (a) => {
-            // No contact details here by design: the recruiter's client never
-            // receives them (they are stripped when the application snapshot is
-            // written), and the admin reads them straight from Job_Seeker/{uid}
-            // using this uid. Sending them through the recruiter would put a
-            // second, staler copy of the candidate's PII in a document the
-            // recruiter can write.
-            'uid': a.userId,
-            'name': a.name,
-            'nationality': a.nationality,
-            'picture_url': a.pictureUrl,
-            'location': a.location,
-            'job_id': a.jobId,
-            'job_title': a.jobData?.title ?? '',
-            'applied_at': a.appliedAt.toIso8601String(),
-            'status': a.status,
-            'match_score': a.matchScore,
-            'professional_status': a.professionalStatus,
-            'retirement_date': a.retirementDate,
-            'summary': a.summary,
-            'objectives': a.objectives,
-            // Named for what it is. The admin sheet reads these keys, and a
-            // count of jobs under a "years" name is how the recruiter view
-            // ended up claiming two jobs was two years.
-            'roles_listed': a.roleCount,
-            'flight_hours': a.flightHours,
-            'years_experience': a.yearsOfExperience,
-            'current_role': a.currentRole,
-            'company': a.company,
-            'education': a.education,
-            'university': a.university,
-            'education_duration': a.educationDuration,
-            'cgpa': a.cgpa,
-            'skills': a.skills,
-            'certifications': a.certifications,
-            'publications': a.publications,
-            'awards': a.awards,
-            'professionalExperience': a.experiences,
-            'educationalProfile': a.educations,
-            'documents': a.documents,
-            'experienceDocuments': a.experienceDocuments,
-            'certificationDocuments': a.certificationDocuments,
-            // Carried through verbatim so the admin sheet renders exactly what
-            // the recruiter reviewed — same keys, same values.
-            'role_profile': a.roleProfile.toJson(),
-            'target_role': a.roleProfile.roleTitle,
-          },
-        )
-        .toList();
+    final note = (notes ?? '').trim();
 
     try {
-      final reqRef = _db.collection('recruiter_requests').doc();
-
-      // ✅ Single batch for both the new doc and all sentToAdmin updates
       final batch = _db.batch();
+      String? primaryId;
 
-      batch.set(reqRef, {
-        'request_id': reqRef.id,
-        'recruiter_id': recruiter.uid,
-        'recruiter_email': recruiter.email ?? '',
-        'created_at': FieldValue.serverTimestamp(),
-        'notes': (notes ?? '').trim(),
-        'total_candidates': selected.length,
-        'status': 'pending',
-        'round': round,
-        if (parent != null && parent.isNotEmpty)
-          'parent_request_id': parent,
-        'candidate_ids': selected.map((a) => a.userId).toList(),
-        'candidates': candidateMaps,
-        'source': round > 1 ? 'reshortlist_after_assessment' : 'shortlist_view',
-      });
-
-      for (final a in selected) {
-        batch.update(a.reference, {'sentToAdmin': true});
+      if (fresh.isNotEmpty) {
+        final reqRef = _db.collection('recruiter_requests').doc();
+        primaryId = reqRef.id;
+        batch.set(reqRef, {
+          'request_id': reqRef.id,
+          'recruiter_id': recruiter.uid,
+          'recruiter_email': recruiter.email ?? '',
+          'created_at': FieldValue.serverTimestamp(),
+          'notes': note,
+          'total_candidates': fresh.length,
+          'status': 'pending',
+          'round': 1,
+          'candidate_ids': fresh.map((a) => a.userId).toList(),
+          'candidates': _candidateMaps(fresh),
+          'source': 'shortlist_view',
+        });
+        for (final a in fresh) {
+          batch.update(a.reference, {'sentToAdmin': true});
+        }
       }
 
-      await batch.commit(); // ✅ One round-trip instead of two
+      for (final entry in revising.entries) {
+        // arrayUnion, not a replacement: a recruiter who sends four and then
+        // decides on a fifth is adding to one answer, not writing a new one.
+        // It is also idempotent, so a double-click cannot duplicate anybody.
+        batch.update(_db.collection('recruiter_requests').doc(entry.key), {
+          'final_selection':
+              FieldValue.arrayUnion(entry.value.map((a) => a.userId).toList()),
+          'final_selection_note': note,
+          'final_selection_at': FieldValue.serverTimestamp(),
+          'final_selection_by': recruiter.uid,
+          'round': 2,
+          // Keeping somebody after the assessment *is* moving them to
+          // interview. The stage follows from the action rather than being set
+          // separately, so the two cannot end up telling different stories.
+          for (final a in entry.value)
+            'candidate_statuses.${a.userId}': 'interview',
+          'status': 'active',
+          'last_updated_at': FieldValue.serverTimestamp(),
+        });
+        primaryId ??= entry.key;
+      }
+
+      await batch.commit();
+
+      final advanced = revising.values.fold<int>(0, (n, v) => n + v.length);
+      lastSendSummary = [
+        if (fresh.isNotEmpty)
+          '${fresh.length} sent for review',
+        if (advanced > 0)
+          '$advanced advanced on the existing request',
+      ].join(' · ');
+
       clearSelection();
-      return reqRef.id;
+      return primaryId;
     } catch (e) {
       debugPrint('sendSelectedCandidatesToAdmin error: $e');
       return null;
+    }
+  }
+
+  /// Records that these candidates have been put forward for interview.
+  ///
+  /// Booking the slot is the recruiter's decision; this is that decision
+  /// written down, on the request the shortlist already lives on. Without it
+  /// the admin's Interview Schedule would have a booking with no batch to show
+  /// it under.
+  ///
+  /// arrayUnion, so booking a second candidate adds to one answer rather than
+  /// replacing it, and a double-click cannot duplicate anybody.
+  Future<bool> markAdvanced({
+    required String requestId,
+    required List<String> candidateUids,
+    String note = '',
+  }) async {
+    if (requestId.isEmpty || candidateUids.isEmpty) return false;
+    try {
+      await _db.collection('recruiter_requests').doc(requestId).update({
+        'final_selection': FieldValue.arrayUnion(candidateUids),
+        if (note.trim().isNotEmpty) 'final_selection_note': note.trim(),
+        'final_selection_at': FieldValue.serverTimestamp(),
+        'final_selection_by': _auth.currentUser?.uid ?? '',
+        'round': 2,
+        for (final uid in candidateUids)
+          'candidate_statuses.$uid': 'interview',
+        'status': 'active',
+        'last_updated_at': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('markAdvanced error: $e');
+      return false;
     }
   }
 
@@ -1698,22 +1818,46 @@ class ResendPolicy {
           id.toString(),
       ];
 
-  /// Only the candidates whose own score has come back.
+  static Map<String, dynamic> _summaryOf(Map<String, dynamic> request) =>
+      request['assessment_summary'] is Map
+          ? Map<String, dynamic>.from(request['assessment_summary'] as Map)
+          : const {};
+
+  static String _verdictOf(dynamic entry) => entry is Map
+      ? (entry['verdict'] ?? '').toString().toLowerCase()
+      : '';
+
+  /// Candidates whose released score is a pass.
+  ///
+  /// This is the set the recruiter still has a choice about. Everyone else in a
+  /// released batch either has no score or has one that closes the question.
+  Set<String> get passedCandidateIds => {
+        for (final request in requests)
+          if (_isReleased(request))
+            for (final entry in _summaryOf(request).entries)
+              if (_verdictOf(entry.value) == 'pass') entry.key,
+      };
+
+  /// Candidates whose released score is not a pass.
+  ///
+  /// There is nothing left to do with them and no button that should suggest
+  /// otherwise. They sat the test, they came in under the mark, and that is a
+  /// decision the test already made — offering the recruiter a checkbox here
+  /// would be offering them a decision they do not have.
+  Set<String> get failedCandidateIds => {
+        for (final request in requests)
+          if (_isReleased(request))
+            for (final entry in _summaryOf(request).entries)
+              if (_verdictOf(entry.value) != 'pass') entry.key,
+      };
+
+  /// Only the candidates whose own score has come back *and* is a pass.
   ///
   /// A released batch is not a released candidate. Somebody who was never
   /// invited, or who is still sitting the test, has produced nothing new for
-  /// the recruiter to decide on — reopening them would be offering a second
-  /// decision on the same evidence as the first.
-  ///
-  /// Read from `assessment_summary`, which the admin writes at release time
-  /// and which holds one entry per candidate who actually has a score.
-  Set<String> get reopenedCandidateIds => {
-        for (final request in requests)
-          if (_isReleased(request))
-            ...(request['assessment_summary'] as Map? ?? const {})
-                .keys
-                .map((k) => k.toString()),
-      };
+  /// the recruiter to decide on. Somebody who failed has produced something
+  /// conclusive, which is the opposite reason for the same lock.
+  Set<String> get reopenedCandidateIds => passedCandidateIds;
 
   /// The released request this candidate has a score in, or null.
   Map<String, dynamic>? releasedRequestFor(String candidateUid) {
@@ -1725,32 +1869,63 @@ class ResendPolicy {
     return null;
   }
 
-  /// Candidates the recruiter has already advanced past the assessment.
+  /// The recruiter's post-assessment picks, written onto the request they
+  /// revise rather than into a second request.
   ///
-  /// Membership of a round-two-or-later request is what earns an interview: it
-  /// is the recruiter saying, with the scores in front of them, that this
-  /// person goes forward. Round one is a shortlist, which is a different and
-  /// weaker claim.
-  Set<String> get interviewReadyCandidateIds => {
-        for (final request in requests)
-          if (((request['round'] as num?)?.toInt() ?? 1) >= 2)
-            ..._idsIn(request),
+  /// One shortlist, one document. The seventeen who were sent, the scores that
+  /// came back, and the four the recruiter kept are three facts about the same
+  /// decision, and splitting them across two documents made the admin's screen
+  /// show the same recruiter twice with no way to tell which was which.
+  static List<String> finalSelectionOf(Map<String, dynamic> request) => [
+        for (final id in (request['final_selection'] as List? ?? const []))
+          id.toString(),
+      ];
+
+  /// Candidates the recruiter has advanced past the assessment.
+  ///
+  /// Being named in a `final_selection` is what earns an interview: it is the
+  /// recruiter saying, with the scores in front of them, that this person goes
+  /// forward. Being in the batch is a shortlist, which is a weaker claim.
+  Set<String> get finalSelectedCandidateIds => {
+        for (final request in requests) ...finalSelectionOf(request),
       };
 
-  /// The later request a candidate was advanced in, or null.
+  /// Candidates who were in a batch that has since been narrowed, and who did
+  /// not make the cut.
+  ///
+  /// They are not rejected and they are not deleted — the record of them being
+  /// considered has to survive. They are simply no longer the live part of the
+  /// batch, which is what the dimmed cards on both screens say.
+  Set<String> get supersededCandidateIds => {
+        for (final request in requests)
+          if (finalSelectionOf(request).isNotEmpty)
+            for (final id in _idsIn(request))
+              if (!finalSelectionOf(request).contains(id)) id,
+      };
+
+  /// The request a candidate was advanced in, or null.
   Map<String, dynamic>? advancedRequestFor(String candidateUid) {
     for (final request in requests) {
-      if (((request['round'] as num?)?.toInt() ?? 1) < 2) continue;
-      if (_idsIn(request).contains(candidateUid)) return request;
+      if (finalSelectionOf(request).contains(candidateUid)) return request;
     }
     return null;
   }
 
-  /// The round a request built from [selectedIds] would be.
+  /// The request an interview for this candidate belongs to.
   ///
-  /// The highest round among the selection wins, not the first one found: a
-  /// selection that mixes a fresh candidate with two being revised must not
-  /// fall back to round one and overwrite the history it is revising.
+  /// Their advanced request if they have one, otherwise the request their score
+  /// came back on. Booking the interview is itself what advances them, so at
+  /// the moment the recruiter opens the dialog the first is usually still null.
+  Map<String, dynamic>? interviewRequestFor(String candidateUid) =>
+      advancedRequestFor(candidateUid) ?? releasedRequestFor(candidateUid);
+
+  /// The round the current selection would land in.
+  ///
+  /// A round is a stage of one request, not a request of its own: round one is
+  /// the shortlist that was sent, round two is the recruiter's answer to the
+  /// scores it came back with. The highest round among the selection wins, not
+  /// the first one found — a selection that mixes a fresh candidate with two
+  /// being revised must not report itself as a plain new shortlist.
   int roundFor(Iterable<String> selectedIds) {
     var round = 1;
     for (final id in selectedIds) {
@@ -1760,6 +1935,66 @@ class ResendPolicy {
       if (previous + 1 > round) round = previous + 1;
     }
     return round;
+  }
+}
+
+/// A column of the shortlist table that can be ordered by.
+enum ShortlistSortColumn { aiScore, testScore }
+
+/// One ordering: which column, and which way.
+typedef ShortlistSort = ({ShortlistSortColumn column, bool ascending});
+
+/// How the shortlist is ordered when a recruiter clicks a score column.
+///
+/// Pure and generic over the key so the two rules below can be tested without
+/// an [ApplicantRecord] — the record carries a live DocumentReference, which a
+/// unit test should not have to fake.
+abstract final class ShortlistOrder {
+  /// Orders [items] by the number [value] returns.
+  ///
+  /// Two rules, both of which matter more than they look:
+  ///
+  ///   * **Missing values stay at the end, in both directions.** A missing
+  ///     score is not a low score — "Not analyzed" and "0%" are different facts
+  ///     about a candidate. An ascending sort that treated absent as zero would
+  ///     bury every person who actually sat the test underneath everyone who
+  ///     never took it.
+  ///   * **The sort is stable.** Three candidates on 12/20 have to keep the
+  ///     same relative order on every rebuild; Dart's `List.sort` makes no such
+  ///     promise, so the original position is carried as the tie-breaker.
+  static List<T> by<T>(
+    List<T> items, {
+    required num? Function(T) value,
+    required bool ascending,
+  }) {
+    final decorated = [
+      for (var i = 0; i < items.length; i++)
+        (index: i, item: items[i], key: value(items[i])),
+    ];
+    decorated.sort((a, b) {
+      final ak = a.key;
+      final bk = b.key;
+      if (ak == null && bk == null) return a.index.compareTo(b.index);
+      if (ak == null) return 1;
+      if (bk == null) return -1;
+      final c = ascending ? ak.compareTo(bk) : bk.compareTo(ak);
+      return c != 0 ? c : a.index.compareTo(b.index);
+    });
+    return [for (final d in decorated) d.item];
+  }
+
+  /// The next state of a header the recruiter has just clicked.
+  ///
+  /// Three positions, cycling: highest first, then lowest first, then off.
+  /// Highest-first comes first because it is the answer to the question a
+  /// recruiter is actually asking when they click a score column. "Off" is in
+  /// the cycle so there is a way back to the order the list arrived in.
+  static ShortlistSort? cycle(ShortlistSort? current, ShortlistSortColumn tapped) {
+    if (current == null || current.column != tapped) {
+      return (column: tapped, ascending: false);
+    }
+    if (!current.ascending) return (column: tapped, ascending: true);
+    return null;
   }
 }
 

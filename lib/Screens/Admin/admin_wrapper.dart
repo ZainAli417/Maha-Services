@@ -7,7 +7,8 @@ import 'admin_recruiter_request_management.dart';
 import 'audit_logs_section.dart';
 import 'role_template_management_section.dart';
 import 'user_management_section.dart';
-import 'assessment/admin_assessment_section.dart';
+import 'assessment/question_bank_section.dart';
+import 'interviews/admin_interview_schedule_section.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -36,7 +37,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     },
     'Assessments': {
       'icon': Icons.quiz_rounded,
-      'sub': 'AI screening tests & scores',
+      'sub': 'Question papers & answer keys, by job',
+    },
+    'Interview Schedule': {
+      'icon': Icons.event_available_rounded,
+      'sub': 'Slots the recruiter booked · issue joining links',
     },
     'Audit Logs': {
       'icon': Icons.receipt_long_rounded,
@@ -178,7 +183,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 'Recruiter Requests':
         return const Admin_Recruiter_Request_screen();
       case 'Assessments':
-        return const AdminAssessmentSection();
+        return const QuestionBankSection();
+      case 'Interview Schedule':
+        return const AdminInterviewScheduleSection();
       case 'Audit Logs':
         return const AuditLogsSection();
       case 'Role Templates':

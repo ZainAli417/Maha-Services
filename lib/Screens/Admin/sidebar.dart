@@ -91,9 +91,11 @@ class AdminSidebar extends StatelessWidget {
                     label: 'Assessments',
                     menuKey: 'Assessments',
                   ),
-                  _buildLockedItem(
-                    icon: Icons.calendar_today_outlined,
+                  _buildMenuItem(
+                    icon: Icons.event_available_outlined,
+                    activeIcon: Icons.event_available,
                     label: 'Interview Schedule',
+                    menuKey: 'Interview Schedule',
                   ),
                   const SizedBox(height: 20),
                   _buildSectionLabel('SYSTEM'),
