@@ -17,6 +17,7 @@ import 'Screens/Job_Seeker/List_applied_jobs_provider.dart';
 import 'Screens/Job_Seeker/job_seeker_provider.dart';
 import 'Screens/Job_Seeker/jobs_application_provider.dart';
 import 'Screens/Job_Seeker/saved_jobs_provider.dart';
+import 'Screens/Job_Seeker/assessment/my_sittings_provider.dart';
 import 'Screens/Recruiter/AI Candidate Matching_Provider.dart';
 import 'Screens/Recruiter/LIst_of_Applicants_provider.dart';
 import 'Screens/Recruiter/Recruiter_provider_Job_listing.dart';
@@ -90,6 +91,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => JobApplicationsProvider()),
         ChangeNotifierProvider(create: (_) => ListAppliedJobsProvider()),
         ChangeNotifierProvider(create: (_) => SavedJobsProvider()),
+
+        // Lazy: created the first time a job seeker screen renders the
+        // sidebar, so a recruiter or admin session never calls the
+        // candidate-only endpoint behind it.
+        ChangeNotifierProvider(create: (_) => MySittingsProvider()..load()),
         ChangeNotifierProvider(create: (_) => ApplicantsProvider()),
         ChangeNotifierProvider(create: (_) => AIMatchProvider()),
 

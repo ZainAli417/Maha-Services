@@ -4,13 +4,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/admin/assessment_ops.dart';
+import '../../../services/backend_api.dart';
 
-/// Streams the four collections the admin's own work lives in and turns them
-/// into an [AssessmentOps].
+/// Gathers what the admin's own work is made of and turns it into an
+/// [AssessmentOps].
 ///
-/// All four are single-collection snapshots with no `where` clause, so none of
-/// them needs an index and all of them stay live. The arithmetic is entirely in
-/// [AssessmentOps], which is pure — this class only translates documents.
+/// Three live snapshots — requests, sittings, interviews — with no `where`
+/// clause, so none of them needs an index. Paper status is the exception: it
+/// comes from the backend, because `question_banks` has no Firestore rule at
+/// all and is not meant to. Every document in it holds the answer key, so the
+/// admin app reads a status summary through `/assessment/banks/summary`
+/// instead and never sees a question.
+///
+/// Each source records its own failure. One of them being unavailable costs
+/// the signals that depend on it and nothing else — the board carried three
+/// working feeds behind a single error banner once, and it must not again.
+///
+/// The arithmetic is entirely in [AssessmentOps], which is pure; this class
+/// only translates.
 class AdminOpsProvider extends ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -21,13 +32,32 @@ class AdminOpsProvider extends ChangeNotifier {
 
   bool _requestsIn = false;
   bool _assessmentsIn = false;
+  bool _papersIn = false;
 
   /// True until the two collections the funnel cannot be read without have
   /// arrived. Papers and interviews only add prompts, so the panel is useful
   /// before they land and must not be held back for them.
   bool get loading => !(_requestsIn && _assessmentsIn);
 
-  String error = '';
+  /// What could not be read, one line per source. Empty when all is well.
+  ///
+  /// Held per source rather than as one string so the panel can say which
+  /// signal is missing while still showing everything that did arrive.
+  final Map<String, String> _failures = {};
+
+  /// The failures worth telling the admin about, as plain sentences.
+  List<String> get failures => _failures.values.toList();
+
+  /// True when the funnel itself could not be read — nothing to show at all.
+  bool get fatal =>
+      _failures.containsKey('requests') || _failures.containsKey('assessments');
+
+  /// The one message to lead with when [fatal].
+  String get error => fatal ? failures.first : '';
+
+  /// Whether paper status was actually read. An empty paper list otherwise
+  /// reads as "no job has a paper", which would flag every batch as blocked.
+  bool get papersKnown => _papersIn;
 
   final _subs = <StreamSubscription>[];
 
@@ -40,6 +70,7 @@ class AdminOpsProvider extends ChangeNotifier {
         papers: _papers,
         interviews: _interviews,
         now: DateTime.now(),
+        papersKnown: _papersIn,
       );
 
   void start() {
@@ -50,40 +81,63 @@ class AdminOpsProvider extends ChangeNotifier {
         for (final doc in snap.docs) _request(doc.id, doc.data()),
       ];
       _requestsIn = true;
-      notifyListeners();
-    }, onError: _onError));
+      _clear('requests');
+    }, onError: (e) => _fail('requests', 'the recruiter batches', e)));
 
     _subs.add(_db.collection('assessments').snapshots().listen((snap) {
       _assessments = [
         for (final doc in snap.docs) _assessment(doc.data()),
       ];
       _assessmentsIn = true;
-      notifyListeners();
-    }, onError: _onError));
-
-    _subs.add(_db.collection('question_banks').snapshots().listen((snap) {
-      _papers = [
-        for (final doc in snap.docs)
-          (
-            jobId: doc.id,
-            status: (doc.data()['status'] ?? 'draft').toString(),
-            questionCount:
-                (doc.data()['questionCount'] as num?)?.toInt() ?? 0,
-          ),
-      ];
-      notifyListeners();
-    }, onError: _onError));
+      _clear('assessments');
+    }, onError: (e) => _fail('assessments', 'the test sittings', e)));
 
     _subs.add(_db.collection('interviews').snapshots().listen((snap) {
       _interviews = [
         for (final doc in snap.docs) ?_interview(doc.data()),
       ];
-      notifyListeners();
-    }, onError: _onError));
+      _clear('interviews');
+    }, onError: (e) => _fail('interviews', 'the interview diary', e)));
+
+    _loadPapers();
   }
 
-  void _onError(Object e) {
-    error = 'Could not read the operations board: $e';
+  /// Paper status, from the backend rather than from Firestore.
+  ///
+  /// A one-off read, not a stream: a question paper is approved a handful of
+  /// times a week, and the board is rebuilt whenever the dashboard is opened.
+  Future<void> _loadPapers() async {
+    try {
+      final res = await BackendApi.get('/assessment/banks/summary');
+      _papers = [
+        for (final raw in (res['banks'] as List? ?? const []))
+          if (raw is Map)
+            (
+              jobId: (raw['jobId'] ?? '').toString(),
+              status: (raw['status'] ?? 'draft').toString(),
+              questionCount: (raw['questionCount'] as num?)?.toInt() ?? 0,
+            ),
+      ];
+      _papersIn = true;
+      _clear('papers');
+    } catch (e) {
+      _fail('papers', 'the question papers', e);
+    }
+  }
+
+  /// Records a source as unavailable, in a sentence rather than a stack trace.
+  void _fail(String key, String what, Object e) {
+    final reason = e is BackendException
+        ? e.message
+        : (e.toString().contains('permission-denied')
+            ? 'this account is not allowed to read it'
+            : e.toString());
+    _failures[key] = 'Could not read $what — $reason';
+    notifyListeners();
+  }
+
+  void _clear(String key) {
+    _failures.remove(key);
     notifyListeners();
   }
 

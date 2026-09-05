@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:job_portal/Screens/Job_Seeker/JS_Initials_provider.dart';
 import 'package:provider/provider.dart';
 import '../../Constant/logout_dialog.dart';
+import 'assessment/my_sittings_provider.dart';
 
 class JobSeekerSidebar extends StatefulWidget {
   final int activeIndex;
@@ -117,6 +118,23 @@ class _JobSeekerSidebarState extends State<JobSeekerSidebar> {
                         isActive: widget.activeIndex == 5,
                         onTap: () => context.go('/saved-jobs'),
                       ),
+                      // The badge is the whole point of putting it here: an
+                      // invitation lapses in 24 hours, and an email is easy to
+                      // miss. Watching the provider means the count clears
+                      // itself the moment the test is sat.
+                      Builder(builder: (context) {
+                        final waiting =
+                            context.watch<MySittingsProvider>().toDoCount;
+                        return _buildMenuItem(
+                          icon: Icons.fact_check_outlined,
+                          activeIcon: Icons.fact_check,
+                          label: 'Assessments',
+                          index: 6,
+                          isActive: widget.activeIndex == 6,
+                          onTap: () => context.go('/my-assessments'),
+                          badge: waiting > 0 ? '$waiting' : null,
+                        );
+                      }),
 
                       // _buildProMenuItem(
                       //   icon: Icons.send_outlined,

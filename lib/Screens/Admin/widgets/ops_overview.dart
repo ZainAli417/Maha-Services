@@ -43,12 +43,21 @@ class OpsOverview extends StatelessWidget {
                 'on you',
           ),
           const SizedBox(height: 14),
-          if (provider.error.isNotEmpty)
+
+          // A source that failed is reported beside the board, not instead of
+          // it. Only the two feeds the funnel cannot be built without take the
+          // whole panel down; the rest cost their own signals and no more.
+          for (final line in provider.failures) ...[
             _Note(
               icon: Icons.error_outline_rounded,
-              tone: AppColors.danger,
-              text: provider.error,
-            )
+              tone: provider.fatal ? AppColors.danger : AppColors.warning,
+              text: line,
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          if (provider.fatal)
+            const SizedBox.shrink()
           else if (provider.loading)
             const _Loading()
           else if (ops.received == 0)
@@ -597,6 +606,9 @@ class _JobTable extends StatelessWidget {
   static ({Color tone, String label}) _paper(String status) => switch (status) {
         'approved' => (tone: AppColors.success, label: 'Approved'),
         'draft' => (tone: AppColors.warning, label: 'Draft'),
+        // The paper feed could not be read. Saying "No paper" here would be a
+        // guess, and the wrong one for every job whose paper is approved.
+        'unknown' => (tone: AppColors.textMuted, label: 'Not checked'),
         _ => (tone: AppColors.danger, label: 'No paper'),
       };
 

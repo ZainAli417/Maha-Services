@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import 'assessment_platform.dart';
 import 'assessment_provider.dart';
+import 'my_sittings_provider.dart';
 
 /// The candidate's assessment, start to finish.
 ///
@@ -36,6 +37,7 @@ class _AssessmentView extends StatefulWidget {
 
 class _AssessmentViewState extends State<_AssessmentView> with WidgetsBindingObserver {
   bool _guardArmed = false;
+  bool _recordRefreshed = false;
 
   @override
   void initState() {
@@ -67,10 +69,22 @@ class _AssessmentViewState extends State<_AssessmentView> with WidgetsBindingObs
     setExitGuard(running);
   }
 
+  /// Once a sitting is done it is no longer something to do, and the sidebar
+  /// badge is counting exactly that. Refreshed after the frame, because this
+  /// runs during build and a notify from inside build is an error.
+  void _clearBadge(AssessmentProvider p) {
+    if (p.phase != AssessmentPhase.finished || _recordRefreshed) return;
+    _recordRefreshed = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<MySittingsProvider>().refresh();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AssessmentProvider>();
     _syncExitGuard(provider.isRunning);
+    _clearBadge(provider);
 
     return PopScope(
       // The one hard rule of the whole test: there is no way back. Enforced on
@@ -138,12 +152,18 @@ class _Briefing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accepted = provider.phase == AssessmentPhase.ready;
+    final narrow = MediaQuery.of(context).size.width < 600;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(narrow ? 14 : 24),
       child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.border),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.all(narrow ? 20 : 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -152,8 +172,8 @@ class _Briefing extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 provider.jobTitle.isEmpty ? 'Your application' : provider.jobTitle,
-                style: const TextStyle(
-                  fontSize: 26,
+                style: TextStyle(
+                  fontSize: narrow ? 21 : 26,
                   fontWeight: FontWeight.w800,
                   color: AppColors.ink,
                   height: 1.2,
@@ -166,34 +186,47 @@ class _Briefing extends StatelessWidget {
               ],
               const SizedBox(height: 24),
 
-              Row(
-                children: [
-                  _Stat(
-                    label: 'Questions',
-                    value: '${provider.questionCount}',
-                    icon: Icons.list_alt_rounded,
-                  ),
-                  const SizedBox(width: 12),
-                  _Stat(
-                    label: 'Per question',
-                    value: '${provider.questionSeconds}s',
-                    icon: Icons.timer_outlined,
-                  ),
-                  const SizedBox(width: 12),
-                  _Stat(
-                    label: 'One sitting',
-                    value: '${provider.sittingMinutes} min',
-                    icon: Icons.event_available_rounded,
-                  ),
-                ],
+              // Three tiles across where they fit, two-up on a phone, rather
+              // than a Row that squeezes the last one off the screen.
+              LayoutBuilder(
+                builder: (context, c) {
+                  const gap = 10.0;
+                  final columns = c.maxWidth < 340 ? 2 : 3;
+                  final width = (c.maxWidth - gap * (columns - 1)) / columns;
+                  return Wrap(
+                    spacing: gap,
+                    runSpacing: gap,
+                    children: [
+                      for (final (label, value, icon) in [
+                        ('Questions', '${provider.questionCount}',
+                            Icons.list_alt_rounded),
+                        ('Per question', '${provider.questionSeconds}s',
+                            Icons.timer_outlined),
+                        ('One sitting', '${provider.sittingMinutes} min',
+                            Icons.event_available_rounded),
+                      ])
+                        SizedBox(
+                          width: width,
+                          child: _Stat(label: label, value: value, icon: icon),
+                        ),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: narrow ? 20 : 24),
 
               const Text('Before you begin',
                   style: TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
               const SizedBox(height: 10),
-              ...provider.rules.map((r) => Padding(
+              ...[
+                ...provider.rules,
+                // The server's rule list predates the skip control, so this one
+                // is added here rather than left for the candidate to find out
+                // by pressing it.
+                'You may skip a question, but it counts as unanswered and you '
+                    'cannot return to it.',
+              ].map((r) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,10 +365,78 @@ class _SittingState extends State<_Sitting> with SingleTickerProviderStateMixin 
 
     if (p.wasCorrect == true) {
       vibrate(40);
+    } else if (p.skipped || p.timedOut) {
+      // A skip is a decision, not a mistake. One short tick, no shake.
+      vibrate(25);
     } else {
       vibrate(180);
       _shake.forward(from: 0);
     }
+  }
+
+  /// Confirms a skip before spending the question.
+  ///
+  /// Skipping is irreversible and costs a mark, so it asks once — but plainly,
+  /// and without trying to talk the candidate out of it.
+  Future<void> _confirmSkip(AssessmentProvider p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
+        contentPadding: const EdgeInsets.fromLTRB(22, 0, 22, 4),
+        title: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.warningSoft,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.redo_rounded,
+                  size: 18, color: AppColors.warning),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Skip this question?',
+              style: TextStyle(
+                fontSize: 16.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'You cannot come back to it. It will be marked as skipped and '
+          'scored as a wrong answer.',
+          style: TextStyle(
+              fontSize: 13.5, height: 1.5, color: AppColors.textSecondary),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
+            child: const Text('Keep trying'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.warning,
+              foregroundColor: Colors.white,
+              textStyle:
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            ),
+            child: const Text('Skip and move on'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) p.skipQuestion();
   }
 
   @override
@@ -346,103 +447,144 @@ class _SittingState extends State<_Sitting> with SingleTickerProviderStateMixin 
 
     _feedbackEffects(p);
     final showing = p.phase == AssessmentPhase.feedback;
+    final locked = p.selectedIndex != -1 || p.busy || showing;
+    final narrow = MediaQuery.of(context).size.width < 600;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _ProgressHeader(provider: p, question: q),
-          const SizedBox(height: 20),
+    return Center(
+      // A question is a column of text. Letting it run the width of a desktop
+      // monitor makes it harder to read, not easier.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: narrow ? 14 : 24, vertical: narrow ? 12 : 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ProgressHeader(provider: p, question: q, narrow: narrow),
+              SizedBox(height: narrow ? 14 : 18),
 
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (q.topic.isNotEmpty) ...[
-                    _Badge(text: q.topic),
-                    const SizedBox(height: 12),
-                  ],
-                  // Selection is off across the question and the options: it
-                  // is the first step of copying a question out to look up.
-                  SelectionContainer.disabled(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          q.text,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            height: 1.45,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                        const SizedBox(height: 22),
-                        AnimatedBuilder(
-                          animation: _shake,
-                          builder: (context, child) {
-                            // A short damped wobble, only on a wrong answer.
-                            final t = _shake.value;
-                            final dx = t == 0
-                                ? 0.0
-                                : 9 * (1 - t) *
-                                    (t * 22 % 2 < 1 ? 1 : -1);
-                            return Transform.translate(
-                                offset: Offset(dx, 0), child: child);
-                          },
-                          child: Column(
-                            children: [
-                              for (var i = 0; i < q.options.length; i++)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _OptionTile(
-                                    label: String.fromCharCode(65 + i),
-                                    text: q.options[i],
-                                    state: _stateFor(p, i, showing),
-                                    onTap: (showing || p.busy)
-                                        ? null
-                                        : () => p.answer(i),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Selection is off across the question and the options:
+                      // it is the first step of copying a question out to look
+                      // something up.
+                      SelectionContainer.disabled(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(narrow ? 16 : 20),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (q.topic.isNotEmpty) ...[
+                                    _Badge(text: q.topic),
+                                    const SizedBox(height: 12),
+                                  ],
+                                  Text(
+                                    q.text,
+                                    style: TextStyle(
+                                      fontSize: narrow ? 17 : 19,
+                                      height: 1.45,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.ink,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: narrow ? 14 : 18),
+                            AnimatedBuilder(
+                              animation: _shake,
+                              builder: (context, child) {
+                                // A short damped wobble, only on a wrong answer.
+                                final t = _shake.value;
+                                final dx = t == 0
+                                    ? 0.0
+                                    : 9 * (1 - t) * (t * 22 % 2 < 1 ? 1 : -1);
+                                return Transform.translate(
+                                    offset: Offset(dx, 0), child: child);
+                              },
+                              child: Column(
+                                children: [
+                                  for (var i = 0; i < q.options.length; i++)
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                          bottom: narrow ? 9 : 11),
+                                      child: _OptionTile(
+                                        label: String.fromCharCode(65 + i),
+                                        text: q.options[i],
+                                        state: _stateFor(p, i, showing, locked),
+                                        narrow: narrow,
+                                        onTap: locked ? null : () => p.answer(i),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          _FeedbackBar(provider: p),
-        ],
+              _BottomBar(
+                provider: p,
+                narrow: narrow,
+                onSkip: locked ? null : () => _confirmSkip(p),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  _OptionState _stateFor(AssessmentProvider p, int i, bool showing) {
-    if (!showing) return p.selectedIndex == i ? _OptionState.picked : _OptionState.idle;
-    if (p.selectedIndex != i) return _OptionState.dimmed;
-    return p.wasCorrect == true ? _OptionState.correct : _OptionState.wrong;
+  /// What each option looks like right now.
+  ///
+  /// The moment one is chosen the rest go dead — greyed, unbordered and
+  /// untappable — and the chosen one shows a padlock. The answer has gone to
+  /// the server by then and cannot be changed, so leaving the others looking
+  /// live would be a lie the candidate discovers by tapping one.
+  _OptionState _stateFor(
+      AssessmentProvider p, int i, bool showing, bool locked) {
+    if (showing) {
+      if (p.selectedIndex != i) return _OptionState.dead;
+      if (p.skipped || p.timedOut) return _OptionState.dead;
+      return p.wasCorrect == true ? _OptionState.correct : _OptionState.wrong;
+    }
+    if (p.selectedIndex == i) return _OptionState.locked;
+    return locked ? _OptionState.dead : _OptionState.idle;
   }
 }
 
-enum _OptionState { idle, picked, correct, wrong, dimmed }
+enum _OptionState { idle, locked, correct, wrong, dead }
 
 class _OptionTile extends StatefulWidget {
   const _OptionTile({
     required this.label,
     required this.text,
     required this.state,
+    required this.narrow,
     this.onTap,
   });
 
   final String label;
   final String text;
   final _OptionState state;
+  final bool narrow;
   final VoidCallback? onTap;
 
   @override
@@ -454,17 +596,85 @@ class _OptionTileState extends State<_OptionTile> {
 
   @override
   Widget build(BuildContext context) {
-    final (bg, border, fg) = switch (widget.state) {
-      _OptionState.correct => (AppColors.successSoft, AppColors.success, AppColors.ink),
-      _OptionState.wrong => (AppColors.dangerSoft, AppColors.danger, AppColors.ink),
-      _OptionState.picked => (AppColors.primarySoft, AppColors.primary, AppColors.ink),
-      _OptionState.dimmed => (AppColors.surface, AppColors.border, AppColors.textFaint),
+    final dead = widget.state == _OptionState.dead;
+
+    final (bg, border, fg, width) = switch (widget.state) {
+      _OptionState.correct => (
+          AppColors.successSoft, AppColors.success, AppColors.ink, 1.8),
+      _OptionState.wrong => (
+          AppColors.dangerSoft, AppColors.danger, AppColors.ink, 1.8),
+      _OptionState.locked => (
+          AppColors.primarySoft, AppColors.primary, AppColors.ink, 1.8),
+      _OptionState.dead => (
+          AppColors.surfaceAlt, AppColors.border, AppColors.textFaint, 1.0),
       _OptionState.idle => (
           _hovered ? AppColors.primarySoft : AppColors.surface,
           _hovered ? AppColors.primaryLight : AppColors.border,
           AppColors.ink,
+          _hovered ? 1.6 : 1.2,
         ),
     };
+
+    final badge = switch (widget.state) {
+      _OptionState.correct => AppColors.success,
+      _OptionState.wrong => AppColors.danger,
+      _OptionState.locked => AppColors.primary,
+      _OptionState.dead => AppColors.textFaint,
+      _OptionState.idle => _hovered ? AppColors.primary : AppColors.textMuted,
+    };
+
+    final trailing = switch (widget.state) {
+      _OptionState.correct =>
+        const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 21),
+      _OptionState.wrong =>
+        const Icon(Icons.cancel_rounded, color: AppColors.danger, size: 21),
+      // The padlock is the whole point: the choice is in, and it is closed.
+      _OptionState.locked =>
+        const Icon(Icons.lock_rounded, color: AppColors.primary, size: 19),
+      _ => null,
+    };
+
+    final tile = AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      padding: EdgeInsets.symmetric(
+          horizontal: widget.narrow ? 13 : 16, vertical: widget.narrow ? 13 : 15),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(color: border, width: width),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: badge.withValues(alpha: dead ? 0.09 : 0.14),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              widget.label,
+              style: TextStyle(
+                  fontWeight: FontWeight.w800, fontSize: 12.5, color: badge),
+            ),
+          ),
+          SizedBox(width: widget.narrow ? 11 : 13),
+          Expanded(
+            child: Text(
+              widget.text,
+              style: TextStyle(
+                fontSize: widget.narrow ? 14 : 14.8,
+                height: 1.4,
+                fontWeight: dead ? FontWeight.w400 : FontWeight.w500,
+                color: fg,
+              ),
+            ),
+          ),
+          if (trailing != null) ...[const SizedBox(width: 8), trailing],
+        ],
+      ),
+    );
 
     return MouseRegion(
       cursor: widget.onTap == null ? MouseCursor.defer : SystemMouseCursors.click,
@@ -472,43 +682,12 @@ class _OptionTileState extends State<_OptionTile> {
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: border, width: 1.6),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 30,
-                height: 30,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: border.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  widget.label,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 13, color: border),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  widget.text,
-                  style: TextStyle(fontSize: 15, height: 1.4, color: fg),
-                ),
-              ),
-              if (widget.state == _OptionState.correct)
-                const Icon(Icons.check_circle_rounded, color: AppColors.success),
-              if (widget.state == _OptionState.wrong)
-                const Icon(Icons.cancel_rounded, color: AppColors.danger),
-            ],
-          ),
+        // Dead options fade rather than vanish, so the candidate can still
+        // read what they did not pick while the answer is being graded.
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 180),
+          opacity: dead ? 0.55 : 1,
+          child: tile,
         ),
       ),
     );
@@ -516,145 +695,232 @@ class _OptionTileState extends State<_OptionTile> {
 }
 
 class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({required this.provider, required this.question});
+  const _ProgressHeader({
+    required this.provider,
+    required this.question,
+    required this.narrow,
+  });
 
   final AssessmentProvider provider;
   final AssessmentQuestion question;
+  final bool narrow;
 
   @override
   Widget build(BuildContext context) {
     final seconds = (provider.msRemaining / 1000).ceil();
     final urgent = seconds <= 10;
+    final tone = urgent ? AppColors.danger : AppColors.primary;
+    final size = narrow ? 46.0 : 54.0;
 
-    return Row(
-      children: [
-        SizedBox(
-          width: 52,
-          height: 52,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // The ring is the honest part of the countdown: it moves with
-              // the number the server sent, so a candidate can always see how
-              // long they actually have rather than trusting a digit.
-              CircularProgressIndicator(
-                value: provider.timeFraction,
-                strokeWidth: 4,
-                backgroundColor: AppColors.border,
-                valueColor: AlwaysStoppedAnimation(
-                    urgent ? AppColors.danger : AppColors.primaryLight),
-              ),
-              Text(
-                '$seconds',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: urgent ? AppColors.danger : AppColors.ink,
-                ),
-              ),
-            ],
-          ),
+    return Container(
+      padding: EdgeInsets.all(narrow ? 12 : 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: urgent ? AppColors.danger.withValues(alpha: 0.45) : AppColors.border,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Question ${question.index + 1} of ${question.total}',
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: size,
+            height: size,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // The ring is the honest part of the countdown: it moves with
+                // the number the server sent, so a candidate can always see
+                // how long they actually have rather than trusting a digit.
+                SizedBox.expand(
+                  child: CircularProgressIndicator(
+                    value: provider.timeFraction,
+                    strokeWidth: 4,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: AppColors.surfaceAlt,
+                    valueColor: AlwaysStoppedAnimation(tone),
                   ),
-                  const Spacer(),
-                  if (provider.tabSwitches > 0)
-                    Tooltip(
-                      message: 'Leaving this page is recorded and shown to the '
-                          'reviewer. It does not end your test.',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.visibility_off_outlined,
-                              size: 14, color: AppColors.warning),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${provider.tabSwitches}',
-                            style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.warning),
-                          ),
-                        ],
+                ),
+                Text(
+                  '$seconds',
+                  style: TextStyle(
+                    fontSize: narrow ? 14 : 16,
+                    fontWeight: FontWeight.w800,
+                    color: urgent ? AppColors.danger : AppColors.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: narrow ? 12 : 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Question ${question.index + 1}',
+                      style: TextStyle(
+                        fontSize: narrow ? 14 : 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
                       ),
                     ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: question.total == 0 ? 0 : question.index / question.total,
-                  minHeight: 6,
-                  backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                    Text(
+                      ' of ${question.total}',
+                      style: TextStyle(
+                        fontSize: narrow ? 13 : 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (provider.tabSwitches > 0)
+                      Tooltip(
+                        message: 'Leaving this page is recorded and shown to '
+                            'the reviewer. It does not end your test.',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.warningSoft,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.visibility_off_outlined,
+                                  size: 12, color: AppColors.warning),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${provider.tabSwitches}',
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.warning),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 9),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value:
+                        question.total == 0 ? 0 : question.index / question.total,
+                    minHeight: 6,
+                    backgroundColor: AppColors.surfaceAlt,
+                    valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _FeedbackBar extends StatelessWidget {
-  const _FeedbackBar({required this.provider});
+/// The strip under the options: the skip control, or the verdict once graded.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({
+    required this.provider,
+    required this.narrow,
+    required this.onSkip,
+  });
+
+  final AssessmentProvider provider;
+  final bool narrow;
+  final VoidCallback? onSkip;
+
+  @override
+  Widget build(BuildContext context) {
+    if (provider.phase == AssessmentPhase.feedback) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: _Verdict(provider: provider),
+      );
+    }
+
+    final waiting = onSkip == null;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              waiting
+                  ? 'Answer recorded…'
+                  : 'Pick an answer, or skip. Either way this question does '
+                      'not come back.',
+              style: const TextStyle(
+                  fontSize: 12, height: 1.4, color: AppColors.textMuted),
+            ),
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton.icon(
+            onPressed: onSkip,
+            icon: const Icon(Icons.redo_rounded, size: 16),
+            label: Text(narrow ? 'Skip' : 'Skip question'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.textSecondary,
+              side: const BorderSide(color: AppColors.border),
+              minimumSize: const Size(0, 40),
+              visualDensity: VisualDensity.compact,
+              textStyle:
+                  const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Right, wrong, skipped or out of time — said once, in one place.
+class _Verdict extends StatelessWidget {
+  const _Verdict({required this.provider});
 
   final AssessmentProvider provider;
 
   @override
   Widget build(BuildContext context) {
-    final showing = provider.phase == AssessmentPhase.feedback;
-
-    if (!showing) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 12),
-        child: Text(
-          'Choose an answer. You cannot return to this question.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-        ),
-      );
-    }
-
-    final (color, soft, icon, label) = provider.timedOut
-        ? (AppColors.warning, AppColors.warningSoft, Icons.timer_off_rounded,
-            'Time up — marked as skipped')
-        : provider.wasCorrect == true
-            ? (AppColors.success, AppColors.successSoft,
-                Icons.check_circle_rounded, 'Correct')
-            : (AppColors.danger, AppColors.dangerSoft, Icons.cancel_rounded,
-                'Incorrect');
+    final (color, soft, icon, label) = switch ((
+      provider.timedOut,
+      provider.skipped,
+      provider.wasCorrect == true
+    )) {
+      (true, _, _) => (AppColors.warning, AppColors.warningSoft,
+          Icons.timer_off_rounded, 'Time up — marked as skipped'),
+      (_, true, _) => (AppColors.textMuted, AppColors.surfaceAlt,
+          Icons.redo_rounded, 'Skipped'),
+      (_, _, true) => (AppColors.success, AppColors.successSoft,
+          Icons.check_circle_rounded, 'Correct'),
+      _ => (AppColors.danger, AppColors.dangerSoft, Icons.cancel_rounded,
+          'Incorrect'),
+    };
 
     return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
         color: soft,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(13),
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 10),
+          Icon(icon, color: color, size: 19),
+          const SizedBox(width: 9),
           Text(
             label,
             style: TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w800, color: color),
+                fontSize: 14.5, fontWeight: FontWeight.w800, color: color),
           ),
         ],
       ),
@@ -674,12 +940,18 @@ class _Finished extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = provider.result;
+    final narrow = MediaQuery.of(context).size.width < 600;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(narrow ? 14 : 24),
       child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.border),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(narrow ? 22 : 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -717,10 +989,11 @@ class _Finished extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'answered correctly',
+                        'answered correctly  ·  ${r.percentage}%',
                         style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.primary.withValues(alpha: 0.8)),
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary.withValues(alpha: 0.85)),
                       ),
                     ],
                   ),
@@ -728,7 +1001,12 @@ class _Finished extends StatelessWidget {
                 if (r.skipped > 0) ...[
                   const SizedBox(height: 12),
                   Text(
-                    '${r.skipped} question${r.skipped == 1 ? '' : 's'} ran out of time.',
+                    // "Ran out of time" was true when that was the only way to
+                    // leave one blank. Skipping is a choice now, and the count
+                    // covers both.
+                    '${r.skipped} question${r.skipped == 1 ? '' : 's'} left '
+                    'unanswered — skipped or out of time.',
+                    textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 13, color: AppColors.textMuted),
                   ),
                 ],

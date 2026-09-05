@@ -118,6 +118,7 @@ class AssessmentOps {
     required this.papers,
     required this.interviews,
     required this.now,
+    this.papersKnown = true,
   });
 
   final List<OpsRequest> requests;
@@ -125,6 +126,15 @@ class AssessmentOps {
   final List<OpsPaper> papers;
   final List<OpsInterview> interviews;
   final DateTime now;
+
+  /// Whether the paper feed was actually read.
+  ///
+  /// An empty [papers] list is ambiguous: it means either "no paper has been
+  /// written for any job" or "the paper feed could not be read". Those lead to
+  /// opposite conclusions — the first says every batch is blocked, the second
+  /// says nothing at all — and guessing the first would put a red warning on a
+  /// dashboard for jobs whose papers are approved and fine.
+  final bool papersKnown;
 
   /// An ops view with nothing in it. `now` has to be supplied because two of
   /// the prompts are about time running out, and a hardcoded date would make
@@ -214,6 +224,7 @@ class AssessmentOps {
   /// Jobs with candidates waiting and no approved paper. Nobody on these can be
   /// invited at all.
   Set<String> get jobsBlockedOnPaper {
+    if (!papersKnown) return const {};
     final byJob = _papersByJob;
     return {
       for (final r in requests)
@@ -298,9 +309,11 @@ class AssessmentOps {
         satTest: sittings.where((a) => a.status == 'submitted').length,
         passed: pass,
         failed: done.length - pass,
-        paperStatus: paper == null
-            ? 'none'
-            : (paper.status == 'approved' ? 'approved' : 'draft'),
+        paperStatus: switch ((papersKnown, paper)) {
+          (false, _) => 'unknown',
+          (_, null) => 'none',
+          (_, final p?) => p.status == 'approved' ? 'approved' : 'draft',
+        },
         paperQuestions: paper?.questionCount ?? 0,
         passRate: done.isEmpty ? null : pass / done.length,
         avgScore: done.isEmpty

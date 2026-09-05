@@ -29,6 +29,7 @@ import 'SignUp/signup_screen_auth.dart';
 import 'Screens/Recruiter/post_a_job_form.dart';
 import 'Screens/Job_Seeker/js_settings_screen.dart';
 import 'Screens/Job_Seeker/assessment/assessment_screen.dart';
+import 'Screens/Job_Seeker/assessment/my_sittings_screen.dart';
 
 // ========== 1. ROBUST DATA SERVICE (Logic from Code A) ==========
 class RoleService {
@@ -374,6 +375,7 @@ class RouteConfig {
     '/ai-tools',
     '/job-hub',
     '/saved-jobs',
+    '/my-assessments',
     '/js-settings',
   };
   static const recruiterPaths = {
@@ -577,6 +579,13 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/saved-jobs',
       pageBuilder: (c, s) => _fadePage(const SavedJobsScreen(), s),
+    ),
+    // The candidate's own record of every test: what is still to sit, and the
+    // score on each one already taken. Inside the app shell, unlike the
+    // sitting itself.
+    GoRoute(
+      path: '/my-assessments',
+      pageBuilder: (c, s) => _fadePage(const MySittingsScreen(), s),
     ),
     // Outside the app shell on purpose: a timed assessment with a navigation
     // rail beside it is an invitation to wander off mid-question.

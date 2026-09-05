@@ -60,12 +60,14 @@ AssessmentOps ops({
   List<OpsAssessment> assessments = const [],
   List<OpsPaper> papers = const [],
   List<OpsInterview> interviews = const [],
+  bool papersKnown = true,
 }) => AssessmentOps(
       requests: requests,
       assessments: assessments,
       papers: papers,
       interviews: interviews,
       now: now,
+      papersKnown: papersKnown,
     );
 
 List<String> titles(AssessmentOps o) => [for (final a in o.actions) a.title];
@@ -329,4 +331,50 @@ void main() {
       expect([for (final r in o.jobRows) r.jobId], ['big', 'small']);
     });
   });
+
+  group('papers that could not be read', () {
+    // `question_banks` has no Firestore rule — it holds the answer key — so
+    // paper status comes from the backend and can be missing. An empty list
+    // then means "unknown", not "no paper exists", and the two lead to
+    // opposite conclusions.
+    final shortlist = [
+      req(id: 'r1', jobId: 'j1', title: 'Avionics', candidates: 8),
+    ];
+
+    test('an empty paper list normally means every job is blocked', () {
+      final o = ops(requests: shortlist);
+      expect(o.jobsBlockedOnPaper, {'j1'});
+      expect(titles(o), contains('1 job cannot be tested yet'));
+    });
+
+    test('but claims nothing when the feed was never read', () {
+      final o = ops(requests: shortlist, papersKnown: false);
+      expect(o.jobsBlockedOnPaper, isEmpty);
+      expect(
+        titles(o),
+        isNot(contains('1 job cannot be tested yet')),
+        reason: 'a red warning about an approved paper is worse than silence',
+      );
+    });
+
+    test('the job table says "not checked" rather than guessing', () {
+      final rows = ops(requests: shortlist, papersKnown: false).jobRows;
+      expect(rows.single.paperStatus, 'unknown');
+    });
+
+    test('the rest of the board is unaffected', () {
+      // The funnel is built from requests and sittings; losing paper status
+      // must not cost anything else.
+      final o = ops(requests: shortlist, papersKnown: false);
+      expect(o.received, 8);
+      expect(o.batches, 1);
+      expect(o.jobRows.single.shortlisted, 8);
+    });
+
+    test('a real empty bank list is still reported as blocking', () {
+      final o = ops(requests: shortlist, papers: const [], papersKnown: true);
+      expect(o.jobsBlockedOnPaper, {'j1'});
+    });
+  });
+
 }

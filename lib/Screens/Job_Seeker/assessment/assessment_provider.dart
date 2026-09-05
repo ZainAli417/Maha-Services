@@ -120,6 +120,15 @@ class AssessmentProvider extends ChangeNotifier {
   bool _timedOut = false;
   bool get timedOut => _timedOut;
 
+  bool _skipped = false;
+
+  /// The candidate chose to move on rather than running out of time.
+  ///
+  /// Both reach the server as "no answer", but they are not the same thing to
+  /// the person sitting the test, and showing a deliberate skip in the red of
+  /// a wrong answer reads as a punishment for a decision they made.
+  bool get skipped => _skipped;
+
   bool _busy = false;
   bool get busy => _busy;
 
@@ -237,13 +246,17 @@ class AssessmentProvider extends ChangeNotifier {
     }
   }
 
-  /// Submits an answer. A [choice] of -1 means the minute ran out.
-  Future<void> answer(int choice) async {
+  /// Submits an answer.
+  ///
+  /// A [choice] of -1 is no answer — either the minute ran out or the
+  /// candidate skipped, which [skipped] tells apart.
+  Future<void> answer(int choice, {bool skipped = false}) async {
     if (_busy || _phase != AssessmentPhase.question || _question == null) return;
 
     _stopTicker();
     _busy = true;
     _selectedIndex = choice;
+    _skipped = skipped;
     notifyListeners();
 
     try {
@@ -280,6 +293,7 @@ class AssessmentProvider extends ChangeNotifier {
     _selectedIndex = -1;
     _wasCorrect = null;
     _timedOut = false;
+    _skipped = false;
 
     if (data['done'] == true) {
       _result = _resultOf(data['result']);
@@ -300,6 +314,13 @@ class AssessmentProvider extends ChangeNotifier {
     _phase = AssessmentPhase.question;
     _startTicker(_question!.remainingMs);
   }
+
+  /// Moves past the current question without answering it.
+  ///
+  /// Deliberately the same call as an answer: the server records a skip the
+  /// same way it records a timeout, so nothing here can be used to revisit a
+  /// question that has already been served.
+  Future<void> skipQuestion() => answer(-1, skipped: true);
 
   Future<void> finishEarly() async {
     _stopTicker();
