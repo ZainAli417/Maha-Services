@@ -64,6 +64,12 @@ class Interview {
     this.notes = '',
     this.createdAt,
     this.linkGeneratedAt,
+    this.zoomMeetingId = '',
+    this.zoomPasscode = '',
+    this.zoomStartedAt,
+    this.zoomEndedAt,
+    this.rescheduledAt,
+    this.waitingSince,
   });
 
   final String id;
@@ -86,11 +92,67 @@ class Interview {
   final DateTime? createdAt;
   final DateTime? linkGeneratedAt;
 
+  /// The Zoom meeting behind [meetingLink]. Written by the backend only.
+  final String zoomMeetingId;
+
+  /// Zoom's own passcode for the meeting. Embedded in the joining link
+  /// already; carried separately so an invitation can state it for anyone who
+  /// types the meeting number in by hand.
+  final String zoomPasscode;
+
+  /// Set by Zoom's webhooks, so "in progress" means the meeting really is —
+  /// not merely that the clock has passed the start time.
+  final DateTime? zoomStartedAt;
+  final DateTime? zoomEndedAt;
+
+  /// When the recruiter last moved the slot. Compared against
+  /// [linkGeneratedAt] to tell whether the Zoom meeting is still on the right
+  /// day — see [linkOutOfDate].
+  final DateTime? rescheduledAt;
+
+  /// When someone first reached the Zoom waiting room, from Zoom's webhook.
+  ///
+  /// The admin is the one who admits people, so this is what tells them a
+  /// candidate has turned up without their having to sit inside the meeting.
+  final DateTime? waitingSince;
+
   DateTime get endsAt => scheduledAt.add(Duration(minutes: durationMinutes));
 
   bool get hasLink => meetingLink.trim().isNotEmpty;
 
   bool get isPast => endsAt.isBefore(DateTime.now());
+
+  /// A real Zoom meeting, as opposed to nothing or an old placeholder.
+  bool get hasZoomMeeting => zoomMeetingId.trim().isNotEmpty;
+
+  /// Somebody is in the waiting room and has not been let in yet.
+  bool get someoneWaiting =>
+      waitingSince != null && zoomEndedAt == null && !isLive;
+
+  /// The slot was moved after the Zoom meeting was made, so the meeting is
+  /// still sitting at the old time.
+  ///
+  /// The link keeps working either way — what is wrong is the time on the
+  /// Zoom calendar entry, which is why the admin is asked to re-issue rather
+  /// than the link being torn up.
+  bool get linkOutOfDate {
+    final made = linkGeneratedAt;
+    final moved = rescheduledAt;
+    return made != null && moved != null && moved.isAfter(made);
+  }
+
+  /// The meeting is running right now, on Zoom's word rather than the clock's.
+  bool get isLive =>
+      zoomStartedAt != null &&
+      zoomEndedAt == null &&
+      status != InterviewStatus.cancelled;
+
+  /// Whether either side should be offered the joining link at [now].
+  bool canJoinAt(DateTime now) =>
+      hasLink && InterviewJoin.isOpen(scheduledAt, durationMinutes, now);
+
+  /// When the joining button comes alive.
+  DateTime get joinOpensAt => InterviewJoin.opensAt(scheduledAt);
 
   /// Live right now, so the calendar can mark it and neither side has to work
   /// it out from two timestamps.
@@ -141,8 +203,39 @@ class Interview {
       notes: (d['notes'] ?? '').toString(),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
       linkGeneratedAt: (d['linkGeneratedAt'] as Timestamp?)?.toDate(),
+      zoomMeetingId: (d['zoomMeetingId'] ?? '').toString(),
+      zoomPasscode: (d['zoomPasscode'] ?? '').toString(),
+      zoomStartedAt: (d['zoomStartedAt'] as Timestamp?)?.toDate(),
+      zoomEndedAt: (d['zoomEndedAt'] as Timestamp?)?.toDate(),
+      rescheduledAt: (d['rescheduledAt'] as Timestamp?)?.toDate(),
+      waitingSince: (d['waitingSince'] as Timestamp?)?.toDate(),
     );
   }
+}
+
+/// When a joining link may be used.
+///
+/// These two numbers are also in `server.js` (`INTERVIEW_JOIN`), because the
+/// backend withholds the link from the candidate outside the same window — a
+/// button the client thinks is live but the server will not serve is worse
+/// than no button. Change one, change the other.
+abstract final class InterviewJoin {
+  /// How early the link opens. Long enough to find a quiet room and test a
+  /// microphone; short enough that a link is not left sitting open all day.
+  static const Duration lead = Duration(minutes: 15);
+
+  /// How long it stays up after the booked end. An interview that overruns
+  /// must not lock out the person still in it.
+  static const Duration grace = Duration(minutes: 30);
+
+  static DateTime opensAt(DateTime start) => start.subtract(lead);
+
+  static DateTime closesAt(DateTime start, int durationMinutes) =>
+      start.add(Duration(minutes: durationMinutes) + grace);
+
+  static bool isOpen(DateTime start, int durationMinutes, DateTime now) =>
+      !now.isBefore(opensAt(start)) &&
+      !now.isAfter(closesAt(start, durationMinutes));
 }
 
 /// Read-only helpers over a list of interviews.

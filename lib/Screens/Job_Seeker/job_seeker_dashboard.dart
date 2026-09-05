@@ -11,6 +11,7 @@ import '../../Constant/js_header.dart';
 import 'JS_Profile/JS_Profile_Provider.dart';
 import 'widgets/profile_timeline.dart';
 import 'assessment/assessment_invite_banner.dart';
+import 'interviews/interview_banner.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  RESPONSIVE BREAKPOINTS
@@ -252,6 +253,7 @@ class _job_seeker_dashboardState extends State<job_seeker_dashboard>
                       children: [
                         if (isMobile) _buildMobileAppBar('My Applications'),
                         const AssessmentInviteBanner(),
+                        const InterviewBanner(),
                         Expanded(child: _buildContent(context)),
                       ],
                     ),

@@ -232,8 +232,8 @@ class _ArrangeInterviewDialogState extends State<ArrangeInterviewDialog> {
                       _Warning(
                         icon: Icons.link_off_rounded,
                         text: '$rebooking of these already had a slot. '
-                            'Rebooking clears the joining link — it was issued '
-                            'for the old time — and the admin generates a new one.',
+                            'The joining link keeps working, but the admin has '
+                            'to re-issue the meeting so Zoom shows the new time.',
                       ),
                     ],
                     if (provider.error.isNotEmpty) ...[

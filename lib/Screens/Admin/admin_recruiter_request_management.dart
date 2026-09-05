@@ -2961,32 +2961,69 @@ class _InterviewStrip extends StatelessWidget {
 
   final Interview interview;
 
+  /// Asks the backend to create — or move — the Zoom meeting for this slot.
+  ///
+  /// Zoom is only ever called from the backend; see
+  /// [InterviewProvider.generateMeeting]. The new link arrives through the
+  /// snapshot listener, so nothing here has to be told about it.
   Future<void> _generate(BuildContext context) async {
     final provider = context.read<InterviewProvider>();
     final messenger = ScaffoldMessenger.of(context);
 
-    // Placeholder until the Zoom integration lands. Deliberately obvious:
-    // a link that looks real but is not would be handed to a candidate.
-    final link = 'https://zoom.us/j/PENDING-${interview.id.substring(0, 8)}';
-    final ok = await provider.attachLink(
-      interviewId: interview.id,
-      link: link,
-      provider: 'zoom_placeholder',
-    );
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(ok
-            ? 'Placeholder link attached. Zoom is not connected yet — replace '
-                'it before sending anything to the candidate.'
-            : 'Could not attach the link.'),
-      ),
-    );
+    final out = await provider.generateMeeting(interview.id);
+    if (!context.mounted) return;
+
+    if (!out.ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(out.message),
+        backgroundColor: _T.danger,
+        duration: const Duration(seconds: 6),
+      ));
+      return;
+    }
+    messenger.showSnackBar(SnackBar(
+      content: Text(out.warning.isNotEmpty
+          ? out.warning
+          : '${out.rescheduled ? 'Meeting moved to the new time' : 'Zoom meeting created'}'
+              '${out.emailed > 0 ? ' and emailed to ${out.emailed}' : ''}.'),
+      backgroundColor: out.warning.isNotEmpty ? _T.warning : null,
+      duration: Duration(seconds: out.warning.isNotEmpty ? 8 : 4),
+    ));
+  }
+
+  /// Opens the meeting as host, on a link fetched now and not kept.
+  Future<void> _start(BuildContext context) async {
+    final provider = context.read<InterviewProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final url = await provider.hostStartUrl(interview.id);
+    if (!context.mounted) return;
+
+    if (url.isEmpty) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(provider.error.isEmpty
+            ? 'Could not get a host link from Zoom.'
+            : provider.error),
+        backgroundColor: _T.danger,
+        duration: const Duration(seconds: 6),
+      ));
+      return;
+    }
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   @override
   Widget build(BuildContext context) {
-    final waiting = !interview.hasLink;
-    final tone = waiting ? _T.warning : _T.blue;
+    final waiting = !interview.hasZoomMeeting;
+    final stale = interview.linkOutOfDate;
+    final live = interview.isLive;
+
+    final tone = switch ((waiting, stale, live)) {
+      (_, _, true) => _T.success,
+      (false, true, _) => _T.warning,
+      (false, _, _) => _T.blue,
+      _ => _T.warning,
+    };
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -2997,7 +3034,12 @@ class _InterviewStrip extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            waiting ? Icons.event_rounded : Icons.videocam_rounded,
+            switch ((waiting, stale, live)) {
+              (_, _, true) => Icons.sensors_rounded,
+              (false, true, _) => Icons.update_rounded,
+              (false, _, _) => Icons.videocam_rounded,
+              _ => Icons.event_rounded,
+            },
             size: 15,
             color: tone,
           ),
@@ -3015,18 +3057,28 @@ class _InterviewStrip extends StatelessWidget {
                 ),
                 Text(
                   '${interview.mode.label} · ${interview.durationMinutes} min'
-                  '${waiting ? '' : ' · link sent'}',
+                  '${switch ((waiting, stale, live)) {
+                    (_, _, true) => ' · in progress',
+                    (false, true, _) => ' · time changed, re-issue',
+                    (false, _, _) => ' · link sent',
+                    _ => '',
+                  }}',
                   style: _T.label(size: 10, color: _T.txt3),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          if (waiting)
+          if (waiting || stale)
             TextButton.icon(
-              onPressed: () => _generate(context),
-              icon: const Icon(Icons.add_link_rounded, size: 15),
-              label: const Text('Generate link'),
+              onPressed: context.watch<InterviewProvider>().busy
+                  ? null
+                  : () => _generate(context),
+              icon: Icon(
+                stale ? Icons.update_rounded : Icons.videocam_rounded,
+                size: 15,
+              ),
+              label: Text(stale ? 'Re-issue' : 'Generate meeting'),
               style: TextButton.styleFrom(
                 foregroundColor: tone,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -3035,7 +3087,21 @@ class _InterviewStrip extends StatelessWidget {
                 textStyle: _T.label(size: 11.5, weight: FontWeight.w800),
               ),
             )
-          else
+          else ...[
+            TextButton.icon(
+              onPressed: context.watch<InterviewProvider>().busy
+                  ? null
+                  : () => _start(context),
+              icon: const Icon(Icons.play_arrow_rounded, size: 15),
+              label: Text(live ? 'Rejoin' : 'Start'),
+              style: TextButton.styleFrom(
+                foregroundColor: tone,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: _T.label(size: 11.5, weight: FontWeight.w800),
+              ),
+            ),
             IconButton(
               tooltip: 'Copy joining link',
               onPressed: () {
@@ -3049,6 +3115,7 @@ class _InterviewStrip extends StatelessWidget {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
+          ],
         ],
       ),
     );

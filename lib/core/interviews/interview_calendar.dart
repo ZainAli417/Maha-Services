@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../theme/app_colors.dart';
 import 'interview.dart';
+import 'join_window.dart';
 import 'interview_provider.dart';
 
 /// A month of interviews, with the selected day's schedule beside it.
@@ -432,6 +433,9 @@ class InterviewTile extends StatelessWidget {
   const InterviewTile({super.key, required this.interview, this.trailing});
 
   final Interview interview;
+
+  /// Replaces the joining button. Left null, the tile offers its own once the
+  /// window opens — the calendar is where a recruiter is sitting when it does.
   final Widget? trailing;
 
   @override
@@ -443,13 +447,18 @@ class InterviewTile extends StatelessWidget {
       InterviewStatus.cancelled => (AppColors.textFaint, 'Cancelled'),
     };
 
+    // Zoom's word beats the clock's: isInProgress only means the start time
+    // has passed, while isLive means the meeting was actually opened.
+    final live = interview.isLive;
+    final running = live || interview.isInProgress;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: interview.isInProgress ? AppColors.primarySoft : AppColors.surface,
+        color: running ? AppColors.primarySoft : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: interview.isInProgress ? AppColors.primary : AppColors.border,
+          color: running ? AppColors.primary : AppColors.border,
         ),
       ),
       child: Row(
@@ -484,9 +493,12 @@ class InterviewTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     _Tag(text: label, color: tone),
-                    if (interview.isInProgress) ...[
+                    if (running) ...[
                       const SizedBox(width: 6),
-                      const _Tag(text: 'Now', color: AppColors.success),
+                      _Tag(
+                        text: live ? 'Live' : 'Now',
+                        color: AppColors.success,
+                      ),
                     ],
                   ],
                 ),
@@ -523,11 +535,67 @@ class InterviewTile extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+          if (trailing != null)
+            ...[const SizedBox(width: 10), trailing!]
+          else if (interview.hasLink) ...[
+            const SizedBox(width: 10),
+            _JoinTrailing(interview: interview),
+          ],
         ],
       ),
     );
   }
+}
+
+/// The joining button on a tile, and what stands there before it is usable.
+///
+/// A disabled button with no explanation is the thing people email about, so
+/// this says when it will work instead of just refusing.
+class _JoinTrailing extends StatelessWidget {
+  const _JoinTrailing({required this.interview});
+
+  final Interview interview;
+
+  @override
+  Widget build(BuildContext context) => JoinWindow(
+        interview: interview,
+        builder: (context, open) {
+          if (!open) {
+            return Text(
+              'Opens\n${joinOpensIn(interview)}',
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 11,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textMuted,
+              ),
+            );
+          }
+          return FilledButton.icon(
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (!await openMeetingLink(interview.meetingLink)) {
+                messenger.showSnackBar(const SnackBar(
+                  content: Text('Could not open the joining link.'),
+                ));
+              }
+            },
+            icon: const Icon(Icons.videocam_rounded, size: 16),
+            label: const Text('Join'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.success,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 34),
+              visualDensity: VisualDensity.compact,
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          );
+        },
+      );
 }
 
 class _Tag extends StatelessWidget {

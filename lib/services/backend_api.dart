@@ -107,6 +107,21 @@ class BackendApi {
     return _decode(path, response);
   }
 
+  static Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic> body = const {},
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final response = await _client
+        .delete(
+          Uri.parse('${Env.backendUrl}$path'),
+          headers: await headers(),
+          body: jsonEncode(body),
+        )
+        .timeout(timeout);
+    return _decode(path, response);
+  }
+
   /// Fire-and-forget: used for the integrity signals the assessment screen
   /// reports. A dropped one is not worth interrupting the candidate over.
   static Future<void> postQuietly(String path, Map<String, dynamic> body) async {

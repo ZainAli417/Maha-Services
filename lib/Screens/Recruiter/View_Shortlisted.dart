@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/interviews/arrange_interview_dialog.dart';
 import '../../core/interviews/interview_provider.dart';
+import '../../core/interviews/join_window.dart';
 
 import '../../core/widgets/view_js_profile.dart';
 import 'LIst_of_Applicants_provider.dart';
@@ -1221,21 +1222,61 @@ class _InterviewAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final booked =
         context.watch<InterviewProvider>().forCandidate(applicant.userId);
-    final tone = booked == null ? _T.purple : _T.success;
 
-    return IconButton(
-      icon: Icon(
-        booked == null ? Icons.event_available_outlined : Icons.event_rounded,
-        size: 17,
-      ),
-      onPressed: () => onTap(applicant),
-      color: tone,
-      tooltip: booked == null
-          ? 'Arrange interview'
-          : 'Interview ${DateFormat('d MMM, HH:mm').format(booked.scheduledAt)}'
-              '${booked.hasLink ? '' : ' — awaiting link'}',
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
+    if (booked == null) {
+      return IconButton(
+        icon: const Icon(Icons.event_available_outlined, size: 17),
+        onPressed: () => onTap(applicant),
+        color: _T.purple,
+        tooltip: 'Arrange interview',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      );
+    }
+
+    final when = DateFormat('d MMM, HH:mm').format(booked.scheduledAt);
+
+    // Once the window opens, this button stops being a way back into the
+    // booking dialog and becomes the way into the interview — that is what the
+    // recruiter wants from it at 08:50 on the day, and it is the only moment
+    // the distinction matters.
+    return JoinWindow(
+      interview: booked,
+      builder: (context, open) {
+        if (open) {
+          return IconButton(
+            icon: Icon(
+              booked.isLive ? Icons.sensors_rounded : Icons.videocam_rounded,
+              size: 17,
+            ),
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (!await openMeetingLink(booked.meetingLink)) {
+                messenger.showSnackBar(const SnackBar(
+                  content: Text('Could not open the joining link.'),
+                ));
+              }
+            },
+            color: _T.success,
+            tooltip: booked.isLive
+                ? 'Join — the interview is running'
+                : 'Join the interview ($when)',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          );
+        }
+
+        return IconButton(
+          icon: const Icon(Icons.event_rounded, size: 17),
+          onPressed: () => onTap(applicant),
+          color: _T.success,
+          tooltip: booked.hasLink
+              ? 'Interview $when — joining opens ${joinOpensIn(booked)}'
+              : 'Interview $when — awaiting link from the admin',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        );
+      },
     );
   }
 }

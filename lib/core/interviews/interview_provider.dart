@@ -4,7 +4,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../services/backend_api.dart';
 import 'interview.dart';
+
+/// What came back from asking the backend to make a meeting.
+///
+/// A booking can succeed and still be worth saying something about — a free
+/// Zoom plan will cut a 45-minute interview off at 40, and finding that out
+/// mid-interview is the wrong time.
+class MeetingOutcome {
+  const MeetingOutcome({
+    required this.ok,
+    this.rescheduled = false,
+    this.emailed = 0,
+    this.warning = '',
+    this.message = '',
+  });
+
+  final bool ok;
+  final bool rescheduled;
+  final int emailed;
+  final String warning;
+  final String message;
+}
 
 /// Scheduling, for whichever side is looking.
 ///
@@ -122,36 +144,57 @@ class InterviewProvider extends ChangeNotifier {
 
       for (final c in candidates) {
         final existing = forCandidate(c.uid);
-        final ref = existing == null
-            ? _db.collection('interviews').doc()
-            : _db.collection('interviews').doc(existing.id);
 
-        final interview = Interview(
-          id: ref.id,
-          candidateUid: c.uid,
-          candidateName: c.name,
-          jobId: jobId,
-          jobTitle: jobTitle,
-          requestId: requestId,
-          recruiterUid: recruiter,
-          scheduledAt: slot,
-          durationMinutes: durationMinutes,
-          mode: mode,
-          // Rebooking an interview that already had a link invalidates that
-          // link: it was issued for a different time. Back to awaiting one.
-          status: InterviewStatus.requested,
-          round: round,
-          notes: notes,
-        );
+        if (existing == null) {
+          final ref = _db.collection('interviews').doc();
+          final interview = Interview(
+            id: ref.id,
+            candidateUid: c.uid,
+            candidateName: c.name,
+            jobId: jobId,
+            jobTitle: jobTitle,
+            requestId: requestId,
+            recruiterUid: recruiter,
+            scheduledAt: slot,
+            durationMinutes: durationMinutes,
+            mode: mode,
+            status: InterviewStatus.requested,
+            round: round,
+            notes: notes,
+          );
 
-        batch.set(ref, {
-          ...interview.toJson(),
-          'meetingLink': '',
-          'meetingProvider': '',
-          'linkGeneratedAt': null,
-          'createdAt': FieldValue.serverTimestamp(),
-          'createdBy': recruiter,
-        }, SetOptions(merge: true));
+          // The meeting fields are left off entirely rather than written
+          // empty. They belong to the backend, and a recruiter is not allowed
+          // to set them at all — including to a blank.
+          final data = interview.toJson()
+            ..remove('meetingLink')
+            ..remove('meetingProvider');
+
+          batch.set(ref, {
+            ...data,
+            'createdAt': FieldValue.serverTimestamp(),
+            'createdBy': recruiter,
+          });
+        } else {
+          // Moving an existing booking touches the timing only.
+          //
+          // The link deliberately survives: the admin re-issues the meeting
+          // for the new time and Zoom keeps the same joining URL, so a link
+          // already sitting in the candidate's inbox goes on working.
+          // `rescheduledAt` is what tells the admin the meeting is now behind
+          // the booking.
+          batch.update(_db.collection('interviews').doc(existing.id), {
+            'scheduledAt': Timestamp.fromDate(slot),
+            'durationMinutes': durationMinutes,
+            'mode': mode.id,
+            'round': round,
+            'notes': notes,
+            'jobId': jobId,
+            'jobTitle': jobTitle,
+            'requestId': requestId,
+            'rescheduledAt': FieldValue.serverTimestamp(),
+          });
+        }
 
         slot = slot.add(Duration(minutes: durationMinutes + gapMinutes));
       }
@@ -167,27 +210,83 @@ class InterviewProvider extends ChangeNotifier {
     }
   }
 
-  /// Attaches a joining link and marks the interview scheduled. Admin side.
+  /// Creates the real Zoom meeting for a booking. Admin side.
   ///
-  /// The link is passed in rather than built here: creating a real meeting is
-  /// the provider's job, and this stores whatever that returns.
-  Future<bool> attachLink({
-    required String interviewId,
-    required String link,
-    String provider = 'zoom',
-  }) async {
+  /// The link is never built here. Zoom is spoken to only by the backend —
+  /// the Server-to-Server secret would be readable by anyone who opened the
+  /// network tab of a web build, and it grants meeting control over the whole
+  /// Zoom account. This asks; the backend does it and writes the result, which
+  /// arrives back through the snapshot listener like any other change.
+  ///
+  /// Running it again after a reschedule moves the same Zoom meeting rather
+  /// than making a second one, so a link already in a candidate's inbox keeps
+  /// working.
+  Future<MeetingOutcome> generateMeeting(String interviewId) async {
     _busy = true;
+    _error = '';
     notifyListeners();
     try {
-      await _db.collection('interviews').doc(interviewId).update({
-        'meetingLink': link,
-        'meetingProvider': provider,
-        'status': InterviewStatus.scheduled.id,
-        'linkGeneratedAt': FieldValue.serverTimestamp(),
-      });
-      return true;
+      final res = await BackendApi.post('/interviews/$interviewId/meeting', const {});
+      return MeetingOutcome(
+        ok: true,
+        rescheduled: res['rescheduled'] == true,
+        emailed: (res['emailed'] as num?)?.toInt() ?? 0,
+        warning: (res['warning'] ?? '').toString(),
+      );
+    } on BackendException catch (e) {
+      _error = e.message;
+      return MeetingOutcome(ok: false, message: e.message);
     } catch (e) {
-      _error = 'Could not attach the link: $e';
+      _error = 'Could not create the meeting: $e';
+      return MeetingOutcome(ok: false, message: _error);
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
+  /// A fresh host link for the admin to open, valid now.
+  ///
+  /// Never stored: Zoom's start URL is a host credential and it dies two hours
+  /// after it is issued, so a copy kept in the record would be both a leak and,
+  /// by the day of the interview, a dead link. It is fetched at the moment it
+  /// is needed and handed straight to the browser.
+  Future<String> hostStartUrl(String interviewId) async {
+    _busy = true;
+    _error = '';
+    notifyListeners();
+    try {
+      final res = await BackendApi.post('/interviews/$interviewId/start', const {});
+      return (res['startUrl'] ?? '').toString();
+    } on BackendException catch (e) {
+      _error = e.message;
+      return '';
+    } catch (e) {
+      _error = 'Could not start the meeting: $e';
+      return '';
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
+  /// Cancels the Zoom meeting behind a booking and clears the link.
+  ///
+  /// With [cancel] the interview itself is called off; without it the slot
+  /// stays and goes back to awaiting a link.
+  Future<bool> removeMeeting(String interviewId, {bool cancel = false}) async {
+    _busy = true;
+    _error = '';
+    notifyListeners();
+    try {
+      await BackendApi.delete('/interviews/$interviewId/meeting',
+          body: {'cancel': cancel});
+      return true;
+    } on BackendException catch (e) {
+      _error = e.message;
+      return false;
+    } catch (e) {
+      _error = 'Could not remove the meeting: $e';
       return false;
     } finally {
       _busy = false;

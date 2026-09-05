@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/interviews/interview.dart';
 import '../../../core/interviews/interview_provider.dart';
+import '../../../core/interviews/join_window.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// Interviews, by job.
@@ -480,6 +482,15 @@ class _BatchDetail extends StatelessWidget {
           final unbooked =
               candidates.where((c) => !booked.containsKey(c['uid'])).length;
 
+          // Slots that are booked but have no Zoom meeting behind them yet.
+          // Generating them one at a time is fine for two; a batch of fifteen
+          // is fifteen clicks and a wait between each.
+          final pending = [
+            for (final i in booked.values)
+              if (!i.hasZoomMeeting &&
+                  i.status != InterviewStatus.completed) i,
+          ];
+
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -494,6 +505,10 @@ class _BatchDetail extends StatelessWidget {
                 awaitingLink: awaitingLink,
               ),
               const SizedBox(height: 16),
+              if (pending.length > 1) ...[
+                _GenerateAll(pending: pending),
+                const SizedBox(height: 12),
+              ],
               if (note.isNotEmpty) _RecruiterNote(text: note),
               if (unbooked > 0)
                 _Callout(
@@ -726,26 +741,97 @@ class _InterviewRow extends StatelessWidget {
   final Map<String, dynamic> score;
   final Interview? interview;
 
+  /// Asks the backend to create (or move) the Zoom meeting for this slot.
+  ///
+  /// Zoom is never called from here — see [InterviewProvider.generateMeeting].
+  /// The new link arrives back through the snapshot listener, so nothing on
+  /// this card has to be told about it.
   Future<void> _generate(BuildContext context) async {
     final provider = context.read<InterviewProvider>();
     final messenger = ScaffoldMessenger.of(context);
-    final id = interview!.id;
 
-    // Placeholder until the Zoom integration lands. Deliberately obvious: a
-    // link that looked real but was not would be handed to a candidate.
-    final ok = await provider.attachLink(
-      interviewId: id,
-      link: 'https://zoom.us/j/PENDING-${id.substring(0, 8)}',
-      provider: 'zoom_placeholder',
-    );
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(ok
-            ? 'Placeholder link attached. Zoom is not connected yet — replace '
-                'it before sending anything to the candidate.'
-            : 'Could not attach the link.'),
+    final out = await provider.generateMeeting(interview!.id);
+    if (!context.mounted) return;
+
+    if (!out.ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(out.message),
+        backgroundColor: AppColors.danger,
+        duration: const Duration(seconds: 6),
+      ));
+      return;
+    }
+
+    final sent = switch (out.emailed) {
+      0 => 'No email went out',
+      1 => 'Emailed to 1 person',
+      final n => 'Emailed to $n people',
+    };
+    messenger.showSnackBar(SnackBar(
+      content: Text(out.warning.isNotEmpty
+          ? out.warning
+          : '${out.rescheduled ? 'Meeting moved to the new time' : 'Zoom meeting created'}. $sent.'),
+      backgroundColor: out.warning.isNotEmpty ? AppColors.warning : null,
+      duration: Duration(seconds: out.warning.isNotEmpty ? 8 : 4),
+    ));
+  }
+
+  /// Opens the meeting as host. The link is fetched now and not kept.
+  Future<void> _start(BuildContext context) async {
+    final provider = context.read<InterviewProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final url = await provider.hostStartUrl(interview!.id);
+    if (!context.mounted) return;
+
+    if (url.isEmpty) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(provider.error.isEmpty
+            ? 'Could not get a host link from Zoom.'
+            : provider.error),
+        backgroundColor: AppColors.danger,
+        duration: const Duration(seconds: 6),
+      ));
+      return;
+    }
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
+  /// Cancels the Zoom meeting and puts the slot back to awaiting a link.
+  Future<void> _remove(BuildContext context) async {
+    final provider = context.read<InterviewProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel this Zoom meeting?'),
+        content: Text(
+          'The meeting is deleted at Zoom and the link stops working — '
+          'including the copy already in $name\u2019s inbox. The slot stays '
+          'booked, so a new meeting can be generated for the same time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Keep it'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Cancel the meeting'),
+          ),
+        ],
       ),
     );
+    if (confirmed != true || !context.mounted) return;
+
+    final ok = await provider.removeMeeting(interview!.id);
+    if (!context.mounted) return;
+    messenger.showSnackBar(SnackBar(
+      content: Text(ok ? 'Zoom meeting cancelled.' : provider.error),
+      backgroundColor: ok ? null : AppColors.danger,
+    ));
   }
 
   @override
@@ -844,7 +930,12 @@ class _InterviewRow extends StatelessWidget {
                     text: 'No slot booked yet — the recruiter arranges the time.',
                     flat: true,
                   )
-                : _Slot(interview: iv, onGenerate: () => _generate(context)),
+                : _Slot(
+                    interview: iv,
+                    onGenerate: () => _generate(context),
+                    onStart: () => _start(context),
+                    onRemove: () => _remove(context),
+                  ),
           ),
         ],
       ),
@@ -853,19 +944,55 @@ class _InterviewRow extends StatelessWidget {
 }
 
 class _Slot extends StatelessWidget {
-  const _Slot({required this.interview, required this.onGenerate});
+  const _Slot({
+    required this.interview,
+    required this.onGenerate,
+    required this.onStart,
+    required this.onRemove,
+  });
 
   final Interview interview;
-  final VoidCallback onGenerate;
+  final VoidCallback onGenerate, onStart, onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final waiting = !interview.hasLink;
-    final tone = waiting ? AppColors.warning : AppColors.accent;
+    final busy = context.watch<InterviewProvider>().busy;
+    final booked = interview.hasZoomMeeting;
+    final live = interview.isLive;
+    final done = interview.status == InterviewStatus.completed;
+
+    // The recruiter moved the slot after the meeting was made, so Zoom is
+    // still showing the old time. Worth saying out loud — the link works, so
+    // nothing else on this card would look wrong.
+    final stale = interview.linkOutOfDate;
+
+    // Somebody is at the door. This is the one state that wants the admin's
+    // attention right now, so it outranks everything except the meeting
+    // already running.
+    final waiting = interview.someoneWaiting;
+
+    final tone = switch ((live, waiting, done, booked, stale)) {
+      (true, _, _, _, _) => AppColors.success,
+      (_, true, _, _, _) => AppColors.primary,
+      (_, _, true, _, _) => AppColors.textMuted,
+      (_, _, _, true, true) => AppColors.warning,
+      (_, _, _, true, _) => AppColors.accent,
+      _ => AppColors.warning,
+    };
+
+    final caption = switch ((live, waiting, done, booked, stale)) {
+      (true, _, _, _, _) => 'in progress',
+      (_, true, _, _, _) => 'someone is waiting to be let in',
+      (_, _, true, _, _) => 'finished',
+      (_, _, _, true, true) => 'time changed — re-issue the meeting',
+      (_, _, _, true, _) => 'Zoom meeting ready',
+      _ => 'no meeting yet',
+    };
 
     return LayoutBuilder(
       builder: (context, c) {
-        final tight = c.maxWidth < 420;
+        final tight = c.maxWidth < 460;
+
         final info = Row(
           children: [
             Container(
@@ -876,7 +1003,14 @@ class _Slot extends StatelessWidget {
                 borderRadius: BorderRadius.circular(9),
               ),
               child: Icon(
-                waiting ? Icons.event_rounded : Icons.videocam_rounded,
+                switch ((live, waiting, done, booked, stale)) {
+                  (true, _, _, _, _) => Icons.sensors_rounded,
+                  (_, true, _, _, _) => Icons.door_front_door_rounded,
+                  (_, _, true, _, _) => Icons.check_circle_outline_rounded,
+                  (_, _, _, true, true) => Icons.update_rounded,
+                  (_, _, _, true, _) => Icons.videocam_rounded,
+                  _ => Icons.event_rounded,
+                },
                 size: 16,
                 color: tone,
               ),
@@ -887,8 +1021,7 @@ class _Slot extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    DateFormat('EEE d MMM y, HH:mm')
-                        .format(interview.scheduledAt),
+                    DateFormat('EEE d MMM y, HH:mm').format(interview.scheduledAt),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -898,14 +1031,14 @@ class _Slot extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${interview.mode.label} · ${interview.durationMinutes} min'
-                    '${waiting ? '' : ' · link issued'}',
+                    '${interview.mode.label} · ${interview.durationMinutes} min · $caption',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          live || stale || waiting ? tone : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -914,36 +1047,82 @@ class _Slot extends StatelessWidget {
           ],
         );
 
-        final action = waiting
-            ? FilledButton.icon(
-                onPressed: onGenerate,
-                icon: const Icon(Icons.add_link_rounded, size: 15),
-                label: const Text('Generate link'),
+        // Before there is a meeting there is one thing to do; once there is
+        // one, starting it is what the admin came here for, so it stays the
+        // filled button and the housekeeping shrinks to icons.
+        final action = booked
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FilledButton.icon(
+                    onPressed: busy ? null : (stale ? onGenerate : onStart),
+                    icon: Icon(
+                      stale ? Icons.update_rounded : Icons.play_arrow_rounded,
+                      size: 16,
+                    ),
+                    label: Text(switch ((stale, live)) {
+                      (true, _) => 'Re-issue',
+                      (_, true) => 'Rejoin as host',
+                      _ => 'Start meeting',
+                    }),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: tone,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(0, 36),
+                      visualDensity: VisualDensity.compact,
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  _SlotIcon(
+                    icon: Icons.copy_rounded,
+                    tip: 'Copy the invitation — time, link and passcode',
+                    onPressed: busy
+                        ? null
+                        : () {
+                            // The whole invitation, not the bare URL: a link
+                            // on its own leaves the reader to guess when it is
+                            // for, which is how people join a day late.
+                            Clipboard.setData(ClipboardData(
+                              text: interviewInviteText(interview),
+                            ));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Invitation copied'),
+                              ),
+                            );
+                          },
+                  ),
+                  if (!stale)
+                    _SlotIcon(
+                      icon: Icons.refresh_rounded,
+                      tip: 'Re-issue the meeting for the current time',
+                      onPressed: busy ? null : onGenerate,
+                    )
+                  else
+                    _SlotIcon(
+                      icon: Icons.play_arrow_rounded,
+                      tip: 'Start it anyway, at the old Zoom time',
+                      onPressed: busy ? null : onStart,
+                    ),
+                  _SlotIcon(
+                    icon: Icons.link_off_rounded,
+                    tip: 'Cancel the Zoom meeting',
+                    tone: AppColors.danger,
+                    onPressed: busy ? null : onRemove,
+                  ),
+                ],
+              )
+            : FilledButton.icon(
+                onPressed: busy ? null : onGenerate,
+                icon: const Icon(Icons.videocam_rounded, size: 15),
+                label: const Text('Generate meeting'),
                 style: FilledButton.styleFrom(
                   backgroundColor: tone,
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(0, 36),
-                  visualDensity: VisualDensity.compact,
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              )
-            : OutlinedButton.icon(
-                onPressed: () {
-                  Clipboard.setData(
-                    ClipboardData(text: interview.meetingLink),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Joining link copied')),
-                  );
-                },
-                icon: const Icon(Icons.copy_rounded, size: 15),
-                label: const Text('Copy link'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: tone,
-                  side: BorderSide(color: tone.withValues(alpha: 0.5)),
                   minimumSize: const Size(0, 36),
                   visualDensity: VisualDensity.compact,
                   textStyle: const TextStyle(
@@ -960,16 +1139,159 @@ class _Slot extends StatelessWidget {
             borderRadius: BorderRadius.circular(11),
             border: Border.all(color: tone.withValues(alpha: 0.22)),
           ),
-          // The button drops below the time on a narrow card rather than
+          // The buttons drop below the time on a narrow card rather than
           // squeezing the date into an ellipsis.
           child: tight
               ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [info, const SizedBox(height: 10), action],
                 )
               : Row(children: [Expanded(child: info), action]),
         );
       },
+    );
+  }
+}
+
+/// A small square button for the actions that are not the main one.
+class _SlotIcon extends StatelessWidget {
+  const _SlotIcon({
+    required this.icon,
+    required this.tip,
+    required this.onPressed,
+    this.tone,
+  });
+
+  final IconData icon;
+  final String tip;
+  final VoidCallback? onPressed;
+  final Color? tone;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: tip,
+        child: IconButton(
+          onPressed: onPressed,
+          icon: Icon(icon, size: 16),
+          color: tone ?? AppColors.textSecondary,
+          visualDensity: VisualDensity.compact,
+          constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+          padding: EdgeInsets.zero,
+        ),
+      );
+}
+
+/// Creates the Zoom meetings for every slot in this batch that has none.
+///
+/// One at a time, not in parallel: Zoom rate-limits meeting creation per
+/// account, and a burst of fifteen is exactly the shape that trips it. Each
+/// failure is counted rather than aborting the run — one candidate with a bad
+/// record must not stop the other fourteen getting a link.
+class _GenerateAll extends StatefulWidget {
+  const _GenerateAll({required this.pending});
+
+  final List<Interview> pending;
+
+  @override
+  State<_GenerateAll> createState() => _GenerateAllState();
+}
+
+class _GenerateAllState extends State<_GenerateAll> {
+  bool _running = false;
+  int _done = 0;
+
+  Future<void> _run() async {
+    final provider = context.read<InterviewProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final total = widget.pending.length;
+
+    setState(() {
+      _running = true;
+      _done = 0;
+    });
+
+    var made = 0;
+    final problems = <String>[];
+
+    for (final interview in widget.pending) {
+      final out = await provider.generateMeeting(interview.id);
+      if (out.ok) {
+        made++;
+        if (out.warning.isNotEmpty) problems.add(out.warning);
+      } else {
+        problems.add('${interview.candidateName}: ${out.message}');
+      }
+      if (!mounted) return;
+      setState(() => _done++);
+    }
+
+    if (!mounted) return;
+    setState(() => _running = false);
+
+    messenger.showSnackBar(SnackBar(
+      content: Text(problems.isEmpty
+          ? '$made of $total meetings created and emailed.'
+          : '$made of $total created. ${problems.first}'
+              '${problems.length > 1 ? ' (+${problems.length - 1} more)' : ''}'),
+      backgroundColor: problems.isEmpty ? null : AppColors.warning,
+      duration: Duration(seconds: problems.isEmpty ? 4 : 8),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.pending.length;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.bolt_rounded, size: 18, color: AppColors.accent),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _running
+                  ? 'Creating meetings — $_done of $total done…'
+                  : '$total booked slots have no Zoom meeting yet.',
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          FilledButton.icon(
+            onPressed: _running ? null : _run,
+            icon: _running
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.videocam_rounded, size: 16),
+            label: Text(_running ? 'Working…' : 'Generate all $total'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 38),
+              visualDensity: VisualDensity.compact,
+              textStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

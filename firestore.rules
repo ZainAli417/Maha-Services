@@ -475,16 +475,33 @@ service cloud.firestore {
       allow read: if isAdmin() ||
         (isRecruiter() && resource.data.recruiterUid == request.auth.uid);
 
+      // Everything the meeting itself is made of. The recruiter decides who is
+      // seen and when; the Zoom meeting behind it is created by the backend
+      // with the Admin SDK, which is not subject to these rules. A recruiter
+      // who could write meetingLink could send a candidate to a meeting of
+      // their own choosing under this company's name.
+      //
+      // Not even a blank is allowed on create: the booking simply leaves these
+      // fields off, and the backend adds them.
       allow create: if isRecruiter() &&
         request.resource.data.recruiterUid == request.auth.uid &&
         !request.resource.data.keys().hasAny([
-          'meetingLink', 'meetingProvider', 'linkGeneratedAt'
+          'meetingLink', 'meetingProvider', 'linkGeneratedAt', 'linkGeneratedBy',
+          'zoomMeetingId', 'zoomPasscode', 'zoomStartedAt', 'zoomEndedAt',
+          'waitingSince', 'reminderSentAt'
         ]);
 
+      // Rescheduling is a timing change. It leaves the link alone — the same
+      // Zoom meeting is moved to the new time, so a link already in the
+      // candidate's inbox goes on working — and writes rescheduledAt, which is
+      // how the admin console knows the meeting is behind the booking.
       allow update: if isRecruiter() &&
         resource.data.recruiterUid == request.auth.uid &&
         request.resource.data.recruiterUid == request.auth.uid &&
         !changed(['meetingLink', 'meetingProvider', 'linkGeneratedAt',
+                  'linkGeneratedBy', 'zoomMeetingId', 'zoomPasscode',
+                  'zoomStartedAt', 'zoomEndedAt', 'waitingSince',
+                  'reminderSentAt',
                   'candidateUid', 'recruiterUid']);
 
       allow update: if isAdmin();
